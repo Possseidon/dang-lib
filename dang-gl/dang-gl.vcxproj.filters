@@ -21,6 +21,12 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLFW.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -33,6 +39,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\KHR\khrplatform.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Window.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\GLFW.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
