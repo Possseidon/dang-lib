@@ -29,5 +29,11 @@
     <ClInclude Include="include\dang-gl\pch.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\glad\glad.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\KHR\khrplatform.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
