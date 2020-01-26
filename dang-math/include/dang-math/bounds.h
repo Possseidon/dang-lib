@@ -24,12 +24,12 @@ struct BoundsIterator : public std::iterator<std::forward_iterator_tag, Vector<T
 
     inline constexpr BoundsIterator& operator++()
     {
-        current_[0]++;
-        for (std::size_t d = 0; d < Dim - 1; d++) {
+        current_[Dim - 1]++;
+        for (std::size_t d = Dim - 1; d != 0; d--) {
             if (current_[d] < bounds_.high[d])
                 break;
             current_[d] = bounds_.low[d];
-            current_[d + 1]++;
+            current_[d - 1]++;
         }
         return *this;
     }

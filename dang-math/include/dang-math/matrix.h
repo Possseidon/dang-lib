@@ -48,12 +48,12 @@ public:
 
     inline constexpr T& operator[](const dmath::svec2& pos)
     {
-        return (*this)(pos.y(), pos.x());
+        return (*this)(pos.x(), pos.y());
     }
 
     inline constexpr const T& operator[](const dmath::svec2& pos) const
     {
-        return (*this)(pos.y(), pos.x());
+        return (*this)(pos.x(), pos.y());
     }
 
     inline constexpr T& operator()(std::size_t col, std::size_t row)
