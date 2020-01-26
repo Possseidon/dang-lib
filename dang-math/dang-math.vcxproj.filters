@@ -24,5 +24,8 @@
     <ClInclude Include="include\dang-math\matrix.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-math\bounds.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

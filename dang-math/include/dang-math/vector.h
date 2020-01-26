@@ -167,6 +167,36 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
+    constexpr std::array<T, Dim>::iterator begin()
+    {
+        return std::array<T, Dim>::begin();
+    }
+
+    constexpr std::array<T, Dim>::iterator end()
+    {
+        return std::array<T, Dim>::end();
+    }
+
+    constexpr std::array<T, Dim>::const_iterator begin() const
+    {
+        return std::array<T, Dim>::begin();
+    }
+
+    constexpr std::array<T, Dim>::const_iterator end() const
+    {
+        return std::array<T, Dim>::end();
+    }
+
+    constexpr std::array<T, Dim>::const_iterator cbegin() const
+    {
+        return std::array<T, Dim>::cbegin();
+    }
+
+    constexpr std::array<T, Dim>::const_iterator cend() const
+    {
+        return std::array<T, Dim>::cend();
+    }
+
 private:
     template <typename Op>
     static inline constexpr Vector<T, Dim>& assignment(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs, const Op& op)
@@ -232,6 +262,9 @@ struct Vector<T, 1> : public VectorBase<T, 1> {
 
     inline constexpr T& x() { return std::get<0>(*this); }
     inline constexpr T x() const { return std::get<0>(*this); }
+
+    inline constexpr operator T& () { return std::get<0>(*this); }
+    inline constexpr operator T() const { return std::get<0>(*this); }
 };
 
 template <typename T>
@@ -328,7 +361,7 @@ template <std::size_t Dim>
 using ivec = Vector<int, Dim>;
 
 template <std::size_t Dim>
-using uvec = Vector<unsigned int, Dim>;
+using uvec = Vector<unsigned, Dim>;
 
 template <std::size_t Dim>
 using svec = Vector<std::size_t, Dim>;
