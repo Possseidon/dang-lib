@@ -20,7 +20,7 @@ struct VectorBase : protected std::array<T, Dim> {
     }
 
     template<size_t Index>
-    inline constexpr T get() const noexcept
+    inline constexpr const T get() const noexcept
     {
         return std::get<Index>(*this);
     }
@@ -30,7 +30,7 @@ struct VectorBase : protected std::array<T, Dim> {
         return std::array<T, Dim>::operator[](index);
     }
 
-    inline constexpr T operator[](std::size_t index) const
+    inline constexpr const T operator[](std::size_t index) const
     {
         return std::array<T, Dim>::operator[](index);
     }
