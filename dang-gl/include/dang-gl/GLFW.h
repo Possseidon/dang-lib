@@ -7,19 +7,19 @@ namespace dang::gl
 
 class GLFW {
 public:
-	static GLFW Instance;
+    static GLFW Instance;
 
-	void setContext(GLFWwindow* window);
+    void setContext(GLFWwindow* window);
 
 private:
-	GLFW();
-	~GLFW();
+    GLFW();
+    ~GLFW();
 
-	static std::string formatError(int error_code, const char* description);
-	static void errorCallback(int error_code, const char* description);
+    static std::string formatError(int error_code, const char* description);
+    static void errorCallback(int error_code, const char* description);
 
-	bool gladInitialized = false;
-	GLFWwindow* window_ = nullptr;
+    bool gladInitialized = false;
+    GLFWwindow* window_ = nullptr;
 };
 
 }

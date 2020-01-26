@@ -13,104 +13,104 @@ WindowInfo::WindowInfo()
 
 dmath::ivec2 WindowInfo::size() const
 {
-	return size_;
+    return size_;
 }
 
 void WindowInfo::setSize(dmath::ivec2 size)
 {
-	size_ = size;
+    size_ = size;
 }
 
 int WindowInfo::width() const
 {
-	return size_.x();
+    return size_.x();
 }
 
 void WindowInfo::setWidth(int width)
 {
-	size_.x() = width;
+    size_.x() = width;
 }
 
 int WindowInfo::height() const
 {
-	return size_.y();
+    return size_.y();
 }
 
 void WindowInfo::setHeight(int height)
 {
-	size_.y() = height;
+    size_.y() = height;
 }
 
 std::string WindowInfo::title() const
 {
-	return title_;
+    return title_;
 }
 
 void WindowInfo::setTitle(std::string title)
 {
-	title_ = title;
+    title_ = title;
 }
 
 GLFWwindow* WindowInfo::createWindow() const
 {
-	return glfwCreateWindow(
-		width(),
-		height(),
-		title_.c_str(),
-		nullptr,
-		nullptr);
+    return glfwCreateWindow(
+        width(),
+        height(),
+        title_.c_str(),
+        nullptr,
+        nullptr);
 }
 
 Window::Window(GLFWwindow* handle)
-	: handle_(handle)
+    : handle_(handle)
 {
 }
 
 Window::Window(const WindowInfo& info)
-	: Window(info.createWindow())
+    : Window(info.createWindow())
 {
 }
 
 Window::~Window()
 {
-	glfwDestroyWindow(handle_);
+    glfwDestroyWindow(handle_);
 }
 
 GLFWwindow* Window::handle()
 {
-	return handle_;
+    return handle_;
 }
 
 bool Window::shouldClose()
 {
-	return glfwWindowShouldClose(handle_);
+    return glfwWindowShouldClose(handle_);
 }
 
 void Window::update()
 {
-	dgl::GLFW::Instance.setContext(handle_);
-	glfwPollEvents();
+    dgl::GLFW::Instance.setContext(handle_);
+    glfwPollEvents();
 }
 
 void Window::render()
 {
-	dgl::GLFW::Instance.setContext(handle_);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glfwSwapBuffers(handle_);
+    dgl::GLFW::Instance.setContext(handle_);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glfwSwapBuffers(handle_);
 }
 
 void Window::step()
 {
-	update();
-	render();
+    update();
+    render();
 }
 
 void Window::run()
 {
-	while (!shouldClose()) {
-		update();
-		render();
-	}
+    while (!shouldClose()) {
+        update();
+        render();
+    }
 }
 
 }
