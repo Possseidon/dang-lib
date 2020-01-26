@@ -35,115 +35,41 @@ struct VectorBase : protected std::array<T, Dim> {
         return std::array<T, Dim>::operator[](index);
     }
 
-    inline constexpr Vector<T, Dim> operator+() const
+    inline constexpr const Vector<T, Dim>& operator+() const
     {
         return *this;
     }
 
-    inline constexpr Vector<T, Dim> operator-() const
+    inline constexpr const Vector<T, Dim> operator-() const
     {
         return unary([](T a) { return -a; });
     }
 
-    inline constexpr Vector<T, Dim> operator+(const Vector<T, Dim>& other) const
-    {
-        return binary(other, [](T a, T b) { return a + b; });
-    }
+#define DMATH_VECTOR_OPERATION(op) \
+    friend inline constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
+    { return lhs op ## = rhs; } \
+    friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
+    { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
 
-    static friend inline constexpr Vector<T, Dim> operator+(T scalar, const Vector<T, Dim>& other)
-    {
-        return other.unary([scalar](T a) { return scalar + a; });
-    }
+    DMATH_VECTOR_OPERATION(+);
+    DMATH_VECTOR_OPERATION(-);
+    DMATH_VECTOR_OPERATION(*);
+    DMATH_VECTOR_OPERATION(/ );
 
-    inline constexpr Vector<T, Dim> operator-(const Vector<T, Dim>& other) const
-    {
-        return binary(other, [](T a, T b) { return a - b; });
-    }
+#undef DMATH_VECTOR_OPERATION
 
-    static friend inline constexpr Vector<T, Dim> operator-(T scalar, const Vector<T, Dim>& other)
-    {
-        return other.unary([scalar](T a) { return scalar - a; });
-    }
+#define DMATH_VECTOR_COMPARE(merge, op) \
+    friend inline constexpr bool operator op(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
+    { return lhs.merge(rhs, [](T a, T b) { return a op b; }); }
 
-    inline constexpr Vector<T, Dim> operator*(const Vector<T, Dim>& other) const
-    {
-        return binary(other, [](T a, T b) { return a * b; });
-    }
+    DMATH_VECTOR_COMPARE(all, == );
+    DMATH_VECTOR_COMPARE(any, != );
+    DMATH_VECTOR_COMPARE(all, < );
+    DMATH_VECTOR_COMPARE(all, <= );
+    DMATH_VECTOR_COMPARE(all, > );
+    DMATH_VECTOR_COMPARE(all, >= );
 
-    static friend inline constexpr Vector<T, Dim> operator*(T scalar, const Vector<T, Dim>& other)
-    {
-        return other.unary([scalar](T a) { return scalar * a; });
-    }
-
-    inline constexpr Vector<T, Dim> operator/(const Vector<T, Dim>& other) const
-    {
-        return binary(other, [](T a, T b) { return a / b; });
-    }
-
-    static friend inline constexpr Vector<T, Dim> operator/(T scalar, const Vector<T, Dim>& other)
-    {
-        return other.unary([scalar](T a) { return scalar / a; });
-    }
-
-    inline constexpr bool operator==(const Vector<T, Dim>& other) const
-    {
-        return all(other, [](T a, T b) { return a == b; });
-    }
-
-    static friend inline constexpr bool operator==(T scalar, const Vector<T, Dim>& other)
-    {
-        return all([scalar](T a) { return scalar == a; });
-    }
-
-    inline constexpr bool operator!=(const Vector<T, Dim>& other) const
-    {
-        return any(other, [](T a, T b) { return a != b; });
-    }
-
-    static friend inline constexpr bool operator!=(T scalar, const Vector<T, Dim>& other)
-    {
-        return any([scalar](T a) { return scalar != a; });
-    }
-
-    inline constexpr bool operator<(const Vector<T, Dim>& other) const
-    {
-        return all(other, [](T a, T b) { return a < b; });
-    }
-
-    static friend inline constexpr bool operator<(T scalar, const Vector<T, Dim>& other)
-    {
-        return all([scalar](T a) { return scalar < a; });
-    }
-
-    inline constexpr bool operator<=(const Vector<T, Dim>& other) const
-    {
-        return all(other, [](T a, T b) { return a <= b; });
-    }
-
-    static friend inline constexpr bool operator<=(T scalar, const Vector<T, Dim>& other)
-    {
-        return all([scalar](T a) { return scalar <= a; });
-    }
-
-    inline constexpr bool operator>(const Vector<T, Dim>& other) const
-    {
-        return all(other, [](T a, T b) { return a > b; });
-    }
-
-    static friend inline constexpr bool operator>(T scalar, const Vector<T, Dim>& other)
-    {
-        return all([scalar](T a) { return scalar > a; });
-    }
-
-    inline constexpr bool operator>=(const Vector<T, Dim>& other) const
-    {
-        return all(other, [](T a, T b) { return a >= b; });
-    }
-
-    static friend inline constexpr bool operator>=(T scalar, const Vector<T, Dim>& other)
-    {
-        return all([scalar](T a) { return scalar >= a; });
-    }
+#undef DMATH_VECTOR_COMPARE
 
     inline constexpr T sum() const
     {
@@ -243,20 +169,19 @@ struct VectorBase : protected std::array<T, Dim> {
 
 private:
     template <typename Op>
+    static inline constexpr Vector<T, Dim>& assignment(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs, const Op& op)
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            op(lhs[i], rhs[i]);
+        return lhs;
+    }
+
+    template <typename Op>
     inline constexpr Vector<T, Dim> binary(const Vector<T, Dim>& other, const Op& op) const
     {
         Vector<T, Dim> result;
         for (std::size_t i = 0; i < Dim; i++)
             result[i] = op((*this)[i], other[i]);
-        return result;
-    }
-
-    template <typename Op>
-    inline constexpr bool all(const Vector<T, Dim>& other, const Op& op) const
-    {
-        bool result = true;
-        for (std::size_t i = 0; i < Dim; i++)
-            result = result && op((*this)[i], other[i]);
         return result;
     }
 
@@ -270,29 +195,20 @@ private:
     }
 
     template <typename Op>
+    inline constexpr bool all(const Vector<T, Dim>& other, const Op& op) const
+    {
+        bool result = true;
+        for (std::size_t i = 0; i < Dim; i++)
+            result = result && op((*this)[i], other[i]);
+        return result;
+    }
+
+    template <typename Op>
     inline constexpr bool any(const Vector<T, Dim>& other, const Op& op) const
     {
         bool result = false;
         for (std::size_t i = 0; i < Dim; i++)
             result = result || op((*this)[i], other[i]);
-        return result;
-    }
-
-    template <typename Op>
-    inline constexpr bool all(const Op& op) const
-    {
-        bool result = true;
-        for (std::size_t i = 0; i < Dim; i++)
-            result = result && op((*this)[i]);
-        return result;
-    }
-
-    template <typename Op>
-    inline constexpr bool any(const Op& op) const
-    {
-        bool result = false;
-        for (std::size_t i = 0; i < Dim; i++)
-            result = result || op((*this)[i]);
         return result;
     }
 };
