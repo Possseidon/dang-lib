@@ -1,6 +1,6 @@
 #pragma once
 
-#include "global.h"
+#include "utils.h"
 
 namespace dang::math
 {
@@ -10,8 +10,10 @@ struct Vector;
 
 template <typename T, std::size_t Dim>
 struct VectorBase : protected std::array<T, Dim> {
-    inline constexpr VectorBase() : std::array<T, Dim> {} {}
-    inline constexpr VectorBase(std::array<T, Dim> values) : std::array<T, Dim>(values) {}
+    using Base = std::array<T, Dim>;
+
+    inline constexpr VectorBase() : Base{} {}
+    inline constexpr VectorBase(Base values) : Base(values) {}
 
     template<size_t Index>
     inline constexpr T& get() noexcept
@@ -27,12 +29,12 @@ struct VectorBase : protected std::array<T, Dim> {
 
     inline constexpr T& operator[](std::size_t index)
     {
-        return std::array<T, Dim>::operator[](index);
+        return Base::operator[](index);
     }
 
     inline constexpr const T operator[](std::size_t index) const
     {
-        return std::array<T, Dim>::operator[](index);
+        return Base::operator[](index);
     }
 
     inline constexpr const Vector<T, Dim>& operator+() const
@@ -167,34 +169,34 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
-    constexpr std::array<T, Dim>::iterator begin()
+    inline constexpr Base::iterator begin()
     {
-        return std::array<T, Dim>::begin();
+        return Base::begin();
     }
 
-    constexpr std::array<T, Dim>::iterator end()
+    inline constexpr Base::iterator end()
     {
-        return std::array<T, Dim>::end();
+        return Base::end();
     }
 
-    constexpr std::array<T, Dim>::const_iterator begin() const
+    inline constexpr Base::const_iterator begin() const
     {
-        return std::array<T, Dim>::begin();
+        return Base::begin();
     }
 
-    constexpr std::array<T, Dim>::const_iterator end() const
+    inline constexpr Base::const_iterator end() const
     {
-        return std::array<T, Dim>::end();
+        return Base::end();
     }
 
-    constexpr std::array<T, Dim>::const_iterator cbegin() const
+    inline constexpr Base::const_iterator cbegin() const
     {
-        return std::array<T, Dim>::cbegin();
+        return Base::cbegin();
     }
 
-    constexpr std::array<T, Dim>::const_iterator cend() const
+    inline constexpr Base::const_iterator cend() const
     {
-        return std::array<T, Dim>::cend();
+        return Base::cend();
     }
 
 private:

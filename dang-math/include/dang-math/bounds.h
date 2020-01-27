@@ -1,6 +1,6 @@
 #pragma once
 
-#include "global.h"
+#include "utils.h"
 
 #include "vector.h"
 
@@ -15,7 +15,7 @@ struct BoundsIterator : public std::iterator<std::forward_iterator_tag, Vector<T
     static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
 
     inline constexpr BoundsIterator() = default;
-    
+
     inline constexpr explicit BoundsIterator(Bounds<T, Dim> bounds, Vector<T, Dim> current)
         : bounds_(bounds)
         , current_(current)

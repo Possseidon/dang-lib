@@ -18,13 +18,13 @@
     <ClInclude Include="include\dang-math\vector.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-math\global.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-math\matrix.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-math\bounds.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-math\utils.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
