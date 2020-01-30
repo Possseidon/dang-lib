@@ -144,7 +144,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\dang-utils\events.h" />
+    <ClInclude Include="include\dang-utils\EnumArray.h" />
+    <ClInclude Include="include\dang-utils\Event.h" />
+    <ClInclude Include="include\dang-utils\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

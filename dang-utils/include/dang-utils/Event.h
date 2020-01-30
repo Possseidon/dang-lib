@@ -3,6 +3,11 @@
 #include <vector>
 #include <functional>
 
+#include "utils.h"
+
+namespace dang::utils
+{
+
 template <typename... TArgs>
 struct Event {
     using Handler = std::function<void(const TArgs &...)>;
@@ -49,3 +54,5 @@ struct Event {
 private:
     std::vector<std::reference_wrapper<Handler>> handlers_;
 };
+
+}

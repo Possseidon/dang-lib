@@ -15,7 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dang-utils\events.h">
+    <ClInclude Include="include\dang-utils\utils.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-utils\EnumArray.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-utils\Event.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
