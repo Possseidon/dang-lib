@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <functional>
-#include <memory>
 
 template <typename... TArgs>
 struct Event {

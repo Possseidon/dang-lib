@@ -27,5 +27,8 @@
     <ClInclude Include="include\dang-math\utils.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-math\enums.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

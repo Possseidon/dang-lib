@@ -149,6 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\dang-math\bounds.h" />
+    <ClInclude Include="include\dang-math\enums.h" />
     <ClInclude Include="include\dang-math\utils.h" />
     <ClInclude Include="include\dang-math\matrix.h" />
     <ClInclude Include="include\dang-math\vector.h" />
