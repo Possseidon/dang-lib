@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="dang::utils::EnumArray&lt;*,*&gt;">
+    <DisplayString>{"$T2"}[{"$T1"}]</DisplayString>
+    <Expand>
+      <CustomListItems>
+        <Variable Name="index" InitialValue="0"/>
+        <Loop Condition="index &lt; sizeof(*this) / sizeof((*this)[0])">
+          <Item Name="{static_cast&lt;$T1&gt;(index)}">(*this)[index]</Item>
+          <Exec>index++</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*&gt;">
+    <DisplayString>Event with {handlers_.size()} handler ({"$T1"})</DisplayString>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*,*&gt;">
+    <DisplayString>Event with {handlers_.size()} handler ({"$T1"}, {"$T2"})</DisplayString>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*,*,*&gt;">
+    <DisplayString>Event with {handlers_.size()} handler ({"$T1"}, {"$T2"}, {"$T3"})</DisplayString>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*,*,*,*&gt;">
+    <DisplayString>Event with {handlers_.size()} handler ({"$T1"}, {"$T2"}, {"$T3"}, {"$T4"})</DisplayString>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*,*,*,*,*&gt;">
+    <DisplayString>Event with {handlers_.size()} handler ({"$T1"}, {"$T2"}, {"$T3"}, {"$T4"}, ...)</DisplayString>
+  </Type>
+
+  <Type Name="dang::utils::Event&lt;*&gt;::Subscription">
+    <DisplayString>Subscribed to {event_}</DisplayString>
+  </Type>
+
+</AutoVisualizer>

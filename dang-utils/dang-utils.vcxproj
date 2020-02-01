@@ -152,6 +152,9 @@
     <ClInclude Include="include\dang-utils\event.h" />
     <ClInclude Include="include\dang-utils\utils.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="dang-utils.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
