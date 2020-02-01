@@ -8,6 +8,9 @@ namespace dang::math
 template <typename T, std::size_t Dim>
 struct Vector;
 
+namespace detail
+{
+
 template <typename T, std::size_t Dim>
 struct VectorBase : protected std::array<T, Dim> {
     using Base = std::array<T, Dim>;
@@ -245,10 +248,12 @@ private:
     }
 };
 
+}
+
 template <typename T, std::size_t Dim>
-struct Vector : public VectorBase<T, Dim> {
+struct Vector : public detail::VectorBase<T, Dim> {
     inline constexpr Vector() = default;
-    inline constexpr Vector(std::array<T, Dim> values) : VectorBase<T, Dim>(values) {}
+    inline constexpr Vector(std::array<T, Dim> values) : detail::VectorBase<T, Dim>(values) {}
     inline constexpr Vector(T value)
     {
         for (std::size_t i = 0; i < Dim; i++)
@@ -257,10 +262,10 @@ struct Vector : public VectorBase<T, Dim> {
 };
 
 template <typename T>
-struct Vector<T, 1> : public VectorBase<T, 1> {
+struct Vector<T, 1> : public detail::VectorBase<T, 1> {
     inline constexpr Vector() = default;
-    inline constexpr Vector(std::array<T, 1> values) : VectorBase(values) {}
-    inline constexpr Vector(T x) : VectorBase<T, 1>({ x }) {}
+    inline constexpr Vector(std::array<T, 1> values) : detail::VectorBase(values) {}
+    inline constexpr Vector(T x) : detail::VectorBase<T, 1>({ x }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
     inline constexpr T x() const { return std::get<0>(*this); }
@@ -270,11 +275,11 @@ struct Vector<T, 1> : public VectorBase<T, 1> {
 };
 
 template <typename T>
-struct Vector<T, 2> : public VectorBase<T, 2> {
+struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     inline constexpr Vector() = default;
-    inline constexpr Vector(std::array<T, 2> values) : VectorBase<T, 2>(values) {}
-    inline constexpr Vector(T value) : VectorBase<T, 2>({ value, value }) {}
-    inline constexpr Vector(T x, T y) : VectorBase<T, 2>({ x, y }) {}
+    inline constexpr Vector(std::array<T, 2> values) : detail::VectorBase<T, 2>(values) {}
+    inline constexpr Vector(T value) : detail::VectorBase<T, 2>({ value, value }) {}
+    inline constexpr Vector(T x, T y) : detail::VectorBase<T, 2>({ x, y }) {}
 
     static inline constexpr Vector<T, 2> fromSlope(T slope)
     {
@@ -314,11 +319,11 @@ struct Vector<T, 2> : public VectorBase<T, 2> {
 };
 
 template <typename T>
-struct Vector<T, 3> : public VectorBase<T, 3> {
+struct Vector<T, 3> : public detail::VectorBase<T, 3> {
     inline constexpr Vector() = default;
-    inline constexpr Vector(std::array<T, 3> values) : VectorBase<T, 3>(values) {}
-    inline constexpr Vector(T value) : VectorBase<T, 3>({ value, value, value }) {}
-    inline constexpr Vector(T x, T y, T z) : VectorBase<T, 3>({ x, y, z }) {}
+    inline constexpr Vector(std::array<T, 3> values) : detail::VectorBase<T, 3>(values) {}
+    inline constexpr Vector(T value) : detail::VectorBase<T, 3>({ value, value, value }) {}
+    inline constexpr Vector(T x, T y, T z) : detail::VectorBase<T, 3>({ x, y, z }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
     inline constexpr T x() const { return std::get<0>(*this); }
@@ -336,12 +341,12 @@ struct Vector<T, 3> : public VectorBase<T, 3> {
 };
 
 template <typename T>
-struct Vector<T, 4> : public VectorBase<T, 4> {
+struct Vector<T, 4> : public detail::VectorBase<T, 4> {
     inline constexpr Vector() = default;
-    inline constexpr Vector(std::array<T, 4> values) : VectorBase<T, 4>(values) {}
-    inline constexpr Vector(T value) : VectorBase<T, 4>({ value, value, value, value }) {}
-    inline constexpr Vector(T value, T w) : VectorBase<T, 4>({ value, value, value, w }) {}
-    inline constexpr Vector(T x, T y, T z, T w) : VectorBase<T, 4>({ x, y, z, w }) {}
+    inline constexpr Vector(std::array<T, 4> values) : detail::VectorBase<T, 4>(values) {}
+    inline constexpr Vector(T value) : detail::VectorBase<T, 4>({ value, value, value, value }) {}
+    inline constexpr Vector(T value, T w) : detail::VectorBase<T, 4>({ value, value, value, w }) {}
+    inline constexpr Vector(T x, T y, T z, T w) : detail::VectorBase<T, 4>({ x, y, z, w }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
     inline constexpr T x() const { return std::get<0>(*this); }

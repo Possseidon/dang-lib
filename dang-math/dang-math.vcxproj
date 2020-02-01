@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\dang-math\consts.h" />
     <ClInclude Include="include\dang-math\bounds.h" />
     <ClInclude Include="include\dang-math\enums.h" />
     <ClInclude Include="include\dang-math\utils.h" />

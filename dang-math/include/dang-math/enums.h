@@ -5,29 +5,33 @@
 namespace dang::math
 {
 
-enum class CoordAxis1 : char {
+enum class Axis1 : char {
     None = -1,
     X,
     COUNT
 };
 
-enum class CoordAxes1 : unsigned char {
+enum class Axes1 : unsigned char {
+    NONE = 0,
     X = 1 << 0,
+    ALL = ~(~0 << 1)
 };
 
-enum class CoordAxis2 : char {
+enum class Axis2 : char {
     None = -1,
     X,
     Y,
     COUNT
 };
 
-enum class CoordAxes2 : unsigned char {
+enum class Axes2 : unsigned char {
+    NONE = 0,
     X = 1 << 0,
-    Y = 1 << 1
+    Y = 1 << 1,
+    ALL = ~(~0 << 2)
 };
 
-enum class CoordAxis3 : char {
+enum class Axis3 : char {
     None = -1,
     X,
     Y,
@@ -35,58 +39,12 @@ enum class CoordAxis3 : char {
     COUNT
 };
 
-enum class CoordAxes3 : unsigned char {
+enum class Axes3 : unsigned char {
+    NONE = 0,
     X = 1 << 0,
     Y = 1 << 1,
-    Z = 1 << 2
-};
-
-enum class Facing1 : char {
-    None = -1,
-    Left,
-    Right,
-    COUNT
-};
-
-enum class Facings1 : unsigned char {
-    Left = 1 << 0,
-    Right = 1 << 1
-};
-
-enum class Facing2 : char {
-    None = -1,
-    Left,
-    Right,
-    Up,
-    Down,
-    COUNT
-};
-
-enum class Facings2 : unsigned char {
-    Left = 1 << 0,
-    Right = 1 << 1,
-    Up = 1 << 2,
-    Down = 1 << 3
-};
-
-enum class Facing3 : char {
-    None = -1,
-    Left,
-    Right,
-    Up,
-    Down,
-    Back,
-    Front,
-    COUNT
-};
-
-enum class Facings3 : unsigned char {
-    Left = 1 << 0,
-    Right = 1 << 1,
-    Up = 1 << 2,
-    Down = 1 << 3,
-    Back = 1 << 4,
-    Front = 1 << 5
+    Z = 1 << 2,
+    ALL = ~(~0 << 3)
 };
 
 enum class Corner1 : char {
@@ -97,8 +55,10 @@ enum class Corner1 : char {
 };
 
 enum class Corners1 : unsigned char {
+    NONE = 0,
     Left = 1 << 0,
-    Right = 1 << 1
+    Right = 1 << 1,
+    ALL = ~(~0 << 2)
 };
 
 enum class Corner2 : char {
@@ -111,10 +71,12 @@ enum class Corner2 : char {
 };
 
 enum class Corners2 : unsigned char {
+    NONE = 0,
     LeftBottom = 1 << 0,
     RightBottom = 1 << 1,
     LeftTop = 1 << 2,
-    RightTop = 1 << 3
+    RightTop = 1 << 3,
+    ALL = ~(~0 << 4)
 };
 
 enum class Corner3 : char {
@@ -131,6 +93,7 @@ enum class Corner3 : char {
 };
 
 enum class Corners3 : unsigned char {
+    NONE = 0,
     LeftBottomBack = 1 << 0,
     RightBottomBack = 1 << 1,
     LeftTopBack = 1 << 2,
@@ -138,7 +101,8 @@ enum class Corners3 : unsigned char {
     LeftBottomFront = 1 << 4,
     RightBottomFront = 1 << 5,
     LeftTopFront = 1 << 6,
-    RightTopFront = 1 << 7
+    RightTopFront = 1 << 7,
+    ALL = ~(~0 << 8)
 };
 
 enum class Edge2 : char {
@@ -151,10 +115,12 @@ enum class Edge2 : char {
 };
 
 enum class Edges2 : unsigned char {
+    NONE = 0,
     Left = 1 << 0,
     Right = 1 << 1,
     Bottom = 1 << 2,
-    Top = 1 << 3
+    Top = 1 << 3,
+    ALL = ~(~0 << 4)
 };
 
 enum class Edge3 : char {
@@ -175,6 +141,7 @@ enum class Edge3 : char {
 };
 
 enum class Edges3 : unsigned short {
+    NONE = 0,
     LeftBottom = 1 << 0,
     RightBottom = 1 << 1,
     LeftTop = 1 << 2,
@@ -186,58 +153,89 @@ enum class Edges3 : unsigned short {
     LeftFront = 1 << 8,
     RightFront = 1 << 9,
     LeftBack = 1 << 10,
-    RightBack = 1 << 11
+    RightBack = 1 << 11,
+    ALL = ~(~0 << 12)
+};
+
+enum class Facing1 : char {
+    None = -1,
+    Left,
+    Right,
+    COUNT
+};
+
+enum class Facings1 : unsigned char {
+    NONE = 0,
+    Left = 1 << 0,
+    Right = 1 << 1,
+    ALL = ~(~0 << 2)
+};
+
+enum class Facing2 : char {
+    None = -1,
+    Left,
+    Right,
+    Up,
+    Down,
+    COUNT
+};
+
+enum class Facings2 : unsigned char {
+    NONE = 0,
+    Left = 1 << 0,
+    Right = 1 << 1,
+    Up = 1 << 2,
+    Down = 1 << 3,
+    ALL = ~(~0 << 4)
+};
+
+enum class Facing3 : char {
+    None = -1,
+    Left,
+    Right,
+    Up,
+    Down,
+    Back,
+    Front,
+    COUNT
+};
+
+enum class Facings3 : unsigned char {
+    NONE = 0,
+    Left = 1 << 0,
+    Right = 1 << 1,
+    Up = 1 << 2,
+    Down = 1 << 3,
+    Back = 1 << 4,
+    Front = 1 << 5,
+    ALL = ~(~0 << 6)
 };
 
 namespace detail
 {
-              
+
 template <std::size_t Dim>
-struct FacingSelector {
+struct AxisSelector {
     using Type = void;
     using SetType = void;
 };
 
 template <>
-struct FacingSelector<1> {
-    using Type = Facing1;
-    using SetType = Facings1;
+struct AxisSelector<1> {
+    using Type = Axis1;
+    using SetType = Axes1;
 };
 
 template <>
-struct FacingSelector<2> {
-    using Type = Facing2;
-    using SetType = Facings2;
+struct AxisSelector<2> {
+    using Type = Axis2;
+    using SetType = Axes2;
 };
 
 template <>
-struct FacingSelector<3> {
-    using Type = Facing3;
-    using SetType = Facings3;
-};
-
-template <std::size_t Dim>
-struct CoordAxisSelector {
-    using Type = void;
-    using SetType = void;
-};
-
-template <>
-struct CoordAxisSelector<1> {
-    using Type = CoordAxis1;
-    using SetType = CoordAxes1;
-};
-
-template <>
-struct CoordAxisSelector<2> {
-    using Type = CoordAxis2;
-    using SetType = CoordAxes2;
-};
-
-template <>
-struct CoordAxisSelector<3> {
-    using Type = CoordAxis3;
-    using SetType = CoordAxes3;
+struct AxisSelector<3> {
+    using Type = Axis3;
+    using SetType = Axes3;
 };
 
 template <std::size_t Dim>
@@ -267,6 +265,7 @@ struct CornerSelector<3> {
 template <std::size_t Dim>
 struct EdgeSelector {
     using Type = void;
+    using SetType = void;
 };
 
 template <>
@@ -281,19 +280,37 @@ struct EdgeSelector<3> {
     using SetType = Edges3;
 };
 
+template <std::size_t Dim>
+struct FacingSelector {
+    using Type = void;
+    using SetType = void;
+};
+
+template <>
+struct FacingSelector<1> {
+    using Type = Facing1;
+    using SetType = Facings1;
+};
+
+template <>
+struct FacingSelector<2> {
+    using Type = Facing2;
+    using SetType = Facings2;
+};
+
+template <>
+struct FacingSelector<3> {
+    using Type = Facing3;
+    using SetType = Facings3;
+};
+
 }
-          
-template <std::size_t Dim>
-using Facing = typename detail::FacingSelector<Dim>::Type;
 
 template <std::size_t Dim>
-using Facings = typename detail::FacingSelector<Dim>::SetType;
+using Axis = typename detail::AxisSelector<Dim>::Type;
 
 template <std::size_t Dim>
-using CoordAxis = typename detail::CoordAxisSelector<Dim>::Type;
-
-template <std::size_t Dim>
-using CoordAxes = typename detail::CoordAxisSelector<Dim>::SetType;
+using Axes = typename detail::AxisSelector<Dim>::SetType;
 
 template <std::size_t Dim>
 using Corner = typename detail::CornerSelector<Dim>::Type;
@@ -306,5 +323,11 @@ using Edge = typename detail::EdgeSelector<Dim>::Type;
 
 template <std::size_t Dim>
 using Edges = typename detail::EdgeSelector<Dim>::SetType;
+
+template <std::size_t Dim>
+using Facing = typename detail::FacingSelector<Dim>::Type;
+
+template <std::size_t Dim>
+using Facings = typename detail::FacingSelector<Dim>::SetType;
 
 }
