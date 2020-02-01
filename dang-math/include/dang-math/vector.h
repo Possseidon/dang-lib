@@ -18,64 +18,6 @@ struct VectorBase : protected std::array<T, Dim> {
     inline constexpr VectorBase() : Base{} {}
     inline constexpr VectorBase(Base values) : Base(values) {}
 
-    template<size_t Index>
-    inline constexpr T& get() noexcept
-    {
-        return std::get<Index>(*this);
-    }
-
-    template<size_t Index>
-    inline constexpr const T get() const noexcept
-    {
-        return std::get<Index>(*this);
-    }
-
-    inline constexpr T& operator[](std::size_t index)
-    {
-        return Base::operator[](index);
-    }
-
-    inline constexpr const T operator[](std::size_t index) const
-    {
-        return Base::operator[](index);
-    }
-
-    inline constexpr const Vector<T, Dim>& operator+() const
-    {
-        return *this;
-    }
-
-    inline constexpr const Vector<T, Dim> operator-() const
-    {
-        return unary([](T a) { return -a; });
-    }
-
-#define DMATH_VECTOR_OPERATION(op) \
-    friend inline constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
-    { return lhs op ## = rhs; } \
-    friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
-    { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
-
-    DMATH_VECTOR_OPERATION(+);
-    DMATH_VECTOR_OPERATION(-);
-    DMATH_VECTOR_OPERATION(*);
-    DMATH_VECTOR_OPERATION(/ );
-
-#undef DMATH_VECTOR_OPERATION
-
-#define DMATH_VECTOR_COMPARE(merge, op) \
-    friend inline constexpr bool operator op(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
-    { return lhs.merge(rhs, [](T a, T b) { return a op b; }); }
-
-    DMATH_VECTOR_COMPARE(all, == );
-    DMATH_VECTOR_COMPARE(any, != );
-    DMATH_VECTOR_COMPARE(all, < );
-    DMATH_VECTOR_COMPARE(all, <= );
-    DMATH_VECTOR_COMPARE(all, > );
-    DMATH_VECTOR_COMPARE(all, >= );
-
-#undef DMATH_VECTOR_COMPARE
-
     inline constexpr T sum() const
     {
         T result = T();
@@ -163,13 +105,71 @@ struct VectorBase : protected std::array<T, Dim> {
         return *this - 2 * dot(normal) * normal;
     }
 
+    inline constexpr T& operator[](std::size_t index)
+    {
+        return Base::operator[](index);
+    }
+
+    inline constexpr const T operator[](std::size_t index) const
+    {
+        return Base::operator[](index);
+    }
+
+    inline constexpr const Vector<T, Dim>& operator+() const
+    {
+        return *this;
+    }
+
+    inline constexpr const Vector<T, Dim> operator-() const
+    {
+        return unary([](T a) { return -a; });
+    }
+
+#define DMATH_VECTOR_OPERATION(op) \
+    friend inline constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
+    { return lhs op ## = rhs; } \
+    friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
+    { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
+
+    DMATH_VECTOR_OPERATION(+);
+    DMATH_VECTOR_OPERATION(-);
+    DMATH_VECTOR_OPERATION(*);
+    DMATH_VECTOR_OPERATION(/ );
+
+#undef DMATH_VECTOR_OPERATION
+
+#define DMATH_VECTOR_COMPARE(merge, op) \
+    friend inline constexpr bool operator op(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
+    { return lhs.merge(rhs, [](T a, T b) { return a op b; }); }
+
+    DMATH_VECTOR_COMPARE(all, == );
+    DMATH_VECTOR_COMPARE(any, != );
+    DMATH_VECTOR_COMPARE(all, < );
+    DMATH_VECTOR_COMPARE(all, <= );
+    DMATH_VECTOR_COMPARE(all, > );
+    DMATH_VECTOR_COMPARE(all, >= );
+
+#undef DMATH_VECTOR_COMPARE
+
     template <typename TTarget>
-    explicit inline constexpr operator Vector<TTarget, Dim>()
+    explicit inline constexpr operator Vector<TTarget, Dim>() const
     {
         Vector<TTarget, Dim> result;
         for (std::size_t i = 0; i < Dim; i++)
             result[i] = static_cast<TTarget>((*this)[i]);
         return result;
+    }
+
+    template<size_t Index>
+    inline constexpr T& get() noexcept
+    {
+        return std::get<Index>(*this);
+    }
+
+    template<size_t Index>
+    inline constexpr const T get() const noexcept
+    {
+        return std::get<Index>(*this);
     }
 
     inline constexpr Base::iterator begin()

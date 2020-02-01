@@ -2,6 +2,7 @@
 
 #include "utils.h"
 #include "enums.h"
+
 #include "dang-utils/enum.h"
 
 namespace dang::math
@@ -81,30 +82,30 @@ constexpr dutils::EnumArray<Corner<Dim>, ivec<Dim>> CornerVector{};
 template <>
 constexpr dutils::EnumArray<Corner1, ivec1> CornerVector<1>
 {
-    ivec1(-1),
-    ivec1(+1)
+    ivec1(0),
+    ivec1(1)
 };
 
 template <>
 constexpr dutils::EnumArray<Corner2, ivec2> CornerVector<2>
 {
-    ivec2(-1, -1),
-    ivec2(+1, -1),
-    ivec2(-1, +1),
-    ivec2(+1, +1)
+    ivec2(0, 0),
+    ivec2(1, 0),
+    ivec2(0, 1),
+    ivec2(1, 1)
 };
 
 template <>
 constexpr dutils::EnumArray<Corner3, ivec3> CornerVector<3>
 {
-    ivec3(-1, -1, -1),
-    ivec3(+1, -1, -1),
-    ivec3(-1, +1, -1),
-    ivec3(+1, +1, -1),
-    ivec3(-1, -1, +1),
-    ivec3(+1, -1, +1),
-    ivec3(-1, +1, +1),
-    ivec3(+1, +1, +1)
+    ivec3(0, 0, 0),
+    ivec3(1, 0, 0),
+    ivec3(0, 1, 0),
+    ivec3(1, 1, 0),
+    ivec3(0, 0, 1),
+    ivec3(1, 0, 1),
+    ivec3(0, 1, 1),
+    ivec3(1, 1, 1)
 };
 
 constexpr auto CornerVector1 = CornerVector<1>;

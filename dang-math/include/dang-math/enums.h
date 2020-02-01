@@ -216,8 +216,8 @@ namespace detail
 
 template <std::size_t Dim>
 struct AxisSelector {
-    using Type = void;
-    using SetType = void;
+    enum class Type { COUNT = 0 };
+    enum class SetType { NONE = 0, ALL = 0 };
 };
 
 template <>
@@ -240,8 +240,8 @@ struct AxisSelector<3> {
 
 template <std::size_t Dim>
 struct CornerSelector {
-    using Type = void;
-    using SetType = void;
+    enum class Type { COUNT = 0 };
+    enum class SetType { NONE = 0, ALL = 0 };
 };
 
 template <>
@@ -264,8 +264,8 @@ struct CornerSelector<3> {
 
 template <std::size_t Dim>
 struct EdgeSelector {
-    using Type = void;
-    using SetType = void;
+    enum class Type { COUNT = 0 };
+    enum class SetType { NONE = 0, ALL = 0 };
 };
 
 template <>
@@ -282,8 +282,8 @@ struct EdgeSelector<3> {
 
 template <std::size_t Dim>
 struct FacingSelector {
-    using Type = void;
-    using SetType = void;
+    enum class Type { COUNT = 0 };
+    enum class SetType { NONE = 0, ALL = 0 };
 };
 
 template <>

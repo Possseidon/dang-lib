@@ -1,7 +1,6 @@
 #pragma once
 
-#include "utils.h"      
-
+#include "utils.h"        
 #include "vector.h"
 #include "bounds.h"
 
@@ -80,96 +79,6 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     {
         return (*this)[col][row];
     }
-
-    inline constexpr const Matrix<T, Cols, Rows>& operator+() const
-    {
-        return *this;
-    }
-
-    inline constexpr const Matrix<T, Cols, Rows> operator-() const
-    {
-        return unary([](Vector<T, Rows> a) { return -a; });
-    }
-
-#define DMATH_MATRIX_OPERATION(op) \
-    friend inline constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return lhs op ## = rhs; } \
-    friend inline constexpr Matrix<T, Cols, Rows>& operator op ## =(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op ## = b; }); }
-
-    DMATH_MATRIX_OPERATION(+);
-    DMATH_MATRIX_OPERATION(-);
-
-#undef DMATH_MATRIX_OPERATION
-
-    template <std::size_t OtherCols>
-    friend inline constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
-    {
-        Matrix<T, OtherCols, Rows> result;
-        for (const auto& pos : dmath::sbounds2{ { OtherCols, Rows } })
-            for (std::size_t i = 0; i < Cols; i++)
-                result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
-        return result;
-    }
-
-    template <std::size_t OtherCols>
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
-    {
-        return lhs * rhs.inverse();
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows>& operator*=(Matrix<T, Cols, Rows>& matrix, T scalar)
-    {
-        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a *= b; });
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows>& operator/=(Matrix<T, Cols, Rows>& matrix, T scalar)
-    {
-        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a /= b; });
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
-    {
-        return matrix *= scalar;
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
-    {
-        return matrix *= scalar;
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
-    {
-        return matrix /= scalar;
-    }
-
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
-    {
-        return scalar * matrix.inverse();
-    }
-
-    friend inline constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
-    {
-        return matrix * Matrix<T, 1, Cols>(vector);
-    }
-
-    friend inline constexpr Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
-    {
-        return matrix.transpose() * vector;
-    }
-
-#define DMATH_MATRIX_COMPARE(merge, op) \
-    friend inline constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; }); }
-
-    DMATH_MATRIX_COMPARE(all, == );
-    DMATH_MATRIX_COMPARE(any, != );
-    DMATH_MATRIX_COMPARE(all, < );
-    DMATH_MATRIX_COMPARE(all, <= );
-    DMATH_MATRIX_COMPARE(all, > );
-    DMATH_MATRIX_COMPARE(all, >= );
-
-#undef DMATH_MATRIX_COMPARE
 
     inline constexpr Matrix<T, Rows, Cols> transpose()
     {
@@ -265,6 +174,96 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             return result;
         }
     }
+
+    inline constexpr const Matrix<T, Cols, Rows>& operator+() const
+    {
+        return *this;
+    }
+
+    inline constexpr const Matrix<T, Cols, Rows> operator-() const
+    {
+        return unary([](Vector<T, Rows> a) { return -a; });
+    }
+
+#define DMATH_MATRIX_OPERATION(op) \
+    friend inline constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs) \
+    { return lhs op ## = rhs; } \
+    friend inline constexpr Matrix<T, Cols, Rows>& operator op ## =(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
+    { return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op ## = b; }); }
+
+    DMATH_MATRIX_OPERATION(+);
+    DMATH_MATRIX_OPERATION(-);
+
+#undef DMATH_MATRIX_OPERATION
+
+    template <std::size_t OtherCols>
+    friend inline constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    {
+        Matrix<T, OtherCols, Rows> result;
+        for (const auto& pos : dmath::sbounds2{ { OtherCols, Rows } })
+            for (std::size_t i = 0; i < Cols; i++)
+                result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
+        return result;
+    }
+
+    template <std::size_t OtherCols>
+    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    {
+        return lhs * rhs.inverse();
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows>& operator*=(Matrix<T, Cols, Rows>& matrix, T scalar)
+    {
+        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a *= b; });
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows>& operator/=(Matrix<T, Cols, Rows>& matrix, T scalar)
+    {
+        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a /= b; });
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
+    {
+        return matrix *= scalar;
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
+    {
+        return matrix *= scalar;
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
+    {
+        return matrix /= scalar;
+    }
+
+    friend inline constexpr Matrix<T, Cols, Rows> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
+    {
+        return scalar * matrix.inverse();
+    }
+
+    friend inline constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
+    {
+        return matrix * Matrix<T, 1, Cols>(vector);
+    }
+
+    friend inline constexpr Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
+    {
+        return matrix.transpose() * vector;
+    }
+
+#define DMATH_MATRIX_COMPARE(merge, op) \
+    friend inline constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
+    { return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; }); }
+
+    DMATH_MATRIX_COMPARE(all, == );
+    DMATH_MATRIX_COMPARE(any, != );
+    DMATH_MATRIX_COMPARE(all, < );
+    DMATH_MATRIX_COMPARE(all, <= );
+    DMATH_MATRIX_COMPARE(all, > );
+    DMATH_MATRIX_COMPARE(all, >= );
+
+#undef DMATH_MATRIX_COMPARE
 
     inline constexpr typename Base::iterator begin()
     {
