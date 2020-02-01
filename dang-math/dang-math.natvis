@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="dang::math::VectorBase&lt;*,*&gt;" Inheritable="true">
+    <DisplayString Condition="$T2 == 1">vec{$T2}({(*this)[0],g}) of {"$T1"}</DisplayString>
+    <DisplayString Condition="$T2 == 2">vec{$T2}({(*this)[0],g}, {(*this)[1],g}) of {"$T1"}</DisplayString>
+    <DisplayString Condition="$T2 == 3">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}) of {"$T1"}</DisplayString>
+    <DisplayString Condition="$T2 == 4">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}, {(*this)[3],g}) of {"$T1"}</DisplayString>
+    <DisplayString Condition="$T2 &gt; 4">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}, {(*this)[3],g}, ...) of {"$T1"}</DisplayString>
+    <Expand>
+      <CustomListItems Condition="$T2 &lt;= 4">
+        <Item Name="x" Condition="$T2 &gt; 0">(*this)[0],g</Item>
+        <Item Name="y" Condition="$T2 &gt; 1">(*this)[1],g</Item>
+        <Item Name="z" Condition="$T2 &gt; 2">(*this)[2],g</Item>
+        <Item Name="w" Condition="$T2 &gt; 3">(*this)[3],g</Item>
+      </CustomListItems>
+      <ExpandedItem Condition="$T2 &gt; 4">_Elems</ExpandedItem>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

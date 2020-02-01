@@ -155,6 +155,9 @@
     <ClInclude Include="include\dang-math\matrix.h" />
     <ClInclude Include="include\dang-math\vector.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="dang-math.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
