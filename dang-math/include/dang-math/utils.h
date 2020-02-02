@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <array>
+#include <optional>
 
 namespace dang::math
 {

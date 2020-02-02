@@ -196,7 +196,7 @@ struct Bounds {
     template <typename = std::enable_if_t<(Dim >= 1 && Dim <= 3)>>
     inline constexpr dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> corners() const
     {
-        dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> result{};
+        dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> result;
         constexpr auto cornerArray = dutils::EnumValues<Corner<Dim>>;
         for (auto corner : cornerArray)
             result[corner] = low + Vector<T, Dim>(CornerVector<Dim>[corner]) * (high - low);

@@ -53,9 +53,9 @@ struct VectorBase : protected std::array<T, Dim> {
         return other - *this;
     }
 
-    inline constexpr Vector<T, Dim> distanceTo(const Vector<T, Dim>& other) const
+    inline constexpr T distanceTo(const Vector<T, Dim>& other) const
     {
-        return other - *this;
+        return (other - *this).length();
     }
 
     inline constexpr T cosAngleTo(const Vector<T, Dim>& other) const
@@ -126,7 +126,7 @@ struct VectorBase : protected std::array<T, Dim> {
     }
 
 #define DMATH_VECTOR_OPERATION(op) \
-    friend inline constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
+    friend inline constexpr const Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
     { return lhs op ## = rhs; } \
     friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
     { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
@@ -301,17 +301,17 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     inline constexpr T& y() { return std::get<1>(*this); }
     inline constexpr T y() const { return std::get<1>(*this); }
 
-    inline constexpr Vector<T, 2> cross()
+    inline constexpr Vector<T, 2> cross() const
     {
         return { -y(), x() };
     }
 
-    inline constexpr T cross(const Vector<T, 3>& other)
+    inline constexpr T cross(const Vector<T, 2>& other) const
     {
-        return x() * other.y() - y() * x();
+        return x() * other.y() - y() * other.x();
     }
 
-    inline constexpr T slope()
+    inline constexpr T slope() const
     {
         static_assert(std::is_floating_point_v<T>, "vec2::slope requires a floating point type");
         return y() / x();
@@ -332,7 +332,7 @@ struct Vector<T, 3> : public detail::VectorBase<T, 3> {
     inline constexpr T& z() { return std::get<2>(*this); }
     inline constexpr T z() const { return std::get<2>(*this); }
 
-    inline constexpr Vector<T, 3> cross(const Vector<T, 3>& other)
+    inline constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
     {
         return { (*this)[1] * other[2] - (*this)[2] * other[1],
                  (*this)[2] * other[0] - (*this)[0] * other[2],

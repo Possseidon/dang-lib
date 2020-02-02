@@ -175,6 +175,125 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    inline constexpr bool solvable() const
+    {
+        return determinant() != T(0);
+    }
+
+    template <typename = std::enable_if<Cols == Rows + 1>>
+    inline constexpr std::optional<T> solveCol(std::size_t col) const
+    {
+        T oldDeterminant = determinant();
+        if (oldDeterminant == T(0))
+            return std::nullopt;
+
+        auto swappedMatrix = *this;
+
+        auto tmp = swappedMatrix[col];
+        swappedMatrix[col] = swappedMatrix[Cols - 1];
+        swappedMatrix[Cols - 1] = tmp;
+
+        return swappedMatrix.determinant() / oldDeterminant;
+    }
+
+    inline constexpr std::optional<Vector<T, Cols - 1>> solve()
+    {
+        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
+
+        T oldDeterminant = determinant();
+        if (oldDeterminant == T(0))
+            return std::nullopt;
+
+        Vector<T, Cols - 1> result;
+
+        for (std::size_t col = 0; col < Cols - 1; col++) {
+            auto tmp = (*this)[col];
+            (*this)[col] = (*this)[Cols - 1];
+            (*this)[Cols - 1] = tmp;
+
+            result[col] = determinant() / oldDeterminant;
+
+            (*this)[Cols - 1] = (*this)[col];
+            (*this)[col] = tmp;
+        }
+
+        return result;
+    }
+
+    inline constexpr std::optional<Vector<T, Cols - 1>> solve() const
+    {                                      
+        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
+
+        T oldDeterminant = determinant();
+        if (oldDeterminant == T(0))
+            return std::nullopt;
+
+        Vector<T, Cols - 1> result;
+        auto swappedMatrix = *this;
+
+        for (std::size_t col = 0; col < Cols - 1; col++) {
+            auto tmp = swappedMatrix[col];
+            swappedMatrix[col] = swappedMatrix[Cols - 1];
+            swappedMatrix[Cols - 1] = tmp;
+
+            result[col] = swappedMatrix.determinant() / oldDeterminant;
+
+            swappedMatrix[Cols - 1] = swappedMatrix[col];
+            swappedMatrix[col] = tmp;
+        }
+
+        return result;
+    }
+
+    inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector)
+    {                          
+        static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
+
+        T oldDeterminant = determinant();
+        if (oldDeterminant == T(0))
+            return std::nullopt;
+
+        Vector<T, Cols> result;
+
+        for (std::size_t col = 0; col < Cols; col++) {
+            auto tmp = (*this)[col];
+            (*this)[col] = vector;
+            vector = tmp;
+
+            result[col] = determinant() / oldDeterminant;
+
+            vector = (*this)[col];
+            (*this)[col] = tmp;
+        }
+
+        return result;
+    }
+
+    inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector) const
+    {
+        static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
+        
+        T oldDeterminant = determinant();
+        if (oldDeterminant == T(0))
+            return std::nullopt;
+
+        Vector<T, Cols> result;
+        auto swappedMatrix = *this;
+
+        for (std::size_t col = 0; col < Cols; col++) {
+            auto tmp = swappedMatrix[col];
+            swappedMatrix[col] = vector;
+            vector = tmp;
+
+            result[col] = swappedMatrix.determinant() / oldDeterminant;
+
+            vector = swappedMatrix[col];
+            swappedMatrix[col] = tmp;
+        }
+
+        return result;
+    }
+
     inline constexpr const Matrix<T, Cols, Rows>& operator+() const
     {
         return *this;
@@ -186,7 +305,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
 #define DMATH_MATRIX_OPERATION(op) \
-    friend inline constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs) \
+    friend inline constexpr const Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs) \
     { return lhs op ## = rhs; } \
     friend inline constexpr Matrix<T, Cols, Rows>& operator op ## =(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
     { return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op ## = b; }); }
@@ -197,7 +316,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 #undef DMATH_MATRIX_OPERATION
 
     template <std::size_t OtherCols>
-    friend inline constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend inline constexpr const Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
         Matrix<T, OtherCols, Rows> result;
         for (const auto& pos : dmath::sbounds2{ { OtherCols, Rows } })
@@ -207,7 +326,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     template <std::size_t OtherCols>
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend inline constexpr const Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
         return lhs * rhs.inverse();
     }
@@ -222,32 +341,32 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a /= b; });
     }
 
-    friend inline constexpr Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
+    friend inline constexpr const Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
     {
         return matrix *= scalar;
     }
 
-    friend inline constexpr Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
+    friend inline constexpr const Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
     {
         return matrix *= scalar;
     }
 
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
+    friend inline constexpr const Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
     {
         return matrix /= scalar;
     }
 
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
+    friend inline constexpr const Matrix<T, Cols, Rows> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
     {
         return scalar * matrix.inverse();
     }
 
-    friend inline constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
+    friend inline constexpr const Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
     {
         return matrix * Matrix<T, 1, Cols>(vector);
     }
 
-    friend inline constexpr Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
+    friend inline constexpr const Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
     {
         return matrix.transpose() * vector;
     }
