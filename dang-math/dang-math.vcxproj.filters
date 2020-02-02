@@ -33,6 +33,9 @@
     <ClInclude Include="include\dang-math\consts.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-math\geometry.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-math.natvis" />
