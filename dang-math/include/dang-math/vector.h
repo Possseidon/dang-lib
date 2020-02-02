@@ -110,7 +110,7 @@ struct VectorBase : protected std::array<T, Dim> {
         return Base::operator[](index);
     }
 
-    inline constexpr const T operator[](std::size_t index) const
+    inline constexpr const T& operator[](std::size_t index) const
     {
         return Base::operator[](index);
     }
@@ -120,13 +120,13 @@ struct VectorBase : protected std::array<T, Dim> {
         return *this;
     }
 
-    inline constexpr const Vector<T, Dim> operator-() const
+    inline constexpr Vector<T, Dim> operator-() const
     {
         return unary([](T a) { return -a; });
     }
 
 #define DMATH_VECTOR_OPERATION(op) \
-    friend inline constexpr const Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
+    friend inline constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
     { return lhs op ## = rhs; } \
     friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
     { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
@@ -167,7 +167,7 @@ struct VectorBase : protected std::array<T, Dim> {
     }
 
     template<size_t Index>
-    inline constexpr const T get() const noexcept
+    inline constexpr const T& get() const noexcept
     {
         return std::get<Index>(*this);
     }
