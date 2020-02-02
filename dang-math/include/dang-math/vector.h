@@ -346,6 +346,7 @@ struct Vector<T, 4> : public detail::VectorBase<T, 4> {
     inline constexpr Vector(std::array<T, 4> values) : detail::VectorBase<T, 4>(values) {}
     inline constexpr Vector(T value) : detail::VectorBase<T, 4>({ value, value, value, value }) {}
     inline constexpr Vector(T value, T w) : detail::VectorBase<T, 4>({ value, value, value, w }) {}
+    inline constexpr Vector(Vector<T, 3> vector, T w) : detail::VectorBase<T, 4>({ vector[0], vector[1], vector[2], w }) {}
     inline constexpr Vector(T x, T y, T z, T w) : detail::VectorBase<T, 4>({ x, y, z, w }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }

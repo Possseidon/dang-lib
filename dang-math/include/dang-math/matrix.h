@@ -60,6 +60,22 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return Base::operator[](col);
     }
 
+    template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
+    inline constexpr Matrix<T, ColCount, RowCount> subMatrix() const
+    {
+        Matrix<T, ColCount, RowCount> result;
+        for (auto [col, row] : sbounds2(svec2(ColCount, RowCount)))
+            result(col, row) = (*this)(StartCol + col, StartRow + row);
+        return result;
+    }
+
+    template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
+    inline constexpr void setSubMatrix(Matrix<T, ColCount, RowCount> matrix)
+    {
+        for (auto [col, row] : sbounds2(svec2(ColCount, RowCount)))
+            (*this)(StartCol + col, StartRow + row) = matrix(col, row);
+    }
+
     inline constexpr T& operator[](const dmath::svec2& pos)
     {
         return (*this)(pos.x(), pos.y());
@@ -137,13 +153,53 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     inline constexpr Matrix<T, Rows, Cols> adjugate() const
     {
         static_assert(std::is_signed_v<T>, "mat::adjugate requires a signed value");
-        return cofactorMatrix().transpose();
+        if constexpr (Rows == 1 && Cols == 1)
+            return identity();
+        else
+            return cofactorMatrix().transpose();
     }
 
-    inline constexpr Matrix<T, Rows, Cols> inverse() const
+    inline constexpr std::optional<Matrix<T, Rows, Cols>> inverse() const
     {
         static_assert(std::is_floating_point_v<T>, "mat::inverse requires a floating point type");
-        return adjugate() / determinant();
+        static_assert(Rows == Cols, "mat::inverse requires a square matrix");
+
+        constexpr std::size_t Dim = Cols;
+        constexpr std::size_t DimHalf1 = Dim / 2 + Dim % 2;
+        constexpr std::size_t DimHalf2 = Dim / 2;
+
+        if constexpr (Dim <= 4) {
+            T det = determinant();
+            if (det == T())
+                return std::nullopt;
+            return adjugate() / det;
+        }
+        else {
+            auto a = subMatrix<0, 0, DimHalf1, DimHalf1>();
+            auto b = subMatrix<DimHalf1, 0, DimHalf2, DimHalf1>();
+            auto c = subMatrix<0, DimHalf1, DimHalf1, DimHalf2>();
+            auto d = subMatrix<DimHalf1, DimHalf1, DimHalf2, DimHalf2>();
+
+            auto a_inv = a.inverse();
+            if (!a_inv)
+                return std::nullopt;
+
+            auto s_inv = (d - c * *a_inv * b).inverse();
+            if (!s_inv)
+                return std::nullopt;
+
+            auto e = *a_inv + *a_inv * b * *s_inv * c * *a_inv;
+            auto f = -*a_inv * b * *s_inv;
+            auto g = -*s_inv * c * *a_inv;
+            auto h = *s_inv;
+
+            Matrix<T, Dim> result;
+            result.setSubMatrix<0, 0, DimHalf1, DimHalf1>(e);
+            result.setSubMatrix<DimHalf1, 0, DimHalf2, DimHalf1>(f);
+            result.setSubMatrix<0, DimHalf1, DimHalf1, DimHalf2>(g);
+            result.setSubMatrix<DimHalf1, DimHalf1, DimHalf2, DimHalf2>(h);
+            return result;
+        }
     }
 
     inline constexpr T determinant() const
@@ -177,121 +233,228 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     inline constexpr bool solvable() const
     {
-        return determinant() != T(0);
+        return determinant() != T();
     }
 
-    template <typename = std::enable_if<Cols == Rows + 1>>
+    inline constexpr std::optional<T> solveCol(std::size_t col)
+    {
+        static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
+
+        if constexpr (Rows >= 6) {
+            if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
+                return (*inv * (*this)[Rows])[col];
+            return std::nullopt;
+        }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
+
+            auto tmp = (*this)[col];
+            (*this)[col] = (*this)[Rows];
+            (*this)[Rows] = tmp;
+
+            T result = determinant() / oldDeterminant;
+
+            (*this)[Rows] = (*this)[col];
+            (*this)[col] = tmp;
+
+            return result;
+        }
+    }
+
     inline constexpr std::optional<T> solveCol(std::size_t col) const
     {
-        T oldDeterminant = determinant();
-        if (oldDeterminant == T(0))
+        static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
+
+        if constexpr (Rows >= 6) {
+            if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
+                return (*inv * (*this)[Rows])[col];
             return std::nullopt;
+        }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
 
-        auto swappedMatrix = *this;
-
-        auto tmp = swappedMatrix[col];
-        swappedMatrix[col] = swappedMatrix[Cols - 1];
-        swappedMatrix[Cols - 1] = tmp;
-
-        return swappedMatrix.determinant() / oldDeterminant;
+            auto swappedMatrix = *this;
+            swappedMatrix[col] = (*this)[Rows];
+            swappedMatrix[Rows] = (*this)[col];
+            return swappedMatrix.determinant() / oldDeterminant;
+        }
     }
 
-    inline constexpr std::optional<Vector<T, Cols - 1>> solve()
+    inline constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector)
     {
-        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
+        static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
 
-        T oldDeterminant = determinant();
-        if (oldDeterminant == T(0))
+        if constexpr (Rows >= 6) {
+            if (auto inv = inverse())
+                return (*inv * vector)[col];
             return std::nullopt;
+        }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
 
-        Vector<T, Cols - 1> result;
-
-        for (std::size_t col = 0; col < Cols - 1; col++) {
             auto tmp = (*this)[col];
-            (*this)[col] = (*this)[Cols - 1];
-            (*this)[Cols - 1] = tmp;
+            (*this)[col] = vector;
+            vector = tmp;
 
-            result[col] = determinant() / oldDeterminant;
+            T result = determinant() / oldDeterminant;
 
-            (*this)[Cols - 1] = (*this)[col];
+            vector = (*this)[col];
             (*this)[col] = tmp;
-        }
 
-        return result;
+            return result;
+        }
     }
 
-    inline constexpr std::optional<Vector<T, Cols - 1>> solve() const
+    inline constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector) const
+    {
+        static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
+
+        if constexpr (Rows >= 6) {
+            if (auto inv = inverse())
+                return (*inv * vector)[col];
+            return std::nullopt;
+        }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
+
+            auto swappedMatrix = *this;
+            swappedMatrix[col] = vector;
+            return swappedMatrix.determinant() / oldDeterminant;
+        }
+    }
+
+    inline constexpr std::optional<Vector<T, Rows>> solve()
     {
         static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
 
-        T oldDeterminant = determinant();
-        if (oldDeterminant == T(0))
+        if constexpr (Rows >= 5) {
+            if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
+                return *inv * (*this)[Rows];
             return std::nullopt;
-
-        Vector<T, Cols - 1> result;
-        auto swappedMatrix = *this;
-
-        for (std::size_t col = 0; col < Cols - 1; col++) {
-            auto tmp = swappedMatrix[col];
-            swappedMatrix[col] = swappedMatrix[Cols - 1];
-            swappedMatrix[Cols - 1] = tmp;
-
-            result[col] = swappedMatrix.determinant() / oldDeterminant;
-
-            swappedMatrix[Cols - 1] = swappedMatrix[col];
-            swappedMatrix[col] = tmp;
         }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
 
-        return result;
+            Vector<T, Rows> result;
+
+            for (std::size_t col = 0; col < Rows; col++) {
+                auto tmp = (*this)[col];
+                (*this)[col] = (*this)[Rows];
+                (*this)[Rows] = tmp;
+
+                result[col] = determinant() / oldDeterminant;
+
+                (*this)[Rows] = (*this)[col];
+                (*this)[col] = tmp;
+            }
+
+            return result;
+        }
+    }
+
+    inline constexpr std::optional<Vector<T, Rows>> solve() const
+    {
+        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
+
+        if constexpr (Rows >= 5) {
+            if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
+                return *inv * (*this)[Rows];
+            return std::nullopt;
+        }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
+
+            Vector<T, Rows> result;
+            auto swappedMatrix = *this;
+
+            for (std::size_t col = 0; col < Rows; col++) {
+                auto tmp = swappedMatrix[col];
+                swappedMatrix[col] = swappedMatrix[Rows];
+                swappedMatrix[Rows] = tmp;
+
+                result[col] = swappedMatrix.determinant() / oldDeterminant;
+
+                swappedMatrix[Rows] = swappedMatrix[col];
+                swappedMatrix[col] = tmp;
+            }
+
+            return result;
+        }
     }
 
     inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector)
     {
         static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
 
-        T oldDeterminant = determinant();
-        if (oldDeterminant == T(0))
+        if constexpr (Rows >= 5) {
+            if (auto inv = inverse())
+                return *inv * vector;
             return std::nullopt;
-
-        Vector<T, Cols> result;
-
-        for (std::size_t col = 0; col < Cols; col++) {
-            auto tmp = (*this)[col];
-            (*this)[col] = vector;
-            vector = tmp;
-
-            result[col] = determinant() / oldDeterminant;
-
-            vector = (*this)[col];
-            (*this)[col] = tmp;
         }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
 
-        return result;
+            Vector<T, Cols> result;
+
+            for (std::size_t col = 0; col < Cols; col++) {
+                auto tmp = (*this)[col];
+                (*this)[col] = vector;
+                vector = tmp;
+
+                result[col] = determinant() / oldDeterminant;
+
+                vector = (*this)[col];
+                (*this)[col] = tmp;
+            }
+
+            return result;
+        }
     }
 
     inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector) const
     {
         static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
 
-        T oldDeterminant = determinant();
-        if (oldDeterminant == T(0))
+        if constexpr (Rows >= 5) {
+            if (auto inv = inverse())
+                return *inv * vector;
             return std::nullopt;
-
-        Vector<T, Cols> result;
-        auto swappedMatrix = *this;
-
-        for (std::size_t col = 0; col < Cols; col++) {
-            auto tmp = swappedMatrix[col];
-            swappedMatrix[col] = vector;
-            vector = tmp;
-
-            result[col] = swappedMatrix.determinant() / oldDeterminant;
-
-            vector = swappedMatrix[col];
-            swappedMatrix[col] = tmp;
         }
+        else {
+            T oldDeterminant = determinant();
+            if (oldDeterminant == T())
+                return std::nullopt;
 
-        return result;
+            Vector<T, Cols> result;
+            auto swappedMatrix = *this;
+
+            for (std::size_t col = 0; col < Cols; col++) {
+                auto tmp = swappedMatrix[col];
+                swappedMatrix[col] = vector;
+                vector = tmp;
+
+                result[col] = swappedMatrix.determinant() / oldDeterminant;
+
+                vector = swappedMatrix[col];
+                swappedMatrix[col] = tmp;
+            }
+
+            return result;
+        }
     }
 
     inline constexpr const Matrix<T, Cols, Rows>& operator+() const
@@ -326,9 +489,11 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     template <std::size_t OtherCols>
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend inline constexpr std::optional<Matrix<T, Cols, Rows>> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
-        return lhs * rhs.inverse();
+        if (auto inv = rhs.inverse())
+            return lhs * *inv;
+        return std::nullopt;
     }
 
     friend inline constexpr Matrix<T, Cols, Rows>& operator*=(Matrix<T, Cols, Rows>& matrix, T scalar)
@@ -356,9 +521,11 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return matrix /= scalar;
     }
 
-    friend inline constexpr Matrix<T, Cols, Rows> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
+    friend inline constexpr std::optional<Matrix<T, Cols, Rows>> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
     {
-        return scalar * matrix.inverse();
+        if (auto inv = matrix.inverse())
+            return scalar * *inv;
+        return std::nullopt;
     }
 
     friend inline constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
