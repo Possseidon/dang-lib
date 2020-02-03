@@ -24,87 +24,90 @@ namespace detail
 
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystemBase {
-    Vector<T, Dim> s;
-    Matrix<T, AxisCount, Dim> d;
+    Vector<T, Dim> support;
+    Matrix<T, AxisCount, Dim> directions;
 
     inline constexpr AxisSystemBase() = default;
 
-    inline constexpr AxisSystemBase(Vector<T, Dim> s, Matrix<T, AxisCount, Dim> d)
-        : s(s)
-        , d(d)
+    inline constexpr AxisSystemBase(Vector<T, Dim> support, Matrix<T, AxisCount, Dim> directions)
+        : support(support)
+        , directions(directions)
     {
     }
 
-    inline constexpr Line<T, Dim> line(std::size_t index) const {
-        return Line<T, Dim>(s, d[index]);
+    inline constexpr Line<T, Dim> line(std::size_t index) const
+    {
+        return Line<T, Dim>(support, directions[index]);
     }
 
-    inline constexpr Plane<T, Dim> plane(std::size_t index1, std::size_t index2) const {
-        return Plane<T, Dim>(s, { d[index1], d[index2] });
+    inline constexpr Plane<T, Dim> plane(std::size_t index1, std::size_t index2) const
+    {
+        return Plane<T, Dim>(support, { directions[index1], directions[index2] });
     }
 
-    inline constexpr Spat<T, Dim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const {
-        return Spat<T, Dim>(s, { d[index1], d[index2], d[index3] });
+    inline constexpr Spat<T, Dim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const
+    {
+        return Spat<T, Dim>(support, { directions[index1], directions[index2], directions[index3] });
     }
 
     inline constexpr Vector<T, Dim> operator[](const Vector<T, Dim>& factor) const
     {
-        return s + d * factor;
+        return support + directions * factor;
     }
 
     inline constexpr std::optional<Vector<T, Dim>> factorAt(const Vector<T, Dim>& point) const
     {
         static_assert(Dim == AxisCount, "factorAt requires dimension and axis-count to be equal");
-        if (auto inv = d.inverse())
-            return *inv * (point - s);
+        if (auto inv = directions.inverse())
+            return *inv * (point - support);
         return std::nullopt;
     }
 
     friend inline constexpr bool operator==(const Line<T, Dim>& lhs, const Line<T, Dim>& rhs)
     {
-        return lhs.s == rhs.s && lhs.d == rhs.d;
+        return lhs.support == rhs.support && lhs.directions == rhs.directions;
     }
 
     friend inline constexpr bool operator!=(const Line<T, Dim>& lhs, const Line<T, Dim>& rhs)
     {
-        return lhs.s != rhs.s || lhs.d != rhs.d;
+        return lhs.support != rhs.support || lhs.directions != rhs.directions;
     }
 };
 
 template <typename T, std::size_t Dim>
 struct LineBase : public AxisSystemBase<T, Dim, 1> {
     inline constexpr LineBase() : AxisSystemBase<T, Dim, 1>() {}
-    inline constexpr LineBase(Vector<T, Dim> s, Vector<T, Dim> d) : AxisSystemBase<T, Dim, 1>(s, d) {}
+    inline constexpr LineBase(Vector<T, Dim> support, Vector<T, Dim> directions) : AxisSystemBase<T, Dim, 1>(support, directions) {}
 
     inline constexpr const Vector<T, Dim>& direction() const
     {
-        return this->d[0];
+        return this->directions[0];
     }
 
     inline constexpr Vector<T, Dim>& direction()
     {
-        return this->d[0];
+        return this->directions[0];
     }
 
     inline constexpr Vector<T, Dim> head() const
     {
-        return this->s + direction();
+        return this->support + direction();
     }
 
     inline void setHead(const Vector<T, Dim>& position)
     {
-        direction() = position - this->s;
+        direction() = position - this->support;
     }
 
     inline constexpr Vector<T, Dim> tail() const
     {
-        return this->s;
+        return this->support;
     }
 
     inline void setTail(const Vector<T, Dim>& position)
     {
-        direction() += position - this->s;
-        this->s = position;
+        direction() += position - this->support;
+        this->support = position;
     }
 
     inline constexpr T length() const
@@ -114,25 +117,41 @@ struct LineBase : public AxisSystemBase<T, Dim, 1> {
 
     inline constexpr T orthoProj(const Vector<T, Dim>& point) const
     {
-        return direction().dot(point - this->s) / direction().sqrdot();
+        return direction().dot(point - this->support) / direction().sqrdot();
     }
 };
 
 template <typename T, std::size_t Dim>
 struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
     inline constexpr PlaneBase() : AxisSystemBase<T, Dim, 2>() {}
-    inline constexpr PlaneBase(Vector<T, Dim> s, Matrix<T, 2, Dim> d) : AxisSystemBase<T, Dim, 2>(s, d) {}
+    inline constexpr PlaneBase(Vector<T, Dim> support, Matrix<T, 2, Dim> directions) : AxisSystemBase<T, Dim, 2>(support, directions) {}
 
     inline constexpr T area()
     {
-        return this->d[0].length() * this->d[1].length();
+        return this->directions[0].length() * this->directions[1].length();
+    }
+
+    inline constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, Dim> point) const
+    {
+        auto dxs = this->directions[0].sqrdot();
+        auto dys = this->directions[1].sqrdot();
+        auto dxy = this->directions[0].dot(this->directions[1]);
+
+        auto div = dxs * dys - dxy * dxy;
+        if (div == T())
+            return std::nullopt;
+
+        point -= this->support;
+        auto dxp = this->directions[0].dot(point);
+        auto dyp = this->directions[1].dot(point);
+        return Vector<T, 2>(dys * dxp - dxy * dyp, dxs * dyp - dxy * dxp) / div;
     }
 };
 
 template <typename T, std::size_t Dim>
 struct SpatBase : public AxisSystemBase<T, Dim, 3> {
     inline constexpr SpatBase() : AxisSystemBase<T, Dim, 3>() {}
-    inline constexpr SpatBase(Vector<T, Dim> s, Matrix<T, 3, Dim> d) : AxisSystemBase<T, Dim, 3>(s, d) {}
+    inline constexpr SpatBase(Vector<T, Dim> support, Matrix<T, 3, Dim> directions) : AxisSystemBase<T, Dim, 3>(support, directions) {}
 };
 
 }
@@ -140,13 +159,13 @@ struct SpatBase : public AxisSystemBase<T, Dim, 3> {
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
     inline constexpr AxisSystem() : detail::AxisSystemBase<T, Dim, AxisCount>() {}
-    inline constexpr AxisSystem(Vector<T, Dim> s, Matrix<T, AxisCount, Dim> d) : detail::AxisSystemBase<T, Dim, AxisCount>(s, d) {}
+    inline constexpr AxisSystem(Vector<T, Dim> support, Matrix<T, AxisCount, Dim> directions) : detail::AxisSystemBase<T, Dim, AxisCount>(support, directions) {}
 };
 
 template <typename T, std::size_t Dim>
 struct Line : public detail::LineBase<T, Dim> {
     inline constexpr Line() : detail::LineBase<T, Dim>() {}
-    inline constexpr Line(Vector<T, Dim> s, Vector<T, Dim> d) : detail::LineBase<T, Dim>(s, d) {}
+    inline constexpr Line(Vector<T, Dim> support, Vector<T, Dim> directions) : detail::LineBase<T, Dim>(support, directions) {}
 };
 
 enum class LineSide {
@@ -159,19 +178,19 @@ enum class LineSide {
 template <typename T>
 struct Line<T, 2> : public detail::LineBase<T, 2> {
     inline constexpr Line() : detail::LineBase<T, 2>() {}
-    inline constexpr Line(Vector<T, 2> s, Vector<T, 2> d) : detail::LineBase<T, 2>(s, d) {}
+    inline constexpr Line(Vector<T, 2> support, Vector<T, 2> directions) : detail::LineBase<T, 2>(support, directions) {}
 
     inline constexpr T distanceTo(const Vector<T, 2>& point) const
     {
         if (this->direction() == T(0))
-            return this->s.distanceTo(point);
-        Line<T, 2> rotated{ this->s, this->direction().cross().normalized() };
+            return this->support.distanceTo(point);
+        Line<T, 2> rotated{ this->support, this->direction().cross().normalized() };
         return rotated.orthoProj(point);
     }
 
     inline constexpr LineSide sideOf(const Vector<T, 2>& point) const
     {
-        T sideFactor = this->distanceTo(point);
+        T sideFactor = distanceTo(point);
         if (sideFactor > 0)
             return LineSide::Left;
         else if (sideFactor != 0)
@@ -184,7 +203,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
         return Matrix<T, 3, 2>({
               { this->direction().x(), this->direction().y() },
               { -other.direction().x(), -other.direction().y() },
-              { other.s.x() - this->s.x(), other.s.y() - this->s.y() }
+              { other.support.x() - this->support.x(), other.support.y() - this->support.y() }
             });
     }
 
@@ -209,7 +228,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
 template <typename T>
 struct Line<T, 3> : public detail::LineBase<T, 3> {
     inline constexpr Line() : detail::LineBase<T, 3>() {}
-    inline constexpr Line(Vector<T, 3> s, Vector<T, 3> d) : detail::LineBase<T, 3>(s, d) {}
+    inline constexpr Line(Vector<T, 3> support, Vector<T, 3> directions) : detail::LineBase<T, 3>(support, directions) {}
 };
 
 using Line1 = Line<float, 1>;
@@ -219,19 +238,47 @@ using Line3 = Line<float, 3>;
 template <typename T, std::size_t Dim>
 struct Plane : public detail::PlaneBase<T, Dim> {
     inline constexpr Plane() : detail::PlaneBase<T, Dim>() {}
-    inline constexpr Plane(Vector<T, Dim> s, Matrix<T, 2, Dim> d) : detail::PlaneBase<T, Dim>(s, d) {}
+    inline constexpr Plane(Vector<T, Dim> support, Matrix<T, 2, Dim> directions) : detail::PlaneBase<T, Dim>(support, directions) {}
 };
 
 template <typename T>
 struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
     inline constexpr Plane() : detail::PlaneBase<T, 2>() {}
-    inline constexpr Plane(Vector<T, 2> s, Matrix<T, 2, 2> d) : detail::PlaneBase<T, 2>(s, d) {}
+    inline constexpr Plane(Vector<T, 2> support, Matrix<T, 2, 2> directions) : detail::PlaneBase<T, 2>(support, directions) {}
+    
+    inline constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, 2> point) const
+    {                                                               
+        const auto& dx = this->directions[0];
+        const auto& dy = this->directions[1];
+
+        auto div = dx.cross(dy);
+        if (div == T())
+            return std::nullopt;
+
+        point -= this->support;
+
+        T resultx = point.cross(dy) / div;
+        
+        const auto& x = dy.x();
+        const auto& y = dy.y();
+        if ((x >= 0 ? x : -x) > (y >= 0 ? y : -y))
+            return Vector<T, 2>(resultx, (point.x() - resultx * dx.x()) / x);
+        if (y != 0)
+            return Vector<T, 2>(resultx, (point.y() - resultx * dx.y()) / y);
+
+        return std::nullopt;
+    }
+    
+    inline constexpr std::optional<Vector<T, 2>> factorAt(const Vector<T, 2>& point) const
+    {
+        return orthoProj(point);
+    }
 };
 
 template <typename T>
-struct Plane<T, 3> : public detail::PlaneBase<T, 3>  {
+struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
     inline constexpr Plane() : detail::PlaneBase<T, 3>() {}
-    inline constexpr Plane(Vector<T, 3> s, Matrix<T, 2, 3> d) : detail::PlaneBase<T, 3>(s, d) {}
+    inline constexpr Plane(Vector<T, 3> support, Matrix<T, 2, 3> directions) : detail::PlaneBase<T, 3>(support, directions) {}
 };
 
 using Plane1 = Plane<float, 1>;
@@ -241,19 +288,18 @@ using Plane3 = Plane<float, 3>;
 template <typename T, std::size_t Dim>
 struct Spat : public detail::SpatBase<T, Dim> {
     inline constexpr Spat() : detail::SpatBase<T, Dim>() {}
-    inline constexpr Spat(Vector<T, Dim> s, Matrix<T, 3, Dim> d) : detail::SpatBase<T, Dim>(s, d) {}
+    inline constexpr Spat(Vector<T, Dim> support, Matrix<T, 3, Dim> directions) : detail::SpatBase<T, Dim>(support, directions) {}
 };
 
 template <typename T>
-struct Spat<T, 2> : public detail::SpatBase<T, 2> {
-    inline constexpr Spat() : detail::SpatBase<T, 2>() {}
-    inline constexpr Spat(Vector<T, 2> s, Matrix<T, 3, 2> d) : detail::SpatBase<T, 2>(s, d) {}
-};
-
-template <typename T>
-struct Spat<T, 3> : public detail::SpatBase<T, 3>  {
+struct Spat<T, 3> : public detail::SpatBase<T, 3> {
     inline constexpr Spat() : detail::SpatBase<T, 3>() {}
-    inline constexpr Spat(Vector<T, 3> s, Matrix<T, 3, 3> d) : detail::SpatBase<T, 3>(s, d) {}
+    inline constexpr Spat(Vector<T, 3> support, Matrix<T, 3, 3> directions) : detail::SpatBase<T, 3>(support, directions) {}
+
+    inline constexpr T tripleProduct() const
+    {
+        return this->directions.determinant();
+    }
 };
 
 using Spat1 = Spat<float, 1>;
