@@ -63,12 +63,12 @@ struct AxisSystemBase {
         return std::nullopt;
     }
 
-    friend inline constexpr bool operator==(const Line<T, Dim>& lhs, const Line<T, Dim>& rhs)
+    friend inline constexpr bool operator==(const AxisSystemBase& lhs, const AxisSystemBase& rhs)
     {
         return lhs.support == rhs.support && lhs.directions == rhs.directions;
     }
 
-    friend inline constexpr bool operator!=(const Line<T, Dim>& lhs, const Line<T, Dim>& rhs)
+    friend inline constexpr bool operator!=(const AxisSystemBase& lhs, const AxisSystemBase& rhs)
     {
         return lhs.support != rhs.support || lhs.directions != rhs.directions;
     }
@@ -182,7 +182,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
 
     inline constexpr T distanceTo(const Vector<T, 2>& point) const
     {
-        if (this->direction() == T(0))
+        if (this->direction() == T())
             return this->support.distanceTo(point);
         Line<T, 2> rotated{ this->support, this->direction().cross().normalized() };
         return rotated.orthoProj(point);

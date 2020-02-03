@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
-  <Type Name="dang::math::VectorBase&lt;*,*&gt;" Inheritable="true">
+  <Type Name="dang::math::detail::VectorBase&lt;*,*&gt;" Inheritable="true">
     <DisplayString Condition="$T2 == 1">vec{$T2}({(*this)[0],g}) of {"$T1"}</DisplayString>
     <DisplayString Condition="$T2 == 2">vec{$T2}({(*this)[0],g}, {(*this)[1],g}) of {"$T1"}</DisplayString>
     <DisplayString Condition="$T2 == 3">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}) of {"$T1"}</DisplayString>
@@ -15,6 +15,51 @@
         <Item Name="w" Condition="$T2 &gt; 3">(*this)[3],g</Item>
       </CustomListItems>
       <ExpandedItem Condition="$T2 &gt; 4">_Elems</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::math::Matrix&lt;*,*,*&gt;">
+    <DisplayString>mat{$T2}x{$T3} of {"$T1"}</DisplayString>
+    <Expand>
+      <ExpandedItem>_Elems</ExpandedItem>
+      <Item Name="determinant" Optional="true">determinant()</Item>
+      <Item Name="inverse" Optional="true">inverse()</Item>
+      <Item Name="solve" Optional="true">solve()</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::math::detail::AxisSystemBase&lt;*,*,*&gt;" Inheritable="true">
+    <DisplayString>AxisSystem{$T2}x{$T3} of {"$T1"}</DisplayString>
+    <Expand>
+      <Item Name="support">support</Item>
+      <ExpandedItem>directions</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::math::detail::LineBase&lt;*,*&gt;" Inheritable="true">
+    <DisplayString>Line{$T2} of {"$T1"}</DisplayString>
+    <Expand>
+      <Item Name="support">support</Item>
+      <Item Name="direction">directions[0]</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::math::detail::PlaneBase&lt;*,*&gt;" Inheritable="true">
+    <DisplayString>Plane{$T2} of {"$T1"}</DisplayString>
+    <Expand>
+      <Item Name="support">support</Item>
+      <Item Name="x-direction">directions[0]</Item>
+      <Item Name="y-direction">directions[1]</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="dang::math::detail::SpatBase&lt;*,*&gt;" Inheritable="true">
+    <DisplayString>Spat{$T2} of {"$T1"}</DisplayString>
+    <Expand>
+      <Item Name="support">support</Item>
+      <Item Name="x-direction">directions[0]</Item>
+      <Item Name="y-direction">directions[1]</Item>
+      <Item Name="z-direction">directions[2]</Item>
     </Expand>
   </Type>
 
