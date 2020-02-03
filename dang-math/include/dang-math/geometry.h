@@ -7,6 +7,9 @@
 namespace dang::math
 {
 
+template <typename T, std::size_t Dim, std::size_t AxisCount>
+struct AxisSystem;
+
 template <typename T, std::size_t Dim>
 struct Line;
 
@@ -14,53 +17,47 @@ template <typename T, std::size_t Dim>
 struct Plane;
 
 template <typename T, std::size_t Dim>
-struct AxisSystem;
+struct Spat;
 
 namespace detail
 {
 
-template <typename T, std::size_t Dim>
-struct LineBase {
+template <typename T, std::size_t Dim, std::size_t AxisCount>
+struct AxisSystemBase {
     Vector<T, Dim> s;
-    Vector<T, Dim> d;
+    Matrix<T, AxisCount, Dim> d;
 
-    inline constexpr LineBase() = default;
+    inline constexpr AxisSystemBase() = default;
 
-    inline constexpr LineBase(Vector<T, Dim> s, Vector<T, Dim> d)
+    inline constexpr AxisSystemBase(Vector<T, Dim> s, Matrix<T, AxisCount, Dim> d)
         : s(s)
         , d(d)
     {
     }
 
-    inline constexpr const Vector<T, Dim> head() const
-    {
-        return s + d;
+    inline constexpr Line<T, Dim> line(std::size_t index) const {
+        return Line<T, Dim>(s, d[index]);
     }
 
-    void setHead(const Vector<T, Dim>& position)
-    {
-        d = position - s;
+    inline constexpr Plane<T, Dim> plane(std::size_t index1, std::size_t index2) const {
+        return Plane<T, Dim>(s, { d[index1], d[index2] });
     }
 
-    inline constexpr const Vector<T, Dim> tail() const
-    {
-        return s;
+    inline constexpr Spat<T, Dim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const {
+        return Spat<T, Dim>(s, { d[index1], d[index2], d[index3] });
     }
 
-    void setTail(const Vector<T, Dim>& position)
+    inline constexpr Vector<T, Dim> operator[](const Vector<T, Dim>& factor) const
     {
-        d += position - s;
-        s = position;
+        return s + d * factor;
     }
 
-    inline constexpr const Vector<T, Dim> operator[](T factor) const
+    inline constexpr std::optional<Vector<T, Dim>> factorAt(const Vector<T, Dim>& point) const
     {
-        return s + factor * d;
-    }
-
-    inline constexpr T orthoProj(const Vector<T, Dim>& point) const
-    {
-        return d.dot(point - s) / d.sqrdot();
+        static_assert(Dim == AxisCount, "factorAt requires dimension and axis-count to be equal");
+        if (auto inv = d.inverse())
+            return *inv * (point - s);
+        return std::nullopt;
     }
 
     friend inline constexpr bool operator==(const Line<T, Dim>& lhs, const Line<T, Dim>& rhs)
@@ -74,48 +71,89 @@ struct LineBase {
     }
 };
 
-
 template <typename T, std::size_t Dim>
-struct PlaneBase {
-    Vector<T, Dim> s;
-    Vector<T, Dim> dx;
-    Vector<T, Dim> dy;
+struct LineBase : public AxisSystemBase<T, Dim, 1> {
+    inline constexpr LineBase() : AxisSystemBase<T, Dim, 1>() {}
+    inline constexpr LineBase(Vector<T, Dim> s, Vector<T, Dim> d) : AxisSystemBase<T, Dim, 1>(s, d) {}
 
-    inline constexpr PlaneBase() = default;
-
-    inline constexpr PlaneBase(Vector<T, Dim> s, Vector<T, Dim> dx, Vector<T, Dim> dy)
-        : s(s)
-        , dx(dx)
-        , dy(dy)
+    inline constexpr const Vector<T, Dim>& direction() const
     {
+        return this->d[0];
     }
 
-    inline constexpr Vector<T, Dim> operator[](const Vector<T, 2>& factor) const
+    inline constexpr Vector<T, Dim>& direction()
     {
-        return s + factor.x() * dx + factor.y() * dy;
+        return this->d[0];
     }
 
+    inline constexpr Vector<T, Dim> head() const
+    {
+        return this->s + direction();
+    }
+
+    inline void setHead(const Vector<T, Dim>& position)
+    {
+        direction() = position - this->s;
+    }
+
+    inline constexpr Vector<T, Dim> tail() const
+    {
+        return this->s;
+    }
+
+    inline void setTail(const Vector<T, Dim>& position)
+    {
+        direction() += position - this->s;
+        this->s = position;
+    }
+
+    inline constexpr T length() const
+    {
+        return direction().length();
+    }
+
+    inline constexpr T orthoProj(const Vector<T, Dim>& point) const
+    {
+        return direction().dot(point - this->s) / direction().sqrdot();
+    }
 };
 
 template <typename T, std::size_t Dim>
-struct AxisSystemBase {
-    Vector<T, Dim> s;
-    dutils::EnumArray<Axis<Dim>, Vector<T, Dim>> d;
+struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
+    inline constexpr PlaneBase() : AxisSystemBase<T, Dim, 2>() {}
+    inline constexpr PlaneBase(Vector<T, Dim> s, Matrix<T, 2, Dim> d) : AxisSystemBase<T, Dim, 2>(s, d) {}
+
+    inline constexpr T area()
+    {
+        return this->d[0].length() * this->d[1].length();
+    }
+};
+
+template <typename T, std::size_t Dim>
+struct SpatBase : public AxisSystemBase<T, Dim, 3> {
+    inline constexpr SpatBase() : AxisSystemBase<T, Dim, 3>() {}
+    inline constexpr SpatBase(Vector<T, Dim> s, Matrix<T, 3, Dim> d) : AxisSystemBase<T, Dim, 3>(s, d) {}
 };
 
 }
 
-enum class LineSide {
-    Left,
-    Hit,
-    Right,
-    COUNT
+template <typename T, std::size_t Dim, std::size_t AxisCount>
+struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
+    inline constexpr AxisSystem() : detail::AxisSystemBase<T, Dim, AxisCount>() {}
+    inline constexpr AxisSystem(Vector<T, Dim> s, Matrix<T, AxisCount, Dim> d) : detail::AxisSystemBase<T, Dim, AxisCount>(s, d) {}
 };
 
 template <typename T, std::size_t Dim>
 struct Line : public detail::LineBase<T, Dim> {
     inline constexpr Line() : detail::LineBase<T, Dim>() {}
     inline constexpr Line(Vector<T, Dim> s, Vector<T, Dim> d) : detail::LineBase<T, Dim>(s, d) {}
+};
+
+enum class LineSide {
+    Left,
+    Hit,
+    Right,
+    COUNT
 };
 
 template <typename T>
@@ -125,9 +163,9 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
 
     inline constexpr T distanceTo(const Vector<T, 2>& point) const
     {
-        if (this->d == T(0))
+        if (this->direction() == T(0))
             return this->s.distanceTo(point);
-        Line<T, 2> rotated{ this->s, this->d.cross().normalized() };
+        Line<T, 2> rotated{ this->s, this->direction().cross().normalized() };
         return rotated.orthoProj(point);
     }
 
@@ -144,8 +182,8 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
     inline constexpr Matrix<T, 3, 2> intersectionMatrix(const Line<T, 2>& other) const
     {
         return Matrix<T, 3, 2>({
-              { this->d.x(), this->d.y() },
-              { -other.d.x(), -other.d.y() },
+              { this->direction().x(), this->direction().y() },
+              { -other.direction().x(), -other.direction().y() },
               { other.s.x() - this->s.x(), other.s.y() - this->s.y() }
             });
     }
@@ -181,23 +219,45 @@ using Line3 = Line<float, 3>;
 template <typename T, std::size_t Dim>
 struct Plane : public detail::PlaneBase<T, Dim> {
     inline constexpr Plane() : detail::PlaneBase<T, Dim>() {}
-    inline constexpr Plane(Vector<T, 1> s, Vector<T, 1> dx, Vector<T, 1> dy) : detail::PlaneBase<T, 1>(s, dx, dy) {}
+    inline constexpr Plane(Vector<T, Dim> s, Matrix<T, 2, Dim> d) : detail::PlaneBase<T, Dim>(s, d) {}
 };
 
 template <typename T>
 struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
     inline constexpr Plane() : detail::PlaneBase<T, 2>() {}
-    inline constexpr Plane(Vector<T, 2> s, Vector<T, 2> dx, Vector<T, 2> dy) : detail::PlaneBase<T, 2>(s, dx, dy) {}
+    inline constexpr Plane(Vector<T, 2> s, Matrix<T, 2, 2> d) : detail::PlaneBase<T, 2>(s, d) {}
 };
 
 template <typename T>
-struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
+struct Plane<T, 3> : public detail::PlaneBase<T, 3>  {
     inline constexpr Plane() : detail::PlaneBase<T, 3>() {}
-    inline constexpr Plane(Vector<T, 3> s, Vector<T, 3> dx, Vector<T, 3> dy) : detail::PlaneBase<T, 3>(s, dx, dy) {}
+    inline constexpr Plane(Vector<T, 3> s, Matrix<T, 2, 3> d) : detail::PlaneBase<T, 3>(s, d) {}
 };
 
 using Plane1 = Plane<float, 1>;
 using Plane2 = Plane<float, 2>;
 using Plane3 = Plane<float, 3>;
+
+template <typename T, std::size_t Dim>
+struct Spat : public detail::SpatBase<T, Dim> {
+    inline constexpr Spat() : detail::SpatBase<T, Dim>() {}
+    inline constexpr Spat(Vector<T, Dim> s, Matrix<T, 3, Dim> d) : detail::SpatBase<T, Dim>(s, d) {}
+};
+
+template <typename T>
+struct Spat<T, 2> : public detail::SpatBase<T, 2> {
+    inline constexpr Spat() : detail::SpatBase<T, 2>() {}
+    inline constexpr Spat(Vector<T, 2> s, Matrix<T, 3, 2> d) : detail::SpatBase<T, 2>(s, d) {}
+};
+
+template <typename T>
+struct Spat<T, 3> : public detail::SpatBase<T, 3>  {
+    inline constexpr Spat() : detail::SpatBase<T, 3>() {}
+    inline constexpr Spat(Vector<T, 3> s, Matrix<T, 3, 3> d) : detail::SpatBase<T, 3>(s, d) {}
+};
+
+using Spat1 = Spat<float, 1>;
+using Spat2 = Spat<float, 2>;
+using Spat3 = Spat<float, 3>;
 
 }
