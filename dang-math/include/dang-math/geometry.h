@@ -289,6 +289,11 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
         return perpendicular().normalized();
     }
 
+    inline constexpr T height(const Vector<T, 3>& point) const
+    {
+        return Line<T, 3>(this->support, normal()).orthoProj(point);
+    }
+
     inline constexpr Matrix<T, 4, 3> intersectionMatrix(const Line<T, 3>& line) const
     {
         return Matrix<T, 4, 3>({
