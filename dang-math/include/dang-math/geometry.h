@@ -278,7 +278,17 @@ template <typename T>
 struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
     inline constexpr Plane() : detail::PlaneBase<T, 3>() {}
     inline constexpr Plane(Vector<T, 3> support, Matrix<T, 2, 3> directions) : detail::PlaneBase<T, 3>(support, directions) {}
-    
+
+    inline constexpr Vector<T, 3> perpendicular() const
+    {
+        return this->directions[0].cross(this->directions[1]);
+    }
+
+    inline constexpr Vector<T, 3> normal() const
+    {
+        return perpendicular().normalized();
+    }
+
     inline constexpr Matrix<T, 4, 3> intersectionMatrix(const Line<T, 3>& line) const
     {
         return Matrix<T, 4, 3>({
@@ -287,7 +297,7 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
             -line.direction(),
             line.support - this->support });
     }
-            
+
     inline constexpr std::optional<Vector<T, 3>> intersectionFactors(const Line<T, 3>& line) const
     {
         return intersectionMatrix(line).solve();
@@ -309,6 +319,16 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
     {
         if (auto factors = intersectionFactors(line))
             return (*this)[factors->xy()];
+        return std::nullopt;
+    }
+
+    inline constexpr std::optional<Line<T, 3>> intersectionLine(const Plane<T, 3>& plane) const
+    {
+        Vector<T, 3> perp = perpendicular();
+        Vector<T, 3> dir = perp.cross(plane.perpendicular());
+        Line<T, 3> line(this->support, dir.cross(perp));
+        if (auto pos = plane.intersectionPoint(line))
+            return Line<T, 3>(*pos, dir);
         return std::nullopt;
     }
 };
