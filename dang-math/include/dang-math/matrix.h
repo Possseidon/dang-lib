@@ -13,13 +13,15 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     inline constexpr Matrix() : Base() {}
 
+    inline constexpr Matrix(const Base& columns) : Base(columns) {}
+
     inline constexpr Matrix(T value) : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = value;
     }
 
-    inline constexpr Matrix(const std::array<T, Rows>(&columns)[Cols]) : Base()
+    inline constexpr Matrix(const Vector<T, Rows>(&columns)[Cols]) : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = columns[i];
@@ -100,7 +102,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     {
         Matrix<T, Rows, Cols> result;
         for (const auto& pos : dmath::sbounds2{ {Cols, Rows} })
-            result(pos.y(), pos.x()) = (*this)[pos];
+            result(pos.yx()) = (*this)[pos];
         return result;
     }
 

@@ -160,16 +160,34 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
-    template<size_t Index>
+    template <size_t Index>
     inline constexpr T& get() noexcept
     {
         return std::get<Index>(*this);
     }
 
-    template<size_t Index>
+    template <size_t Index>
     inline constexpr const T& get() const noexcept
     {
         return std::get<Index>(*this);
+    }
+
+    template <size_t... Indices>
+    inline constexpr Vector<T, sizeof...(Indices)> swizzle() const
+    {
+        Vector<T, sizeof...(Indices)> result;
+        size_t resultIndex = 0;
+        for (size_t index : std::array<std::size_t, sizeof...(Indices)>{ Indices... })
+            result[resultIndex++] = (*this)[index];
+        return result;
+    }
+
+    template <size_t... Indices>
+    inline constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
+    {
+        size_t otherIndex = 0;
+        for (size_t index : std::array<std::size_t, sizeof...(Indices)>{ Indices... })
+            (*this)[index] = vector[otherIndex++];
     }
 
     inline constexpr Base::iterator begin()
@@ -261,6 +279,10 @@ struct Vector : public detail::VectorBase<T, Dim> {
     }
 };
 
+#define DMATH_DEFINE_SWIZZLE(name, ...) \
+inline constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
+inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }   
+
 template <typename T>
 struct Vector<T, 1> : public detail::VectorBase<T, 1> {
     inline constexpr Vector() = default;
@@ -281,9 +303,11 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     inline constexpr Vector(T value) : detail::VectorBase<T, 2>({ value, value }) {}
     inline constexpr Vector(T x, T y) : detail::VectorBase<T, 2>({ x, y }) {}
 
-    static inline constexpr Vector<T, 2> fromSlope(T slope)
+    static inline constexpr Vector<T, 2> fromSlope(std::optional<T> slope)
     {
-        return { 1, slope };
+        if (slope)
+            return { 1, *slope };
+        return { 0, 1 };
     }
 
     static inline constexpr Vector<T, 2> fromAngleRad(T radians)
@@ -301,6 +325,9 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     inline constexpr T& y() { return std::get<1>(*this); }
     inline constexpr T y() const { return std::get<1>(*this); }
 
+    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
+    DMATH_DEFINE_SWIZZLE(yx, 1, 0);
+
     inline constexpr Vector<T, 2> cross() const
     {
         return { -y(), x() };
@@ -311,10 +338,12 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
         return x() * other.y() - y() * other.x();
     }
 
-    inline constexpr T slope() const
+    inline constexpr std::optional<T> slope() const
     {
         static_assert(std::is_floating_point_v<T>, "vec2::slope requires a floating point type");
-        return y() / x();
+        if (x() != T())
+            return y() / x();
+        return std::nullopt;
     }
 };
 
@@ -331,6 +360,20 @@ struct Vector<T, 3> : public detail::VectorBase<T, 3> {
     inline constexpr T y() const { return std::get<1>(*this); }
     inline constexpr T& z() { return std::get<2>(*this); }
     inline constexpr T z() const { return std::get<2>(*this); }
+
+    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
+    DMATH_DEFINE_SWIZZLE(xz, 0, 2);
+    DMATH_DEFINE_SWIZZLE(yx, 1, 0);
+    DMATH_DEFINE_SWIZZLE(yz, 1, 2);
+    DMATH_DEFINE_SWIZZLE(zx, 2, 0);
+    DMATH_DEFINE_SWIZZLE(zy, 2, 1);
+
+    DMATH_DEFINE_SWIZZLE(xyz, 0, 1, 2);
+    DMATH_DEFINE_SWIZZLE(xzy, 0, 2, 1);
+    DMATH_DEFINE_SWIZZLE(yxz, 1, 0, 2);
+    DMATH_DEFINE_SWIZZLE(yzx, 1, 2, 0);
+    DMATH_DEFINE_SWIZZLE(zxy, 2, 0, 1);
+    DMATH_DEFINE_SWIZZLE(zyx, 2, 1, 0);
 
     inline constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
     {
@@ -357,7 +400,66 @@ struct Vector<T, 4> : public detail::VectorBase<T, 4> {
     inline constexpr T z() const { return std::get<2>(*this); }
     inline constexpr T& w() { return std::get<3>(*this); }
     inline constexpr T w() const { return std::get<3>(*this); }
+
+    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
+    DMATH_DEFINE_SWIZZLE(xz, 0, 2);
+    DMATH_DEFINE_SWIZZLE(xw, 0, 3);
+    DMATH_DEFINE_SWIZZLE(yx, 1, 0);
+    DMATH_DEFINE_SWIZZLE(yz, 1, 2);
+    DMATH_DEFINE_SWIZZLE(yw, 1, 3);
+    DMATH_DEFINE_SWIZZLE(zx, 2, 0);
+    DMATH_DEFINE_SWIZZLE(zy, 2, 1);
+    DMATH_DEFINE_SWIZZLE(zw, 2, 3);
+    DMATH_DEFINE_SWIZZLE(wx, 3, 0);
+    DMATH_DEFINE_SWIZZLE(wy, 3, 1);
+    DMATH_DEFINE_SWIZZLE(wz, 3, 2);
+
+    DMATH_DEFINE_SWIZZLE(xyz, 0, 1, 2);
+    DMATH_DEFINE_SWIZZLE(xyw, 0, 1, 3);
+    DMATH_DEFINE_SWIZZLE(xzy, 0, 2, 1);
+    DMATH_DEFINE_SWIZZLE(xzw, 0, 2, 3);
+    DMATH_DEFINE_SWIZZLE(yxz, 1, 0, 2);
+    DMATH_DEFINE_SWIZZLE(yxw, 1, 0, 3);
+    DMATH_DEFINE_SWIZZLE(yzx, 1, 2, 0);
+    DMATH_DEFINE_SWIZZLE(yzw, 1, 2, 3);
+    DMATH_DEFINE_SWIZZLE(zxy, 2, 0, 1);
+    DMATH_DEFINE_SWIZZLE(zxw, 2, 0, 3);
+    DMATH_DEFINE_SWIZZLE(zyx, 2, 1, 0);
+    DMATH_DEFINE_SWIZZLE(zyw, 2, 1, 3);
+    DMATH_DEFINE_SWIZZLE(wxy, 3, 0, 1);
+    DMATH_DEFINE_SWIZZLE(wxz, 3, 0, 2);
+    DMATH_DEFINE_SWIZZLE(wyx, 3, 1, 0);
+    DMATH_DEFINE_SWIZZLE(wyz, 3, 1, 2);
+    DMATH_DEFINE_SWIZZLE(wzx, 3, 2, 0);
+    DMATH_DEFINE_SWIZZLE(wzy, 3, 2, 1);
+
+    DMATH_DEFINE_SWIZZLE(xyzw, 0, 1, 2, 3);
+    DMATH_DEFINE_SWIZZLE(xywz, 0, 1, 3, 2);
+    DMATH_DEFINE_SWIZZLE(xzyw, 0, 2, 1, 3);
+    DMATH_DEFINE_SWIZZLE(xzwy, 0, 2, 3, 1);
+    DMATH_DEFINE_SWIZZLE(xwyz, 0, 3, 1, 2);
+    DMATH_DEFINE_SWIZZLE(xwzy, 0, 3, 2, 1);
+    DMATH_DEFINE_SWIZZLE(yxzw, 1, 0, 2, 3);
+    DMATH_DEFINE_SWIZZLE(yxwz, 1, 0, 3, 2);
+    DMATH_DEFINE_SWIZZLE(yzxw, 1, 2, 0, 3);
+    DMATH_DEFINE_SWIZZLE(yzwx, 1, 2, 3, 0);
+    DMATH_DEFINE_SWIZZLE(ywxz, 1, 3, 0, 2);
+    DMATH_DEFINE_SWIZZLE(ywzx, 1, 3, 2, 0);
+    DMATH_DEFINE_SWIZZLE(zyxw, 2, 1, 0, 3);
+    DMATH_DEFINE_SWIZZLE(zywx, 2, 1, 3, 0);
+    DMATH_DEFINE_SWIZZLE(zxyw, 2, 0, 1, 3);
+    DMATH_DEFINE_SWIZZLE(zxwy, 2, 0, 3, 1);
+    DMATH_DEFINE_SWIZZLE(zwyx, 2, 3, 1, 0);
+    DMATH_DEFINE_SWIZZLE(zwxy, 2, 3, 0, 1);
+    DMATH_DEFINE_SWIZZLE(wyzx, 3, 1, 2, 0);
+    DMATH_DEFINE_SWIZZLE(wyxz, 3, 1, 0, 2);
+    DMATH_DEFINE_SWIZZLE(wzyx, 3, 2, 1, 0);
+    DMATH_DEFINE_SWIZZLE(wzxy, 3, 2, 0, 1);
+    DMATH_DEFINE_SWIZZLE(wxyz, 3, 0, 1, 2);
+    DMATH_DEFINE_SWIZZLE(wxzy, 3, 0, 2, 1);
 };
+
+#undef DMATH_DEFINE_SWIZZLE
 
 template <std::size_t Dim>
 using vec = Vector<float, Dim>;
@@ -399,12 +501,12 @@ using svec2 = svec<2>;
 using svec3 = svec<3>;
 using svec4 = svec<4>;
 
-template<typename T, std::size_t Dim>
+template <typename T, std::size_t Dim>
 struct std::tuple_size<Vector<T, Dim>> {
     static constexpr int value = Dim;
 };
 
-template<typename T, std::size_t Dim, size_t Index>
+template <typename T, std::size_t Dim, size_t Index>
 struct std::tuple_element<Index, Vector<T, Dim>> {
     using type = T;
 };

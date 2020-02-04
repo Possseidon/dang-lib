@@ -50,7 +50,7 @@ struct AxisSystemBase {
         return Spat<T, Dim>(support, { directions[index1], directions[index2], directions[index3] });
     }
 
-    inline constexpr Vector<T, Dim> operator[](const Vector<T, Dim>& factor) const
+    inline constexpr Vector<T, Dim> operator[](const Vector<T, AxisCount>& factor) const
     {
         return support + directions * factor;
     }
@@ -201,10 +201,9 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
     inline constexpr Matrix<T, 3, 2> intersectionMatrix(const Line<T, 2>& other) const
     {
         return Matrix<T, 3, 2>({
-              { this->direction().x(), this->direction().y() },
-              { -other.direction().x(), -other.direction().y() },
-              { other.support.x() - this->support.x(), other.support.y() - this->support.y() }
-            });
+            this->direction(),
+            -other.direction(),
+            other.support - this->support });
     }
 
     inline constexpr std::optional<T> intersectionFactor(const Line<T, 2>& other) const
@@ -245,9 +244,9 @@ template <typename T>
 struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
     inline constexpr Plane() : detail::PlaneBase<T, 2>() {}
     inline constexpr Plane(Vector<T, 2> support, Matrix<T, 2, 2> directions) : detail::PlaneBase<T, 2>(support, directions) {}
-    
+
     inline constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, 2> point) const
-    {                                                               
+    {
         const auto& dx = this->directions[0];
         const auto& dy = this->directions[1];
 
@@ -258,7 +257,7 @@ struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
         point -= this->support;
 
         T resultx = point.cross(dy) / div;
-        
+
         const auto& x = dy.x();
         const auto& y = dy.y();
         if ((x >= 0 ? x : -x) > (y >= 0 ? y : -y))
@@ -268,7 +267,7 @@ struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
 
         return std::nullopt;
     }
-    
+
     inline constexpr std::optional<Vector<T, 2>> factorAt(const Vector<T, 2>& point) const
     {
         return orthoProj(point);
@@ -279,6 +278,39 @@ template <typename T>
 struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
     inline constexpr Plane() : detail::PlaneBase<T, 3>() {}
     inline constexpr Plane(Vector<T, 3> support, Matrix<T, 2, 3> directions) : detail::PlaneBase<T, 3>(support, directions) {}
+    
+    inline constexpr Matrix<T, 4, 3> intersectionMatrix(const Line<T, 3>& line) const
+    {
+        return Matrix<T, 4, 3>({
+            this->directions[0],
+            this->directions[1],
+            -line.direction(),
+            line.support - this->support });
+    }
+            
+    inline constexpr std::optional<Vector<T, 3>> intersectionFactors(const Line<T, 3>& line) const
+    {
+        return intersectionMatrix(line).solve();
+    }
+
+    inline constexpr std::optional<T> intersectionLineFactor(const Line<T, 3>& line) const
+    {
+        return intersectionMatrix(line).solveCol(2);
+    }
+
+    inline constexpr std::optional<Vector<T, 3>> intersectionPoint(const Line<T, 3>& line) const
+    {
+        if (auto factor = intersectionLineFactor(line))
+            return line[*factor];
+        return std::nullopt;
+    }
+
+    inline constexpr std::optional<Vector<T, 3>> intersectionPointViaPlane(const Line<T, 3>& line) const
+    {
+        if (auto factors = intersectionFactors(line))
+            return (*this)[factors->xy()];
+        return std::nullopt;
+    }
 };
 
 using Plane1 = Plane<float, 1>;
