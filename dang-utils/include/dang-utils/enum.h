@@ -94,7 +94,7 @@ public:
     {
         return static_cast<T>(value_);
     }
-    
+
 private:
     std::underlying_type_t<T> set_{};
     std::underlying_type_t<T> value_{};
@@ -170,7 +170,7 @@ inline constexpr T& operator~(T& value)
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(T::ALL) & ~static_cast<BaseType>(value));
 }
-                       
+
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T operator^(T lhs, T rhs)
 {

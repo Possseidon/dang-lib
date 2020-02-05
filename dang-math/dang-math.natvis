@@ -63,4 +63,16 @@
     </Expand>
   </Type>
 
+  <Type Name="dang::math::Quaternion&lt;*&gt;" Inheritable="true">
+    <DisplayString>quat({(*this)[3],g}, [{(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}]) of {"$T1"}</DisplayString>
+    <Expand>
+      <CustomListItems>
+        <Item Name="real">(*this)[3],g</Item>
+        <Item Name="vector-x">(*this)[0],g</Item>
+        <Item Name="vector-y">(*this)[1],g</Item>
+        <Item Name="vector-z">(*this)[2],g</Item>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>

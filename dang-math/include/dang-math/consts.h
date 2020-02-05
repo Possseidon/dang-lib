@@ -111,7 +111,7 @@ constexpr dutils::EnumArray<Corner3, ivec3> CornerVector<3>
 constexpr auto CornerVector1 = CornerVector<1>;
 constexpr auto CornerVector2 = CornerVector<2>;
 constexpr auto CornerVector3 = CornerVector<3>;
-               
+
 // --- AxisFacing
 
 template <std::size_t Dim>

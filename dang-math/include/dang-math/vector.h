@@ -18,6 +18,8 @@ struct VectorBase : protected std::array<T, Dim> {
     inline constexpr VectorBase() : Base{} {}
     inline constexpr VectorBase(Base values) : Base(values) {}
 
+    using Base::operator[];
+
     inline constexpr T sum() const
     {
         T result = T();
@@ -105,16 +107,6 @@ struct VectorBase : protected std::array<T, Dim> {
         return *this - 2 * dot(normal) * normal;
     }
 
-    inline constexpr T& operator[](std::size_t index)
-    {
-        return Base::operator[](index);
-    }
-
-    inline constexpr const T& operator[](std::size_t index) const
-    {
-        return Base::operator[](index);
-    }
-
     inline constexpr const Vector<T, Dim>& operator+() const
     {
         return *this;
@@ -190,35 +182,10 @@ struct VectorBase : protected std::array<T, Dim> {
             (*this)[index] = vector[otherIndex++];
     }
 
-    inline constexpr Base::iterator begin()
-    {
-        return Base::begin();
-    }
-
-    inline constexpr Base::iterator end()
-    {
-        return Base::end();
-    }
-
-    inline constexpr Base::const_iterator begin() const
-    {
-        return Base::begin();
-    }
-
-    inline constexpr Base::const_iterator end() const
-    {
-        return Base::end();
-    }
-
-    inline constexpr Base::const_iterator cbegin() const
-    {
-        return Base::cbegin();
-    }
-
-    inline constexpr Base::const_iterator cend() const
-    {
-        return Base::cend();
-    }
+    using Base::begin;
+    using Base::end;
+    using Base::cbegin;
+    using Base::cend;
 
 private:
     template <typename Op>
@@ -281,7 +248,7 @@ struct Vector : public detail::VectorBase<T, Dim> {
 
 #define DMATH_DEFINE_SWIZZLE(name, ...) \
 inline constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
-inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }   
+inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
 
 template <typename T>
 struct Vector<T, 1> : public detail::VectorBase<T, 1> {

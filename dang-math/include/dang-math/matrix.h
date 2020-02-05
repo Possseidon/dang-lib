@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.h"        
+#include "utils.h"
 #include "vector.h"
 #include "bounds.h"
 
@@ -32,6 +32,8 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         static_assert(Cols == 1, "only mat1xN can be constructed from vector");
     }
 
+    using Base::operator[];
+
     static inline constexpr Matrix identity()
     {
         Matrix result;
@@ -50,16 +52,6 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     {
         static_assert(Cols == 1 && Rows == 1, "only mat1x1 can be converted to value type");
         return (*this)(0, 0);
-    }
-
-    inline constexpr Vector<T, Rows>& operator[](std::size_t col)
-    {
-        return Base::operator[](col);
-    }
-
-    inline constexpr const Vector<T, Rows>& operator[](std::size_t col) const
-    {
-        return Base::operator[](col);
     }
 
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
@@ -553,35 +545,10 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
 #undef DMATH_MATRIX_COMPARE
 
-    inline constexpr typename Base::iterator begin()
-    {
-        return Base::begin();
-    }
-
-    inline constexpr typename Base::iterator end()
-    {
-        return Base::end();
-    }
-
-    inline constexpr typename Base::const_iterator begin() const
-    {
-        return Base::begin();
-    }
-
-    inline constexpr typename Base::const_iterator end() const
-    {
-        return Base::end();
-    }
-
-    inline constexpr typename Base::const_iterator cbegin() const
-    {
-        return Base::cbegin();
-    }
-
-    inline constexpr typename Base::const_iterator cend() const
-    {
-        return Base::cend();
-    }
+    using Base::begin;
+    using Base::end;
+    using Base::cbegin;
+    using Base::cend;
 
 private:
     template <typename Op>
@@ -651,7 +618,7 @@ using mtype ## 4x4 = mtype<4, 4>; \
 using mtype ## 1 = mtype ## 1x1; \
 using mtype ## 2 = mtype ## 2x2; \
 using mtype ## 3 = mtype ## 3x3; \
-using mtype ## 4 = mtype ## 4x4; 
+using mtype ## 4 = mtype ## 4x4;
 
 DMATH_MATRIX_DEFINE(mat, float)
 DMATH_MATRIX_DEFINE(dmat, double)
