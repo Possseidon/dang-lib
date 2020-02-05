@@ -94,7 +94,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     {
         Matrix<T, Rows, Cols> result;
         for (const auto& pos : dmath::sbounds2{ {Cols, Rows} })
-            result(pos.yx()) = (*this)[pos];
+            result[pos.yx()] = (*this)[pos];
         return result;
     }
 
@@ -451,7 +451,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
-    inline constexpr const Matrix<T, Cols, Rows>& operator+() const
+    inline constexpr Matrix<T, Cols, Rows> operator+() const
     {
         return *this;
     }

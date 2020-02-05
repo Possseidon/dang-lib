@@ -107,7 +107,7 @@ struct VectorBase : protected std::array<T, Dim> {
         return *this - 2 * dot(normal) * normal;
     }
 
-    inline constexpr const Vector<T, Dim>& operator+() const
+    inline constexpr Vector<T, Dim> operator+() const
     {
         return *this;
     }
@@ -169,7 +169,7 @@ struct VectorBase : protected std::array<T, Dim> {
     {
         Vector<T, sizeof...(Indices)> result;
         size_t resultIndex = 0;
-        for (size_t index : std::array<std::size_t, sizeof...(Indices)>{ Indices... })
+        for (size_t index : std::array{ Indices... })
             result[resultIndex++] = (*this)[index];
         return result;
     }
