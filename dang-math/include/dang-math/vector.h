@@ -44,9 +44,9 @@ struct VectorBase : protected std::array<T, Dim> {
         return std::sqrt(sqrdot());
     }
 
-    inline constexpr Vector<T, Dim> normalized() const
+    inline constexpr Vector<T, Dim> normalize() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::normalized requires a floating point type");
+        static_assert(std::is_floating_point_v<T>, "vec::normalize requires a floating point type");
         return (*this) / length();
     }
 

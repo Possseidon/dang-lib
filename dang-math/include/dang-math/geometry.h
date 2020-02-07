@@ -184,7 +184,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
     {
         if (this->direction() == T())
             return this->support.distanceTo(point);
-        Line<T, 2> rotated{ this->support, this->direction().cross().normalized() };
+        Line<T, 2> rotated{ this->support, this->direction().cross().normalize() };
         return rotated.orthoProj(point);
     }
 
@@ -286,7 +286,7 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
 
     inline constexpr Vector<T, 3> normal() const
     {
-        return perpendicular().normalized();
+        return perpendicular().normalize();
     }
 
     inline constexpr T height(const Vector<T, 3>& point) const

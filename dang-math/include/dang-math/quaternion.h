@@ -53,9 +53,11 @@ struct Quaternion : private Vector<T, 4> {
 
     using Base::dot;
     using Base::sqrdot;
-    using Base::normalized;
-    using Base::operator+;
-    using Base::operator-;
+
+    inline constexpr Quaternion normalize() const
+    {
+        return Base::normalize();
+    }
 
     inline constexpr T magnitude() const
     {
@@ -69,8 +71,7 @@ struct Quaternion : private Vector<T, 4> {
 
     inline constexpr Quaternion inverse() const
     {
-        auto l = Base::sqrdot();
-        return Quaternion(scalar() / l, -vector() / l);
+        return conjugate() / Base::sqrdot();
     }
 
     inline constexpr Matrix<T, 3> toMatrix() const
@@ -83,6 +84,16 @@ struct Quaternion : private Vector<T, 4> {
             { T(1) - T(2) * y * y - T(2) * z * z, T(2) * x * y + T(2) * z * w, T(2) * x * z - T(2) * y * w },
             { T(2) * x * y - T(2) * z * w, T(1) - T(2) * x * x - T(2) * z * z, T(2) * y * z + T(2) * x * w },
             { T(2) * x * z + T(2) * y * w, T(2) * y * z - T(2) * x * w, T(1) - T(2) * x * x - T(2) * y * y } });
+    }
+
+    inline constexpr Quaternion operator+() const
+    {
+        return *this;
+    }
+
+    inline constexpr Quaternion operator-() const
+    {
+        return Base::operator-();
     }
 
     friend inline constexpr Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs)
@@ -124,6 +135,16 @@ struct Quaternion : private Vector<T, 4> {
         Vector<T, 3> u = quaternion.vector();
         Vector<T, 3> uv = u.cross(vector);
         return vector + T(2) * ((quaternion.scalar() * uv) + u.cross(uv));
+    }
+
+    friend inline constexpr Vector<T, 3> operator*(const Vector<T, 3>& vector, const Quaternion& quaternion)
+    {
+        return quaternion.conjugate() * vector;
+    }
+
+    friend inline constexpr Vector<T, 3>& operator*=(Vector<T, 3>& vector, const Quaternion& quaternion)
+    {
+        return vector = vector * quaternion;
     }
 
     friend inline constexpr Quaternion operator*(const Quaternion& quaternion, T factor)
@@ -184,10 +205,35 @@ struct DualQuaternion {
     {
     }
 
-    inline constexpr explicit DualQuaternion(const Vector<T, 3>& vector)
+    inline constexpr explicit DualQuaternion(const Vector<T, 3>& dual)
         : real(Quaternion<T>::identity())
-        , dual(T(), vector)
+        , dual(T(), dual)
     {
+    }
+
+    static inline constexpr DualQuaternion fromAxisRad(const Vector<T, 3>& normal, T radians)
+    {
+        return Quaternion<T>::fromAxisRad(normal, radians);
+    }
+
+    static inline constexpr DualQuaternion fromAxis(const Vector<T, 3>& normal, T degrees)
+    {
+        return DualQuaternion(Quaternion<T>::fromAxis(normal, degrees));
+    }
+
+    static inline constexpr DualQuaternion fromTranslation(const Vector<T, 3>& offset)
+    {
+        return DualQuaternion(Quaternion<T>::identity(), Vector<T, 4>(offset / T(2), 0));
+    }
+
+    inline constexpr DualQuaternion quatConjugate() const
+    {
+        return DualQuaternion(real.conjugate(), dual.conjugate());
+    }
+
+    inline constexpr DualQuaternion dualConjugate() const
+    {
+        return DualQuaternion(real, -dual);
     }
 
     inline constexpr DualQuaternion conjugate() const
@@ -205,7 +251,7 @@ struct DualQuaternion {
         return T(2) * (dual * real.conjugate()).vector();
     }
 
-    inline constexpr DualQuaternion normalized() const
+    inline constexpr DualQuaternion normalize() const
     {
         return *this / real.magnitude();
     }
@@ -213,6 +259,27 @@ struct DualQuaternion {
     inline constexpr Quaternion<T> dot(const DualQuaternion& other) const
     {
         return real.dot(other.real);
+    }
+
+    inline constexpr DualQuaternion inverse() const
+    {
+        Quaternion<T> realInverse = real.inverse();
+        return DualQuaternion(realInverse, -realInverse * dual * realInverse);
+    }
+
+    inline constexpr DualQuaternion rotateRad(const Vector<T, 3>& normal, T radians) const
+    {
+        return *this * fromAxisRad(normal, radians);
+    }
+
+    inline constexpr DualQuaternion rotate(const Vector<T, 3>& normal, T degrees) const
+    {
+        return *this * fromAxis(normal, degrees);
+    }
+
+    inline constexpr DualQuaternion translate(const Vector<T, 3>& offset) const
+    {
+        return *this * fromTranslation(offset);
     }
 
     inline constexpr Matrix<T, 4> toMatrix() const
@@ -233,29 +300,28 @@ struct DualQuaternion {
         return DualQuaternion(-real, -dual);
     }
 
-    friend inline constexpr DualQuaternion operator*(const DualQuaternion& dualquaternion, T factor)
-    {
-        return DualQuaternion(dualquaternion.real * factor, dualquaternion.dual * factor);
-    }
-
-    friend inline constexpr DualQuaternion operator*(T factor, const DualQuaternion& dualquaternion)
-    {
-        return dualquaternion * factor;
-    }
-
     friend inline constexpr DualQuaternion& operator*=(DualQuaternion& dualquaternion, T factor)
     {
-        return dualquaternion = dualquaternion * factor;
+        dualquaternion.real *= factor;
+        dualquaternion.dual *= factor;
+        return dualquaternion;
     }
 
-    friend inline constexpr DualQuaternion operator/(const DualQuaternion& dualquaternion, T factor)
+    friend inline constexpr DualQuaternion operator*(DualQuaternion dualquaternion, T factor)
     {
-        return DualQuaternion(dualquaternion.real / factor, dualquaternion.dual / factor);
+        return dualquaternion *= factor;
     }
 
     friend inline constexpr DualQuaternion& operator/=(DualQuaternion& dualquaternion, T factor)
     {
-        return dualquaternion = dualquaternion / factor;
+        dualquaternion.real /= factor;
+        dualquaternion.dual /= factor;
+        return dualquaternion;
+    }
+
+    friend inline constexpr DualQuaternion operator/(DualQuaternion dualquaternion, T factor)
+    {
+        return dualquaternion /= factor;
     }
 
     friend inline constexpr DualQuaternion& operator+=(DualQuaternion& lhs, const DualQuaternion& rhs)
@@ -292,9 +358,19 @@ struct DualQuaternion {
         return lhs = lhs * rhs;
     }
 
+    friend inline constexpr DualQuaternion& operator/=(DualQuaternion& lhs, const DualQuaternion& rhs)
+    {
+        return lhs *= rhs.inverse;
+    }
+
+    friend inline constexpr DualQuaternion operator/(DualQuaternion lhs, const DualQuaternion& rhs)
+    {
+        return lhs /= rhs;
+    }
+
     friend inline constexpr Vector<T, 3> operator*(const DualQuaternion& dualquaternion, const Vector<T, 3>& vector)
     {
-        return (dualquaternion * DualQuaternion(vector) * dualquaternion.conjugate()).dual.vector();
+        return (dualquaternion.conjugate() * DualQuaternion(vector) * dualquaternion).dual.vector();
     }
 };
 
