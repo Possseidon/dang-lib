@@ -2,7 +2,6 @@
 
 #include "GLFW.h"
 
-#include <exception>
 #include <sstream>
 #include <iostream>
 
@@ -13,18 +12,20 @@ GLFW GLFW::Instance;
 
 void GLFW::setContext(GLFWwindow* window)
 {
-    if (window != active_window_) {
-        active_window_ = window;
-        glfwMakeContextCurrent(window);
+    if (window == active_window_)
+        return;
 
-        if (!glad_initialized_ && window) {
-            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-                std::cerr << "Failed to initialize OpenGL." << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            glad_initialized_ = true;
-        }
+    active_window_ = window;
+    glfwMakeContextCurrent(window);
+
+    if (glad_initialized_ || !window)
+        return;
+
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+        std::cerr << "Failed to initialize OpenGL." << std::endl;
+        std::exit(EXIT_FAILURE);
     }
+    glad_initialized_ = true;
 }
 
 GLFW::GLFW()
@@ -48,7 +49,18 @@ std::string GLFW::formatError(int error_code, const char* description)
 void GLFW::errorCallback(int error_code, const char* description)
 {
     std::cerr << formatError(error_code, description) << std::endl;
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
+}
+
+GLuint ObjectBase::handle()
+{
+    return handle_;
+}
+
+ObjectBase::ObjectBase(GLuint handle, Binding& binding)
+    : handle_(handle)
+    , binding_(binding)
+{
 }
 
 }
