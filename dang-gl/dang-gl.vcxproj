@@ -174,8 +174,12 @@
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\dang-gl\Window.h" />
+    <ClInclude Include="include\dang-gl\Object.h" />
+    <ClInclude Include="include\dang-gl\Program.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Program.cpp" />
+    <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>

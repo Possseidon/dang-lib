@@ -18,8 +18,8 @@ private:
     static std::string formatError(int error_code, const char* description);
     static void errorCallback(int error_code, const char* description);
 
-    bool gladInitialized = false;
-    GLFWwindow* window_ = nullptr;
+    bool glad_initialized_ = false;
+    GLFWwindow* active_window_ = nullptr;
 };
 
 }

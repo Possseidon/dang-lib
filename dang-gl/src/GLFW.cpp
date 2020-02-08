@@ -13,16 +13,16 @@ GLFW GLFW::Instance;
 
 void GLFW::setContext(GLFWwindow* window)
 {
-    if (window != window_) {
-        window_ = window;
+    if (window != active_window_) {
+        active_window_ = window;
         glfwMakeContextCurrent(window);
 
-        if (!gladInitialized && window) {
+        if (!glad_initialized_ && window) {
             if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
                 std::cerr << "Failed to initialize OpenGL." << std::endl;
                 exit(EXIT_FAILURE);
             }
-            gladInitialized = true;
+            glad_initialized_ = true;
         }
     }
 }
