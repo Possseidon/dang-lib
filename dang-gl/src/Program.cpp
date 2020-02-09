@@ -64,6 +64,30 @@ void Program::checkLinkStatusAndInfoLog()
     }
 }
 
+void Program::loadAttributeLocations()
+{
+    GLint active_attributes;
+    glGetProgramiv(handle(), GL_ACTIVE_ATTRIBUTES, &active_attributes);
+    if (active_attributes == 0)
+        return;
+
+    GLint max_length;
+    glGetProgramiv(handle(), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+    for (GLint i = 0; i < active_attributes; i++) {
+        std::string name(static_cast<std::size_t>(max_length), '\0');
+        GLsizei actual_length;
+        GLint data_size;
+        GLenum data_type;
+        glGetActiveAttrib(handle(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
+        name.resize(static_cast<std::size_t>(actual_length));
+        attributes_.emplace_back(*this, data_size, static_cast<DataType>(data_type), name);
+    }
+}
+
+void Program::loadUniformLocations()
+{
+}
+
 void Program::addShader(ShaderType type, std::string shader_code)
 {
     GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
@@ -86,6 +110,36 @@ void Program::link()
         glDetachShader(handle(), shader_handle);
         glDeleteShader(shader_handle);
     }
+    loadAttributeLocations();
+    loadUniformLocations();
+}
+
+ShaderVariable::ShaderVariable(Program& program, GLint data_size, DataType data_type, std::string name)
+    : program_(program)
+    , data_size_(data_size)
+    , data_type_(data_type)
+    , name_(std::move(name))
+{
+}
+
+Program& ShaderVariable::program()
+{
+    return program_;
+}
+
+GLint ShaderVariable::dataSize()
+{
+    return data_size_;
+}
+
+DataType ShaderVariable::dataType()
+{
+    return data_type_;
+}
+
+const std::string& ShaderVariable::name()
+{
+    return name_;
 }
 
 }
