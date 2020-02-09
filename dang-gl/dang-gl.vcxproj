@@ -173,7 +173,6 @@
     <ClInclude Include="include\dang-gl\pch.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\KHR\khrplatform.h" />
-    <ClInclude Include="include\dang-gl\Window.h" />
     <ClInclude Include="include\dang-gl\Program.h" />
   </ItemGroup>
   <ItemGroup>
@@ -191,7 +190,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
