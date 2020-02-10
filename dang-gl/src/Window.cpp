@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Window.h"
 
-#include "GLFW.h"   
+#include "GLFW.h"
 
 namespace dang::gl
 {

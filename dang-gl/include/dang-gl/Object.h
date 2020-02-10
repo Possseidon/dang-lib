@@ -5,6 +5,7 @@
 #include "Binding.h"
 #include "ObjectBase.h"
 #include "Window.h"
+#include "GLFW.h"
 
 namespace dang::gl
 {
@@ -12,10 +13,10 @@ namespace dang::gl
 class GLFW;
 
 struct ObjectInfo {
-    // Inherite and implement the following:  
+    // Inherite and implement the following:
     // static GLuint create();
     // static void destroy(GLuint handle);
-    // static void bind(GLuint handle);                     
+    // static void bind(GLuint handle);
 
     // static constexpr ObjectType Type = ObjectType::TODO;
 

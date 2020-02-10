@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dang-utils/enum.h"     
+#include "dang-utils/enum.h"
 #include "dang-math/vector.h"
 
 #include "ObjectTypes.h"
