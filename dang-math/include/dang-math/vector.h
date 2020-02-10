@@ -443,6 +443,9 @@ using uvec = Vector<unsigned, Dim>;
 template <std::size_t Dim>
 using svec = Vector<std::size_t, Dim>;
 
+template <std::size_t Dim>
+using bvec = Vector<bool, Dim>;
+
 using vec1 = vec<1>;
 using vec2 = vec<2>;
 using vec3 = vec<3>;
@@ -467,6 +470,11 @@ using svec1 = svec<1>;
 using svec2 = svec<2>;
 using svec3 = svec<3>;
 using svec4 = svec<4>;
+
+using bvec1 = bvec<1>;
+using bvec2 = bvec<2>;
+using bvec3 = bvec<3>;
+using bvec4 = bvec<4>;
 
 template <typename T, std::size_t Dim>
 struct std::tuple_size<Vector<T, Dim>> {
