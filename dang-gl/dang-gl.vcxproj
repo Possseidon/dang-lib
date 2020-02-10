@@ -170,12 +170,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\dang-gl\GLFW.h" />
+    <ClInclude Include="include\dang-gl\Object.h" />
+    <ClInclude Include="include\dang-gl\ObjectBase.h" />
+    <ClInclude Include="include\dang-gl\ObjectTypes.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\Window.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\dang-gl\Program.h" />
+    <ClInclude Include="include\dang-gl\Binding.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ObjectBase.cpp" />
     <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -190,6 +196,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

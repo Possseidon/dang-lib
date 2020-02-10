@@ -2,7 +2,8 @@
 
 #include "dang-utils/enum.h"
 
-#include "GLFW.h"
+#include "ObjectTypes.h"
+#include "Object.h"
 
 namespace dang::gl
 {

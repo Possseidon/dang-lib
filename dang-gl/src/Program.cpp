@@ -1,8 +1,7 @@
 #include "pch.h"
-
-#include <iostream>
-
 #include "Program.h"
+
+#include <iostream> 
 
 namespace dang::gl
 {
@@ -30,7 +29,7 @@ void Program::checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type)
     GLint info_log_length;
     glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &info_log_length);
     if (info_log_length > 0) {
-        std::string info_log(info_log_length - 1, '\0');
+        std::string info_log(static_cast<std::size_t>(info_log_length) - 1, '\0');
         glGetShaderInfoLog(shader_handle, info_log_length, nullptr, &info_log[0]);
 
         if (status)
@@ -38,9 +37,8 @@ void Program::checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type)
         else
             throw ShaderCompilationError(type, info_log);
     }
-    else if (!status) {
+    else if (!status)
         throw ShaderCompilationError(type, "unknown error");
-    }
 }
 
 void Program::checkLinkStatusAndInfoLog()
@@ -51,7 +49,7 @@ void Program::checkLinkStatusAndInfoLog()
     GLint info_log_length;
     glGetProgramiv(handle(), GL_INFO_LOG_LENGTH, &info_log_length);
     if (info_log_length > 0) {
-        std::string info_log(info_log_length - 1, '\0');
+        std::string info_log(static_cast<std::size_t>(info_log_length) - 1, '\0');
         glGetProgramInfoLog(handle(), info_log_length, nullptr, &info_log[0]);
 
         if (status)
@@ -59,9 +57,8 @@ void Program::checkLinkStatusAndInfoLog()
         else
             throw ShaderLinkError(info_log);
     }
-    else if (!status) {
+    else if (!status)
         throw ShaderLinkError("unknown error");
-    }
 }
 
 void Program::loadAttributeLocations()
@@ -96,7 +93,7 @@ void Program::addShader(ShaderType type, std::string shader_code)
     std::vector<const GLchar*> full_code;
     full_code.push_back(shader_code.c_str());
 
-    glShaderSource(shader_handle, full_code.size(), &full_code[0], nullptr);
+    glShaderSource(shader_handle, static_cast<GLsizei>(full_code.size()), &full_code[0], nullptr);
     glCompileShader(shader_handle);
     checkShaderStatusAndInfoLog(shader_handle, type);
     glAttachShader(handle(), shader_handle);
