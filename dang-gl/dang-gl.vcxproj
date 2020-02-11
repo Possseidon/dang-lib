@@ -181,6 +181,8 @@
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\dang-gl\Program.h" />
     <ClInclude Include="include\dang-gl\Binding.h" />
+    <ClInclude Include="include\dang-gl\VBO.h" />
+    <ClInclude Include="include\dang-gl\VAO.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ObjectBase.cpp" />
@@ -199,6 +201,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\VBO.cpp" />
+    <ClCompile Include="src\VAO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
