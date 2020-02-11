@@ -73,12 +73,9 @@ public:
     }
 };
 
-class UniformError : public std::runtime_error {
+class ShaderUniformError : public std::runtime_error {
 public:
-    UniformError(const std::string& name)
-        : std::runtime_error(name + " missing or type-mismatch")
-    {
-    }
+    using std::runtime_error::runtime_error;
 };
 
 struct ProgramInfo : public ObjectInfo {
@@ -127,7 +124,7 @@ template <typename T>
 class ShaderUniform : public ShaderUniformBase {
 public:
     ShaderUniform(Program& program, GLint count, DataType type, std::string name);
-    ShaderUniform(Program& program, std::string name);
+    ShaderUniform(Program& program, GLint count, std::string name);
 
     void force(const T& value, GLint index = 0);
     void set(const T& value, GLint index = 0);
@@ -147,7 +144,7 @@ public:
     void link();
 
     template <typename T>
-    ShaderUniform<T>& uniform(std::string name);
+    ShaderUniform<T>& uniform(std::string name, GLint count = 1);
 
 private:
     void checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type);
@@ -171,8 +168,8 @@ inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, DataType t
 }
 
 template<typename T>
-inline ShaderUniform<T>::ShaderUniform(Program& program, std::string name)
-    : ShaderUniformBase(program, 1, DataType::None, std::move(name))
+inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, std::string name)
+    : ShaderUniformBase(program, count, DataType::None, std::move(name))
 {
 }
 
@@ -214,17 +211,25 @@ inline ShaderUniform<T>::operator T()
 }
 
 template<typename T>
-inline ShaderUniform<T>& Program::uniform(std::string name)
+inline ShaderUniform<T>& Program::uniform(std::string name, GLint count)
 {
     auto pos = uniforms_.find(name);
     if (pos == uniforms_.end()) {
-        auto uniform = std::make_unique<ShaderUniform<T>>(*this, name);
+        auto uniform = std::make_unique<ShaderUniform<T>>(*this, count, name);
         ShaderUniform<T>& result = *uniform;
         uniforms_.emplace(name, std::move(uniform));
         return result;
     }
-    ShaderUniformBase& shader_uniform = *pos->second;
-    return dynamic_cast<ShaderUniform<T>&>(shader_uniform);
+
+    ShaderUniformBase* shader_uniform = pos->second.get();
+
+    if (count != shader_uniform->count())
+        throw ShaderUniformError("Shader-Uniform count does not match.");
+
+    if (auto typed_uniform = dynamic_cast<ShaderUniform<T>*>(shader_uniform))
+        return *typed_uniform;
+
+    throw ShaderUniformError("Shader-Uniform type does not match.");
 }
 
 }
