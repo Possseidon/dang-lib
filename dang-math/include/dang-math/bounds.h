@@ -13,6 +13,7 @@ namespace dang::math
 namespace detail
 {
 
+/// <summary>Performs a floor division on the given arguments.</summary>
 template <typename T>
 inline constexpr T floordiv(T numerator, T denominator)
 {
@@ -29,6 +30,7 @@ inline constexpr T floordiv(T numerator, T denominator)
     }
 }
 
+/// <summary>Uses floordiv to implement a floor modulus.</summary>
 template <typename T>
 static inline constexpr T floormod(T numerator, T denominator)
 {
@@ -40,6 +42,11 @@ static inline constexpr T floormod(T numerator, T denominator)
 template <typename T, std::size_t Dim>
 struct Bounds;
 
+/// <summary>An iterator, allowing iteration of any-dimensional integral bounds.</summary>
+/// <remarks>
+/// The last vector component iterates first, followed by the second to last, etc...
+/// This results in better caching for the common use-case of iterating an array[x][y][z]
+/// </remarks>
 template <typename T, std::size_t Dim>
 struct BoundsIterator : public std::iterator<std::forward_iterator_tag, Vector<T, Dim>> {
     static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
@@ -84,29 +91,36 @@ private:
     Vector<T, Dim> current_;
 };
 
+/// <summary>Generic bounds with low and high values for any dimensional vectors.</summary>
+/// <remarks>Integral bounds are high exclusive: [low, high)</remarks>
 template <typename T, std::size_t Dim>
 struct Bounds {
     Vector<T, Dim> low;
     Vector<T, Dim> high;
 
+    /// <summary>Initializes the bounds with zero-vectors for low and high.</summary>
     inline constexpr Bounds() = default;
 
+    /// <summary>Initializes high with the given value and low with zero.</summary>
     inline constexpr explicit Bounds(const Vector<T, Dim>& high)
         : high(high)
     {
     }
 
+    /// <summary>Initializes low and high with the given values.</summary>
     inline constexpr Bounds(const Vector<T, Dim>& low, const Vector<T, Dim>& high)
         : low(low)
         , high(high)
     {
     }
 
+    /// <summary>Returns true, when high is bigger than or equal to low.</summary>
     inline constexpr bool isNormalized() const
     {
         return low <= high;
     }
 
+    /// <summary>Returns bounds with any non-normalized components swapped.</summary>
     inline constexpr Bounds normalize() const
     {
         Bounds result;
@@ -123,11 +137,13 @@ struct Bounds {
         return result;
     }
 
+    /// <summary>Returns the size of the bounds, which is equal to <c>high - low</c>.</summary>
     inline constexpr Vector<T, Dim> size() const
     {
         return high - low;
     }
 
+    /// <summary>Returns the center of the bounds, rounded down for integral types.</summary>
     inline constexpr Vector<T, Dim> center() const
     {
         if constexpr (std::is_integral_v<T>)
@@ -136,16 +152,34 @@ struct Bounds {
             return (low + high) + size() / T(2);
     }
 
+    /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
     inline constexpr bool contains(const Bounds& other) const
     {
         return other.low >= low && other.high <= high;
     }
 
+    /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
+    /// <remarks>Comparison is inclusive for low and exclusive for high.</remarks>
     inline constexpr bool contains(const Vector<T, Dim>& vector) const
     {
         return vector >= low && vector < high;
     }
 
+    /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
+    /// <remarks>Comparison is inclusive for both low and high.</remarks>
+    inline constexpr bool containsInclusive(const Vector<T, Dim>& vector) const
+    {
+        return vector >= low && vector <= high;
+    }
+
+    /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
+    /// <remarks>Comparison is exclusive for both low and high.</remarks>
+    inline constexpr bool containsExclusive(const Vector<T, Dim>& vector) const
+    {
+        return vector > low&& vector < high;
+    }
+
+    /// <summary>Clamps the given bounds, resulting in an intersection of both bounds.</summary>
     inline constexpr Bounds clamp(const Bounds& other) const
     {
         return {
@@ -154,6 +188,8 @@ struct Bounds {
         };
     }
 
+    /// <summary>Clamps the given point into the calling bounds.</summary>
+    /// <remarks>For integral types, high is clamped exclusive.</remarks>
     inline constexpr Vector<T, Dim> clamp(const Vector<T, Dim>& vector) const
     {
         if constexpr (std::is_integral_v<T>)
@@ -162,6 +198,7 @@ struct Bounds {
             return vector.max(low).min(high);
     }
 
+    /// <summary>Returns the result of a symmetrical modulus on the given vector.</summary>
     inline constexpr Vector<T, Dim> mod(Vector<T, Dim> vector) const
     {
         for (std::size_t i = 0; i < Dim; i++)
@@ -169,6 +206,7 @@ struct Bounds {
         return vector;
     }
 
+    /// <summary>Returns the bounds offset by the given amount.</summary>
     inline constexpr Bounds offset(Vector<T, Dim> amount) const
     {
         return {
@@ -177,6 +215,7 @@ struct Bounds {
         };
     }
 
+    /// <summary>Returns the bounds outset by the given amount.</summary>
     inline constexpr Bounds outset(Vector<T, Dim> amount) const
     {
         return {
@@ -185,6 +224,7 @@ struct Bounds {
         };
     }
 
+    /// <summary>Returns the bounds inset by the given amount.</summary>
     inline constexpr Bounds inset(Vector<T, Dim> amount) const
     {
         return {
@@ -193,6 +233,7 @@ struct Bounds {
         };
     }
 
+    /// <summary>Returns an enum-array, mapping corners to the actual positions of the corners.</summary>
     template <typename = std::enable_if_t<(Dim >= 1 && Dim <= 3)>>
     inline constexpr dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> corners() const
     {
@@ -203,41 +244,49 @@ struct Bounds {
         return result;
     }
 
+    /// <summary>Returns true, if both bounds are identical.</summary>
     friend inline constexpr bool operator==(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.low == rhs.low && lhs.high == rhs.high;
     }
 
+    /// <summary>Returns true, if either low or high differs between the given bounds.</summary>
     friend inline constexpr bool operator!=(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.low != rhs.low || lhs.high != rhs.high;
     }
 
+    /// <summary>Returns true, if high of the first bounds is less than low of the second bounds.</summary>
     friend inline constexpr bool operator<(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.high < rhs.low;
     }
 
+    /// <summary>Returns true, if high of the first bounds is less than or equal to low of the second bounds.</summary>
     friend inline constexpr bool operator<=(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.high <= rhs.low;
     }
 
+    /// <summary>Returns true, if low of the first bounds is greater than high of the second bounds.</summary>
     friend inline constexpr bool operator>(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.low > rhs.high;
     }
 
+    /// <summary>Returns true, if low of the first bounds is greater than or equal to high of the second bounds.</summary>
     friend inline constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs)
     {
         return lhs.low >= rhs.high;
     }
 
+    /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
     inline constexpr BoundsIterator<T, Dim> begin() const
     {
         return BoundsIterator<T, Dim>(*this, low);
     }
 
+    /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
     inline constexpr BoundsIterator<T, Dim> end() const
     {
         return ++BoundsIterator<T, Dim>(*this, high - 1);
