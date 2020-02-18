@@ -22,7 +22,7 @@ struct Spat;
 namespace detail
 {
 
-/// <summary>Used as a base for anything that can be represented by one support vector and n direction vectors in any dimension.</summary>
+/// <summary>Used as a base for axis-sytems, consisting of one support vector and an arbitrary amount of direction vectors.</summary>
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystemBase {
     Vector<T, Dim> support;
@@ -82,12 +82,12 @@ struct AxisSystemBase {
     }
 };
 
-/// <summary>Used as a base for any dimensional lines, consisting of one support and direction vector.</summary>
+/// <summary>Used as a base for lines, consisting of one support and one direction vector.</summary>
 template <typename T, std::size_t Dim>
 struct LineBase : public AxisSystemBase<T, Dim, 1> {
-    /// <summary>Initializes support and direction vector with zero.</summary>
+    /// <summary>Initializes support and direction vectors with zero.</summary>
     inline constexpr LineBase() : AxisSystemBase<T, Dim, 1>() {}
-    /// <summary>Initializes support and direction vector with the given vectors.</summary>
+    /// <summary>Initializes support and direction vectors with the given vectors.</summary>
     inline constexpr LineBase(Vector<T, Dim> support, Vector<T, Dim> directions) : AxisSystemBase<T, Dim, 1>(support, directions) {}
 
     /// <summary>A simple shortcut, getting the only direction vector of the line.</summary>
@@ -140,7 +140,7 @@ struct LineBase : public AxisSystemBase<T, Dim, 1> {
     }
 };
 
-/// <summary>Used as a base for any dimensional planes, consisting of one support and two direction vectors.</summary>
+/// <summary>Used as a base for planes, consisting of one support and two direction vectors.</summary>
 template <typename T, std::size_t Dim>
 struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -154,7 +154,7 @@ struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
         return this->directions[0].length() * this->directions[1].length();
     }
 
-    /// <summary>Returns the factors if the closest point on the plane for the given point.</summary>
+    /// <summary>Returns the factors of the closest point on the plane for the given point.</summary>
     inline constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, Dim> point) const
     {
         auto dxs = this->directions[0].sqrdot();
@@ -172,7 +172,7 @@ struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
     }
 };
 
-/// <summary>Used as a base for any dimensional spats, consisting of one support and three direction vectors.</summary>
+/// <summary>Used as a base for spats, consisting of one support and three direction vectors.</summary>
 template <typename T, std::size_t Dim>
 struct SpatBase : public AxisSystemBase<T, Dim, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -183,7 +183,7 @@ struct SpatBase : public AxisSystemBase<T, Dim, 3> {
 
 }
 
-/// <summary>An axis-system, which can be represented by one support and n direction vectors.</summary>
+/// <summary>An axis-system with one support and an arbitrary amount of direction vectors.</summary>
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -192,7 +192,7 @@ struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
     inline constexpr AxisSystem(Vector<T, Dim> support, Matrix<T, AxisCount, Dim> directions) : detail::AxisSystemBase<T, Dim, AxisCount>(support, directions) {}
 };
 
-/// <summary>A line, which can be represented by one support and direction vector.</summary>
+/// <summary>A line with one support and one direction vector.</summary>
 template <typename T, std::size_t Dim>
 struct Line : public detail::LineBase<T, Dim> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -209,7 +209,7 @@ enum class LineSide {
     COUNT
 };
 
-/// <summary>A two-dimensional line with one support and direction vector.</summary>
+/// <summary>A two-dimensional line with one support and one direction vector.</summary>
 template <typename T>
 struct Line<T, 2> : public detail::LineBase<T, 2> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -267,7 +267,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
     }
 };
 
-/// <summary>A three-dimensional line with one support and direction vector.</summary>
+/// <summary>A three-dimensional line with one support and one direction vector.</summary>
 template <typename T>
 struct Line<T, 3> : public detail::LineBase<T, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
@@ -297,7 +297,8 @@ struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
     /// <summary>Initializes support and direction vectors with the given vectors.</summary>
     inline constexpr Plane(Vector<T, 2> support, Matrix<T, 2, 2> directions) : detail::PlaneBase<T, 2>(support, directions) {}
 
-    inline constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, 2> point) const
+    /// <summary>Returns the required factor to reach the specified point.</summary>
+    inline constexpr std::optional<Vector<T, 2>> factorAt(const Vector<T, 2>& point) const
     {
         const auto& dx = this->directions[0];
         const auto& dy = this->directions[1];
@@ -319,11 +320,6 @@ struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
 
         return std::nullopt;
     }
-
-    inline constexpr std::optional<Vector<T, 2>> factorAt(const Vector<T, 2>& point) const
-    {
-        return orthoProj(point);
-    }
 };
 
 /// <summary>A three-dimensional plane with one support and two direction vectors.</summary>
@@ -334,21 +330,26 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
     /// <summary>Initializes support and direction vectors with the given vectors.</summary>
     inline constexpr Plane(Vector<T, 3> support, Matrix<T, 2, 3> directions) : detail::PlaneBase<T, 3>(support, directions) {}
 
+    /// <summary>Returns the perpendicular of the plane using the cross-product.</summary>
+    /// <remarks>The length of the result is the area of the plane.</remarks>
     inline constexpr Vector<T, 3> perpendicular() const
     {
         return this->directions[0].cross(this->directions[1]);
     }
 
+    /// <summary>Returns a normalized perpendicular of the plane.</summary>
     inline constexpr Vector<T, 3> normal() const
     {
         return perpendicular().normalize();
     }
 
+    /// <summary>Returns the height from the plane to the given point.</summary>
     inline constexpr T height(const Vector<T, 3>& point) const
     {
         return Line<T, 3>(this->support, normal()).orthoProj(point);
     }
 
+    /// <summary>Builds a matrix, which can be used to calculate the intersection with a line.</summary>
     inline constexpr Matrix<T, 4, 3> intersectionMatrix(const Line<T, 3>& line) const
     {
         return Matrix<T, 4, 3>({
@@ -358,16 +359,19 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
             line.support - this->support });
     }
 
+    /// <summary>Returns the factors to reach the intersection point with the given line for the plane (xy) and line (z).</summary>
     inline constexpr std::optional<Vector<T, 3>> intersectionFactors(const Line<T, 3>& line) const
     {
         return intersectionMatrix(line).solve();
     }
 
+    /// <summary>Returns the factor to reach the intersection point with the given line for the line itself.</summary>
     inline constexpr std::optional<T> intersectionLineFactor(const Line<T, 3>& line) const
     {
         return intersectionMatrix(line).solveCol(2);
     }
 
+    /// <summary>Calculates the intersection with the given line and returns the intersection point.</summary>
     inline constexpr std::optional<Vector<T, 3>> intersectionPoint(const Line<T, 3>& line) const
     {
         if (auto factor = intersectionLineFactor(line))
@@ -375,6 +379,7 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
         return std::nullopt;
     }
 
+    /// <summary>Calculates the intersection with the given line and returns the intersection point, using the plane.</summary>
     inline constexpr std::optional<Vector<T, 3>> intersectionPointViaPlane(const Line<T, 3>& line) const
     {
         if (auto factors = intersectionFactors(line))
@@ -382,6 +387,7 @@ struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
         return std::nullopt;
     }
 
+    /// <summary>Returns the intersection with another plane in the form of a line of arbitrary position and length.</summary>
     inline constexpr std::optional<Line<T, 3>> intersectionLine(const Plane<T, 3>& plane) const
     {
         Vector<T, 3> perp = perpendicular();
@@ -414,7 +420,7 @@ struct Spat<T, 3> : public detail::SpatBase<T, 3> {
     /// <summary>Initializes support and direction vectors with the given vectors.</summary>
     inline constexpr Spat(Vector<T, 3> support, Matrix<T, 3, 3> directions) : detail::SpatBase<T, 3>(support, directions) {}
 
-    /// <summary>Returns the triple product (german Spat-Produkt) of the spat.</summary>
+    /// <summary>Returns the triple product (aka Spat-Produkt) of the spat.</summary>
     inline constexpr T tripleProduct() const
     {
         return this->directions.determinant();
