@@ -7,26 +7,32 @@
 namespace dang::math
 {
 
+/// <summary>A generic, column-major matrix of any dimensions.</summary>
 template <typename T, std::size_t Cols, std::size_t Rows = Cols>
 struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     using Base = std::array<Vector<T, Rows>, Cols>;
 
+    /// <summary>Initializes the matrix with zero.</summary>
     inline constexpr Matrix() : Base() {}
 
+    /// <summary>Initializes the matrix from a std::array of columns.</summary>
     inline constexpr Matrix(const Base& columns) : Base(columns) {}
 
+    /// <summary>Initializes the whole matrix with the same, given value.</summary>
     inline constexpr Matrix(T value) : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = value;
     }
 
+    /// <summary>Initializes the matrix from a C-style array of columns.</summary>
     inline constexpr Matrix(const Vector<T, Rows>(&columns)[Cols]) : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = columns[i];
     }
 
+    /// <summary>Initializes a single-column matrix with the given values.</summary>
     inline constexpr Matrix(Vector<T, Rows> col) : Base({ col })
     {
         static_assert(Cols == 1, "only mat1xN can be constructed from vector");
@@ -34,6 +40,8 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     using Base::operator[];
 
+    /// <summary>Returns the identity matrix.</summary>
+    /// <remarks>For non-square matrices the rest is filled with zeros.</remarks>
     static inline constexpr Matrix identity()
     {
         Matrix result;
@@ -42,18 +50,21 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Allows for implicit conversion from single-column matrices to vectors.</summary>
     inline constexpr operator Vector<T, Rows>() const
     {
         static_assert(Cols == 1, "only mat1xN can be converted to vector");
         return (*this)[0];
     }
 
+    /// <summary>Allows for implicit conversion from single-value matrices to their respective value type.</summary>
     inline constexpr operator T() const
     {
         static_assert(Cols == 1 && Rows == 1, "only mat1x1 can be converted to value type");
         return (*this)(0, 0);
     }
 
+    /// <summary>Returns a sub matrix with the given offset and size.</summary>
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
     inline constexpr Matrix<T, ColCount, RowCount> subMatrix() const
     {
@@ -63,6 +74,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Sets a sub matrix at the given offset and size.</summary>
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
     inline constexpr void setSubMatrix(Matrix<T, ColCount, RowCount> matrix)
     {
@@ -70,26 +82,31 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             (*this)(StartCol + col, StartRow + row) = matrix(col, row);
     }
 
+    /// <summary>Returns a reference to the value at the given position. (x = col, y = row)</summary>
     inline constexpr T& operator[](const dmath::svec2& pos)
     {
         return (*this)(pos.x(), pos.y());
     }
 
+    /// <summary>Returns a const reference to the value at the given position. (x = col, y = row)</summary>
     inline constexpr const T& operator[](const dmath::svec2& pos) const
     {
         return (*this)(pos.x(), pos.y());
     }
 
+    /// <summary>Returns a reference to the value at the given column/row.</summary>
     inline constexpr T& operator()(std::size_t col, std::size_t row)
     {
         return (*this)[col][row];
     }
 
+    /// <summary>Returns a const reference to the value at the given column/row.</summary>
     inline constexpr const T& operator()(std::size_t col, std::size_t row) const
     {
         return (*this)[col][row];
     }
 
+    /// <summary>Returns the transposed matrix.</summary>
     inline constexpr Matrix<T, Rows, Cols> transpose()
     {
         Matrix<T, Rows, Cols> result;
@@ -98,11 +115,15 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Returns the minor at the given column/row.</summary>
+    /// <remarks>A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
     inline constexpr Matrix<T, Cols - 1, Rows - 1> minor(std::size_t col, std::size_t row) const
     {
         return minor({ col, row });
     }
 
+    /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
+    /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
     inline constexpr Matrix<T, Cols - 1, Rows - 1> minor(const dmath::svec2& pos) const
     {
         Matrix<T, Cols - 1, Rows - 1> result;
@@ -122,12 +143,16 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Returns the cofactor at the given column/row.</summary>
+    /// <remarks>The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is odd.</remarks>
     inline constexpr T cofactor(std::size_t col, std::size_t row) const
     {
         static_assert(std::is_signed_v<T>, "mat::cofactor requires a signed value");
         return cofactor({ col, row });
     }
 
+    /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
+    /// <remarks>The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.</remarks>
     inline constexpr T cofactor(const dmath::svec2& pos) const
     {
         static_assert(std::is_signed_v<T>, "mat::cofactor requires a signed value");
@@ -135,6 +160,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return minor(pos).determinant() * factor;
     }
 
+    /// <summary>Returns a new matrix, where each element is the cofactor at the given position.</summary>
     inline constexpr Matrix<T, Cols, Rows> cofactorMatrix() const
     {
         static_assert(std::is_signed_v<T>, "mat::cofactorMatrix requires a signed value");
@@ -144,6 +170,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Return the adjugate of the matrix, which is simply the transposed cofactor-matrix.</summary>
     inline constexpr Matrix<T, Rows, Cols> adjugate() const
     {
         static_assert(std::is_signed_v<T>, "mat::adjugate requires a signed value");
@@ -153,6 +180,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             return cofactorMatrix().transpose();
     }
 
+    /// <summary>Returns the inverse of the matrix.</summary>   
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Dim &lt;= 4: Cramer's rule</para>
+    /// <para>Dim > 4: Blockwise inversion (recursive)</para>
+    /// </remarks>
     inline constexpr std::optional<Matrix<T, Rows, Cols>> inverse() const
     {
         static_assert(std::is_floating_point_v<T>, "mat::inverse requires a floating point type");
@@ -196,6 +229,8 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Returns the determinant of the matrix.</summary>
+    /// <remarks>Up to 3x3 is hard-coded, otherwise uses very costly recursion.</remarks>
     inline constexpr T determinant() const
     {
         static_assert(std::is_floating_point_v<T>, "mat::determinant requires a floating point type");
@@ -225,11 +260,19 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Returns true, if the matrix is solvable, when seen as a linear equation.</summary>
+    /// <remarks>Simply returns true, if the determinant is not zero.</remarks>
     inline constexpr bool solvable() const
     {
         return determinant() != T();
     }
 
+    /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 6: Inverse</para>
+    /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<T> solveCol(std::size_t col)
     {
         static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
@@ -257,6 +300,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 6: Inverse</para>
+    /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<T> solveCol(std::size_t col) const
     {
         static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
@@ -273,11 +322,16 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
             auto swappedMatrix = *this;
             swappedMatrix[col] = (*this)[Rows];
-            swappedMatrix[Rows] = (*this)[col];
             return swappedMatrix.determinant() / oldDeterminant;
         }
     }
 
+    /// <summary>Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 6: Inverse</para>
+    /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector)
     {
         static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
@@ -305,6 +359,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 6: Inverse</para>
+    /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector) const
     {
         static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
@@ -325,6 +385,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves the matrix, when seen as a linear equation.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 5: Inverse</para>
+    /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<Vector<T, Rows>> solve()
     {
         static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
@@ -356,6 +422,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves the matrix, when seen as a linear equation.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 5: Inverse</para>
+    /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<Vector<T, Rows>> solve() const
     {
         static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
@@ -388,6 +460,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves the matrix, when seen as a linear equation in combination with the given vector.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 5: Inverse</para>
+    /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector)
     {
         static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
@@ -419,6 +497,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Solves the matrix, when seen as a linear equation in combination with the given vector.</summary>
+    /// <remarks> 
+    /// <para>Algorithms used:</para>
+    /// <para>Unknowns >= 5: Inverse</para>
+    /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
+    /// </remarks>
     inline constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector) const
     {
         static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
@@ -451,11 +535,13 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         }
     }
 
+    /// <summary>Returns the matrix itself.</summary>
     inline constexpr Matrix<T, Cols, Rows> operator+() const
     {
         return *this;
     }
 
+    /// <summary>Returns a component-wise negation of the matrix.</summary>
     inline constexpr Matrix<T, Cols, Rows> operator-() const
     {
         return unary([](Vector<T, Rows> a) { return -a; });
@@ -467,11 +553,14 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     friend inline constexpr Matrix<T, Cols, Rows>& operator op ## =(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
     { return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op ## = b; }); }
 
+    /// <summary>Performs component-wise addition of two matrices.</summary>
     DMATH_MATRIX_OPERATION(+);
+    /// <summary>Performs component-wise subtraction of two matrices.</summary>
     DMATH_MATRIX_OPERATION(-);
 
 #undef DMATH_MATRIX_OPERATION
 
+    /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
     template <std::size_t OtherCols>
     friend inline constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
@@ -482,6 +571,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
+    /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
     template <std::size_t OtherCols>
     friend inline constexpr std::optional<Matrix<T, Cols, Rows>> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
@@ -490,31 +580,37 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return std::nullopt;
     }
 
+    /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
     friend inline constexpr Matrix<T, Cols, Rows>& operator*=(Matrix<T, Cols, Rows>& matrix, T scalar)
     {
         return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a *= b; });
     }
 
+    /// <summary>Performs a component-wise division with the given scalar.</summary>
     friend inline constexpr Matrix<T, Cols, Rows>& operator/=(Matrix<T, Cols, Rows>& matrix, T scalar)
     {
         return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a /= b; });
     }
 
+    /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
     friend inline constexpr Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
     {
         return matrix *= scalar;
     }
 
+    /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
     friend inline constexpr Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
     {
         return matrix *= scalar;
     }
 
+    /// <summary>Performs a component-wise division with the given scalar.</summary>
     friend inline constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
     {
         return matrix /= scalar;
     }
 
+    /// <summary>Performs a component-wise multiplication with the inverse of the matrix.</summary>
     friend inline constexpr std::optional<Matrix<T, Cols, Rows>> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
     {
         if (auto inv = matrix.inverse())
@@ -522,11 +618,13 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return std::nullopt;
     }
 
+    /// <summary>Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.</summary>
     friend inline constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
     {
         return matrix * Matrix<T, 1, Cols>(vector);
     }
 
+    /// <summary>Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a single-column matrix.</summary>
     friend inline constexpr Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
     {
         return matrix.transpose() * vector;
@@ -536,11 +634,17 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     friend inline constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
     { return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; }); }
 
+    /// <summary>Returns true, if all elements are identical.</summary>
     DMATH_MATRIX_COMPARE(all, == );
+    /// <summary>Returns true, if any elements differ.</summary>
     DMATH_MATRIX_COMPARE(any, != );
+    /// <summary>Returns true, if all elements of lhs are smaller than rhs.</summary>
     DMATH_MATRIX_COMPARE(all, < );
+    /// <summary>Returns true, if all elements of lhs are smaller than or equal to rhs.</summary>
     DMATH_MATRIX_COMPARE(all, <= );
+    /// <summary>Returns true, if all elements of lhs are greater than rhs.</summary>
     DMATH_MATRIX_COMPARE(all, > );
+    /// <summary>Returns true, if all elements of lhs are greater than equal to rhs.</summary>
     DMATH_MATRIX_COMPARE(all, >= );
 
 #undef DMATH_MATRIX_COMPARE
