@@ -7,9 +7,11 @@
 namespace dang::utils
 {
 
+/// <summary>Simply gives COUNT of the enum template parameter.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
 constexpr std::size_t EnumCount = static_cast<std::size_t>(T::COUNT);
 
+/// <summary>Returns a std::array of all enum values, given that the enum has COUNT specified.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
 constexpr std::array<T, EnumCount<T>> getEnumValues()
 {
@@ -19,9 +21,11 @@ constexpr std::array<T, EnumCount<T>> getEnumValues()
     return result;
 }
 
+/// <summary>An array of all enum values, given that the enum has COUNT specified.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
 constexpr std::array<T, EnumCount<T>> EnumValues = getEnumValues<T>();
 
+/// <summary>A wrapper around std::array, allowing the use of an enum with COUNT as index.</summary>
 template <typename TEnum, typename TValue, typename = std::enable_if_t<std::is_enum_v<TEnum>>, TEnum = TEnum::COUNT>
 class EnumArray : public std::array<TValue, EnumCount<TEnum>> {
     static_assert(std::is_enum_v<TEnum>, "EnumArray can only be used with enum types");
@@ -50,6 +54,7 @@ public:
     }
 };
 
+/// <summary>An iterator, allowing iteration over all set bits in a flags-enum with NONE and ALL specified.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 class EnumSetIterator : public std::iterator<std::forward_iterator_tag, T> {
 public:
@@ -138,6 +143,7 @@ inline constexpr auto end(T)
 
 // Enable enum-set bitwise operations
 
+/// <summary>Returns the union of two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T operator|(T lhs, T rhs)
 {
@@ -145,12 +151,14 @@ inline constexpr T operator|(T lhs, T rhs)
     return static_cast<T>(static_cast<BaseType>(lhs) | static_cast<BaseType>(rhs));
 }
 
+/// <summary>Stores the union of both enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T& operator|=(T& lhs, T rhs)
 {
     return lhs = lhs | rhs;
 }
 
+/// <summary>Returns the intersection of two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T operator&(T lhs, T rhs)
 {
@@ -158,12 +166,14 @@ inline constexpr T operator&(T lhs, T rhs)
     return static_cast<T>(static_cast<BaseType>(lhs)& static_cast<BaseType>(rhs));
 }
 
+/// <summary>Stores the intersection of both enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T& operator&=(T& lhs, T rhs)
 {
     return lhs = lhs & rhs;
 }
 
+/// <summary>Inverts all flags of an enum-set.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T& operator~(T& value)
 {
@@ -171,6 +181,7 @@ inline constexpr T& operator~(T& value)
     return static_cast<T>(static_cast<BaseType>(T::ALL) & ~static_cast<BaseType>(value));
 }
 
+/// <summary>Returns only flags which differ between the two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T operator^(T lhs, T rhs)
 {
@@ -178,12 +189,14 @@ inline constexpr T operator^(T lhs, T rhs)
     return static_cast<T>(static_cast<BaseType>(lhs) ^ static_cast<BaseType>(rhs));
 }
 
+/// <summary>Stores only the flags which differ between the two enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T& operator^=(T& lhs, T rhs)
 {
     return lhs = lhs ^ rhs;
 }
 
+/// <summary>Returns the first enum-set without any of the flags in the second.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T operator-(T lhs, T rhs)
 {
@@ -191,6 +204,7 @@ inline constexpr T operator-(T lhs, T rhs)
     return static_cast<T>(static_cast<BaseType>(lhs) & ~static_cast<BaseType>(rhs));
 }
 
+/// <summary>Removes all flags from the first enum-set, which are set in the second.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 inline constexpr T& operator-=(T& lhs, T rhs)
 {
