@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+
+  <!-- summary -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>xmldoc-summary</Title>
+      <Shortcut>summary</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CPP">
+        <![CDATA[/// <summary>$summary$</summary>$end$]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>summary</ID>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- remarks -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>xmldoc-remarks</Title>
+      <Shortcut>remarks</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CPP">
+        <![CDATA[/// <remarks>$remarks$</remarks>$end$]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>remarks</ID>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- param -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>xmldoc-param</Title>
+      <Shortcut>param</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CPP">
+        <![CDATA[/// <param name="$name$">$description$</param>$end$]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>name</ID>
+        </Literal>
+        <Literal>
+          <ID>description</ID>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- returns -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>xmldoc-returns</Title>
+      <Shortcut>returns</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CPP">
+        <![CDATA[/// <returns>$returns$</returns>$end$]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>returns</ID>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- code -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>xmldoc-code</Title>
+      <Shortcut>code</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CPP">
+        <![CDATA[/// <code>
+/// $code$
+/// </code>$end$]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>code</ID>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+
+</CodeSnippets>
