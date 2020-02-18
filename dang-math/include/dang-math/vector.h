@@ -11,15 +11,19 @@ struct Vector;
 namespace detail
 {
 
+/// <summary>Used as a base for Vector, which does not yet contain any swizzles.</summary>
 template <typename T, std::size_t Dim>
 struct VectorBase : protected std::array<T, Dim> {
     using Base = std::array<T, Dim>;
 
+    /// <summary>Initializes all values with zero.</summary>
     inline constexpr VectorBase() : Base{} {}
+    /// <summary>Initializes all values with the given std::array.</summary>
     inline constexpr VectorBase(Base values) : Base(values) {}
 
     using Base::operator[];
 
+    /// <summary>Returns the sum of all components.</summary>
     inline constexpr T sum() const
     {
         T result = T();
@@ -28,90 +32,107 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
+    /// <summary>Returns the dot-product with the given vector.</summary>
     inline constexpr T dot(const Vector<T, Dim>& other) const
     {
         return ((*this) * other).sum();
     }
 
+    /// <summary>Returns the dot-product with the vector itself.</summary>
     inline constexpr T sqrdot() const
     {
         return ((*this) * (*this)).sum();
     }
 
+    /// <summary>Returns the length of the vector.</summary>
     inline constexpr T length() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::length requires a floating point type");
         return std::sqrt(sqrdot());
     }
 
+    /// <summary>Returns a normalized version of the vector.</summary>
     inline constexpr Vector<T, Dim> normalize() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::normalize requires a floating point type");
         return (*this) / length();
     }
 
+    /// <summary>Returns a new vector, which points from the vector to the given vector.</summary>
     inline constexpr Vector<T, Dim> vectorTo(const Vector<T, Dim>& other) const
     {
         return other - *this;
     }
 
+    /// <summary>Returns the distance to the given vector.</summary>
     inline constexpr T distanceTo(const Vector<T, Dim>& other) const
     {
         return (other - *this).length();
     }
 
+    /// <summary>Returns the cosine of the angle to the given vector.</summary>
     inline constexpr T cosAngleTo(const Vector<T, Dim>& other) const
     {
         return std::clamp(dot(other) / (length() * other.length()), T(-1), T(1));
     }
 
+    /// <summary>Returns the angle to the given vector in radians.</summary>
     inline constexpr T angleRadTo(const Vector<T, Dim>& other) const
     {
         return std::acos(cosAngleTo(other));
     }
 
+    /// <summary>Returns the angle to the given vector in degrees.</summary>
     inline constexpr T angleTo(const Vector<T, Dim>& other) const
     {
         return radToDeg(angleRadTo(other));
     }
 
+    /// <summary>Returns the vector with each component being positive.</summary>
     inline constexpr Vector<T, Dim> abs() const
     {
         return unary([](T a) { return a < T(0) ? -a : a; });
     }
 
+    /// <summary>Returns the vector with each component rounded down.</summary>
     inline constexpr Vector<T, Dim> floor() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::floor requires a floating point type");
         return unary([](T a) { return std::floor(a); });
     }
 
+    /// <summary>Returns the vector with each component rounded up.</summary>
     inline constexpr Vector<T, Dim> ceil() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::ceil requires a floating point type");
         return unary([](T a) { return std::ceil(a); });
     }
 
+    /// <summary>Returns a vector, only taking the smaller components of both vectors.</summary>
     inline constexpr Vector<T, Dim> min(const Vector<T, Dim>& other) const
     {
         return binary(other, [](T a, T b) { return a < b ? a : b; });
     }
 
+    /// <summary>Returns a vector, only taking the larger components of both vectors.</summary>
     inline constexpr Vector<T, Dim> max(const Vector<T, Dim>& other) const
     {
         return binary(other, [](T a, T b) { return a > b ? a : b; });
     }
 
+    /// <summary>Reflects the vector on the given plane normal.</summary>
     inline constexpr Vector<T, Dim> reflect(const Vector<T, Dim>& normal) const
     {
         return *this - 2 * dot(normal) * normal;
     }
 
+    /// <summary>Simply returns the vector.</summary>
     inline constexpr Vector<T, Dim> operator+() const
     {
         return *this;
     }
 
+    /// <summary>Returns the vector with each component negated.</summary>
     inline constexpr Vector<T, Dim> operator-() const
     {
         return unary([](T a) { return -a; });
@@ -123,9 +144,13 @@ struct VectorBase : protected std::array<T, Dim> {
     friend inline constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
     { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
 
+    /// <summary>Performs component-wise addition.</summary>
     DMATH_VECTOR_OPERATION(+);
+    /// <summary>Performs component-wise subtraction.</summary>
     DMATH_VECTOR_OPERATION(-);
+    /// <summary>Performs component-wise multiplication.</summary>
     DMATH_VECTOR_OPERATION(*);
+    /// <summary>Performs component-wise division.</summary>
     DMATH_VECTOR_OPERATION(/ );
 
 #undef DMATH_VECTOR_OPERATION
@@ -134,15 +159,22 @@ struct VectorBase : protected std::array<T, Dim> {
     friend inline constexpr bool operator op(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
     { return lhs.merge(rhs, [](T a, T b) { return a op b; }); }
 
+    /// <summary>Returns true if all components are equal.</summary>
     DMATH_VECTOR_COMPARE(all, == );
+    /// <summary>Returns true if any components are not equal.</summary>
     DMATH_VECTOR_COMPARE(any, != );
+    /// <summary>Returns true if all components are less than the other vector.</summary>
     DMATH_VECTOR_COMPARE(all, < );
+    /// <summary>Returns true if all components are less or equal than the other vector.</summary>
     DMATH_VECTOR_COMPARE(all, <= );
+    /// <summary>Returns true if all components are greater than the other vector.</summary>
     DMATH_VECTOR_COMPARE(all, > );
+    /// <summary>Returns true if all components are greater of equal than the other vector.</summary>
     DMATH_VECTOR_COMPARE(all, >= );
 
 #undef DMATH_VECTOR_COMPARE
 
+    /// <summary>Allows explicit casting between different types.</summary>
     template <typename TTarget>
     explicit inline constexpr operator Vector<TTarget, Dim>() const
     {
@@ -152,18 +184,21 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
+    /// <summary>Used for tuple-unpacking.</summary>
     template <size_t Index>
     inline constexpr T& get() noexcept
     {
         return std::get<Index>(*this);
     }
 
+    /// <summary>Used for tuple-unpacking.</summary>
     template <size_t Index>
     inline constexpr const T& get() const noexcept
     {
         return std::get<Index>(*this);
     }
 
+    /// <summary>Returns a swizzle of the given components.</summary>
     template <size_t... Indices>
     inline constexpr Vector<T, sizeof...(Indices)> swizzle() const
     {
@@ -174,6 +209,7 @@ struct VectorBase : protected std::array<T, Dim> {
         return result;
     }
 
+    /// <summary>Sets a swizzle for the given components.</summary>
     template <size_t... Indices>
     inline constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
     {
@@ -235,10 +271,14 @@ private:
 
 }
 
+/// <summary>A generic vector of any dimension.</summary>
 template <typename T, std::size_t Dim>
 struct Vector : public detail::VectorBase<T, Dim> {
+    /// <summary>Initializes all values with zero.</summary>
     inline constexpr Vector() = default;
+    /// <summary>Initializes all values with the given std::array.</summary>
     inline constexpr Vector(std::array<T, Dim> values) : detail::VectorBase<T, Dim>(values) {}
+    /// <summary>Initializes all values with the given value.</summary>
     inline constexpr Vector(T value)
     {
         for (std::size_t i = 0; i < Dim; i++)
@@ -250,10 +290,14 @@ struct Vector : public detail::VectorBase<T, Dim> {
 inline constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
 inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
 
+/// <summary>A one-dimensional vector with swizzle support for x and implicit conversion to the base type.</summary>
 template <typename T>
 struct Vector<T, 1> : public detail::VectorBase<T, 1> {
+    /// <summary>Initializes the values with zero.</summary>
     inline constexpr Vector() = default;
+    /// <summary>Initializes the value with the given std::array.</summary>
     inline constexpr Vector(std::array<T, 1> values) : detail::VectorBase(values) {}
+    /// <summary>Initializes the value with the given value.</summary>
     inline constexpr Vector(T x) : detail::VectorBase<T, 1>({ x }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
@@ -263,13 +307,20 @@ struct Vector<T, 1> : public detail::VectorBase<T, 1> {
     inline constexpr operator T() const { return std::get<0>(*this); }
 };
 
+/// <summary>A two-dimensional vector with full swizzle support for x and y.</summary>
 template <typename T>
 struct Vector<T, 2> : public detail::VectorBase<T, 2> {
+    /// <summary>Initializes all values with zero.</summary>
     inline constexpr Vector() = default;
+    /// <summary>Initializes all values with the given std::array.</summary>
     inline constexpr Vector(std::array<T, 2> values) : detail::VectorBase<T, 2>(values) {}
+    /// <summary>Initializes all values with the given value.</summary>
     inline constexpr Vector(T value) : detail::VectorBase<T, 2>({ value, value }) {}
+    /// <summary>Initializes x and y with the given values.</summary>
     inline constexpr Vector(T x, T y) : detail::VectorBase<T, 2>({ x, y }) {}
 
+    /// <summary>Creates a vector from the given slope, which is NOT normalized.</summary>
+    /// <remarks>The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.</remarks>
     static inline constexpr Vector<T, 2> fromSlope(std::optional<T> slope)
     {
         if (slope)
@@ -277,11 +328,15 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
         return { 0, 1 };
     }
 
+    /// <summary>Creates a normalized vector of the given angle in radians.</summary>
+    /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
     static inline constexpr Vector<T, 2> fromAngleRad(T radians)
     {
         return { std::cos(radians), std::sin(radians) };
     }
 
+    /// <summary>Creates a normalized vector of the given angle in degrees.</summary>
+    /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
     static inline constexpr Vector<T, 2> fromAngle(T degrees)
     {
         return fromAngleRad(degToRad(degrees));
@@ -295,16 +350,20 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     DMATH_DEFINE_SWIZZLE(xy, 0, 1);
     DMATH_DEFINE_SWIZZLE(yx, 1, 0);
 
+    /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>
     inline constexpr Vector<T, 2> cross() const
     {
         return { -y(), x() };
     }
 
+    /// <summary>Returns the two-dimensional cross-product with the given vector.</summary>
+    /// <remarks>Equivalent to <c>x1 * y2 - y1 * x2</c></remarks>
     inline constexpr T cross(const Vector<T, 2>& other) const
     {
         return x() * other.y() - y() * other.x();
     }
 
+    /// <summary>Returns the slope of the vector or std::nullopt if infinite.</summary>
     inline constexpr std::optional<T> slope() const
     {
         static_assert(std::is_floating_point_v<T>, "vec2::slope requires a floating point type");
@@ -314,11 +373,16 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
     }
 };
 
+/// <summary>A three-dimensional vector with full swizzle support for x, y and z.</summary>
 template <typename T>
 struct Vector<T, 3> : public detail::VectorBase<T, 3> {
+    /// <summary>Initializes all values with zero.</summary>
     inline constexpr Vector() = default;
+    /// <summary>Initializes all values with the given std::array.</summary>
     inline constexpr Vector(std::array<T, 3> values) : detail::VectorBase<T, 3>(values) {}
+    /// <summary>Initializes all values with the given value.</summary>
     inline constexpr Vector(T value) : detail::VectorBase<T, 3>({ value, value, value }) {}
+    /// <summary>Initializes x, y and z with the given values.</summary>
     inline constexpr Vector(T x, T y, T z) : detail::VectorBase<T, 3>({ x, y, z }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
@@ -342,6 +406,7 @@ struct Vector<T, 3> : public detail::VectorBase<T, 3> {
     DMATH_DEFINE_SWIZZLE(zxy, 2, 0, 1);
     DMATH_DEFINE_SWIZZLE(zyx, 2, 1, 0);
 
+    /// <summary>Returns the cross-product with the given vector.</summary>
     inline constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
     {
         return { (*this)[1] * other[2] - (*this)[2] * other[1],
@@ -350,13 +415,20 @@ struct Vector<T, 3> : public detail::VectorBase<T, 3> {
     }
 };
 
+/// <summary>A four-dimensional vector with full swizzle support for x, y, z and w.</summary>
 template <typename T>
 struct Vector<T, 4> : public detail::VectorBase<T, 4> {
+    /// <summary>Initializes all values with zero.</summary>
     inline constexpr Vector() = default;
+    /// <summary>Initializes all values with the given std::array.</summary>
     inline constexpr Vector(std::array<T, 4> values) : detail::VectorBase<T, 4>(values) {}
+    /// <summary>Initializes all values with the given value.</summary>
     inline constexpr Vector(T value) : detail::VectorBase<T, 4>({ value, value, value, value }) {}
+    /// <summary>Initializes x, y and z with the same given value and w separately.</summary>
     inline constexpr Vector(T value, T w) : detail::VectorBase<T, 4>({ value, value, value, w }) {}
+    /// <summary>Initializes x, y and z with the given vector and w separately.</summary>
     inline constexpr Vector(Vector<T, 3> vector, T w) : detail::VectorBase<T, 4>({ vector[0], vector[1], vector[2], w }) {}
+    /// <summary>Initializes x, y, z and w with the given values.</summary>
     inline constexpr Vector(T x, T y, T z, T w) : detail::VectorBase<T, 4>({ x, y, z, w }) {}
 
     inline constexpr T& x() { return std::get<0>(*this); }
