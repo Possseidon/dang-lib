@@ -156,6 +156,7 @@
     <ClInclude Include="include\dang-math\bounds.h" />
     <ClInclude Include="include\dang-math\enums.h" />
     <ClInclude Include="include\dang-math\geometry.h" />
+    <ClInclude Include="include\dang-math\interpolation.h" />
     <ClInclude Include="include\dang-math\quaternion.h" />
     <ClInclude Include="include\dang-math\utils.h" />
     <ClInclude Include="include\dang-math\matrix.h" />

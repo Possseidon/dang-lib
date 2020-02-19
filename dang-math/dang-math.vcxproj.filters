@@ -39,6 +39,9 @@
     <ClInclude Include="include\dang-math\quaternion.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-math\interpolation.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-math.natvis" />
