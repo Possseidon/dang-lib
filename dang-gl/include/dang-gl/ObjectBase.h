@@ -7,8 +7,8 @@ class Window;
 
 class ObjectBase {
 public:
-    GLuint handle();
-    Window& window();
+    GLuint handle() const;
+    Window& window() const;
 
 protected:
     ObjectBase(GLuint handle, Window& window);

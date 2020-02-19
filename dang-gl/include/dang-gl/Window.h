@@ -41,7 +41,7 @@ public:
     GLFWwindow* handle();
 
     template <class TInfo>
-    Binding& binding();
+    typename TInfo::Binding& binding();
 
     bool shouldClose();
 
@@ -57,11 +57,11 @@ private:
 };
 
 template<class TInfo>
-inline Binding& Window::binding()
+inline typename TInfo::Binding& Window::binding()
 {
     if (const auto& binding = bindings_[TInfo::Type])
-        return *binding;
-    return *(bindings_[TInfo::Type] = std::make_unique<TInfo::Binding>());
+        return static_cast<typename TInfo::Binding&>(*binding);
+    return static_cast<typename TInfo::Binding&>(*(bindings_[TInfo::Type] = std::make_unique<TInfo::Binding>()));
 }
 
 }

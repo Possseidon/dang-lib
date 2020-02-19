@@ -31,7 +31,7 @@ public:
     Object();
     ~Object();
 
-    typename TInfo::Binding& binding();
+    typename TInfo::Binding& binding() const;
     void bind();
 };
 
@@ -48,7 +48,7 @@ inline Object<TInfo>::~Object()
 }
 
 template<class TInfo>
-inline typename TInfo::Binding& Object<TInfo>::binding()
+inline typename TInfo::Binding& Object<TInfo>::binding() const
 {
     return window().binding<TInfo>();
 }

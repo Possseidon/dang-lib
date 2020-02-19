@@ -4,12 +4,12 @@
 namespace dang::gl
 {
 
-GLuint ObjectBase::handle()
+GLuint ObjectBase::handle() const
 {
     return handle_;
 }
 
-Window& ObjectBase::window()
+Window& ObjectBase::window() const
 {
     return window_;
 }
