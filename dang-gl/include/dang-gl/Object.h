@@ -44,7 +44,8 @@ inline Object<TInfo>::Object()
 template<class TInfo>
 inline Object<TInfo>::~Object()
 {
-    TInfo::destroy(handle());
+    if (handle() != 0)
+        TInfo::destroy(handle());
 }
 
 template<class TInfo>

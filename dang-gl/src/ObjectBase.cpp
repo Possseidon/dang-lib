@@ -4,6 +4,13 @@
 namespace dang::gl
 {
 
+ObjectBase::ObjectBase(ObjectBase&& other) noexcept
+    : handle_(other.handle_)
+    , window_(other.window_)
+{
+    handle_ = 0;
+}
+
 GLuint ObjectBase::handle() const
 {
     return handle_;
