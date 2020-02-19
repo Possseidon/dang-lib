@@ -19,12 +19,6 @@ enum class BufferUsageHint : GLenum {
     DynamicCopy = GL_DYNAMIC_COPY
 };
 
-enum class BufferAccess : GLenum {
-    ReadOnly = GL_READ_ONLY,
-    WriteOnly = GL_WRITE_ONLY,
-    ReadWrite = GL_READ_WRITE
-};
-
 class VBOBindError : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
@@ -64,48 +58,119 @@ struct VBOInfo : public ObjectInfo {
     using Binding = VBOBinding;
 };
 
-class VBOBase : public Object<VBOInfo> {
-
-};
-
 template <typename T>
 class VBO;
 
-template <typename T, BufferAccess Access>
+template <typename T>
 class VBOMapping : dutils::NonCopyable {
 public:
 
-    class const_iterator {
+    class iterator {
+    public:
         using iterator_category = std::random_access_iterator_tag;
         using value_type = T;
         using difference_type = std::ptrdiff_t;
-        using pointer = const T*;
-        using reference = const T&;
+        using pointer = T*;
+        using reference = T&;
 
-        const_iterator() = default;
-        explicit const_iterator(pointer position) : position_(position) {}
+        inline iterator() = default;
+        inline explicit iterator(pointer position) : position_(position) {}
 
-        friend bool operator==(const const_iterator& lhs, const const_iterator& rhs)
+        inline reference operator*()
+        {
+            return *position_;
+        }
+
+        inline pointer operator->()
+        {
+            return position_;
+        }
+
+        inline friend bool operator==(iterator lhs, iterator rhs)
         {
             return lhs.position_ == rhs.position_;
         }
 
-        friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs)
+        inline friend bool operator!=(iterator lhs, iterator rhs)
         {
-            return !(lhs == rhs);
+            return lhs.position_ != rhs.position_;
+        }
+
+        inline friend bool operator<(iterator lhs, iterator rhs)
+        {
+            return lhs.position_ < rhs.position_;
+        }
+
+        inline friend bool operator<=(iterator lhs, iterator rhs)
+        {
+            return lhs.position_ <= rhs.position_;
+        }
+
+        inline friend bool operator>(iterator lhs, iterator rhs)
+        {
+            return lhs.position_ > rhs.position_;
+        }
+
+        inline friend bool operator>=(iterator lhs, iterator rhs)
+        {
+            return lhs.position_ >= rhs.position_;
+        }
+
+        inline iterator& operator++()
+        {
+            position_++;
+            return *this;
+        }
+
+        inline iterator operator++(int)
+        {
+            auto old = *this;
+            position_++;
+            return old;
+        }
+
+        inline iterator& operator--()
+        {
+            position_--;
+            return *this;
+        }
+
+        inline iterator operator--(int)
+        {
+            auto old = *this;
+            position_--;
+            return old;
+        }
+
+        inline iterator& operator+=(std::ptrdiff_t offset)
+        {
+            position_ += offset;
+            return *this;
+        }
+
+        inline iterator operator+(std::ptrdiff_t offset) const
+        {
+            return *this += offset;
+        }
+
+        inline iterator& operator-=(std::ptrdiff_t offset)
+        {
+            position_ -= offset;
+            return *this;
+        }
+
+        inline iterator operator-(std::ptrdiff_t offset) const
+        {
+            return *this -= offset;
+        }
+
+        inline reference operator[](std::ptrdiff_t offset) const
+        {
+            return position_[offset];
         }
 
     private:
         T* position_ = nullptr;
-    };
-
-    class iterator : public const_iterator {
-    public:
-        using pointer = T*;
-        using reference = T&;
-
-        iterator() = default;
-        explicit iterator(pointer position) : const_iterator(position) {}
     };
 
     VBOMapping(VBO<T>& vbo)
@@ -113,7 +178,7 @@ public:
     {
         vbo_.bind();
         vbo_.binding().lock();
-        data_ = reinterpret_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, static_cast<GLenum>(Access)));
+        data_ = static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
     }
 
     ~VBOMapping()
@@ -134,34 +199,12 @@ public:
 
     iterator begin() noexcept
     {
-        static_assert(Access != BufferAccess::ReadOnly);
         return iterator(data_);
     }
 
     iterator end() noexcept
     {
-        static_assert(Access != BufferAccess::ReadOnly);
         return iterator(data_ + size());
-    }
-
-    iterator begin() const noexcept
-    {
-        return const_iterator(data_);
-    }
-
-    iterator end() const noexcept
-    {
-        return const_iterator(data_ + size());
-    }
-
-    iterator cbegin() const noexcept
-    {
-        return const_iterator(data_);
-    }
-
-    iterator cend() const noexcept
-    {
-        return const_iterator(data_ + size());
     }
 
 private:
@@ -170,10 +213,24 @@ private:
 };
 
 template <typename T>
-class VBO : public VBOBase {
+class VBO : public Object<VBOInfo> {
+public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
-public:
+    VBO() = default;
+
+    VBO(std::size_t count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+        : Object<VBOInfo>()
+    {
+        generate(count, usage);
+    }
+
+    VBO(const std::vector<T>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+        : Object<VBOInfo>()
+    {
+        generate(data, usage);
+    }
+
     std::size_t count() const
     {
         return count_;
@@ -193,19 +250,9 @@ public:
         glBufferData(GL_ARRAY_BUFFER, count_ * sizeof(T), data.data(), usage);
     }
 
-    VBOMapping<T, BufferAccess::ReadOnly> mapRead()
+    VBOMapping<T> map()
     {
-        return VBOMapping<T, BufferAccess::ReadOnly>(*this);
-    }
-
-    VBOMapping<T, BufferAccess::WriteOnly> mapWrite()
-    {
-        return VBOMapping<T, BufferAccess::WriteOnly>(*this);
-    }
-
-    VBOMapping<T, BufferAccess::ReadWrite> map()
-    {
-        return VBOMapping<T, BufferAccess::ReadWrite>(*this);
+        return VBOMapping<T>(*this);
     }
 
 private:
