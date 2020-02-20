@@ -57,14 +57,18 @@ private:
     void enableAttributes()
     {
         bind();
+        vbo_.bind();
+        // TODO: Instancing -> multiple VBOs and glVertexAttribDivisor
         for (ShaderAttribute& attribute : program().attributeOrder()) {
-            glEnableVertexAttribArray(attribute.location());
             auto base_type = getBaseDataType(attribute.type());
             auto component_count = getDataTypeComponentCount(attribute.type());
 
             // matrices take up one location per column
             // arrays take up one location per index
             GLuint location_count = getDataTypeColumnCount(attribute.type()) * attribute.count();
+
+            for (GLuint offset = 0; offset < location_count; offset++)
+                glEnableVertexAttribArray(attribute.location() + offset);
 
             switch (base_type) {
             case DataType::Float:
@@ -82,9 +86,9 @@ private:
                 for (GLuint offset = 0; offset < location_count; offset++)
                     glVertexAttribLPointer(
                         attribute.location() + offset,
-                        component_count,                      
+                        component_count,
                         static_cast<GLenum>(base_type),
-                        program().attributeStride(),                      
+                        program().attributeStride(),
                         reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
                 break;
 
@@ -94,9 +98,9 @@ private:
                 for (GLuint offset = 0; offset < location_count; offset++)
                     glVertexAttribIPointer(
                         attribute.location() + offset,
-                        component_count,                
+                        component_count,
                         static_cast<GLenum>(base_type),
-                        program().attributeStride(),                        
+                        program().attributeStride(),
                         reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
             }
         }
