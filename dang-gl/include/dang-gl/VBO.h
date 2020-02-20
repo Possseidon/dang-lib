@@ -2,6 +2,10 @@
 
 #include "Object.h"
 
+#include <vector>
+#include <array>
+#include <initializer_list>
+
 #include "dang-utils/NonCopyable.h"
 
 namespace dang::gl
@@ -40,8 +44,8 @@ public:
 
     void unlock()
     {
+        assert(lock_count_ > 0);
         lock_count_--;
-        assert(lock_count_ >= 0);
     }
 
 private:
@@ -217,37 +221,99 @@ class VBO : public Object<VBOInfo> {
 public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
-    VBO() = default;
-
-    VBO(std::size_t count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
-        : Object<VBOInfo>()
-    {
-        generate(count, usage);
-    }
-
-    VBO(const std::vector<T>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
-        : Object<VBOInfo>()
-    {
-        generate(data, usage);
-    }
-
     std::size_t count() const
     {
         return count_;
     }
 
-    void generate(std::size_t count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    void generate(std::size_t count, const T* data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         bind();
         count_ = count;
-        glBufferData(GL_ARRAY_BUFFER, count_ * sizeof(T), nullptr, static_cast<GLenum>(usage));
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(T), data, static_cast<GLenum>(usage));
+    }
+
+    void generate(std::size_t count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(count, nullptr, usage);
+    }
+
+    template <std::size_t Size>
+    void generate(BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(Size, usage);
+    }
+
+    void generate(std::initializer_list<T> data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(data.size(), data.begin(), usage);
     }
 
     void generate(const std::vector<T>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
+        generate(data.size(), data.data(), usage);
+    }
+
+    void generate(typename std::vector<T>::const_iterator begin, typename std::vector<T>::const_iterator end, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(std::distance(begin, end), &*begin, usage);
+    }
+
+    template <std::size_t Size>
+    void generate(const T(&data)[Size], BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(Size, data, usage);
+    }
+
+    template <std::size_t Size>
+    void generate(const std::array<T, Size>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(Size, data.data(), usage);
+    }
+
+    template <std::size_t Size>
+    void generate(typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        generate(std::distance(begin, end), &*begin, usage);
+    }
+
+    void modify(std::size_t offset, std::size_t count, const T* data)
+    {
         bind();
-        count_ = data.size();
-        glBufferData(GL_ARRAY_BUFFER, count_ * sizeof(T), data.data(), usage);
+        glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), count * sizeof(T), data);
+    }
+
+    void modify(std::size_t offset, std::initializer_list<T> data)
+    {
+        modify(offset, data.size(), data.begin());
+    }
+
+    void modify(std::size_t offset, const std::vector<T>& data)
+    {
+        modify(offset, data.size(), data.data());
+    }
+
+    void modify(std::size_t offset, typename std::vector<T>::const_iterator begin, typename std::vector<T>::const_iterator end)
+    {
+        modify(offset, std::distance(begin, end), &*begin);
+    }
+
+    template <std::size_t Size>
+    void modify(std::size_t offset, const T(&data)[Size])
+    {
+        modify(offset, Size, data);
+    }
+
+    template <std::size_t Size>
+    void modify(std::size_t offset, const std::array<T, Size>& data)
+    {
+        modify(offset, Size, data.data());
+    }
+
+    template <std::size_t Size>
+    void modify(std::size_t offset, typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end)
+    {
+        modify(offset, std::distance(begin, end), &*begin);
     }
 
     VBOMapping<T> map()
