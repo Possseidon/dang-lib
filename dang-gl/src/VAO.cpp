@@ -21,4 +21,15 @@ void VAOInfo::bind(GLuint handle)
     glBindVertexArray(handle);
 }
 
+VAOBase::VAOBase(Program& program, BeginMode mode)
+    : program_(program)
+    , mode_(mode)
+{
+}
+
+Program& VAOBase::program() const
+{
+    return program_;
+}
+
 }

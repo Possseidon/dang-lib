@@ -105,7 +105,7 @@ void Program::loadUniformLocations()
     }
 }
 
-void Program::addShader(ShaderType type, std::string shader_code)
+void Program::addShader(ShaderType type, const std::string& shader_code)
 {
     GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
     shader_handles_.push_back(shader_handle);
@@ -388,7 +388,7 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(Program& program, G
 }
 
 ShaderAttribute::ShaderAttribute(Program& program, GLint count, DataType type, std::string name)
-    : ShaderVariable(program, count, type, std::move(name), glGetAttribLocation(program.handle(), name.c_str()))
+    : ShaderVariable(program, count, type, name, glGetAttribLocation(program.handle(), name.c_str()))
 {
 }
 

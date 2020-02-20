@@ -139,7 +139,7 @@ private:
 
 class Program : public Object<ProgramInfo> {
 public:
-    void addShader(ShaderType type, std::string shader_code);
+    void addShader(ShaderType type, const std::string& shader_code);
 
     void link();
 
