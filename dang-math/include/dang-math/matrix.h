@@ -700,36 +700,34 @@ private:
     }
 };
 
-#define DMATH_MATRIX_DEFINE(mtype, vtype) \
+#define DMATH_MATRIX_DEFINE(name, type) \
 template <std::size_t Cols, std::size_t Rows = Cols> \
-using mtype = Matrix<vtype, Cols, Rows>; \
-using mtype ## 1x1 = mtype<1, 1>; \
-using mtype ## 1x2 = mtype<1, 2>; \
-using mtype ## 1x3 = mtype<1, 3>; \
-using mtype ## 1x4 = mtype<1, 4>; \
-using mtype ## 2x1 = mtype<2, 1>; \
-using mtype ## 2x2 = mtype<2, 2>; \
-using mtype ## 2x3 = mtype<2, 3>; \
-using mtype ## 2x4 = mtype<2, 4>; \
-using mtype ## 3x1 = mtype<3, 1>; \
-using mtype ## 3x2 = mtype<3, 2>; \
-using mtype ## 3x3 = mtype<3, 3>; \
-using mtype ## 3x4 = mtype<3, 4>; \
-using mtype ## 4x1 = mtype<4, 1>; \
-using mtype ## 4x2 = mtype<4, 2>; \
-using mtype ## 4x3 = mtype<4, 3>; \
-using mtype ## 4x4 = mtype<4, 4>; \
-using mtype ## 1 = mtype ## 1x1; \
-using mtype ## 2 = mtype ## 2x2; \
-using mtype ## 3 = mtype ## 3x3; \
-using mtype ## 4 = mtype ## 4x4;
+using name = dang::math::Matrix<type, Cols, Rows>; \
+using name ## 1x1 = name<1, 1>; \
+using name ## 1x2 = name<1, 2>; \
+using name ## 1x3 = name<1, 3>; \
+using name ## 1x4 = name<1, 4>; \
+using name ## 2x1 = name<2, 1>; \
+using name ## 2x2 = name<2, 2>; \
+using name ## 2x3 = name<2, 3>; \
+using name ## 2x4 = name<2, 4>; \
+using name ## 3x1 = name<3, 1>; \
+using name ## 3x2 = name<3, 2>; \
+using name ## 3x3 = name<3, 3>; \
+using name ## 3x4 = name<3, 4>; \
+using name ## 4x1 = name<4, 1>; \
+using name ## 4x2 = name<4, 2>; \
+using name ## 4x3 = name<4, 3>; \
+using name ## 4x4 = name<4, 4>; \
+using name ## 1 = name ## 1x1; \
+using name ## 2 = name ## 2x2; \
+using name ## 3 = name ## 3x3; \
+using name ## 4 = name ## 4x4;
 
 DMATH_MATRIX_DEFINE(mat, float)
 DMATH_MATRIX_DEFINE(dmat, double)
 DMATH_MATRIX_DEFINE(imat, int)
 DMATH_MATRIX_DEFINE(umat, unsigned)
 DMATH_MATRIX_DEFINE(smat, std::size_t)
-
-#undef DMATH_MATRIX_DEFINE
 
 }

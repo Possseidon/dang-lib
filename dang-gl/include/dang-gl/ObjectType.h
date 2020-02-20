@@ -6,35 +6,33 @@ namespace dang::gl
 {
 
 enum class ObjectType {
-    Texture,
-    VertexArray,
     Buffer,
     Shader,
     Program,
+    VertexArray,
     Query,
     ProgramPipeline,
-    Sampler,
-    DisplayList,
-    Framebuffer,
-    Renderbuffer,
     TransformFeedback,
+    Sampler,
+    Texture,
+    Renderbuffer,
+    Framebuffer,
     COUNT
 };
 
 constexpr dutils::EnumArray<ObjectType, GLenum> ObjectTypesGL
 {
-   GL_TEXTURE,
-   GL_VERTEX_ARRAY,
    GL_BUFFER,
    GL_SHADER,
    GL_PROGRAM,
+   GL_VERTEX_ARRAY,
    GL_QUERY,
    GL_PROGRAM_PIPELINE,
+   GL_TRANSFORM_FEEDBACK,
    GL_SAMPLER,
-   GL_DISPLAY_LIST,
-   GL_FRAMEBUFFER,
+   GL_TEXTURE,
    GL_RENDERBUFFER,
-   GL_TRANSFORM_FEEDBACK
+   GL_FRAMEBUFFER
 };
 
 }

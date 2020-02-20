@@ -2,12 +2,11 @@
 
 #include "Object.h"
 
+#include "Program.h"
 #include "VBO.h"
 
 namespace dang::gl
 {
-
-class Program;
 
 enum class BeginMode : GLenum {
     Points = GL_POINTS,
@@ -29,7 +28,7 @@ struct VAOInfo : public ObjectInfo {
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
-    static constexpr ObjectType Type = ObjectType::VertexArray;
+    static constexpr BindingPoint BindingPoint = BindingPoint::VertexArray;
 };
 
 class VAOBase : public Object<VAOInfo> {
@@ -50,9 +49,59 @@ public:
         : VAOBase(program, mode)
         , vbo_(vbo)
     {
+        assert(program.attributeStride() == sizeof(T));
+        enableAttributes();
     }
 
 private:
+    void enableAttributes()
+    {
+        bind();
+        for (ShaderAttribute& attribute : program().attributeOrder()) {
+            glEnableVertexAttribArray(attribute.location());
+            auto base_type = getBaseDataType(attribute.type());
+            auto component_count = getDataTypeComponentCount(attribute.type());
+
+            // matrices take up one location per column
+            // arrays take up one location per index
+            GLuint location_count = getDataTypeColumnCount(attribute.type()) * attribute.count();
+
+            switch (base_type) {
+            case DataType::Float:
+                for (GLuint offset = 0; offset < location_count; offset++)
+                    glVertexAttribPointer(
+                        attribute.location() + offset,
+                        component_count,
+                        static_cast<GLenum>(base_type),
+                        GL_FALSE,
+                        program().attributeStride(),
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+                break;
+
+            case DataType::Double:
+                for (GLuint offset = 0; offset < location_count; offset++)
+                    glVertexAttribLPointer(
+                        attribute.location() + offset,
+                        component_count,                      
+                        static_cast<GLenum>(base_type),
+                        program().attributeStride(),                      
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+                break;
+
+            case DataType::Bool:
+            case DataType::Int:
+            case DataType::UInt:
+                for (GLuint offset = 0; offset < location_count; offset++)
+                    glVertexAttribIPointer(
+                        attribute.location() + offset,
+                        component_count,                
+                        static_cast<GLenum>(base_type),
+                        program().attributeStride(),                        
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+            }
+        }
+    }
+
     VBO<T>& vbo_;
 };
 

@@ -5,7 +5,7 @@
 
 #include <map>
 
-#include "ObjectTypes.h"
+#include "BindingPoint.h"
 #include "Object.h"
 #include "DataType.h"
 #include "UniformWrapper.h"
@@ -66,7 +66,6 @@ private:
 
 class ShaderLinkError : public ShaderError {
 public:
-    ShaderLinkError() = default;
     ShaderLinkError(const std::string& info_log)
         : ShaderError("Shader-Linking\n" + info_log)
     {
@@ -78,12 +77,17 @@ public:
     using std::runtime_error::runtime_error;
 };
 
+class ShaderAttributeError : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 struct ProgramInfo : public ObjectInfo {
     static GLuint create();
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
-    static constexpr ObjectType Type = ObjectType::Program;
+    static constexpr BindingPoint BindingPoint = BindingPoint::Program;
 };
 
 class Program;
@@ -95,6 +99,7 @@ public:
     Program& program() const;
 
     GLint count() const;
+    GLsizei size() const;
     DataType type() const;
     const std::string& name() const;
     GLint location() const;
@@ -110,6 +115,12 @@ private:
 class ShaderAttribute : public ShaderVariable {
 public:
     ShaderAttribute(Program& program, GLint count, DataType type, std::string name);
+
+    friend Program;
+    GLsizei offset() const;
+
+private:
+    GLsizei offset_ = -1;
 };
 
 class ShaderUniformBase : public ShaderVariable {
@@ -140,8 +151,10 @@ private:
 class Program : public Object<ProgramInfo> {
 public:
     void addShader(ShaderType type, const std::string& shader_code);
+    void link(const std::vector<std::string>& attribute_order = {});
 
-    void link();
+    GLsizei attributeStride() const;
+    const std::vector<std::reference_wrapper<ShaderAttribute>>& attributeOrder() const;
 
     template <typename T>
     ShaderUniform<T>& uniform(std::string name, GLint count = 1);
@@ -152,10 +165,13 @@ private:
 
     void loadAttributeLocations();
     void loadUniformLocations();
+    void setAttributeOrder(const std::vector<std::string>& attribute_order);
 
     std::vector<GLuint> shader_handles_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;
+    std::vector<std::reference_wrapper<ShaderAttribute>> attribute_order_;
+    GLsizei attribute_stride_ = 0;
 };
 
 template<typename T>

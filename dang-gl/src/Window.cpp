@@ -80,15 +80,20 @@ bool Window::shouldClose()
     return glfwWindowShouldClose(handle_);
 }
 
-void Window::update()
+void Window::activate()
 {
     dgl::GLFW::Instance.setActiveWindow(this);
+}
+
+void Window::update()
+{
+    activate();
     glfwPollEvents();
 }
 
 void Window::render()
 {
-    dgl::GLFW::Instance.setActiveWindow(this);
+    activate();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glfwSwapBuffers(handle_);
 }

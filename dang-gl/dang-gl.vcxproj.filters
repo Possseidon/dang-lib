@@ -65,9 +65,6 @@
     <ClInclude Include="include\dang-gl\Object.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectTypes.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\Binding.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -84,6 +81,15 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\VAO.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Types.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\BindingPoint.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectType.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

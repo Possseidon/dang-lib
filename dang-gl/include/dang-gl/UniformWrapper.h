@@ -3,6 +3,7 @@
 #include "dang-math/vector.h"
 #include "dang-math/matrix.h"
 
+#include "Types.h"
 #include "DataType.h"
 
 namespace dang::gl
@@ -72,15 +73,15 @@ struct UniformWrapper<GLuint> {
 };
 
 template <>
-struct UniformWrapper<bool> {
-    inline static bool get(GLuint program, GLint location)
+struct UniformWrapper<GLboolean> {
+    inline static GLboolean get(GLuint program, GLint location)
     {
         GLint value;
         glGetUniformiv(program, location, &value);
         return value != 0;
     }
 
-    inline static void set(GLint location, bool value)
+    inline static void set(GLint location, GLboolean value)
     {
         glUniform1i(location, static_cast<GLint>(value));
     }
@@ -90,10 +91,10 @@ template <typename T, std::size_t Dim>
 struct UniformWrapper<dmath::Vector<T, Dim>> {
     inline static dmath::Vector<T, Dim> get(GLuint program, GLint location)
     {
-        if constexpr (std::is_same_v<T, bool>) {
-            dmath::ivec<Dim> value;
+        if constexpr (std::is_same_v<T, GLboolean>) {
+            dgl::ivec<Dim> value;
             glGetUniformiv(program, location, &value[0]);
-            return static_cast<dmath::bvec<Dim>>(value);
+            return static_cast<dgl::bvec<Dim>>(value);
         }
         else {
             dmath::Vector<T, Dim> value;
@@ -111,8 +112,8 @@ struct UniformWrapper<dmath::Vector<T, Dim>> {
 
     inline static void set(GLint location, const dmath::Vector<T, Dim>& value)
     {
-        if constexpr (std::is_same_v<T, bool>) {
-            dmath::ivec<Dim> bvalue(value);
+        if constexpr (std::is_same_v<T, GLboolean>) {
+            dgl::ivec<Dim> bvalue(value);
             glUniform1iv(location, 1, &bvalue[0]);
         }
         else if constexpr (std::is_same_v<T, GLfloat>)

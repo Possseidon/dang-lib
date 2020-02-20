@@ -3,7 +3,7 @@
 #include "dang-utils/enum.h"
 #include "dang-math/vector.h"
 
-#include "ObjectTypes.h"
+#include "BindingPoint.h"
 #include "Binding.h"
 
 namespace dang::gl
@@ -45,6 +45,8 @@ public:
 
     bool shouldClose();
 
+    void activate();
+
     void update();
     void render();
 
@@ -53,15 +55,15 @@ public:
 
 private:
     GLFWwindow* handle_;
-    dutils::EnumArray<ObjectType, std::unique_ptr<Binding>> bindings_;
+    dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
 };
 
 template<class TInfo>
 inline typename TInfo::Binding& Window::binding()
 {
-    if (const auto& binding = bindings_[TInfo::Type])
+    if (const auto& binding = bindings_[TInfo::BindingPoint])
         return static_cast<typename TInfo::Binding&>(*binding);
-    return static_cast<typename TInfo::Binding&>(*(bindings_[TInfo::Type] = std::make_unique<TInfo::Binding>()));
+    return static_cast<typename TInfo::Binding&>(*(bindings_[TInfo::BindingPoint] = std::make_unique<TInfo::Binding>()));
 }
 
 }

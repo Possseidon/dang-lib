@@ -18,7 +18,7 @@ struct ObjectInfo {
     // static void destroy(GLuint handle);
     // static void bind(GLuint handle);
 
-    // static constexpr ObjectType Type = ObjectType::TODO;
+    // static constexpr BindingPoint BindingPoint = BindingPoint::TODO;
 
     // Specify a custom binding class if necessary:
     // Note: Must be default-constructible

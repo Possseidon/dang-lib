@@ -169,12 +169,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\dang-gl\BindingPoint.h" />
     <ClInclude Include="include\dang-gl\DataType.h" />
     <ClInclude Include="include\dang-gl\GLFW.h" />
     <ClInclude Include="include\dang-gl\Object.h" />
     <ClInclude Include="include\dang-gl\ObjectBase.h" />
-    <ClInclude Include="include\dang-gl\ObjectTypes.h" />
+    <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\Types.h" />
     <ClInclude Include="include\dang-gl\UniformWrapper.h" />
     <ClInclude Include="include\dang-gl\Window.h" />
     <ClInclude Include="include\glad\glad.h" />

@@ -57,7 +57,7 @@ struct VBOInfo : public ObjectInfo {
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
-    static constexpr ObjectType Type = ObjectType::Buffer;
+    static constexpr BindingPoint BindingPoint = BindingPoint::ArrayBuffer;
 
     using Binding = VBOBinding;
 };
