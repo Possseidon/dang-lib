@@ -44,6 +44,8 @@ GLFW::GLFW()
 {
     glfwSetErrorCallback(errorCallback);
     glfwInit();
+    glfwSetJoystickCallback(joystickCallback);
+    glfwSetMonitorCallback(monitorCallback);
 }
 
 GLFW::~GLFW()
@@ -62,6 +64,20 @@ void GLFW::errorCallback(int error_code, const char* description)
 {
     std::cerr << formatError(error_code, description) << std::endl;
     std::exit(EXIT_FAILURE);
+}
+
+void GLFW::joystickCallback(int jid, int event)
+{
+    // TODO: Event
+    (void)jid;
+    (void)event;
+}
+
+void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
+{
+    // TODO: Event
+    (void)monitor;
+    (void)event;
 }
 
 }
