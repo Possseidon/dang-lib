@@ -87,6 +87,11 @@ GLFWwindow* Window::handle()
     return handle_;
 }
 
+const dmath::ivec2& Window::framebufferSize()
+{
+    return framebufferSize_;
+}
+
 bool Window::shouldClose()
 {
     return glfwWindowShouldClose(handle_);
@@ -149,6 +154,7 @@ void Window::registerCallbacks()
 
 void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)codepoint;
@@ -156,6 +162,7 @@ void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
 
 void Window::charModsCallback(GLFWwindow* window_handle, unsigned int codepoint, int mods)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)codepoint;
@@ -164,6 +171,7 @@ void Window::charModsCallback(GLFWwindow* window_handle, unsigned int codepoint,
 
 void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)entered;
@@ -171,6 +179,7 @@ void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 
 void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)xpos;
@@ -179,6 +188,7 @@ void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double yp
 
 void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* paths[])
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)path_count;
@@ -188,13 +198,14 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int height)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)width;
-    (void)height;
+    window.framebufferSize_.x() = width;
+    window.framebufferSize_.y() = height;
+    window.onFramebufferResize(window);
 }
 
 void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)key;
@@ -205,6 +216,7 @@ void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int a
 
 void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)button;
@@ -214,6 +226,7 @@ void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int acti
 
 void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)xoffset;
@@ -222,12 +235,14 @@ void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yo
 
 void Window::windowCloseCallback(GLFWwindow* window_handle)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
 }
 
 void Window::windowContentScaleCallback(GLFWwindow* window_handle, float xscale, float yscale)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)xscale;
@@ -236,6 +251,7 @@ void Window::windowContentScaleCallback(GLFWwindow* window_handle, float xscale,
 
 void Window::windowFocusCallback(GLFWwindow* window_handle, int focused)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)focused;
@@ -243,6 +259,7 @@ void Window::windowFocusCallback(GLFWwindow* window_handle, int focused)
 
 void Window::windowIconifyCallback(GLFWwindow* window_handle, int iconified)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)iconified;
@@ -250,6 +267,7 @@ void Window::windowIconifyCallback(GLFWwindow* window_handle, int iconified)
 
 void Window::windowMaximizeCallback(GLFWwindow* window_handle, int maximized)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)maximized;
@@ -257,6 +275,7 @@ void Window::windowMaximizeCallback(GLFWwindow* window_handle, int maximized)
 
 void Window::windowPosCallback(GLFWwindow* window_handle, int xpos, int ypos)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)xpos;
@@ -266,11 +285,12 @@ void Window::windowPosCallback(GLFWwindow* window_handle, int xpos, int ypos)
 void Window::windowRefreshCallback(GLFWwindow* window_handle)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
+    window.render();
 }
 
 void Window::windowSizeCallback(GLFWwindow* window_handle, int width, int height)
 {
+    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)width;

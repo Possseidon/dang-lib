@@ -46,6 +46,8 @@ public:
     template <class TInfo>
     typename TInfo::Binding& binding();
 
+    const dmath::ivec2& framebufferSize();
+
     bool shouldClose();
 
     void activate();
@@ -58,6 +60,7 @@ public:
 
     dutils::Event<Window&> onUpdate;
     dutils::Event<Window&> onRender;
+    dutils::Event<Window&> onFramebufferResize;
 
 private:
     void registerCallbacks();
@@ -82,6 +85,7 @@ private:
 
     GLFWwindow* handle_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
+    dmath::ivec2 framebufferSize_;
 };
 
 template<class TInfo>
