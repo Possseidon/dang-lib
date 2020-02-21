@@ -28,36 +28,26 @@ struct ObjectInfo {
 template <class TInfo>
 class Object : public ObjectBase {
 public:
-    Object();
-    ~Object();
+    Object()
+        : ObjectBase(TInfo::create(), GLFW::Instance.activeWindow())
+    {
+    }
 
-    typename TInfo::Binding& binding() const;
-    void bind();
+    ~Object()
+    {
+        if (handle() != 0)
+            TInfo::destroy(handle());
+    }
+
+    typename TInfo::Binding& binding() const
+    {
+        return window().binding<TInfo>();
+    }
+
+    void bind()
+    {
+        binding().bind<TInfo>(this);
+    }
 };
-
-template<class TInfo>
-inline Object<TInfo>::Object()
-    : ObjectBase(TInfo::create(), GLFW::Instance.activeWindow())
-{
-}
-
-template<class TInfo>
-inline Object<TInfo>::~Object()
-{
-    if (handle() != 0)
-        TInfo::destroy(handle());
-}
-
-template<class TInfo>
-inline typename TInfo::Binding& Object<TInfo>::binding() const
-{
-    return window().binding<TInfo>();
-}
-
-template<class TInfo>
-inline void Object<TInfo>::bind()
-{
-    binding().bind<TInfo>(this);
-}
 
 }
