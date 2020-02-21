@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-utils/enum.h"
+#include "dang-utils/event.h"
 #include "dang-math/vector.h"
 
 #include "BindingPoint.h"
@@ -52,6 +53,9 @@ public:
 
     void step();
     void run();
+
+    dutils::Event<Window&> onUpdate;
+    dutils::Event<Window&> onRender;
 
 private:
     GLFWwindow* handle_;

@@ -52,6 +52,11 @@ void WindowInfo::setTitle(std::string title)
 
 GLFWwindow* WindowInfo::createWindow() const
 {
+    /* TODO:
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    */
     return glfwCreateWindow(width(), height(), title_.c_str(), nullptr, nullptr);
 }
 
@@ -89,12 +94,14 @@ void Window::update()
 {
     activate();
     glfwPollEvents();
+    onUpdate(*this);
 }
 
 void Window::render()
 {
     activate();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    onRender(*this);
     glfwSwapBuffers(handle_);
 }
 
