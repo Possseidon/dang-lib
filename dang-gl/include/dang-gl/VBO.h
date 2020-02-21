@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <initializer_list>
+#include <limits>
 
 #include "dang-utils/NonCopyable.h"
 
@@ -221,19 +222,19 @@ class VBO : public Object<VBOInfo> {
 public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
-    std::size_t count() const
+    GLsizei count() const
     {
         return count_;
     }
 
-    void generate(std::size_t count, const T* data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    void generate(GLsizei count, const T* data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         bind();
         count_ = count;
         glBufferData(GL_ARRAY_BUFFER, count * sizeof(T), data, static_cast<GLenum>(usage));
     }
 
-    void generate(std::size_t count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    void generate(GLsizei count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(count, nullptr, usage);
     }
@@ -246,74 +247,86 @@ public:
 
     void generate(std::initializer_list<T> data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(data.size(), data.begin(), usage);
+        assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(data.size()), data.begin(), usage);
     }
 
     void generate(const std::vector<T>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(data.size(), data.data(), usage);
+        assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(data.size()), data.data(), usage);
     }
 
     void generate(typename std::vector<T>::const_iterator begin, typename std::vector<T>::const_iterator end, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(std::distance(begin, end), &*begin, usage);
+        const auto count = std::distance(begin, end);
+        assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(count), &*begin, usage);
     }
 
-    template <std::size_t Size>
+    template <GLsizei Size>
     void generate(const T(&data)[Size], BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(Size, data, usage);
     }
 
-    template <std::size_t Size>
+    template <GLsizei Size>
     void generate(const std::array<T, Size>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(Size, data.data(), usage);
     }
 
-    template <std::size_t Size>
+    template <GLsizei Size>
     void generate(typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(std::distance(begin, end), &*begin, usage);
+        const auto count = std::distance(begin, end);
+        assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(count), &*begin, usage);
     }
 
-    void modify(std::size_t offset, std::size_t count, const T* data)
+    void modify(GLsizei offset, GLsizei count, const T* data)
     {
         bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), count * sizeof(T), data);
     }
 
-    void modify(std::size_t offset, std::initializer_list<T> data)
+    void modify(GLsizei offset, std::initializer_list<T> data)
     {
-        modify(offset, data.size(), data.begin());
+        assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        modify(offset, static_cast<GLsizei>(data.size()), data.begin());
     }
 
-    void modify(std::size_t offset, const std::vector<T>& data)
+    void modify(GLsizei offset, const std::vector<T>& data)
     {
-        modify(offset, data.size(), data.data());
+        assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        modify(offset, static_cast<GLsizei>(data.size()), data.data());
     }
 
-    void modify(std::size_t offset, typename std::vector<T>::const_iterator begin, typename std::vector<T>::const_iterator end)
+    void modify(GLsizei offset, typename std::vector<T>::const_iterator begin, typename std::vector<T>::const_iterator end)
     {
-        modify(offset, std::distance(begin, end), &*begin);
+        const auto count = std::distance(begin, end);
+        assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        modify(offset, static_cast<GLsizei>(count), &*begin);
     }
 
-    template <std::size_t Size>
-    void modify(std::size_t offset, const T(&data)[Size])
+    template <GLsizei Size>
+    void modify(GLsizei offset, const T(&data)[Size])
     {
         modify(offset, Size, data);
     }
 
-    template <std::size_t Size>
-    void modify(std::size_t offset, const std::array<T, Size>& data)
+    template <GLsizei Size>
+    void modify(GLsizei offset, const std::array<T, Size>& data)
     {
         modify(offset, Size, data.data());
     }
 
-    template <std::size_t Size>
-    void modify(std::size_t offset, typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end)
-    {
-        modify(offset, std::distance(begin, end), &*begin);
+    template <GLsizei Size>
+    void modify(GLsizei offset, typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end)
+    {                                   
+        const auto count = std::distance(begin, end);
+        assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        modify(offset, static_cast<GLsizei>(count), &*begin);
     }
 
     VBOMapping<T> map()
@@ -322,7 +335,7 @@ public:
     }
 
 private:
-    std::size_t count_ = 0;
+    GLsizei count_ = 0;
 };
 
 }
