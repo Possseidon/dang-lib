@@ -145,14 +145,58 @@ struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
 
     inline static void set(GLint location, const dmath::Matrix<T, Cols, Rows>& value)
     {
-        if constexpr (std::is_same_v<T, GLfloat>)
-            glUniform1fv(location, 1, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLdouble>)
-            glUniform1dv(location, 1, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLint>)
-            glUniform1iv(location, 1, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLuint>)
-            glUniform1uiv(location, 1, &value(0, 0));
+        if constexpr (std::is_same_v<T, GLfloat>) {
+            if constexpr (Cols == 2) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix2fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix2x3fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix2x4fv(location, 1, GL_FALSE, &value(0, 0));
+            }
+            else if constexpr (Cols == 3) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix3x2fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix3fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix3x4fv(location, 1, GL_FALSE, &value(0, 0));
+            }
+            else if constexpr (Cols == 4) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix4x2fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix4x3fv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix4fv(location, 1, GL_FALSE, &value(0, 0));
+            }
+        }
+        else if constexpr (std::is_same_v<T, GLdouble>) {
+            if constexpr (Cols == 2) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix2dv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix2x3dv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix2x4dv(location, 1, GL_FALSE, &value(0, 0));
+            }
+            else if constexpr (Cols == 3) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix3x2dv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix3dv(location, 1, GL_FALSE, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix3x4dv(location, 1, GL_FALSE, &value(0, 0));
+            }
+            else if constexpr (Cols == 4) {
+                if constexpr (Rows == 2)
+                    glUniformMatrix4x2dv(location, 1, &value(0, 0));
+                else if constexpr (Rows == 3)
+                    glUniformMatrix4x3dv(location, 1, &value(0, 0));
+                else if constexpr (Rows == 4)
+                    glUniformMatrix4dv(location, 1, &value(0, 0));
+            }
+        }
     }
 };
 
