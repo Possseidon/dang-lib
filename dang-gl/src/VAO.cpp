@@ -32,4 +32,14 @@ Program& VAOBase::program() const
     return program_;
 }
 
+BeginMode VAOBase::mode() const
+{
+    return mode_;
+}
+
+void VAOBase::setMode(BeginMode mode)
+{
+    mode_ = mode;
+}
+
 }

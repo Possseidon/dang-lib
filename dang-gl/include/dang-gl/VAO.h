@@ -37,6 +37,9 @@ public:
 
     Program& program() const;
 
+    BeginMode mode() const;
+    void setMode(BeginMode mode);
+
 private:
     Program& program_;
     BeginMode mode_;
@@ -53,6 +56,13 @@ public:
         enableAttributes();
     }
 
+    void draw()
+    {
+        bind();
+        program().bind();
+        glDrawArrays(static_cast<GLenum>(mode()), 0, vbo_.count());
+    }
+
 private:
     void enableAttributes()
     {
@@ -62,6 +72,7 @@ private:
         for (ShaderAttribute& attribute : program().attributeOrder()) {
             auto base_type = getBaseDataType(attribute.type());
             auto component_count = getDataTypeComponentCount(attribute.type());
+            auto component_size = getDataTypeSize(base_type) * component_count;
 
             // matrices take up one location per column
             // arrays take up one location per index
@@ -79,7 +90,7 @@ private:
                         static_cast<GLenum>(base_type),
                         GL_FALSE,
                         program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
                 break;
 
             case DataType::Double:
@@ -89,7 +100,7 @@ private:
                         component_count,
                         static_cast<GLenum>(base_type),
                         program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
                 break;
 
             case DataType::Bool:
@@ -101,7 +112,7 @@ private:
                         component_count,
                         static_cast<GLenum>(base_type),
                         program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(attribute.offset())));
+                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
             }
         }
     }
