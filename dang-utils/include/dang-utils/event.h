@@ -54,10 +54,32 @@ public:
             } while (pos != end);
         }
 
+        Subscription(const Subscription&) = delete;
+        Subscription(Subscription&&) = delete;
+        Subscription& operator=(const Subscription&) = delete;
+        Subscription& operator=(Subscription&&) = delete;
+
     private:
         Event& event_;
         Handler handler_;
     };
+
+    Event() = default;
+    Event(const Event&) = delete;
+    Event(Event&&) = delete;
+    Event& operator=(const Event&) = delete;
+    Event& operator=(Event&&) = delete;
+
+    [[nodiscard]] Subscription subscribe(Handler handler)
+    {
+        return Subscription(*this, handler);
+    }
+
+    template <typename T>
+    [[nodiscard]] Subscription subscribe(T* instance, void (T::* method)(const TArgs&...))
+    {
+        return Subscription(*this, instance, method);
+    }
 
     /// <summary>Triggers the event with the given parameters, notifying all subscribers.</summary>
     void operator()(const TArgs&... args) const
