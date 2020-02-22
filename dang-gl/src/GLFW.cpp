@@ -16,14 +16,36 @@ void GLFW::setActiveWindow(Window* window)
     active_window_ = window;
     glfwMakeContextCurrent(window ? window->handle() : nullptr);
 
-    if (glad_initialized_ || !window)
-        return;
+    if (!glad_initialized_ && window)
+        initializeGlad();
+}
 
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-        std::cerr << "Failed to initialize OpenGL." << std::endl;
-        std::exit(EXIT_FAILURE);
+std::string GLFW::clipboardOrThrow() const
+{
+    const char* content = glfwGetClipboardString(nullptr);
+    // technically throws when null is returned
+    // check for null just in case
+    return content ? content : std::string();
+}
+
+std::string GLFW::clipboardOrEmpty() const
+{
+    return clipboard().value_or(std::string());
+}
+
+std::optional<std::string> GLFW::clipboard() const
+{
+    try {
+        return clipboardOrThrow();
     }
-    glad_initialized_ = true;
+    catch (GLFWError) {
+        return std::nullopt;
+    }
+}
+
+void GLFW::setClipboard(const std::string& content)
+{
+    glfwSetClipboardString(nullptr, content.c_str());
 }
 
 bool GLFW::hasActiveWindow()
@@ -39,8 +61,9 @@ Window& GLFW::activeWindow()
 
 GLFW::GLFW()
 {
-    glfwSetErrorCallback(errorCallback);
+    glfwSetErrorCallback(exitingErrorCallback);
     glfwInit();
+    glfwSetErrorCallback(throwingErrorCallback);
     glfwSetJoystickCallback(joystickCallback);
     glfwSetMonitorCallback(monitorCallback);
 }
@@ -50,6 +73,15 @@ GLFW::~GLFW()
     glfwTerminate();
 }
 
+void GLFW::initializeGlad()
+{
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+        std::cerr << "Failed to initialize OpenGL." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    glad_initialized_ = true;
+}
+
 std::string GLFW::formatError(int error_code, const char* description)
 {
     std::stringstream ss;
@@ -57,10 +89,15 @@ std::string GLFW::formatError(int error_code, const char* description)
     return ss.str();
 }
 
-void GLFW::errorCallback(int error_code, const char* description)
+void GLFW::exitingErrorCallback(int error_code, const char* description)
 {
     std::cerr << formatError(error_code, description) << std::endl;
     std::exit(EXIT_FAILURE);
+}
+
+void GLFW::throwingErrorCallback(int error_code, const char* description)
+{
+    throw GLFWError(formatError(error_code, description));
 }
 
 void GLFW::joystickCallback(int jid, int event)

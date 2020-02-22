@@ -11,6 +11,7 @@
 #include <locale>
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
