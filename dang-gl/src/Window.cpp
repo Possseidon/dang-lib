@@ -101,6 +101,28 @@ const dmath::ivec2& Window::framebufferSize() const
     return framebuffer_size_;
 }
 
+float Window::framebufferAspect() const
+{
+    return static_cast<float>(framebuffer_size_.x()) / framebuffer_size_.y();
+}
+
+void Window::adjustViewport() const
+{
+    glViewport(0, 0, framebuffer_size_.x(), framebuffer_size_.y());
+}
+
+bool Window::autoAdjustViewport() const
+{
+    return auto_adjust_viewport_;
+}
+
+void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
+{
+    auto_adjust_viewport_ = auto_adjust_viewport;
+    if (auto_adjust_viewport)
+        adjustViewport();
+}
+
 const std::string& Window::textInput() const
 {
     return text_input_;
@@ -207,6 +229,8 @@ void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int h
     Window& window = Window::fromUserPointer(window_handle);
     window.framebuffer_size_.x() = width;
     window.framebuffer_size_.y() = height;
+    if (window.auto_adjust_viewport_)
+        window.adjustViewport();
     window.onFramebufferResize(window);
 }
 

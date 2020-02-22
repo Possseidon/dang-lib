@@ -70,6 +70,11 @@ public:
     typename TInfo::Binding& binding();
 
     const dmath::ivec2& framebufferSize() const;
+    float framebufferAspect() const;
+
+    void adjustViewport() const;
+    bool autoAdjustViewport() const;
+    void setAutoAdjustViewport(bool auto_adjust_viewport);
 
     const std::string& textInput() const;
 
@@ -119,6 +124,7 @@ private:
     std::string title_;
     std::string text_input_;
     dmath::ivec2 framebuffer_size_;
+    bool auto_adjust_viewport_ = true;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
 };
 
