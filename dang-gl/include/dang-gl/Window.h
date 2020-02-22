@@ -54,6 +54,7 @@ public:
 
     void update();
     void render();
+    void pollEvents();
 
     void step();
     void run();
@@ -85,7 +86,7 @@ private:
 
     GLFWwindow* handle_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
-    dmath::ivec2 framebufferSize_;
+    dmath::ivec2 framebuffer_size_;
 };
 
 template<class TInfo>

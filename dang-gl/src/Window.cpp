@@ -89,7 +89,7 @@ GLFWwindow* Window::handle()
 
 const dmath::ivec2& Window::framebufferSize()
 {
-    return framebufferSize_;
+    return framebuffer_size_;
 }
 
 bool Window::shouldClose()
@@ -105,7 +105,6 @@ void Window::activate()
 void Window::update()
 {
     activate();
-    glfwPollEvents();
     onUpdate(*this);
 }
 
@@ -117,18 +116,22 @@ void Window::render()
     glfwSwapBuffers(handle_);
 }
 
+void Window::pollEvents()
+{
+    glfwPollEvents();
+}
+
 void Window::step()
 {
     update();
     render();
+    pollEvents();
 }
 
 void Window::run()
 {
-    while (!shouldClose()) {
-        update();
-        render();
-    }
+    while (!shouldClose())
+        step();
 }
 
 void Window::registerCallbacks()
@@ -154,7 +157,6 @@ void Window::registerCallbacks()
 
 void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     (void)window;
     (void)codepoint;
@@ -198,8 +200,8 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int height)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.framebufferSize_.x() = width;
-    window.framebufferSize_.y() = height;
+    window.framebuffer_size_.x() = width;
+    window.framebuffer_size_.y() = height;
     window.onFramebufferResize(window);
 }
 
