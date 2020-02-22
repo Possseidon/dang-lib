@@ -3,11 +3,9 @@
 #include "dang-utils/enum.h"
 #include "dang-utils/NonCopyable.h"
 
-#include <map>
-
 #include "BindingPoint.h"
-#include "Object.h"
 #include "DataType.h"
+#include "Object.h"
 #include "UniformWrapper.h"
 
 namespace dang::gl

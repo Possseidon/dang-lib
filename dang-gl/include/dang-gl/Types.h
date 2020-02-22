@@ -1,11 +1,11 @@
 #pragma once
 
-#include "dang-math/vector.h"
 #include "dang-math/matrix.h"
+#include "dang-math/vector.h"
 
 namespace dang::gl
 {
-      
+
 template <std::size_t Dim>
 using vec = dmath::Vector<GLfloat, Dim>;
 

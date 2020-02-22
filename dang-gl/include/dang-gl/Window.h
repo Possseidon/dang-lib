@@ -1,11 +1,11 @@
 #pragma once
 
+#include "dang-math/vector.h"
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
-#include "dang-math/vector.h"
 
-#include "BindingPoint.h"
 #include "Binding.h"
+#include "BindingPoint.h"
 
 namespace dang::gl
 {

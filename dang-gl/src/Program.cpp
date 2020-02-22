@@ -1,12 +1,10 @@
 #include "pch.h"
 #include "Program.h"
 
-#include "Types.h"
-
 #include "dang-math/vector.h"
 #include "dang-math/matrix.h"
 
-#include <iostream>
+#include "Types.h"
 
 namespace dang::gl
 {

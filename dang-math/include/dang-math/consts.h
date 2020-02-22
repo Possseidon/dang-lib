@@ -1,8 +1,9 @@
 #pragma once
 
+#include "utils.h"
+
 #include "dang-utils/enum.h"
 
-#include "utils.h"
 #include "enums.h"
 #include "vector.h"
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <functional>
-
 #include "utils.h"
+
+#include <functional>
+#include <vector>
 
 namespace dang::utils
 {

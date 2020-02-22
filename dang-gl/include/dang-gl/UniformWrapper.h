@@ -1,10 +1,10 @@
 #pragma once
 
-#include "dang-math/vector.h"
 #include "dang-math/matrix.h"
+#include "dang-math/vector.h"
 
-#include "Types.h"
 #include "DataType.h"
+#include "Types.h"
 
 namespace dang::gl
 {

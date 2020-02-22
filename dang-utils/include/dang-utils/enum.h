@@ -2,8 +2,6 @@
 
 #include "utils.h"
 
-#include <array>
-
 namespace dang::utils
 {
 

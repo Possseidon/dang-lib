@@ -3,9 +3,9 @@
 #include "dang-utils/enum.h"
 
 #include "Binding.h"
+#include "GLFW.h"
 #include "ObjectBase.h"
 #include "Window.h"
-#include "GLFW.h"
 
 namespace dang::gl
 {

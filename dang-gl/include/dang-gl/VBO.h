@@ -1,13 +1,8 @@
 #pragma once
 
-#include "Object.h"
-
-#include <vector>
-#include <array>
-#include <initializer_list>
-#include <limits>
-
 #include "dang-utils/NonCopyable.h"
+
+#include "Object.h"
 
 namespace dang::gl
 {
@@ -323,7 +318,7 @@ public:
 
     template <GLsizei Size>
     void modify(GLsizei offset, typename std::array<T, Size>::const_iterator begin, typename std::array<T, Size>::const_iterator end)
-    {                                   
+    {
         const auto count = std::distance(begin, end);
         assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
         modify(offset, static_cast<GLsizei>(count), &*begin);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Object.h"
-
 #include "Program.h"
 #include "VBO.h"
 
