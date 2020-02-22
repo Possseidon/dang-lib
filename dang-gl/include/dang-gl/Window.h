@@ -23,7 +23,7 @@ public:
     int height() const;
     void setHeight(int height);
 
-    std::string title() const;
+    const std::string& title() const;
     void setTitle(std::string title);
 
     GLFWwindow* createWindow() const;
@@ -35,20 +35,24 @@ private:
 
 class Window {
 public:
-    Window(GLFWwindow* handle);
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
 
     static Window& fromUserPointer(GLFWwindow* window);
 
-    GLFWwindow* handle();
+    GLFWwindow* handle() const;
+
+    const std::string& title() const;
+    void setTitle(const std::string& title);
 
     template <class TInfo>
     typename TInfo::Binding& binding();
 
-    const dmath::ivec2& framebufferSize();
+    const dmath::ivec2& framebufferSize() const;
 
-    bool shouldClose();
+    const std::string& textInput() const;
+
+    bool shouldClose() const;
 
     void activate();
 
@@ -85,8 +89,10 @@ private:
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
 
     GLFWwindow* handle_;
+    std::string title_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
     dmath::ivec2 framebuffer_size_;
+    std::string text_input_;
 };
 
 template<class TInfo>

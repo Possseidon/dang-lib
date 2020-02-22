@@ -1,14 +1,18 @@
 #pragma once
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+
 #include <array>
-#include <cassert>  
+#include <cassert>
+#include <codecvt>
 #include <initializer_list>
 #include <iostream>
 #include <limits>
+#include <locale>
 #include <map>
 #include <memory>
 #include <sstream>
-#include <string>   
+#include <string>
 #include <vector>
 
 #include "glad/glad.h"

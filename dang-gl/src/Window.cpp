@@ -40,14 +40,14 @@ void WindowInfo::setHeight(int height)
     size_.y() = height;
 }
 
-std::string WindowInfo::title() const
+const std::string& WindowInfo::title() const
 {
     return title_;
 }
 
 void WindowInfo::setTitle(std::string title)
 {
-    title_ = title;
+    title_ = std::move(title);
 }
 
 GLFWwindow* WindowInfo::createWindow() const
@@ -60,16 +60,12 @@ GLFWwindow* WindowInfo::createWindow() const
     return glfwCreateWindow(width(), height(), title_.c_str(), nullptr, nullptr);
 }
 
-Window::Window(GLFWwindow* handle)
-    : handle_(handle)
-{
-    glfwSetWindowUserPointer(handle, this);
-    registerCallbacks();
-}
-
 Window::Window(const WindowInfo& info)
-    : Window(info.createWindow())
+    : handle_(info.createWindow())
+    , title_(info.title())
 {
+    glfwSetWindowUserPointer(handle_, this);
+    registerCallbacks();
 }
 
 Window::~Window()
@@ -82,17 +78,35 @@ Window& Window::fromUserPointer(GLFWwindow* window)
     return *static_cast<Window*>(glfwGetWindowUserPointer(window));
 }
 
-GLFWwindow* Window::handle()
+GLFWwindow* Window::handle() const
 {
     return handle_;
 }
 
-const dmath::ivec2& Window::framebufferSize()
+const std::string& Window::title() const
+{
+    return title_;
+}
+
+void Window::setTitle(const std::string& title)
+{
+    if (title == title_)
+        return;
+    glfwSetWindowTitle(handle_, title.c_str());
+    title_ = title;
+}
+
+const dmath::ivec2& Window::framebufferSize() const
 {
     return framebuffer_size_;
 }
 
-bool Window::shouldClose()
+const std::string& Window::textInput() const
+{
+    return text_input_;
+}
+
+bool Window::shouldClose() const
 {
     return glfwWindowShouldClose(handle_);
 }
@@ -118,6 +132,7 @@ void Window::render()
 
 void Window::pollEvents()
 {
+    text_input_.clear();
     glfwPollEvents();
 }
 
@@ -158,8 +173,8 @@ void Window::registerCallbacks()
 void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)codepoint;
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    window.text_input_ += converter.to_bytes(codepoint);
 }
 
 void Window::charModsCallback(GLFWwindow* window_handle, unsigned int codepoint, int mods)
