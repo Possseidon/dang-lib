@@ -152,7 +152,7 @@ void Window::run()
 void Window::registerCallbacks()
 {
     glfwSetCharCallback(handle_, charCallback);
-    glfwSetCharModsCallback(handle_, charModsCallback);
+    // Deprecated: glfwSetCharModsCallback(handle_, charModsCallback);
     glfwSetCursorEnterCallback(handle_, cursorEnterCallback);
     glfwSetCursorPosCallback(handle_, cursorPosCallback);
     glfwSetDropCallback(handle_, dropCallback);
@@ -177,39 +177,29 @@ void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
     window.text_input_ += converter.to_bytes(codepoint);
 }
 
-void Window::charModsCallback(GLFWwindow* window_handle, unsigned int codepoint, int mods)
-{
-    // TODO: Event
-    Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)codepoint;
-    (void)mods;
-}
-
 void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)entered;
+    if (entered)
+        window.onCursorEnter(window);
+    else
+        window.onCursorLeave(window);
 }
 
 void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)xpos;
-    (void)ypos;
+    window.onCursorMove({ window, dmath::dvec2(xpos, ypos) });
 }
 
-void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* paths[])
+void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[])
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)path_count;
-    (void)paths;
+    if (!window.onDropPaths)
+        return;
+    std::vector<fs::path> paths(path_count);
+    std::transform(path_array, path_array + path_count, paths.begin(), fs::u8path<const char*, 0>);
+    window.onDropPaths({ window, paths });
 }
 
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int height)
@@ -245,9 +235,7 @@ void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yo
 {
     // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)xoffset;
-    (void)yoffset;
+    window.onScroll({ window, dmath::dvec2(xoffset, yoffset) });
 }
 
 void Window::windowCloseCallback(GLFWwindow* window_handle)

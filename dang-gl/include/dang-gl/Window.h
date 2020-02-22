@@ -35,6 +35,27 @@ private:
 
 class Window {
 public:
+
+    struct CursorMoveInfo {
+        Window& window;
+        dmath::dvec2 position;
+    };
+
+    struct ScrollInfo {
+        Window& window;
+        dmath::dvec2 offset;
+    };
+
+    struct DropPathsInfo {
+        Window& window;
+        std::vector<fs::path> paths;
+    };
+
+    using Event = dutils::Event<Window&>;
+    using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
+    using ScrollEvent = dutils::Event<ScrollInfo>;
+    using DropPathsEvent = dutils::Event<DropPathsInfo>;
+
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
 
@@ -63,18 +84,24 @@ public:
     void step();
     void run();
 
-    dutils::Event<Window&> onUpdate;
-    dutils::Event<Window&> onRender;
-    dutils::Event<Window&> onFramebufferResize;
+    Event onUpdate;
+    Event onRender;
+
+    Event onFramebufferResize;
+
+    Event onCursorEnter;
+    Event onCursorLeave;
+    CursorMoveEvent onCursorMove;
+    ScrollEvent onScroll;
+    DropPathsEvent onDropPaths;
 
 private:
     void registerCallbacks();
 
     static void charCallback(GLFWwindow* window_handle, unsigned int codepoint);
-    static void charModsCallback(GLFWwindow* window_handle, unsigned int codepoint, int mods);
     static void cursorEnterCallback(GLFWwindow* window_handle, int entered);
     static void cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos);
-    static void dropCallback(GLFWwindow* window_handle, int path_count, const char* paths[]);
+    static void dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[]);
     static void framebufferSizeCallback(GLFWwindow* window_handle, int width, int height);
     static void keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods);
     static void mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods);
@@ -90,9 +117,9 @@ private:
 
     GLFWwindow* handle_;
     std::string title_;
-    dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
-    dmath::ivec2 framebuffer_size_;
     std::string text_input_;
+    dmath::ivec2 framebuffer_size_;
+    dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
 };
 
 template<class TInfo>
