@@ -7,7 +7,7 @@ namespace dang::math
 
 /// <summary>Linearly interpolates between two values.</summary>
 template <typename T, typename TFactor>
-inline constexpr T interpolate(const T& from, const T& to, TFactor factor)
+constexpr T interpolate(const T& from, const T& to, TFactor factor)
 {
     return (T(1) - factor) * from + factor * to;
 }

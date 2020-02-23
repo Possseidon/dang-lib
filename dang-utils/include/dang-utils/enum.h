@@ -31,22 +31,22 @@ class EnumArray : public std::array<TValue, EnumCount<TEnum>> {
     using Base = std::array<TValue, EnumCount<TEnum>>;
 
 public:
-    inline constexpr TValue& operator[](TEnum pos) noexcept
+    constexpr TValue& operator[](TEnum pos) noexcept
     {
         return Base::operator[](static_cast<typename Base::size_type>(pos));
     }
 
-    inline constexpr const TValue& operator[](TEnum pos) const noexcept
+    constexpr const TValue& operator[](TEnum pos) const noexcept
     {
         return Base::operator[](static_cast<typename Base::size_type>(pos));
     }
 
-    inline constexpr TValue& at(TEnum pos)
+    constexpr TValue& at(TEnum pos)
     {
         return Base::at(static_cast<typename Base::size_type>(pos));
     }
 
-    inline constexpr const TValue& at(TEnum pos) const
+    constexpr const TValue& at(TEnum pos) const
     {
         return Base::at(static_cast<typename Base::size_type>(pos));
     }
@@ -56,8 +56,8 @@ public:
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
 class EnumSetIterator : public std::iterator<std::forward_iterator_tag, T> {
 public:
-    inline constexpr EnumSetIterator() = default;
-    inline constexpr EnumSetIterator(T set)
+    constexpr EnumSetIterator() = default;
+    constexpr EnumSetIterator(T set)
         : set_(static_cast<std::underlying_type_t<T>>(set))
         , value_(1)
     {
@@ -67,7 +67,7 @@ public:
         }
     }
 
-    inline constexpr EnumSetIterator<T>& operator++()
+    constexpr EnumSetIterator<T>& operator++()
     {
         do {
             set_ >>= 1;
@@ -76,24 +76,24 @@ public:
         return *this;
     }
 
-    inline constexpr EnumSetIterator<T> operator++(int)
+    constexpr EnumSetIterator<T> operator++(int)
     {
         auto result = *this;
         ++(*this);
         return result;
     }
 
-    inline constexpr bool operator==(EnumSetIterator<T> other)
+    constexpr bool operator==(EnumSetIterator<T> other)
     {
         return set_ == other->set_;
     }
 
-    inline constexpr bool operator!=(EnumSetIterator<T> other)
+    constexpr bool operator!=(EnumSetIterator<T> other)
     {
         return set_ != other.set_;
     }
 
-    inline constexpr T operator*()
+    constexpr T operator*()
     {
         return static_cast<T>(value_);
     }
@@ -112,13 +112,13 @@ namespace std
 // for (auto value : MyEnum())
 
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
-inline constexpr auto begin(T)
+constexpr auto begin(T)
 {
     return dutils::EnumValues<T>.begin();
 }
 
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
-inline constexpr auto end(T)
+constexpr auto end(T)
 {
     return dutils::EnumValues<T>.end();
 }
@@ -126,13 +126,13 @@ inline constexpr auto end(T)
 // Allow enum-set iteration in range based for loops
 
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr auto begin(T set)
+constexpr auto begin(T set)
 {
     return dutils::EnumSetIterator<T>(set);
 }
 
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr auto end(T)
+constexpr auto end(T)
 {
     return dutils::EnumSetIterator<T>();
 }
@@ -143,7 +143,7 @@ inline constexpr auto end(T)
 
 /// <summary>Returns the union of two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T operator|(T lhs, T rhs)
+constexpr T operator|(T lhs, T rhs)
 {
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(lhs) | static_cast<BaseType>(rhs));
@@ -151,14 +151,14 @@ inline constexpr T operator|(T lhs, T rhs)
 
 /// <summary>Stores the union of both enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T& operator|=(T& lhs, T rhs)
+constexpr T& operator|=(T& lhs, T rhs)
 {
     return lhs = lhs | rhs;
 }
 
 /// <summary>Returns the intersection of two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T operator&(T lhs, T rhs)
+constexpr T operator&(T lhs, T rhs)
 {
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(lhs)& static_cast<BaseType>(rhs));
@@ -166,14 +166,14 @@ inline constexpr T operator&(T lhs, T rhs)
 
 /// <summary>Stores the intersection of both enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T& operator&=(T& lhs, T rhs)
+constexpr T& operator&=(T& lhs, T rhs)
 {
     return lhs = lhs & rhs;
 }
 
 /// <summary>Inverts all flags of an enum-set.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T& operator~(T& value)
+constexpr T& operator~(T& value)
 {
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(T::ALL) & ~static_cast<BaseType>(value));
@@ -181,7 +181,7 @@ inline constexpr T& operator~(T& value)
 
 /// <summary>Returns only flags which differ between the two enum-sets.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T operator^(T lhs, T rhs)
+constexpr T operator^(T lhs, T rhs)
 {
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(lhs) ^ static_cast<BaseType>(rhs));
@@ -189,14 +189,14 @@ inline constexpr T operator^(T lhs, T rhs)
 
 /// <summary>Stores only the flags which differ between the two enum-sets in the first.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T& operator^=(T& lhs, T rhs)
+constexpr T& operator^=(T& lhs, T rhs)
 {
     return lhs = lhs ^ rhs;
 }
 
 /// <summary>Returns the first enum-set without any of the flags in the second.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T operator-(T lhs, T rhs)
+constexpr T operator-(T lhs, T rhs)
 {
     using BaseType = std::underlying_type_t<T>;
     return static_cast<T>(static_cast<BaseType>(lhs) & ~static_cast<BaseType>(rhs));
@@ -204,7 +204,7 @@ inline constexpr T operator-(T lhs, T rhs)
 
 /// <summary>Removes all flags from the first enum-set, which are set in the second.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-inline constexpr T& operator-=(T& lhs, T rhs)
+constexpr T& operator-=(T& lhs, T rhs)
 {
     return lhs = lhs - rhs;
 }
