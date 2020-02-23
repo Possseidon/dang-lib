@@ -97,7 +97,7 @@ public:
     bool autoAdjustViewport() const;
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
-    std::string_view textInput() const;
+    const std::string& textInput() const;
 
     template <class TInfo>
     typename TInfo::Binding& binding();

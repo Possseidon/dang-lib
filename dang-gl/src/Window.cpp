@@ -154,7 +154,7 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
         adjustViewport();
 }
 
-std::string_view Window::textInput() const
+const std::string& Window::textInput() const
 {
     return text_input_;
 }
