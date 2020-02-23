@@ -172,6 +172,7 @@
     <ClInclude Include="include\dang-gl\BindingPoint.h" />
     <ClInclude Include="include\dang-gl\DataType.h" />
     <ClInclude Include="include\dang-gl\GLFW.h" />
+    <ClInclude Include="include\dang-gl\Input.h" />
     <ClInclude Include="include\dang-gl\Object.h" />
     <ClInclude Include="include\dang-gl\ObjectBase.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="include\dang-gl\VAO.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\ObjectBase.cpp" />
     <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\glad.c">

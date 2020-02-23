@@ -6,6 +6,7 @@
 
 #include "Binding.h"
 #include "BindingPoint.h"
+#include "Input.h"
 
 namespace dang::gl
 {
@@ -36,25 +37,40 @@ private:
 class Window {
 public:
 
-    struct CursorMoveInfo {
+    struct EventInfoBase {
         Window& window;
+    };
+
+    struct CursorMoveInfo : EventInfoBase {
         dmath::dvec2 position;
     };
 
-    struct ScrollInfo {
-        Window& window;
+    struct ScrollInfo : EventInfoBase {
         dmath::dvec2 offset;
     };
 
-    struct DropPathsInfo {
-        Window& window;
+    struct DropPathsInfo : EventInfoBase {
         std::vector<fs::path> paths;
+    };
+
+    struct ButtonInfo : EventInfoBase {
+        ButtonAction action;
+        Button button;
+        ModifierKeys mods;
+    };
+
+    struct KeyInfo : EventInfoBase {
+        KeyAction action;
+        KeyData key;
+        ModifierKeys mods;
     };
 
     using Event = dutils::Event<Window&>;
     using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
     using ScrollEvent = dutils::Event<ScrollInfo>;
     using DropPathsEvent = dutils::Event<DropPathsInfo>;
+    using KeyEvent = dutils::Event<KeyInfo>;
+    using ButtonEvent = dutils::Event<ButtonInfo>;
 
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
@@ -66,8 +82,13 @@ public:
     const std::string& title() const;
     void setTitle(const std::string& title);
 
-    template <class TInfo>
-    typename TInfo::Binding& binding();
+    dmath::ivec2 pos() const;
+    void move(const dmath::ivec2& new_pos) const;
+
+    dmath::ivec2 size() const;
+    void resize(const dmath::ivec2& new_size) const;
+
+    dmath::vec2 contentScale() const;
 
     const dmath::ivec2& framebufferSize() const;
     float framebufferAspect() const;
@@ -76,9 +97,10 @@ public:
     bool autoAdjustViewport() const;
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
-    const std::string& textInput() const;
+    std::string_view textInput() const;
 
-    bool shouldClose() const;
+    template <class TInfo>
+    typename TInfo::Binding& binding();
 
     void activate();
 
@@ -89,16 +111,32 @@ public:
     void step();
     void run();
 
+    bool shouldClose() const;
+
     Event onUpdate;
     Event onRender;
 
+    Event onClose;
+    Event onContentScale;
+    Event onFocus;
+    Event onUnfocus;
+    Event onIconify;
+    Event onUniconify;
+    Event onMaximize;
+    Event onUnmaximize;
+    Event onRestore;
+    Event onMove;
+    Event onResize;
     Event onFramebufferResize;
 
+    Event onType;
+    KeyEvent onKey;
     Event onCursorEnter;
     Event onCursorLeave;
     CursorMoveEvent onCursorMove;
-    ScrollEvent onScroll;
     DropPathsEvent onDropPaths;
+    ButtonEvent onButton;
+    ScrollEvent onScroll;
 
 private:
     void registerCallbacks();
@@ -111,6 +149,7 @@ private:
     static void keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods);
     static void mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods);
     static void scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset);
+
     static void windowCloseCallback(GLFWwindow* window_handle);
     static void windowContentScaleCallback(GLFWwindow* window_handle, float xscale, float yscale);
     static void windowFocusCallback(GLFWwindow* window_handle, int focused);
@@ -120,11 +159,11 @@ private:
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
 
-    GLFWwindow* handle_;
+    GLFWwindow* handle_ = nullptr;
     std::string title_;
-    std::string text_input_;
     dmath::ivec2 framebuffer_size_;
     bool auto_adjust_viewport_ = true;
+    std::string text_input_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
 };
 

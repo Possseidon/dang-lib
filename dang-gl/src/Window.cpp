@@ -96,6 +96,37 @@ void Window::setTitle(const std::string& title)
     title_ = title;
 }
 
+dmath::ivec2 Window::pos() const
+{
+    dmath::ivec2 result;
+    glfwGetWindowPos(handle_, &result.x(), &result.y());
+    return result;
+}
+
+void Window::move(const dmath::ivec2& new_pos) const
+{
+    glfwSetWindowPos(handle_, new_pos.x(), new_pos.y());
+}
+
+dmath::ivec2 Window::size() const
+{
+    dmath::ivec2 result;
+    glfwGetWindowSize(handle_, &result.x(), &result.y());
+    return result;
+}
+
+void Window::resize(const dmath::ivec2& new_size) const
+{
+    glfwSetWindowSize(handle_, new_size.x(), new_size.y());
+}
+
+dmath::vec2 Window::contentScale() const
+{
+    dmath::vec2 result;
+    glfwGetWindowContentScale(handle_, &result.x(), &result.y());
+    return result;
+}
+
 const dmath::ivec2& Window::framebufferSize() const
 {
     return framebuffer_size_;
@@ -123,7 +154,7 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
         adjustViewport();
 }
 
-const std::string& Window::textInput() const
+std::string_view Window::textInput() const
 {
     return text_input_;
 }
@@ -156,6 +187,8 @@ void Window::pollEvents()
 {
     text_input_.clear();
     glfwPollEvents();
+    if (!text_input_.empty())
+        onType(*this);
 }
 
 void Window::step()
@@ -182,6 +215,7 @@ void Window::registerCallbacks()
     glfwSetKeyCallback(handle_, keyCallback);
     glfwSetMouseButtonCallback(handle_, mouseButtonCallback);
     glfwSetScrollCallback(handle_, scrollCallback);
+
     glfwSetWindowCloseCallback(handle_, windowCloseCallback);
     glfwSetWindowContentScaleCallback(handle_, windowContentScaleCallback);
     glfwSetWindowFocusCallback(handle_, windowFocusCallback);
@@ -227,8 +261,7 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int height)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.framebuffer_size_.x() = width;
-    window.framebuffer_size_.y() = height;
+    window.framebuffer_size_ = { width, height };
     if (window.auto_adjust_viewport_)
         window.adjustViewport();
     window.onFramebufferResize(window);
@@ -236,79 +269,69 @@ void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int h
 
 void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)key;
-    (void)scancode;
-    (void)action;
-    (void)mods;
+    window.onKey({ window, static_cast<KeyAction>(action), KeyData(static_cast<Key>(key), scancode), static_cast<ModifierKeys>(mods) });
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)button;
-    (void)action;
-    (void)mods;
+    window.onButton({ window, static_cast<ButtonAction>(action), static_cast<Button>(button), static_cast<ModifierKeys>(mods) });
 }
 
 void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
     window.onScroll({ window, dmath::dvec2(xoffset, yoffset) });
 }
 
 void Window::windowCloseCallback(GLFWwindow* window_handle)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
+    window.onClose(window);
 }
 
-void Window::windowContentScaleCallback(GLFWwindow* window_handle, float xscale, float yscale)
+void Window::windowContentScaleCallback(GLFWwindow* window_handle, float, float)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)xscale;
-    (void)yscale;
+    window.onContentScale(window);
 }
 
 void Window::windowFocusCallback(GLFWwindow* window_handle, int focused)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)focused;
+    if (focused)
+        window.onFocus(window);
+    else
+        window.onUnfocus(window);
 }
 
 void Window::windowIconifyCallback(GLFWwindow* window_handle, int iconified)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)iconified;
+    if (iconified)
+        window.onIconify(window);
+    else {
+        window.onUniconify(window);
+        window.onRestore(window);
+    }
 }
 
 void Window::windowMaximizeCallback(GLFWwindow* window_handle, int maximized)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)maximized;
+    if (maximized)
+        window.onMaximize(window);
+    else {
+        window.onUnmaximize(window);
+        window.onRestore(window);
+    }
 }
 
-void Window::windowPosCallback(GLFWwindow* window_handle, int xpos, int ypos)
+void Window::windowPosCallback(GLFWwindow* window_handle, int, int)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)xpos;
-    (void)ypos;
+    window.onMove(window);
 }
 
 void Window::windowRefreshCallback(GLFWwindow* window_handle)
@@ -317,13 +340,10 @@ void Window::windowRefreshCallback(GLFWwindow* window_handle)
     window.render();
 }
 
-void Window::windowSizeCallback(GLFWwindow* window_handle, int width, int height)
+void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
 {
-    // TODO: Event
     Window& window = Window::fromUserPointer(window_handle);
-    (void)window;
-    (void)width;
-    (void)height;
+    window.onResize(window);
 }
 
 }
