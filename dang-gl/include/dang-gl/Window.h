@@ -179,6 +179,16 @@ public:
     float opacity() const;
     void setOpacity(float new_opacity) const;
 
+    bool isIconified() const;
+    void iconify() const;
+    bool isMaximized() const;
+    void maximize() const;
+    void restore() const;
+
+    bool isVisible() const;
+    void hide() const;
+    void show() const;
+
     const std::string& textInput() const;
 
     template <class TInfo>

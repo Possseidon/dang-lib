@@ -234,6 +234,46 @@ void Window::setOpacity(float new_opacity) const
     glfwSetWindowOpacity(handle_, new_opacity);
 }
 
+bool Window::isIconified() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_ICONIFIED);
+}
+
+void Window::iconify() const
+{
+    glfwIconifyWindow(handle_);
+}
+
+bool Window::isMaximized() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_MAXIMIZED);
+}
+
+void Window::maximize() const
+{
+    glfwMaximizeWindow(handle_);
+}
+
+void Window::restore() const
+{
+    glfwRestoreWindow(handle_);
+}
+
+bool Window::isVisible() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_VISIBLE);
+}
+
+void Window::hide() const
+{
+    glfwHideWindow(handle_);
+}
+
+void Window::show() const
+{
+    glfwShowWindow(handle_);
+}
+
 const std::string& Window::textInput() const
 {
     return text_input_;
