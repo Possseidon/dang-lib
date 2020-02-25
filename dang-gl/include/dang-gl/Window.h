@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-math/vector.h"
+#include "dang-math/bounds.h"
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
 
@@ -156,12 +157,24 @@ public:
 
     dmath::vec2 contentScale() const;
 
-    const dmath::ivec2& framebufferSize() const;
-    float framebufferAspect() const;
+    std::optional<int> minWidth() const;
+    std::optional<int> minHeight() const;
+    std::optional<int> maxWidth() const;
+    std::optional<int> maxHeight() const;
+    void setSizeLimits(std::optional<int> min_width, std::optional<int> min_height, std::optional<int> max_width, std::optional<int> max_height);
+    void setMinSize(std::optional<int> min_width, std::optional<int> min_height);
+    void setMaxSize(std::optional<int> max_width, std::optional<int> max_height);
+
+    dmath::ivec2 framebufferSize() const;
+    float aspect() const;
 
     void adjustViewport() const;
     bool autoAdjustViewport() const;
     void setAutoAdjustViewport(bool auto_adjust_viewport);
+
+    std::optional<dmath::ivec2> aspectRatio() const;
+    void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
+    void freezeAspectRatio();
 
     const std::string& textInput() const;
 
@@ -225,9 +238,12 @@ private:
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
 
+    void updateSizeLimits() const;
+
     GLFWwindow* handle_ = nullptr;
     std::string title_;
-    dmath::ivec2 framebuffer_size_;
+    dmath::ibounds2 size_limits_;
+    std::optional<dmath::ivec2> aspect_ratio_;
     bool auto_adjust_viewport_ = true;
     std::string text_input_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;

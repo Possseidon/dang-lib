@@ -128,19 +128,23 @@ dmath::vec2 Window::contentScale() const
     return result;
 }
 
-const dmath::ivec2& Window::framebufferSize() const
+dmath::ivec2 Window::framebufferSize() const
 {
-    return framebuffer_size_;
+    dmath::ivec2 framebuffer_size;
+    glfwGetFramebufferSize(handle_, &framebuffer_size.x(), &framebuffer_size.y());
+    return framebuffer_size;
 }
 
-float Window::framebufferAspect() const
+float Window::aspect() const
 {
-    return static_cast<float>(framebuffer_size_.x()) / framebuffer_size_.y();
+    dmath::ivec2 framebuffer_size = framebufferSize();
+    return static_cast<float>(framebuffer_size.x()) / framebuffer_size.y();
 }
 
 void Window::adjustViewport() const
 {
-    glViewport(0, 0, framebuffer_size_.x(), framebuffer_size_.y());
+    dmath::ivec2 framebuffer_size = framebufferSize();
+    glViewport(0, 0, framebuffer_size.x(), framebuffer_size.y());
 }
 
 bool Window::autoAdjustViewport() const
@@ -153,6 +157,71 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
     auto_adjust_viewport_ = auto_adjust_viewport;
     if (auto_adjust_viewport)
         adjustViewport();
+}
+
+std::optional<int> Window::minWidth() const
+{
+    int value = size_limits_.low.x();
+    return value != GLFW_DONT_CARE ? std::optional(value) : std::nullopt;
+}
+
+std::optional<int> Window::minHeight() const
+{
+    int value = size_limits_.low.y();
+    return value != GLFW_DONT_CARE ? std::optional(value) : std::nullopt;
+}
+
+std::optional<int> Window::maxWidth() const
+{
+    int value = size_limits_.high.x();
+    return value != GLFW_DONT_CARE ? std::optional(value) : std::nullopt;
+}
+
+std::optional<int> Window::maxHeight() const
+{
+    int value = size_limits_.high.y();
+    return value != GLFW_DONT_CARE ? std::optional(value) : std::nullopt;
+}
+
+void Window::setSizeLimits(std::optional<int> min_width, std::optional<int> min_height, std::optional<int> max_width, std::optional<int> max_height)
+{
+    size_limits_ = {
+        { min_width.value_or(GLFW_DONT_CARE), min_height.value_or(GLFW_DONT_CARE) },
+        { max_width.value_or(GLFW_DONT_CARE), max_height.value_or(GLFW_DONT_CARE) } };
+    updateSizeLimits();
+}
+
+void Window::setMinSize(std::optional<int> min_width, std::optional<int> min_height)
+{
+    size_limits_.low.x() = min_width.value_or(GLFW_DONT_CARE);
+    size_limits_.low.y() = min_height.value_or(GLFW_DONT_CARE);
+    updateSizeLimits();
+}
+
+void Window::setMaxSize(std::optional<int> max_width, std::optional<int> max_height)
+{
+    size_limits_.high.x() = max_width.value_or(GLFW_DONT_CARE);
+    size_limits_.high.y() = max_height.value_or(GLFW_DONT_CARE);
+    updateSizeLimits();
+}
+
+std::optional<dmath::ivec2> Window::aspectRatio() const
+{
+    return aspect_ratio_;
+}
+
+void Window::setAspectRatio(std::optional<dmath::ivec2> aspect_ratio)
+{
+    aspect_ratio_ = aspect_ratio;
+    if (aspect_ratio)
+        glfwSetWindowAspectRatio(handle_, aspect_ratio->x(), aspect_ratio->y());
+    else
+        glfwSetWindowAspectRatio(handle_, GLFW_DONT_CARE, GLFW_DONT_CARE);
+}
+
+void Window::freezeAspectRatio()
+{
+    setAspectRatio(framebufferSize());
 }
 
 const std::string& Window::textInput() const
@@ -259,10 +328,9 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
     window.onDropPaths({ window, paths });
 }
 
-void Window::framebufferSizeCallback(GLFWwindow* window_handle, int width, int height)
+void Window::framebufferSizeCallback(GLFWwindow* window_handle, int, int)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.framebuffer_size_ = { width, height };
     if (window.auto_adjust_viewport_)
         window.adjustViewport();
     window.onFramebufferResize(window);
@@ -345,6 +413,13 @@ void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
 {
     Window& window = Window::fromUserPointer(window_handle);
     window.onResize(window);
+}
+
+void Window::updateSizeLimits() const
+{
+    glfwSetWindowSizeLimits(handle_,
+        size_limits_.low.x(), size_limits_.low.y(),
+        size_limits_.high.x(), size_limits_.high.y());
 }
 
 }
