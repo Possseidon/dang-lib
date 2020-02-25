@@ -189,6 +189,13 @@ public:
     void hide() const;
     void show() const;
 
+    bool isFocused() const;
+    void focus() const;
+    bool focusOnShow() const;
+    void setFocusOnShow(bool focus_on_show) const;
+
+    void requestAttention() const;
+
     const std::string& textInput() const;
 
     template <class TInfo>

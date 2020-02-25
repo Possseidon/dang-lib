@@ -274,6 +274,31 @@ void Window::show() const
     glfwShowWindow(handle_);
 }
 
+bool Window::isFocused() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_FOCUSED);
+}
+
+void Window::focus() const
+{
+    glfwFocusWindow(handle_);
+}
+
+bool Window::focusOnShow() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW);
+}
+
+void Window::setFocusOnShow(bool focus_on_show) const
+{
+    glfwSetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW, focus_on_show);
+}
+
+void Window::requestAttention() const
+{
+    glfwRequestWindowAttention(handle_);
+}
+
 const std::string& Window::textInput() const
 {
     return text_input_;
