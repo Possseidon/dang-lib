@@ -46,6 +46,7 @@ GLFWwindow* WindowInfo::createWindow() const
 
     glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, static_cast<int>(context_robustness));
     glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, static_cast<int>(context_release_behavior));
+    glfwWindowHint(GLFW_CONTEXT_NO_ERROR, context_no_error);
 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, forward_compatible);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug_context);
@@ -126,6 +127,16 @@ dmath::vec2 Window::contentScale() const
     dmath::vec2 result;
     glfwGetWindowContentScale(handle_, &result.x(), &result.y());
     return result;
+}
+
+bool Window::isResizable() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_RESIZABLE);
+}
+
+void Window::setResizable(bool resizable) const
+{
+    glfwSetWindowAttrib(handle_, GLFW_RESIZABLE, resizable);
 }
 
 dmath::ivec2 Window::framebufferSize() const
@@ -244,6 +255,16 @@ void Window::iconify() const
     glfwIconifyWindow(handle_);
 }
 
+bool Window::autoIconify() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_AUTO_ICONIFY);
+}
+
+void Window::setAutoIconify(bool auto_iconify) const
+{
+    glfwSetWindowAttrib(handle_, GLFW_AUTO_ICONIFY, auto_iconify);
+}
+
 bool Window::isMaximized() const
 {
     return glfwGetWindowAttrib(handle_, GLFW_MAXIMIZED);
@@ -297,6 +318,84 @@ void Window::setFocusOnShow(bool focus_on_show) const
 void Window::requestAttention() const
 {
     glfwRequestWindowAttention(handle_);
+}
+
+bool Window::isHovered() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_HOVERED);
+}
+
+bool Window::isDecorated() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_DECORATED);
+}
+
+void Window::setDecorated(bool decorated) const
+{
+    glfwSetWindowAttrib(handle_, GLFW_DECORATED, decorated);
+}
+
+bool Window::isFloating() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_FLOATING);
+}
+
+void Window::setFloating(bool floating) const
+{
+    glfwSetWindowAttrib(handle_, GLFW_FLOATING, floating);
+}
+
+bool Window::transparentFramebuffer() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_TRANSPARENT_FRAMEBUFFER);
+}
+
+ClientAPI Window::clientAPI() const
+{
+    return static_cast<ClientAPI>(glfwGetWindowAttrib(handle_, GLFW_CLIENT_API));
+}
+
+ContextAPI Window::contextAPI() const
+{
+    return static_cast<ContextAPI>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_CREATION_API));
+}
+
+GLVersionFull Window::glVersion() const
+{
+    return {
+        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MAJOR),
+        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MINOR),
+        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_REVISION) };
+}
+
+bool Window::forwardCompatible() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_OPENGL_FORWARD_COMPAT);
+}
+
+bool Window::debugContext() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_OPENGL_DEBUG_CONTEXT);
+}
+
+GLProfile Window::glProfile() const
+{
+    return static_cast<GLProfile>(glfwGetWindowAttrib(handle_, GLFW_OPENGL_PROFILE));
+}
+
+ContextReleaseBehavior Window::contextReleaseBehavior() const
+{
+    return static_cast<ContextReleaseBehavior>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_RELEASE_BEHAVIOR));
+}
+
+bool Window::contextNoError() const
+{
+    return glfwGetWindowAttrib(handle_, GLFW_CONTEXT_NO_ERROR);
+}
+
+ContextRobustness Window::contextRobustness() const
+{
+    return static_cast<ContextRobustness>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_ROBUSTNESS));
 }
 
 const std::string& Window::textInput() const

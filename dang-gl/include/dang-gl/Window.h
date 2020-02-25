@@ -13,6 +13,7 @@ namespace dang::gl
 {
 
 using GLVersion = std::tuple<int, int>;
+using GLVersionFull = std::tuple<int, int, int>;
 
 enum class ClientAPI {
     None = GLFW_NO_API,
@@ -88,6 +89,7 @@ struct WindowInfo {
 
     ContextRobustness context_robustness = ContextRobustness::None;
     ContextReleaseBehavior context_release_behavior = ContextReleaseBehavior::Any;
+    bool context_no_error = false;
 
     bool forward_compatible = false;
     bool debug_context = false;
@@ -155,7 +157,13 @@ public:
     dmath::ivec2 size() const;
     void resize(dmath::ivec2 new_size) const;
 
+    dmath::ivec2 framebufferSize() const;
+    float aspect() const;
+
     dmath::vec2 contentScale() const;
+
+    bool isResizable() const;
+    void setResizable(bool resizable) const;
 
     std::optional<int> minWidth() const;
     std::optional<int> minHeight() const;
@@ -164,9 +172,6 @@ public:
     void setSizeLimits(std::optional<int> min_width, std::optional<int> min_height, std::optional<int> max_width, std::optional<int> max_height);
     void setMinSize(std::optional<int> min_width, std::optional<int> min_height);
     void setMaxSize(std::optional<int> max_width, std::optional<int> max_height);
-
-    dmath::ivec2 framebufferSize() const;
-    float aspect() const;
 
     void adjustViewport() const;
     bool autoAdjustViewport() const;
@@ -181,8 +186,12 @@ public:
 
     bool isIconified() const;
     void iconify() const;
+    bool autoIconify() const;
+    void setAutoIconify(bool auto_iconify) const;
+
     bool isMaximized() const;
     void maximize() const;
+
     void restore() const;
 
     bool isVisible() const;
@@ -195,6 +204,26 @@ public:
     void setFocusOnShow(bool focus_on_show) const;
 
     void requestAttention() const;
+
+    bool isHovered() const;
+
+    bool isDecorated() const;
+    void setDecorated(bool decorated) const;
+
+    bool isFloating() const;
+    void setFloating(bool floating) const;
+
+    bool transparentFramebuffer() const;
+
+    ClientAPI clientAPI() const;
+    ContextAPI contextAPI() const;
+    GLVersionFull glVersion() const;
+    bool forwardCompatible() const;
+    bool debugContext() const;
+    GLProfile glProfile() const;
+    ContextReleaseBehavior contextReleaseBehavior() const;
+    bool contextNoError() const;
+    ContextRobustness contextRobustness() const;
 
     const std::string& textInput() const;
 
