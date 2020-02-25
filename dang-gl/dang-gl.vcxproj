@@ -186,8 +186,10 @@
     <ClInclude Include="include\dang-gl\Binding.h" />
     <ClInclude Include="include\dang-gl\VBO.h" />
     <ClInclude Include="include\dang-gl\VAO.h" />
+    <ClInclude Include="include\dang-gl\Monitor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\ObjectBase.cpp" />
     <ClCompile Include="src\Program.cpp" />

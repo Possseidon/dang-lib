@@ -4,6 +4,7 @@
 #include "dang-math/bounds.h"
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
+#include "dang-utils/NonCopyable.h"
 
 #include "Binding.h"
 #include "BindingPoint.h"
@@ -103,7 +104,7 @@ struct WindowInfo {
     std::string x11_instance_name;
 };
 
-class Window {
+class Window : public dutils::NonCopyable {
 public:
 
     struct EventInfoBase {

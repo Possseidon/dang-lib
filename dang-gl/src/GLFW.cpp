@@ -48,6 +48,16 @@ void GLFW::setClipboard(const std::string& content)
     glfwSetClipboardString(nullptr, content.c_str());
 }
 
+Monitor GLFW::primaryMonitor() const
+{
+    return primary_monitor_;
+}
+
+const std::vector<Monitor>& GLFW::monitors() const
+{
+    return monitors_;
+}
+
 bool GLFW::hasActiveWindow()
 {
     return active_window_ != nullptr;
@@ -66,6 +76,7 @@ GLFW::GLFW()
     glfwSetErrorCallback(throwingErrorCallback);
     glfwSetJoystickCallback(joystickCallback);
     glfwSetMonitorCallback(monitorCallback);
+    initializeMonitors();
 }
 
 GLFW::~GLFW()
@@ -80,6 +91,14 @@ void GLFW::initializeGlad()
         std::exit(EXIT_FAILURE);
     }
     glad_initialized_ = true;
+}
+
+void GLFW::initializeMonitors()
+{
+    int count;
+    GLFWmonitor** first = glfwGetMonitors(&count);
+    monitors_.assign(first, first + count);
+    primary_monitor_ = glfwGetPrimaryMonitor();
 }
 
 std::string GLFW::formatError(int error_code, const char* description)
@@ -109,9 +128,21 @@ void GLFW::joystickCallback(int jid, int event)
 
 void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
 {
-    // TODO: Event
-    (void)monitor;
-    (void)event;
+    if (event == GLFW_CONNECTED) {
+        Instance.monitors_.emplace_back(monitor);
+        Instance.onConnectMonitor(monitor);
+    }
+    else if (event == GLFW_DISCONNECTED) {
+        Instance.onDisconnectMonitor(monitor);
+        auto pos = std::find(Instance.monitors_.begin(), Instance.monitors_.end(), monitor);
+        if (pos != Instance.monitors_.end())
+            Instance.monitors_.erase(pos);
+    }
+
+    if (Instance.primary_monitor_ != monitor) {
+        Instance.primary_monitor_ = monitor;
+        Instance.onPrimaryMonitorChange(monitor);
+    }
 }
 
 }
