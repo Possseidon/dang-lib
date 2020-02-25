@@ -6,63 +6,64 @@
 namespace dang::gl
 {
 
-WindowInfo::WindowInfo()
-{
-}
-
-dmath::ivec2 WindowInfo::size() const
-{
-    return size_;
-}
-
-void WindowInfo::setSize(dmath::ivec2 size)
-{
-    size_ = size;
-}
-
-int WindowInfo::width() const
-{
-    return size_.x();
-}
-
-void WindowInfo::setWidth(int width)
-{
-    size_.x() = width;
-}
-
-int WindowInfo::height() const
-{
-    return size_.y();
-}
-
-void WindowInfo::setHeight(int height)
-{
-    size_.y() = height;
-}
-
-const std::string& WindowInfo::title() const
-{
-    return title_;
-}
-
-void WindowInfo::setTitle(std::string title)
-{
-    title_ = std::move(title);
-}
-
 GLFWwindow* WindowInfo::createWindow() const
 {
-    /* TODO:
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-    */
-    return glfwCreateWindow(width(), height(), title_.c_str(), nullptr, nullptr);
+    glfwWindowHint(GLFW_RESIZABLE, resizable);
+    glfwWindowHint(GLFW_VISIBLE, visible);
+    glfwWindowHint(GLFW_DECORATED, decorated);
+    glfwWindowHint(GLFW_FOCUSED, focused);
+    glfwWindowHint(GLFW_AUTO_ICONIFY, auto_iconify);
+    glfwWindowHint(GLFW_FLOATING, floating);
+    glfwWindowHint(GLFW_MAXIMIZED, maximized);
+    glfwWindowHint(GLFW_CENTER_CURSOR, center_cursor);
+    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, transparent_framebuffer);
+    glfwWindowHint(GLFW_FOCUS_ON_SHOW, focus_on_show);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, scale_to_monitor);
+
+    glfwWindowHint(GLFW_RED_BITS, red_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_GREEN_BITS, green_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_BLUE_BITS, blue_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_DEPTH_BITS, depth_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_RED_BITS, accum_red_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_GREEN_BITS, accum_green_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_BLUE_BITS, accum_blue_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, accum_alpha_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_AUX_BUFFERS, aux_buffers.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_SAMPLES, samples.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate.value_or(GLFW_DONT_CARE));
+
+    glfwWindowHint(GLFW_STEREO, stereo);
+    glfwWindowHint(GLFW_SRGB_CAPABLE, srgb_capable);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, doublebuffer);
+
+    glfwWindowHint(GLFW_CLIENT_API, static_cast<int>(client_api));
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, static_cast<int>(context_api));
+    auto [major, minor] = context_version;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
+
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, static_cast<int>(context_robustness));
+    glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, static_cast<int>(context_release_behavior));
+
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, forward_compatible);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug_context);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, static_cast<int>(gl_profile));
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, cocoa_retina_framebuffer);
+    glfwWindowHintString(GLFW_COCOA_FRAME_NAME, cocoa_frame_name.c_str());
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, cocoa_graphics_switching);
+    glfwWindowHintString(GLFW_X11_CLASS_NAME, x11_class_name.c_str());
+    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, x11_instance_name.c_str());
+
+    // TODO: Monitor
+    // TODO: Share
+    return glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 }
 
 Window::Window(const WindowInfo& info)
     : handle_(info.createWindow())
-    , title_(info.title())
+    , title_(info.title)
 {
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();

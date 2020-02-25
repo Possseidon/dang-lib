@@ -11,27 +11,93 @@
 namespace dang::gl
 {
 
-class WindowInfo {
-public:
-    WindowInfo();
+using GLVersion = std::tuple<int, int>;
 
-    dmath::ivec2 size() const;
-    void setSize(dmath::ivec2 size);
+enum class ClientAPI {
+    None = GLFW_NO_API,
+    OpenGL = GLFW_OPENGL_API,
+    OpenGLES = GLFW_OPENGL_ES_API
+};
 
-    int width() const;
-    void setWidth(int width);
+enum class ContextAPI {
+    Native = GLFW_NATIVE_CONTEXT_API,
+    EGL = GLFW_EGL_CONTEXT_API,
+    OSMesa = GLFW_OSMESA_CONTEXT_API
+};
 
-    int height() const;
-    void setHeight(int height);
+enum class ContextRobustness {
+    None = GLFW_NO_ROBUSTNESS,
+    NoResetNotification = GLFW_NO_RESET_NOTIFICATION,
+    LoseContextOnReset = GLFW_LOSE_CONTEXT_ON_RESET
+};
 
-    const std::string& title() const;
-    void setTitle(std::string title);
+enum class ContextReleaseBehavior {
+    Any = GLFW_ANY_RELEASE_BEHAVIOR,
+    Flush = GLFW_RELEASE_BEHAVIOR_FLUSH,
+    None = GLFW_RELEASE_BEHAVIOR_NONE
+};
 
+enum class GLProfile {
+    Any = GLFW_OPENGL_ANY_PROFILE,
+    Core = GLFW_OPENGL_CORE_PROFILE,
+    Compatibility = GLFW_OPENGL_COMPAT_PROFILE
+};
+
+struct WindowInfo {
     GLFWwindow* createWindow() const;
 
-private:
-    dmath::ivec2 size_;
-    std::string title_;
+    dmath::ivec2 size;
+    int& width = size.x();
+    int& height = size.y();
+    std::string title;
+
+    bool resizable = true;
+    bool visible = true;
+    bool decorated = true;
+    bool focused = true;
+    bool auto_iconify = true;
+    bool floating = false;
+    bool maximized = false;
+    bool center_cursor = false;
+    bool transparent_framebuffer = false;
+    bool focus_on_show = true;
+    bool scale_to_monitor = false;
+
+    std::optional<int> red_bits = 8;
+    std::optional<int> green_bits = 8;
+    std::optional<int> blue_bits = 8;
+    std::optional<int> alpha_bits = 8;
+    std::optional<int> depth_bits = 24;
+    std::optional<int> stencil_bits = 8;
+    std::optional<int> accum_red_bits = 0;
+    std::optional<int> accum_green_bits = 0;
+    std::optional<int> accum_blue_bits = 0;
+    std::optional<int> accum_alpha_bits = 0;
+    std::optional<int> aux_buffers = 0;
+    std::optional<int> samples = 0;
+    std::optional<int> refresh_rate = std::nullopt;
+
+    bool stereo = false;
+    bool srgb_capable = false;
+    bool doublebuffer = true;
+
+    ClientAPI client_api = ClientAPI::OpenGL;
+    ContextAPI context_api = ContextAPI::Native;
+    GLVersion context_version = { 1, 0 };
+
+    ContextRobustness context_robustness = ContextRobustness::None;
+    ContextReleaseBehavior context_release_behavior = ContextReleaseBehavior::Any;
+
+    bool forward_compatible = false;
+    bool debug_context = false;
+    GLProfile gl_profile = GLProfile::Any;
+
+    bool cocoa_retina_framebuffer = true;
+    std::string cocoa_frame_name;
+    bool cocoa_graphics_switching = false;
+
+    std::string x11_class_name;
+    std::string x11_instance_name;
 };
 
 class Window {
