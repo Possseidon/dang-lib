@@ -71,7 +71,21 @@ public:
 
         /// <summary>Subscribes to an event using a member function.</summary>
         template <typename T, typename... TOtherArgs>
+        Subscription(Event& event, const T& instance, void (T::* method)(TOtherArgs...) const)
+            : Subscription(makeHandler(instance, method), event)
+        {
+        }
+
+        /// <summary>Subscribes to an event using a member function.</summary>
+        template <typename T, typename... TOtherArgs>
         Subscription(Event& event, T* instance, void (T::* method)(TOtherArgs...))
+            : Subscription(makeHandler(*instance, method), event)
+        {
+        }
+
+        /// <summary>Subscribes to an event using a member function.</summary>
+        template <typename T, typename... TOtherArgs>
+        Subscription(Event& event, const T* instance, void (T::* method)(TOtherArgs...) const)
             : Subscription(makeHandler(*instance, method), event)
         {
         }
@@ -125,7 +139,21 @@ public:
 
     /// <summary>Utility to create subscriptions.</summary>
     template <typename T, typename... TOtherArgs>
+    [[nodiscard]] Subscription subscribe(const T& instance, void (T::* method)(TOtherArgs...) const)
+    {
+        return Subscription(*this, instance, method);
+    }
+
+    /// <summary>Utility to create subscriptions.</summary>
+    template <typename T, typename... TOtherArgs>
     [[nodiscard]] Subscription subscribe(T* instance, void (T::* method)(TOtherArgs...))
+    {
+        return Subscription(*this, instance, method);
+    }
+
+    /// <summary>Utility to create subscriptions.</summary>
+    template <typename T, typename... TOtherArgs>
+    [[nodiscard]] Subscription subscribe(const T* instance, void (T::* method)(TOtherArgs...) const)
     {
         return Subscription(*this, instance, method);
     }
@@ -146,7 +174,21 @@ public:
 
     /// <summary>Appends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
+    void append(const T& instance, void (T::* method)(TOtherArgs...) const)
+    {
+        handlers_.emplace_back(makeHandler(instance, method));
+    }
+
+    /// <summary>Appends an event handler which cannot be removed.</summary>
+    template <typename T, typename... TOtherArgs>
     void append(T* instance, void (T::* method)(TOtherArgs...))
+    {
+        handlers_.emplace_back(makeHandler(*instance, method));
+    }
+
+    /// <summary>Appends an event handler which cannot be removed.</summary>
+    template <typename T, typename... TOtherArgs>
+    void append(const T* instance, void (T::* method)(TOtherArgs...) const)
     {
         handlers_.emplace_back(makeHandler(*instance, method));
     }
@@ -167,7 +209,21 @@ public:
 
     /// <summary>Prepends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
+    void prepend(const T& instance, void (T::* method)(TOtherArgs...) const)
+    {
+        handlers_.emplace(handlers_.begin(), makeHandler(instance, method));
+    }
+
+    /// <summary>Prepends an event handler which cannot be removed.</summary>
+    template <typename T, typename... TOtherArgs>
     void prepend(T* instance, void (T::* method)(TOtherArgs...))
+    {
+        handlers_.emplace(handlers_.begin(), makeHandler(*instance, method));
+    }
+
+    /// <summary>Prepends an event handler which cannot be removed.</summary>
+    template <typename T, typename... TOtherArgs>
+    void prepend(const T* instance, void (T::* method)(TOtherArgs...) const)
     {
         handlers_.emplace(handlers_.begin(), makeHandler(*instance, method));
     }
@@ -200,6 +256,12 @@ private:
 
     template <typename T, typename... TOtherArgs>
     static std::unique_ptr<Handler> makeHandler(T& instance, void (T::* method)(TOtherArgs...))
+    {
+        return std::make_unique<Handler>(detail::bind_n<sizeof...(TOtherArgs)>(method, &instance));
+    }
+
+    template <typename T, typename... TOtherArgs>
+    static std::unique_ptr<Handler> makeHandler(const T& instance, void (T::* method)(TOtherArgs...) const)
     {
         return std::make_unique<Handler>(detail::bind_n<sizeof...(TOtherArgs)>(method, &instance));
     }
