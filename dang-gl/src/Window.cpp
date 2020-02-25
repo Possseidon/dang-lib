@@ -104,7 +104,7 @@ dmath::ivec2 Window::pos() const
     return result;
 }
 
-void Window::move(const dmath::ivec2& new_pos) const
+void Window::move(dmath::ivec2 new_pos) const
 {
     glfwSetWindowPos(handle_, new_pos.x(), new_pos.y());
 }
@@ -116,7 +116,7 @@ dmath::ivec2 Window::size() const
     return result;
 }
 
-void Window::resize(const dmath::ivec2& new_size) const
+void Window::resize(dmath::ivec2 new_size) const
 {
     glfwSetWindowSize(handle_, new_size.x(), new_size.y());
 }
@@ -130,9 +130,9 @@ dmath::vec2 Window::contentScale() const
 
 dmath::ivec2 Window::framebufferSize() const
 {
-    dmath::ivec2 framebuffer_size;
-    glfwGetFramebufferSize(handle_, &framebuffer_size.x(), &framebuffer_size.y());
-    return framebuffer_size;
+    dmath::ivec2 result;
+    glfwGetFramebufferSize(handle_, &result.x(), &result.y());
+    return result;
 }
 
 float Window::aspect() const
@@ -222,6 +222,16 @@ void Window::setAspectRatio(std::optional<dmath::ivec2> aspect_ratio)
 void Window::freezeAspectRatio()
 {
     setAspectRatio(framebufferSize());
+}
+
+float Window::opacity() const
+{
+    return glfwGetWindowOpacity(handle_);
+}
+
+void Window::setOpacity(float new_opacity) const
+{
+    glfwSetWindowOpacity(handle_, new_opacity);
 }
 
 const std::string& Window::textInput() const

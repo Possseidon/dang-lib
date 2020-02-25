@@ -150,10 +150,10 @@ public:
     void setTitle(const std::string& title);
 
     dmath::ivec2 pos() const;
-    void move(const dmath::ivec2& new_pos) const;
+    void move(dmath::ivec2 new_pos) const;
 
     dmath::ivec2 size() const;
-    void resize(const dmath::ivec2& new_size) const;
+    void resize(dmath::ivec2 new_size) const;
 
     dmath::vec2 contentScale() const;
 
@@ -175,6 +175,9 @@ public:
     std::optional<dmath::ivec2> aspectRatio() const;
     void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
     void freezeAspectRatio();
+
+    float opacity() const;
+    void setOpacity(float new_opacity) const;
 
     const std::string& textInput() const;
 
