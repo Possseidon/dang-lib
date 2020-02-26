@@ -75,6 +75,7 @@ Window::Window(const WindowInfo& info)
 {
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();
+    last_time_ = GLFW::Instance.timerValue();
 }
 
 Window::~Window()
@@ -444,6 +445,56 @@ const std::string& Window::textInput() const
     return text_input_;
 }
 
+CursorMode Window::cursorMode() const
+{
+    return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR));
+}
+
+void Window::setCursorMode(CursorMode cursor_mode) const
+{
+    glfwSetInputMode(handle_, GLFW_CURSOR, static_cast<int>(cursor_mode));
+}
+
+bool Window::stickyKeys() const
+{
+    return glfwGetInputMode(handle_, GLFW_STICKY_KEYS);
+}
+
+void Window::setStickyKeys(bool sticky_keys) const
+{
+    glfwSetInputMode(handle_, GLFW_STICKY_KEYS, sticky_keys);
+}
+
+bool Window::stickyButtons() const
+{
+    return glfwGetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS);
+}
+
+void Window::setStickyButtons(bool sticky_buttons) const
+{
+    glfwSetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS, sticky_buttons);
+}
+
+bool Window::lockKeyModifiers() const
+{
+    return glfwGetInputMode(handle_, GLFW_LOCK_KEY_MODS);
+}
+
+void Window::setLockKeyModifiers(bool lock_key_modifiers) const
+{
+    glfwSetInputMode(handle_, GLFW_LOCK_KEY_MODS, lock_key_modifiers);
+}
+
+bool Window::rawMouseMotion() const
+{
+    return glfwGetInputMode(handle_, GLFW_RAW_MOUSE_MOTION);
+}
+
+void Window::setRawMouseMotion(bool raw_mouse_motion)
+{
+    glfwSetInputMode(handle_, GLFW_RAW_MOUSE_MOTION, raw_mouse_motion);
+}
+
 bool Window::shouldClose() const
 {
     return glfwWindowShouldClose(handle_);
@@ -457,7 +508,19 @@ void Window::activate()
 void Window::update()
 {
     activate();
+    updateDeltaTime();
     onUpdate(*this);
+}
+
+void Window::updateDeltaTime()
+{
+    uint64_t now = GLFW::Instance.timerValue();
+    delta_time_ = static_cast<float>(now - last_time_) / GLFW::Instance.timerFrequency();
+    last_time_ = now;
+
+    float new_fps = 1 / delta_time_;
+    float factor = std::exp(-4 * delta_time_);
+    fps_ = new_fps - factor * (new_fps - fps_);
 }
 
 void Window::render()
@@ -487,6 +550,28 @@ void Window::run()
 {
     while (!shouldClose())
         step();
+}
+
+float Window::deltaTime() const
+{
+    return delta_time_;
+}
+
+float Window::fps() const
+{
+    return fps_;
+}
+
+void Window::setVSync(VSync vsync)
+{
+    activate();
+    glfwSwapInterval(static_cast<int>(vsync));
+}
+
+bool Window::supportsAdaptiveVSync()
+{
+    activate();
+    return glfwExtensionSupported("WGL_EXT_swap_control_tear") || glfwExtensionSupported("GLX_EXT_swap_control_tear");
 }
 
 void Window::registerCallbacks()

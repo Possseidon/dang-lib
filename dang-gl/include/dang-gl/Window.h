@@ -47,6 +47,18 @@ enum class GLProfile {
     Compatibility = GLFW_OPENGL_COMPAT_PROFILE
 };
 
+enum class VSync {
+    Disabled = 0,
+    Enabled = 1,
+    Adaptive = -1
+};
+
+enum class CursorMode {
+    Normal = GLFW_CURSOR_NORMAL,
+    Hidden = GLFW_CURSOR_HIDDEN,
+    Disabled = GLFW_CURSOR_DISABLED
+};
+
 struct WindowInfo {
     GLFWwindow* createWindow() const;
 
@@ -248,6 +260,21 @@ public:
 
     const std::string& textInput() const;
 
+    CursorMode cursorMode() const;
+    void setCursorMode(CursorMode cursor_mode) const;
+
+    bool stickyKeys() const;
+    void setStickyKeys(bool sticky_keys) const;
+
+    bool stickyButtons() const;
+    void setStickyButtons(bool sticky_buttons) const;
+
+    bool lockKeyModifiers() const;
+    void setLockKeyModifiers(bool lock_key_modifiers) const;
+
+    bool rawMouseMotion() const;
+    void setRawMouseMotion(bool raw_mouse_motion);
+
     template <class TInfo>
     typename TInfo::Binding& binding();
 
@@ -259,6 +286,11 @@ public:
 
     void step();
     void run();
+
+    float deltaTime() const;
+    float fps() const;
+    void setVSync(VSync vsync);
+    bool supportsAdaptiveVSync();
 
     bool shouldClose() const;
 
@@ -308,6 +340,7 @@ private:
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
 
+    void updateDeltaTime();
     void updateSizeLimits() const;
 
     GLFWwindow* handle_ = nullptr;
@@ -317,6 +350,9 @@ private:
     dmath::ivec2 fullscreen_restore_size_;
     std::optional<dmath::ivec2> aspect_ratio_;
     bool auto_adjust_viewport_ = true;
+    uint64_t last_time_ = 0;
+    float delta_time_ = 0;
+    float fps_ = 0;
     std::string text_input_;
     dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
 };
