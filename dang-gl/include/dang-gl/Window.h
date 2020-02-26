@@ -9,6 +9,7 @@
 #include "Binding.h"
 #include "BindingPoint.h"
 #include "Input.h"
+#include "Monitor.h"
 
 namespace dang::gl
 {
@@ -54,6 +55,8 @@ struct WindowInfo {
     int& height = size.y();
     std::string title;
 
+    Window* share = nullptr;
+
     bool resizable = true;
     bool visible = true;
     bool decorated = true;
@@ -66,42 +69,53 @@ struct WindowInfo {
     bool focus_on_show = true;
     bool scale_to_monitor = false;
 
-    std::optional<int> red_bits = 8;
-    std::optional<int> green_bits = 8;
-    std::optional<int> blue_bits = 8;
-    std::optional<int> alpha_bits = 8;
-    std::optional<int> depth_bits = 24;
-    std::optional<int> stencil_bits = 8;
-    std::optional<int> accum_red_bits = 0;
-    std::optional<int> accum_green_bits = 0;
-    std::optional<int> accum_blue_bits = 0;
-    std::optional<int> accum_alpha_bits = 0;
-    std::optional<int> aux_buffers = 0;
-    std::optional<int> samples = 0;
-    std::optional<int> refresh_rate = std::nullopt;
+    struct Framebuffer {
+        std::optional<int> red_bits = 8;
+        std::optional<int> green_bits = 8;
+        std::optional<int> blue_bits = 8;
+        std::optional<int> alpha_bits = 8;
+        std::optional<int> depth_bits = 24;
+        std::optional<int> stencil_bits = 8;
+        std::optional<int> accum_red_bits = 0;
+        std::optional<int> accum_green_bits = 0;
+        std::optional<int> accum_blue_bits = 0;
+        std::optional<int> accum_alpha_bits = 0;
+        std::optional<int> aux_buffers = 0;
+        std::optional<int> samples = 0;
 
-    bool stereo = false;
-    bool srgb_capable = false;
-    bool doublebuffer = true;
+        bool stereo = false;
+        bool srgb_capable = false;
+        bool doublebuffer = true;
+    } framebuffer;
+
+    Monitor monitor;
+    std::optional<int> monitor_refresh_rate = std::nullopt;
 
     ClientAPI client_api = ClientAPI::OpenGL;
-    ContextAPI context_api = ContextAPI::Native;
-    GLVersion context_version = { 1, 0 };
 
-    ContextRobustness context_robustness = ContextRobustness::None;
-    ContextReleaseBehavior context_release_behavior = ContextReleaseBehavior::Any;
-    bool context_no_error = false;
+    struct Context {
+        ContextAPI api = ContextAPI::Native;
+        GLVersion version = { 1, 0 };
 
-    bool forward_compatible = false;
-    bool debug_context = false;
-    GLProfile gl_profile = GLProfile::Any;
+        ContextRobustness robustness = ContextRobustness::None;
+        ContextReleaseBehavior release_behavior = ContextReleaseBehavior::Any;
+        bool no_error = false;
 
-    bool cocoa_retina_framebuffer = true;
-    std::string cocoa_frame_name;
-    bool cocoa_graphics_switching = false;
+        bool forward_compatible = false;
+        bool debug = false;
+        GLProfile profile = GLProfile::Any;
+    } context;
 
-    std::string x11_class_name;
-    std::string x11_instance_name;
+    struct Cocoa {
+        bool retina_framebuffer = true;
+        std::string frame_name;
+        bool graphics_switching = false;
+    } cocoa;
+
+    struct X11 {
+        std::string class_name;
+        std::string instance_name;
+    } x11;
 };
 
 class Window : public dutils::NonCopyable {

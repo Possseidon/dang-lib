@@ -8,6 +8,7 @@ namespace dang::gl
 
 GLFWwindow* WindowInfo::createWindow() const
 {
+    // Window
     glfwWindowHint(GLFW_RESIZABLE, resizable);
     glfwWindowHint(GLFW_VISIBLE, visible);
     glfwWindowHint(GLFW_DECORATED, decorated);
@@ -20,46 +21,52 @@ GLFWwindow* WindowInfo::createWindow() const
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, focus_on_show);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, scale_to_monitor);
 
-    glfwWindowHint(GLFW_RED_BITS, red_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_GREEN_BITS, green_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_BLUE_BITS, blue_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_DEPTH_BITS, depth_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_ACCUM_RED_BITS, accum_red_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_ACCUM_GREEN_BITS, accum_green_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_ACCUM_BLUE_BITS, accum_blue_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, accum_alpha_bits.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_AUX_BUFFERS, aux_buffers.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_SAMPLES, samples.value_or(GLFW_DONT_CARE));
-    glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate.value_or(GLFW_DONT_CARE));
+    // Framebuffer
+    glfwWindowHint(GLFW_RED_BITS, framebuffer.red_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_GREEN_BITS, framebuffer.green_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_BLUE_BITS, framebuffer.blue_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ALPHA_BITS, framebuffer.alpha_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_DEPTH_BITS, framebuffer.depth_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_STENCIL_BITS, framebuffer.stencil_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_RED_BITS, framebuffer.accum_red_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_GREEN_BITS, framebuffer.accum_green_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_BLUE_BITS, framebuffer.accum_blue_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, framebuffer.accum_alpha_bits.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_AUX_BUFFERS, framebuffer.aux_buffers.value_or(GLFW_DONT_CARE));
+    glfwWindowHint(GLFW_SAMPLES, framebuffer.samples.value_or(GLFW_DONT_CARE));
 
-    glfwWindowHint(GLFW_STEREO, stereo);
-    glfwWindowHint(GLFW_SRGB_CAPABLE, srgb_capable);
-    glfwWindowHint(GLFW_DOUBLEBUFFER, doublebuffer);
+    glfwWindowHint(GLFW_STEREO, framebuffer.stereo);
+    glfwWindowHint(GLFW_SRGB_CAPABLE, framebuffer.srgb_capable);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, framebuffer.doublebuffer);
 
+    // Monitor
+    glfwWindowHint(GLFW_REFRESH_RATE, monitor_refresh_rate.value_or(GLFW_DONT_CARE));
+
+    // Context
     glfwWindowHint(GLFW_CLIENT_API, static_cast<int>(client_api));
-    glfwWindowHint(GLFW_CONTEXT_CREATION_API, static_cast<int>(context_api));
-    auto [major, minor] = context_version;
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, static_cast<int>(context.api));
+    auto [major, minor] = context.version;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
 
-    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, static_cast<int>(context_robustness));
-    glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, static_cast<int>(context_release_behavior));
-    glfwWindowHint(GLFW_CONTEXT_NO_ERROR, context_no_error);
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, static_cast<int>(context.robustness));
+    glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, static_cast<int>(context.release_behavior));
+    glfwWindowHint(GLFW_CONTEXT_NO_ERROR, context.no_error);
 
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, forward_compatible);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug_context);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, static_cast<int>(gl_profile));
-    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, cocoa_retina_framebuffer);
-    glfwWindowHintString(GLFW_COCOA_FRAME_NAME, cocoa_frame_name.c_str());
-    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, cocoa_graphics_switching);
-    glfwWindowHintString(GLFW_X11_CLASS_NAME, x11_class_name.c_str());
-    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, x11_instance_name.c_str());
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, context.forward_compatible);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, context.debug);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, static_cast<int>(context.profile));
 
-    // TODO: Monitor
-    // TODO: Share
-    return glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    // Cocoa
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, cocoa.retina_framebuffer);
+    glfwWindowHintString(GLFW_COCOA_FRAME_NAME, cocoa.frame_name.c_str());
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, cocoa.graphics_switching);
+
+    // X11
+    glfwWindowHintString(GLFW_X11_CLASS_NAME, x11.class_name.c_str());
+    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, x11.instance_name.c_str());
+
+    return glfwCreateWindow(width, height, title.c_str(), monitor, share ? share->handle() : nullptr);
 }
 
 Window::Window(const WindowInfo& info)
