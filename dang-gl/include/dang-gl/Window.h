@@ -177,6 +177,12 @@ public:
 
     dmath::vec2 contentScale() const;
 
+    bool isFullscreen() const;
+    Monitor fullscreenMonitor() const;
+    void makeFullscreen(std::optional<dmath::ivec2> size = std::nullopt, std::optional<int> refresh_rate = std::nullopt);
+    void makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size = std::nullopt, std::optional<int> refresh_rate = std::nullopt);
+    void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt, std::optional<dmath::ivec2> size = std::nullopt) const;
+
     bool isResizable() const;
     void setResizable(bool resizable) const;
 
@@ -307,6 +313,8 @@ private:
     GLFWwindow* handle_ = nullptr;
     std::string title_;
     dmath::ibounds2 size_limits_;
+    dmath::ivec2 fullscreen_restore_pos_;
+    dmath::ivec2 fullscreen_restore_size_;
     std::optional<dmath::ivec2> aspect_ratio_;
     bool auto_adjust_viewport_ = true;
     std::string text_input_;

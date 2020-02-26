@@ -136,6 +136,40 @@ dmath::vec2 Window::contentScale() const
     return result;
 }
 
+bool Window::isFullscreen() const
+{
+    return glfwGetWindowMonitor(handle_) != nullptr;
+}
+
+Monitor Window::fullscreenMonitor() const
+{
+    return glfwGetWindowMonitor(handle_);
+}
+
+void Window::makeFullscreen(std::optional<dmath::ivec2> size, std::optional<int> refresh_rate)
+{
+    makeFullscreen(GLFW::Instance.primaryMonitor(), size, refresh_rate);
+}
+
+void Window::makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size, std::optional<int> refresh_rate)
+{
+    fullscreen_restore_pos_ = this->pos();
+    fullscreen_restore_size_ = this->size();
+    if (size)
+        glfwSetWindowMonitor(handle_, monitor, 0, 0, size->x(), size->y(), refresh_rate.value_or(GLFW_DONT_CARE));
+    else {
+        VideoMode video_mode = monitor.videoMode();
+        glfwSetWindowMonitor(handle_, monitor, 0, 0, video_mode.width, video_mode.height, refresh_rate.value_or(GLFW_DONT_CARE));
+    }
+}
+
+void Window::restoreFullscreen(std::optional<dmath::ivec2> pos, std::optional<dmath::ivec2> size) const
+{
+    dmath::ivec2 actual_pos = pos.value_or(fullscreen_restore_pos_);
+    dmath::ivec2 actual_size = size.value_or(fullscreen_restore_size_);
+    glfwSetWindowMonitor(handle_, nullptr, actual_pos.x(), actual_pos.y(), actual_size.x(), actual_pos.y(), GLFW_DONT_CARE);
+}
+
 bool Window::isResizable() const
 {
     return glfwGetWindowAttrib(handle_, GLFW_RESIZABLE);
