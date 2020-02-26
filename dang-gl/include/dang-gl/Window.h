@@ -274,6 +274,7 @@ public:
 
     bool rawMouseMotion() const;
     void setRawMouseMotion(bool raw_mouse_motion);
+    static bool supportsRawMouseMotion();
 
     template <class TInfo>
     typename TInfo::Binding& binding();

@@ -495,6 +495,11 @@ void Window::setRawMouseMotion(bool raw_mouse_motion)
     glfwSetInputMode(handle_, GLFW_RAW_MOUSE_MOTION, raw_mouse_motion);
 }
 
+bool Window::supportsRawMouseMotion()
+{
+    return glfwRawMouseMotionSupported();
+}
+
 bool Window::shouldClose() const
 {
     return glfwWindowShouldClose(handle_);
