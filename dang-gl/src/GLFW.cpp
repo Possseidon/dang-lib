@@ -20,6 +20,26 @@ void GLFW::setActiveWindow(Window* window)
         initializeGlad();
 }
 
+double GLFW::time() const
+{
+    return glfwGetTime();
+}
+
+void GLFW::setTime(double new_time) const
+{
+    glfwSetTime(new_time);
+}
+
+uint64_t GLFW::timerValue() const
+{
+    return glfwGetTimerValue();
+}
+
+uint64_t GLFW::timerFrequency() const
+{
+    return glfwGetTimerFrequency();
+}
+
 std::string GLFW::clipboardOrThrow() const
 {
     const char* content = glfwGetClipboardString(nullptr);

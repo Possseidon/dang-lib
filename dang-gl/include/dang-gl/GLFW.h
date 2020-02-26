@@ -23,6 +23,11 @@ public:
     Window& activeWindow();
     void setActiveWindow(Window* window);
 
+    double time() const;
+    void setTime(double new_time) const;
+    uint64_t timerValue() const;
+    uint64_t timerFrequency() const;
+
     std::string clipboardOrThrow() const;
     std::string clipboardOrEmpty() const;
     std::optional<std::string> clipboard() const;
