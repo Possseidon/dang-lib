@@ -260,6 +260,11 @@ public:
 
     const std::string& textInput() const;
 
+    bool isKeyDown(Key key) const;
+    bool isButtonDown(Button button) const;
+    dmath::dvec2 cursorPos() const;
+    void setCursorPos(dmath::dvec2 cursor_pos) const;
+
     CursorMode cursorMode() const;
     void setCursorMode(CursorMode cursor_mode) const;
 

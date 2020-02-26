@@ -445,6 +445,28 @@ const std::string& Window::textInput() const
     return text_input_;
 }
 
+bool Window::isKeyDown(Key key) const
+{
+    return glfwGetKey(handle_, static_cast<int>(key));
+}
+
+bool Window::isButtonDown(Button button) const
+{
+    return glfwGetMouseButton(handle_, static_cast<int>(button));
+}
+
+dmath::dvec2 Window::cursorPos() const
+{
+    dmath::dvec2 result;
+    glfwGetCursorPos(handle_, &result.x(), &result.y());
+    return result;
+}
+
+void Window::setCursorPos(dmath::dvec2 cursor_pos) const
+{
+    glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y());
+}
+
 CursorMode Window::cursorMode() const
 {
     return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR));
