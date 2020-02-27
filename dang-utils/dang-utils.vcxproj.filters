@@ -27,6 +27,9 @@
     <ClInclude Include="include\dang-utils\NonCopyable.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-utils\metaclass.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-utils.natvis" />

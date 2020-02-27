@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="include\dang-utils\enum.h" />
     <ClInclude Include="include\dang-utils\event.h" />
+    <ClInclude Include="include\dang-utils\metaclass.h" />
     <ClInclude Include="include\dang-utils\utils.h" />
     <ClInclude Include="include\dang-utils\NonCopyable.h" />
   </ItemGroup>
