@@ -114,7 +114,7 @@ class ShaderAttribute : public ShaderVariable {
 public:
     ShaderAttribute(Program& program, GLint count, DataType type, std::string name);
 
-    friend Program;
+    friend class Program;
     GLsizei offset() const;
 
 private:
@@ -148,6 +148,9 @@ private:
 
 class Program : public Object<ProgramInfo> {
 public:
+    friend class ShaderPreprocessor;
+
+    void addInclude(const std::string& name, std::string code);
     void addShader(ShaderType type, const std::string& shader_code);
     void link(const std::vector<std::string>& attribute_order = {});
 
@@ -158,6 +161,10 @@ public:
     ShaderUniform<T>& uniform(std::string name, GLint count = 1);
 
 private:
+    std::string replaceInfoLogShaderNames(std::string info_log) const;
+
+    void postLinkCleanup();
+
     void checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type);
     void checkLinkStatusAndInfoLog();
 
@@ -166,10 +173,25 @@ private:
     void setAttributeOrder(const std::vector<std::string>& attribute_order);
 
     std::vector<GLuint> shader_handles_;
+    std::map<std::string, std::string> includes_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;
     std::vector<std::reference_wrapper<ShaderAttribute>> attribute_order_;
     GLsizei attribute_stride_ = 0;
+};
+
+class ShaderPreprocessor {
+public:
+    ShaderPreprocessor(const Program& program, const std::string& code);
+    operator std::string() const;
+
+private:
+    void process(const std::string& code, std::size_t compilation_unit);
+
+    const Program& program_;
+    std::set<std::string> included_;
+    std::ostringstream output_;
+    std::optional<std::tuple<std::size_t, std::size_t>> next_line_;
 };
 
 template<typename T>

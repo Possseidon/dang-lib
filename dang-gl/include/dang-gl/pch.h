@@ -14,6 +14,8 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <regex>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

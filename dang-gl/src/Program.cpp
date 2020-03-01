@@ -24,6 +24,20 @@ void ProgramInfo::bind(GLuint handle)
     glUseProgram(handle);
 }
 
+std::string Program::replaceInfoLogShaderNames(std::string info_log) const
+{
+    std::vector<std::string> names{ "main" };
+    for (auto& [name, code] : includes_)
+        names.push_back(name);
+
+    for (std::size_t i = 0; i < names.size(); i++) {
+        const std::regex line_regex("^" + std::to_string(i) + "(\\(\\d+\\))");
+        info_log = std::regex_replace(info_log, line_regex, names[i] + "$1");
+    }
+
+    return info_log;
+}
+
 void Program::checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type)
 {
     GLint status;
@@ -34,6 +48,8 @@ void Program::checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type)
     if (info_log_length > 0) {
         std::string info_log(static_cast<std::size_t>(info_log_length) - 1, '\0');
         glGetShaderInfoLog(shader_handle, info_log_length, nullptr, &info_log[0]);
+
+        info_log = replaceInfoLogShaderNames(info_log);
 
         if (status)
             std::cerr << info_log;
@@ -123,15 +139,20 @@ void Program::setAttributeOrder(const std::vector<std::string>& attribute_order)
             throw ShaderAttributeError("Shader-Attribute not specified in order: " + name);
 }
 
+void Program::addInclude(const std::string& name, std::string code)
+{
+    includes_.emplace(name, std::move(code));
+}
+
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
     GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
     shader_handles_.push_back(shader_handle);
 
-    std::vector<const GLchar*> full_code;
-    full_code.push_back(shader_code.c_str());
+    std::string preprocessed = ShaderPreprocessor(*this, shader_code);
+    const GLchar* full_code = preprocessed.c_str();
 
-    glShaderSource(shader_handle, static_cast<GLsizei>(full_code.size()), &full_code[0], nullptr);
+    glShaderSource(shader_handle, 1, &full_code, nullptr);
     glCompileShader(shader_handle);
     checkShaderStatusAndInfoLog(shader_handle, type);
     glAttachShader(handle(), shader_handle);
@@ -141,14 +162,20 @@ void Program::link(const std::vector<std::string>& attribute_order)
 {
     glLinkProgram(handle());
     checkLinkStatusAndInfoLog();
+    postLinkCleanup();
+    loadAttributeLocations();
+    loadUniformLocations();
+    setAttributeOrder(attribute_order);
+}
+
+void Program::postLinkCleanup()
+{
     for (GLuint shader_handle : shader_handles_) {
         glDetachShader(handle(), shader_handle);
         glDeleteShader(shader_handle);
     }
     shader_handles_.clear();
-    loadAttributeLocations();
-    loadUniformLocations();
-    setAttributeOrder(attribute_order);
+    includes_.clear();
 }
 
 GLsizei Program::attributeStride() const
@@ -373,6 +400,59 @@ ShaderAttribute::ShaderAttribute(Program& program, GLint count, DataType type, s
 GLsizei ShaderAttribute::offset() const
 {
     return offset_;
+}
+
+ShaderPreprocessor::ShaderPreprocessor(const Program& program, const std::string& code)
+    : program_(program)
+{
+    process(code, 0);
+}
+
+ShaderPreprocessor::operator std::string() const
+{
+    return output_.str();
+}
+
+void ShaderPreprocessor::process(const std::string& code, std::size_t compilation_unit)
+{
+    static const std::regex include_regex("^ *# *include *\"([A-Za-z0-9_.\\\\/ ]+)\" *$");
+
+    std::string line;
+    std::istringstream input(code);
+    std::size_t line_index = 0;
+
+    while (std::getline(input, line)) {
+        line_index++;
+        std::smatch match;
+        if (std::regex_match(line, match, include_regex)) {
+            std::string name = match[1];
+
+            if (included_.find(name) != included_.end()) {
+                next_line_ = { line_index + 1, compilation_unit };
+                continue;
+            }
+            included_.insert(name);
+
+            auto pos = program_.includes_.find(name);
+            if (pos == program_.includes_.end()) {
+                output_ << "#error missing include: \"" << name << "\"\n";
+                continue;
+            }
+
+            std::size_t include_compilation_unit = std::distance(program_.includes_.begin(), pos) + 1;
+            next_line_ = { 1, include_compilation_unit };
+            process(pos->second, include_compilation_unit);
+            next_line_ = { line_index + 1, compilation_unit };
+        }
+        else {
+            if (next_line_) {
+                auto [next_line, next_compilation_unit] = *next_line_;
+                output_ << "#line " << next_line << " " << next_compilation_unit << "\n";
+                next_line_.reset();
+            }
+            output_ << line << "\n";
+        }
+    }
 }
 
 }
