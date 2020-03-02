@@ -49,8 +49,8 @@ public:
     private:
         /// <summary>Hidden/different to allow for a working parameter deduction of handler</summary>
         Subscription(std::unique_ptr<Handler> handler, Event& event)
-            : event_(event)
-            , handler_(*event.handlers_.emplace_back(std::move(handler)).get())
+            : event_(&event)
+            , handler_(event.handlers_.emplace_back(std::move(handler)).get())
         {
         }
 
@@ -93,12 +93,14 @@ public:
         /// <summary>Automatically unsubscribes the handler from the event.</summary>
         ~Subscription()
         {
-            auto& handlers = event_.handlers_;
+            if (!handler_)
+                return;
+            auto& handlers = event_->handlers_;
             auto end = handlers.begin();
             auto pos = handlers.end();
             do {
                 pos--;
-                if (pos->get() == &handler_) {
+                if (pos->get() == handler_) {
                     handlers.erase(pos);
                     return;
                 }
@@ -107,13 +109,24 @@ public:
         }
 
         Subscription(const Subscription&) = delete;
-        Subscription(Subscription&&) = delete;
+        Subscription(Subscription&& other) noexcept
+            : event_(other.event_)
+            , handler_(other.handler_)
+        {
+            other.handler_ = nullptr;
+        }
         Subscription& operator=(const Subscription&) = delete;
-        Subscription& operator=(Subscription&&) = delete;
+        Subscription& operator=(Subscription&& other) noexcept
+        {
+            event_ = other.event_;
+            handler_ = other.handler_;
+            other.handler_ = nullptr;
+            return *this;
+        }
 
     private:
-        Event& event_;
-        Handler& handler_;
+        Event* event_;
+        Handler* handler_;
     };
 
     Event() = default;
