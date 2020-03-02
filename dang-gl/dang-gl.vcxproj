@@ -177,6 +177,7 @@
     <ClInclude Include="include\dang-gl\ObjectBase.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\Transform.h" />
     <ClInclude Include="include\dang-gl\Types.h" />
     <ClInclude Include="include\dang-gl\UniformWrapper.h" />
     <ClInclude Include="include\dang-gl\Window.h" />
@@ -209,6 +210,7 @@
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\VBO.cpp" />
     <ClCompile Include="src\VAO.cpp" />
+    <ClCompile Include="src\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
