@@ -27,12 +27,19 @@ void ProgramInfo::bind(GLuint handle)
 std::string Program::replaceInfoLogShaderNames(std::string info_log) const
 {
     std::vector<std::string> names{ "main" };
-    for (auto& [name, code] : includes_)
+    for (const auto& [name, code] : includes_)
         names.push_back(name);
 
     for (std::size_t i = 0; i < names.size(); i++) {
-        const std::regex line_regex("^" + std::to_string(i) + "(\\(\\d+\\))");
-        info_log = std::regex_replace(info_log, line_regex, names[i] + "$1");
+        const std::array line_regexes{
+            // NVIDIA: 1(23)
+            std::regex("\\b" + std::to_string(i) + "\\((\\d+)\\)\\b"),
+            // Intel: 1:23
+            std::regex("\\b" + std::to_string(i) + ":(\\d+)\\b")
+        };
+
+        for (const auto& line_regex : line_regexes)
+            info_log = std::regex_replace(info_log, line_regex, names[i] + "($1)");
     }
 
     return info_log;
@@ -417,14 +424,56 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
 {
     static const std::regex include_regex("^ *# *include *\"([A-Za-z0-9_.\\\\/ ]+)\" *$");
 
-    std::string line;
+    std::string read_line;
+    std::string full_line;
+    std::vector<std::string> line_buffer;
     std::istringstream input(code);
     std::size_t line_index = 0;
+    bool block_comment = false;
 
-    while (std::getline(input, line)) {
+    while (std::getline(input, read_line)) {
         line_index++;
+        line_buffer.push_back(read_line);
+
+        if (!read_line.empty() && read_line.back() == '\\')
+        {
+            read_line.pop_back();
+            full_line += read_line;
+            continue;
+        }
+
+        full_line += read_line;
+
+        std::size_t find_offset = 0;
+        while (true) {
+            if (block_comment) {
+                std::size_t block_comment_end = full_line.find("*/", find_offset);
+                if (block_comment_end == std::string::npos)
+                    break;
+
+                block_comment = false;
+                find_offset = block_comment_end + 2;
+            }
+            else {
+                std::size_t first_slash_pos = full_line.find("/", find_offset);
+                if (first_slash_pos == std::string::npos)
+                    break;
+
+                std::size_t line_comment_pos = full_line.find("//", first_slash_pos);
+                std::size_t block_comment_pos = full_line.find("/*", first_slash_pos);
+                if (block_comment_pos == std::string::npos)
+                    break;
+
+                if (line_comment_pos != std::string::npos && line_comment_pos < block_comment_pos)
+                    break;
+
+                block_comment = true;
+                find_offset = block_comment_pos + 1;
+            }
+        }
+
         std::smatch match;
-        if (std::regex_match(line, match, include_regex)) {
+        if (!block_comment && std::regex_match(full_line, match, include_regex)) {
             std::string name = match[1];
 
             if (included_.find(name) != included_.end()) {
@@ -450,8 +499,13 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
                 output_ << "#line " << next_line << " " << next_compilation_unit << "\n";
                 next_line_.reset();
             }
-            output_ << line << "\n";
+
+            for (const std::string& line : line_buffer)
+                output_ << line << "\n";
         }
+
+        line_buffer.clear();
+        full_line.clear();
     }
 }
 
