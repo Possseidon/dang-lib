@@ -97,6 +97,18 @@ struct Quaternion : private Vector<T, 4> {
         return conjugate() / Base::sqrdot();
     }
 
+    /// <summary>Converts the quaternion into a simple xyzw-vector.</summary>
+    constexpr const Vector<T, 4>& asVector() const
+    {
+        return *this;
+    }
+
+    /// <summary>Converts the quaternion into a simple xyzw-vector.</summary>
+    constexpr Vector<T, 4>& asVector()
+    {
+        return *this;
+    }
+
     /// <summary>Converts the quaternion into a rotation-matrix and returns it.</summary>
     constexpr Matrix<T, 3> toMatrix() const
     {
@@ -345,6 +357,12 @@ struct DualQuaternion {
     constexpr DualQuaternion translate(const Vector<T, 3>& offset) const
     {
         return *this * fromTranslation(offset);
+    }
+
+    /// <summary>Converts the dual-quaternion into a 2x4 matrix with real and dual parts.</summary>
+    constexpr Matrix<T, 2, 4> toMatrix2x4() const
+    {
+        return Matrix<T, 2, 4>({ real.asVector(), dual.asVector() });
     }
 
     /// <summary>Converts the dual-quaternion into a full 4x4 transformation-matrix and returns it.</summary>
