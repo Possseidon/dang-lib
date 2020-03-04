@@ -5,10 +5,11 @@ namespace dang::gl
 
 class Transform;
 
-class IRenderable {
+class Renderable {
 public:
+    virtual ~Renderable() = default;
     virtual bool isVisible() const;
-    virtual const Transform& transform() const;
+    virtual const std::shared_ptr<Transform> transform() const;
     virtual void draw() const = 0;
 };
 

@@ -48,10 +48,10 @@
     <ClCompile Include="src\Camera.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="src\IRenderable.cpp">
+    <ClCompile Include="src\Transform.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="src\Transform.cpp">
+    <ClCompile Include="src\Renderable.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,10 +116,10 @@
     <ClInclude Include="include\dang-gl\Camera.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\IRenderable.h">
+    <ClInclude Include="include\dang-gl\Transform.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Transform.h">
+    <ClInclude Include="include\dang-gl\Renderable.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
