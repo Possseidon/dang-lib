@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-math/matrix.h"
+#include "dang-math/quaternion.h"
 #include "dang-math/vector.h"
 
 namespace dang::gl
@@ -46,7 +47,38 @@ using bvec2 = bvec<2>;
 using bvec3 = bvec<3>;
 using bvec4 = bvec<4>;
 
+template <std::size_t Dim>
+using bounds = dmath::Bounds<GLfloat, Dim>;
+
+template <std::size_t Dim>
+using dbounds = dmath::Bounds<GLdouble, Dim>;
+
+template <std::size_t Dim>
+using ibounds = dmath::Bounds<GLint, Dim>;
+
+template <std::size_t Dim>
+using ubounds = dmath::Bounds<GLuint, Dim>;
+
+using bounds1 = bounds<1>;
+using bounds2 = bounds<2>;
+using bounds3 = bounds<3>;
+
+using dbounds1 = dbounds<1>;
+using dbounds2 = dbounds<2>;
+using dbounds3 = dbounds<3>;
+
+using ibounds1 = ibounds<1>;
+using ibounds2 = ibounds<2>;
+using ibounds3 = ibounds<3>;
+
+using ubounds1 = ubounds<1>;
+using ubounds2 = ubounds<2>;
+using ubounds3 = ubounds<3>;
+
 DMATH_MATRIX_DEFINE(mat, GLfloat)
 DMATH_MATRIX_DEFINE(dmat, GLdouble)
+
+using quat = dmath::Quaternion<GLfloat>;
+using dquat = dmath::DualQuaternion<GLfloat>;
 
 };
