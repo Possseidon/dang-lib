@@ -9,7 +9,7 @@ namespace dang::math
 template <typename T, typename TFactor>
 constexpr T interpolate(const T& from, const T& to, TFactor factor)
 {
-    return (T(1) - factor) * from + factor * to;
+    return from + factor * (to - from);
 }
 
 namespace interp

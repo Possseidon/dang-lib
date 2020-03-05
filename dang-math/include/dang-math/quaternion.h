@@ -146,6 +146,18 @@ struct Quaternion : private Vector<T, 4> {
         return lhs = lhs + rhs;
     }
 
+    /// <summary>Adds both quaternions component-wise.</summary>
+    friend constexpr Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs)
+    {
+        return Base(lhs) - Base(rhs);
+    }
+
+    /// <summary>Adds both quaternions component-wise.</summary>
+    friend constexpr Quaternion& operator-=(Quaternion& lhs, const Quaternion& rhs)
+    {
+        return lhs = lhs - rhs;
+    }
+
     /// <summary>Combines the transformation of both quaternions.</summary>
     friend constexpr Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs)
     {
@@ -396,6 +408,12 @@ struct DualQuaternion {
 
     /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
     friend constexpr DualQuaternion operator*(DualQuaternion dualquaternion, T factor)
+    {
+        return dualquaternion *= factor;
+    }
+
+    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    friend constexpr DualQuaternion operator*(T factor, DualQuaternion dualquaternion)
     {
         return dualquaternion *= factor;
     }
