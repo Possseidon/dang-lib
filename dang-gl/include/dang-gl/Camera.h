@@ -5,6 +5,7 @@
 
 #include "Program.h"
 #include "Transform.h"
+#include "Window.h"
 
 namespace dang::gl
 {
@@ -13,6 +14,12 @@ class Renderable;
 
 class ProjectionProvider {
 public:
+    ProjectionProvider(float aspect);
+    ProjectionProvider(Window& window);
+
+    float aspect() const;
+    void setAspect(float aspect);
+
     const dgl::mat4& matrix();
 
 protected:
@@ -20,6 +27,8 @@ protected:
     virtual dgl::mat4 calculateMatrix() = 0;
 
 private:
+    float aspect_;
+    std::optional<Window::Event::Subscription> window_resize_;
     std::optional<dgl::mat4> matrix_;
 };
 
@@ -29,9 +38,7 @@ public:
     static constexpr dgl::bounds1 DefaultClip = { 0.1f, 100.0f };
 
     PerspectiveProjection(float aspect, float field_of_view = DefaultFieldOfView, dmath::bounds1 clip = DefaultClip);
-
-    float aspect() const;
-    void setAspect(float aspect);
+    PerspectiveProjection(Window& window, float field_of_view = DefaultFieldOfView, dmath::bounds1 clip = DefaultClip);
 
     float fieldOfView() const;
     void setFieldOfView(float field_of_view);
@@ -47,7 +54,6 @@ protected:
     dgl::mat4 calculateMatrix() override;
 
 private:
-    float aspect_;
     float field_of_view_ = 90.0f;
     dgl::bounds1 clip_ = { 0.1f, 100.0f };
 };
@@ -56,7 +62,8 @@ class OrthoProjection : public ProjectionProvider {
 public:
     static constexpr dgl::bounds3 DefaultClip = { -1.0f, 1.0f };
 
-    OrthoProjection(dgl::bounds3 clip = DefaultClip);
+    OrthoProjection(float aspect, dgl::bounds3 clip = DefaultClip);
+    OrthoProjection(Window& window, dgl::bounds3 clip = DefaultClip);
 
     const dmath::bounds3& clip() const;
     void setClip(const dmath::bounds3& clip);
@@ -77,10 +84,13 @@ enum class CameraTransformType {
 
 class Camera {
 public:
-    explicit Camera(std::unique_ptr<ProjectionProvider> projection_provider);
+    explicit Camera(std::shared_ptr<ProjectionProvider> projection_provider);
     static Camera perspective(float aspect, float field_of_view = PerspectiveProjection::DefaultFieldOfView, dmath::bounds1 clip = PerspectiveProjection::DefaultClip);
-    static Camera ortho(dgl::bounds3 clip = OrthoProjection::DefaultClip);
+    static Camera perspective(Window& window, float field_of_view = PerspectiveProjection::DefaultFieldOfView, dmath::bounds1 clip = PerspectiveProjection::DefaultClip);
+    static Camera ortho(float aspect, dgl::bounds3 clip = OrthoProjection::DefaultClip);
+    static Camera ortho(Window& window, dgl::bounds3 clip = OrthoProjection::DefaultClip);
 
+    const std::shared_ptr<ProjectionProvider>& projectionProvider() const;
     const std::shared_ptr<Transform>& transform() const;
 
     void setProjectionUniform(ShaderUniform<dgl::mat4>& uniform);
@@ -97,7 +107,7 @@ public:
     void render();
 
 private:
-    std::unique_ptr<ProjectionProvider> projection_provider_;
+    std::shared_ptr<ProjectionProvider> projection_provider_;
     std::shared_ptr<Transform> transform_;
     std::vector<std::weak_ptr<Renderable>> renderables_;
     ShaderUniform<dgl::mat4>* projection_uniform_ = nullptr;

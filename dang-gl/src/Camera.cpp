@@ -6,6 +6,30 @@
 namespace dang::gl
 {
 
+ProjectionProvider::ProjectionProvider(float aspect)
+    : aspect_(aspect)
+{
+}
+
+ProjectionProvider::ProjectionProvider(Window& window)
+    : aspect_(window.aspect())
+    , window_resize_({ window.onFramebufferResize, [&] { setAspect(window.aspect()); } })
+{
+}
+
+float ProjectionProvider::aspect() const
+{
+    return aspect_;
+}
+
+void ProjectionProvider::setAspect(float aspect)
+{
+    if (aspect_ == aspect)
+        return;
+    aspect_ = aspect;
+    invalidateMatrix();
+}
+
 const dgl::mat4& ProjectionProvider::matrix()
 {
     if (!matrix_)
@@ -19,23 +43,17 @@ void ProjectionProvider::invalidateMatrix()
 }
 
 PerspectiveProjection::PerspectiveProjection(float aspect, float field_of_view, dmath::bounds1 clip)
-    : aspect_(aspect)
+    : ProjectionProvider(aspect)
     , field_of_view_(field_of_view)
     , clip_(clip)
 {
 }
 
-float PerspectiveProjection::aspect() const
+PerspectiveProjection::PerspectiveProjection(Window& window, float field_of_view, dmath::bounds1 clip)
+    : ProjectionProvider(window)
+    , field_of_view_(field_of_view)
+    , clip_(clip)
 {
-    return aspect_;
-}
-
-void PerspectiveProjection::setAspect(float aspect)
-{
-    if (aspect_ == aspect)
-        return;
-    aspect_ = aspect;
-    invalidateMatrix();
 }
 
 float PerspectiveProjection::fieldOfView() const
@@ -95,7 +113,7 @@ dgl::mat4 PerspectiveProjection::calculateMatrix()
     dgl::mat4 result;
     float a = dmath::degToRad(field_of_view_) / 2;
     float f = std::cos(a) / std::sin(a);
-    result(0, 0) = f / aspect_;
+    result(0, 0) = f / aspect();
     result(1, 1) = f;
     result(2, 2) = (nearClip() + farClip()) / (nearClip() - farClip());
     result(2, 3) = -1;
@@ -103,7 +121,37 @@ dgl::mat4 PerspectiveProjection::calculateMatrix()
     return result;
 }
 
-Camera::Camera(std::unique_ptr<ProjectionProvider> view_matrix_provider)
+OrthoProjection::OrthoProjection(float aspect, dgl::bounds3 clip)
+    : ProjectionProvider(aspect)
+    , clip_(clip)
+{
+}
+
+OrthoProjection::OrthoProjection(Window& window, dgl::bounds3 clip)
+    : ProjectionProvider(window)
+    , clip_(clip)
+{
+}
+
+const dmath::bounds3& OrthoProjection::clip() const
+{
+    return clip_;
+}
+
+void OrthoProjection::setClip(const dmath::bounds3& clip)
+{
+    if (clip_ == clip)
+        return;
+    clip_ = clip;
+    invalidateMatrix();
+}
+
+dgl::mat4 OrthoProjection::calculateMatrix()
+{
+    return dgl::mat4();
+}
+
+Camera::Camera(std::shared_ptr<ProjectionProvider> view_matrix_provider)
     : projection_provider_(std::move(view_matrix_provider))
     , transform_(std::make_shared<Transform>())
 {
@@ -111,12 +159,27 @@ Camera::Camera(std::unique_ptr<ProjectionProvider> view_matrix_provider)
 
 Camera Camera::perspective(float aspect, float field_of_view, dmath::bounds1 clip)
 {
-    return Camera(std::make_unique<PerspectiveProjection>(aspect, field_of_view, clip));
+    return Camera(std::make_shared<PerspectiveProjection>(aspect, field_of_view, clip));
 }
 
-Camera Camera::ortho(dgl::bounds3 clip)
+Camera Camera::perspective(Window& window, float field_of_view, dmath::bounds1 clip)
 {
-    return Camera(std::make_unique<OrthoProjection>(clip));
+    return Camera(std::make_shared<PerspectiveProjection>(window, field_of_view, clip));
+}
+
+Camera Camera::ortho(float aspect, dgl::bounds3 clip)
+{
+    return Camera(std::make_shared<OrthoProjection>(aspect, clip));
+}
+
+Camera Camera::ortho(Window& window, dgl::bounds3 clip)
+{
+    return Camera(std::make_shared<OrthoProjection>(window, clip));
+}
+
+const std::shared_ptr<ProjectionProvider>& Camera::projectionProvider() const
+{
+    return projection_provider_;
 }
 
 const std::shared_ptr<Transform>& Camera::transform() const
@@ -209,29 +272,6 @@ void Camera::removeExpiredRenderables()
             renderables_.begin(), renderables_.end(),
             std::mem_fn(&std::weak_ptr<Renderable>::expired)),
         renderables_.end());
-}
-
-OrthoProjection::OrthoProjection(dgl::bounds3 clip)
-    : clip_(clip)
-{
-}
-
-const dmath::bounds3& OrthoProjection::clip() const
-{
-    return clip_;
-}
-
-void OrthoProjection::setClip(const dmath::bounds3& clip)
-{
-    if (clip_ == clip)
-        return;
-    clip_ = clip;
-    invalidateMatrix();
-}
-
-dgl::mat4 OrthoProjection::calculateMatrix()
-{
-    return dgl::mat4();
 }
 
 }
