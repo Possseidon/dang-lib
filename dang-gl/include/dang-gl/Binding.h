@@ -8,14 +8,14 @@ namespace dang::gl
 class Binding {
 public:
     template <class TInfo>
-    void bind(ObjectBase* object);
+    void bind(const ObjectBase* object);
 
 private:
-    ObjectBase* bound_object_ = nullptr;
+    const ObjectBase* bound_object_ = nullptr;
 };
 
 template<class TInfo>
-inline void Binding::bind(ObjectBase* object)
+inline void Binding::bind(const ObjectBase* object)
 {
     if (bound_object_ == object)
         return;

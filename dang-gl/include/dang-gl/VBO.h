@@ -26,7 +26,7 @@ class VBOBindError : public std::runtime_error {
 class VBOBinding : public Binding {
 public:
     template <class TInfo>
-    void bind(ObjectBase* object)
+    void bind(const ObjectBase* object)
     {
         if (lock_count_ > 0)
             throw VBOBindError("The current VBO is locked and cannot be rebound.");

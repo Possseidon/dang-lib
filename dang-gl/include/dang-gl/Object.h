@@ -44,7 +44,7 @@ public:
         return window().binding<TInfo>();
     }
 
-    void bind()
+    void bind() const
     {
         binding().bind<TInfo>(this);
     }

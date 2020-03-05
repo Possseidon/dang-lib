@@ -55,7 +55,7 @@ public:
         enableAttributes();
     }
 
-    void draw()
+    void draw() const
     {
         bind();
         program().bind();

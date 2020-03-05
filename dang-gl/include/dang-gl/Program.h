@@ -206,6 +206,7 @@ inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, DataType t
 template<typename T>
 inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, std::string name)
     : ShaderUniformBase(program, count, DataType::None, std::move(name))
+    , values_(count)
 {
 }
 
