@@ -122,5 +122,8 @@
     <ClInclude Include="include\dang-gl\Renderable.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-gl\Constants.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

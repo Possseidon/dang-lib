@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="include\dang-gl\Camera.h" />
     <ClInclude Include="include\dang-gl\BindingPoint.h" />
+    <ClInclude Include="include\dang-gl\Constants.h" />
     <ClInclude Include="include\dang-gl\DataType.h" />
     <ClInclude Include="include\dang-gl\GLFW.h" />
     <ClInclude Include="include\dang-gl\Input.h" />
