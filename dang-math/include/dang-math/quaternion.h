@@ -56,6 +56,47 @@ struct Quaternion : private Vector<T, 4> {
         return fromAxisRad(normal, degToRad(degrees));
     }
 
+    /// <summary>Returns a quaternion with all euler angles in radians applied in the given order.</summary>
+    template <std::size_t AngleCount>
+    static constexpr Quaternion fromEulerRad(const Vector<T, AngleCount>& radians, const std::array<Axis3, AngleCount>& order)
+    {
+        Quaternion result = Quaternion::identity();
+        for (std::size_t i = 0; i < AngleCount; i++)
+            result *= fromAxisRad(static_cast<Vector<T, 3>>(AxisVector3[order[i]]), radians[i]);
+        return result;
+    }
+
+    /// <summary>Returns a quaternion with all euler angles in degrees applied in the given order.</summary>        
+    template <std::size_t AngleCount>
+    static constexpr Quaternion fromEuler(const Vector<T, AngleCount>& degrees, const std::array<Axis3, AngleCount>& order)
+    {
+        return fromEulerRad(degrees.degToRad(), order);
+    }
+
+    /// <summary>Returns a quaternion with all euler angles in radians applied in YXZ-order.</summary>
+    static constexpr Quaternion fromEulerRad(const Vector<T, 3>& radians)
+    {
+        return fromEulerRad(radians, { Axis3::Y, Axis3::X, Axis3::Z });
+    }
+
+    /// <summary>Returns a quaternion with all euler angles in degrees applied in YXZ-order.</summary>
+    static constexpr Quaternion fromEuler(const Vector<T, 3>& degrees)
+    {
+        return fromEulerRad(degrees.degToRad());
+    }
+
+    /// <summary>Returns a quaternion with all euler angles in radians applied in YX-order.</summary>
+    static constexpr Quaternion fromEulerRad(const Vector<T, 2>& radians)
+    {
+        return fromEulerRad(radians, { Axis3::Y, Axis3::X });
+    }
+
+    /// <summary>Returns a quaternion with all euler angles in degrees applied in YX-order.</summary>
+    static constexpr Quaternion fromEuler(const Vector<T, 2>& degrees)
+    {
+        return fromEulerRad(degrees.degToRad());
+    }
+
     /// <summary>Returns the scalar/w part of the quaternion.</summary>
     constexpr T scalar() const { return Base::w(); }
     /// <summary>Returns the scalar/w part of the quaternion.</summary>
@@ -254,19 +295,19 @@ struct Quaternion : private Vector<T, 4> {
         return Base::operator!=(lhs, rhs);
     }
 
-    /// <summary>Helper for slerp, which returns, wether the target quaternion was negated to ensure the shortest path or needs to be normalized.</summary>
-    constexpr Quaternion slerp_helper(Quaternion target, T factor, bool& target_negated, bool& requires_normalization)
+    /// <summary>Helper for slerp, which returns source and target factor and wether the result needs to be normalized.</summary>
+    constexpr std::tuple<T, T> slerpHelper(Quaternion target, T factor, bool& requires_normalization)
     {
         // Following article was used as a base:
         // https://en.wikipedia.org/wiki/Slerp#Source_code
 
         // If the dot product is negative, slerp won't take the shorter path. 
         // Note that target and -target are equivalent when the negation is applied to all four components. 
-        // Fix by reversing one quaternion.
+        // Fix by negating the resulting target factor.
         T dot_result = dot(target);
-        target_negated = dot_result < T();
-        if (target_negated) {
-            target = -target;
+        T target_sign = T(1);
+        if (dot_result < T()) {
+            target_sign = T(-1);
             dot_result = -dot_result;
         }
 
@@ -274,7 +315,7 @@ struct Quaternion : private Vector<T, 4> {
         requires_normalization = dot_result > epsilon;
         if (requires_normalization) {
             // If the inputs are too close for comfort, use classic lerp and normalize.
-            return interpolate(*this, target, factor);
+            return { T(1) - factor, target_sign * factor };
         }
 
         T theta_0 = std::acos(dot_result);
@@ -286,15 +327,16 @@ struct Quaternion : private Vector<T, 4> {
         T target_factor = sin_theta / sin_theta_0;
         T source_factor = std::cos(theta) - dot_result * target_factor;
 
-        return (source_factor * *this) + (target_factor * target);
+        return { source_factor, target_sign * target_factor };
     }
 
     /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular lienar interpolation.</summary>
     /// <remarks>Both quaternions should be normalized for correct results.</remarks>
     constexpr Quaternion slerp(Quaternion target, T factor)
     {
-        bool target_negated, requires_normalization;
-        Quaternion result = slerp_helper(target, factor, target_negated, requires_normalization);
+        bool requires_normalization;
+        auto [source_factor, target_factor] = slerpHelper(target, factor, requires_normalization);
+        Quaternion result = source_factor * *this + target_factor * target;
         if (requires_normalization)
             return result.normalize();
         return result;
@@ -342,6 +384,44 @@ struct DualQuaternion {
     static constexpr DualQuaternion fromAxis(const Vector<T, 3>& normal, T degrees)
     {
         return DualQuaternion(Quaternion<T>::fromAxis(normal, degrees));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in the given order.</summary>
+    template <std::size_t AngleCount>
+    static constexpr DualQuaternion fromEulerRad(const Vector<T, AngleCount>& radians, const std::array<Axis3, AngleCount>& order)
+    {
+        return DualQuaternion(Quaternion<T>::fromEulerRad<AngleCount>(radians, order));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in the given order.</summary>        
+    template <std::size_t AngleCount>
+    static constexpr DualQuaternion fromEuler(const Vector<T, AngleCount>& degrees, const std::array<Axis3, AngleCount>& order)
+    {
+        return DualQuaternion(Quaternion<T>::fromEuler<AngleCount>(degrees, order));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YXZ-order.</summary>
+    static constexpr DualQuaternion fromEulerRad(const Vector<T, 3>& radians)
+    {
+        return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YXZ-order.</summary>
+    static constexpr DualQuaternion fromEuler(const Vector<T, 3>& degrees)
+    {
+        return DualQuaternion(Quaternion<T>::fromEuler(degrees));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YX-order.</summary>
+    static constexpr DualQuaternion fromEulerRad(const Vector<T, 2>& radians)
+    {
+        return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
+    }
+
+    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YX-order.</summary>
+    static constexpr DualQuaternion fromEuler(const Vector<T, 2>& degrees)
+    {
+        return DualQuaternion(Quaternion<T>::fromEuler(degrees));
     }
 
     /// <summary>Returns a dual-quaternion from the given translation vector.</summary>
@@ -541,11 +621,9 @@ struct DualQuaternion {
     constexpr DualQuaternion slerp(DualQuaternion target, T factor)
     {
         DualQuaternion result;
-        bool target_negated, requires_normalization;
-        result.real = real.slerp_helper(target.real, factor, target_negated, requires_normalization);
-        if (target_negated)
-            target.dual = -target.dual;
-        result.dual = interpolate(dual, target.dual, factor);
+        bool requires_normalization;
+        auto [source_factor, target_factor] = real.slerpHelper(target.real, factor, requires_normalization);
+        result = source_factor * *this + target_factor * target;
         if (requires_normalization)
             return result.normalize();
         return result;
