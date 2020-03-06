@@ -642,7 +642,10 @@ void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onCursorMove({ window, dmath::dvec2(xpos, ypos) });
+    dmath::dvec2 window_pos(xpos, ypos);
+    dmath::dvec2 window_size = static_cast<dmath::dvec2>(window.framebufferSize());
+    dmath::dvec2 pos = (window_pos * 2) / window_size.y() - dmath::dvec2(window.aspect(), 1);
+    window.onCursorMove({ window, window_pos, static_cast<dmath::vec2>(pos) });
 }
 
 void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[])

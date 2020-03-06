@@ -138,7 +138,8 @@ public:
     };
 
     struct CursorMoveInfo : EventInfoBase {
-        dmath::dvec2 position;
+        dmath::dvec2 window_pos;
+        dmath::vec2 pos;
     };
 
     struct ScrollInfo : EventInfoBase {
