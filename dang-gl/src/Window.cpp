@@ -212,6 +212,16 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
         adjustViewport();
 }
 
+bool Window::finishAfterSwap() const
+{
+    return finish_after_swap_;
+}
+
+void Window::setFinishAfterSwap(bool finish_after_swap)
+{
+    finish_after_swap_ = finish_after_swap;
+}
+
 std::optional<int> Window::minWidth() const
 {
     int value = size_limits_.low.x();
@@ -556,6 +566,8 @@ void Window::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     onRender(*this);
     glfwSwapBuffers(handle_);
+    if (finish_after_swap_)
+        glFinish();
 }
 
 void Window::pollEvents()

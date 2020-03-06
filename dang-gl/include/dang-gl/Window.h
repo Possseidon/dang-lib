@@ -211,6 +211,9 @@ public:
     bool autoAdjustViewport() const;
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
+    bool finishAfterSwap() const;
+    void setFinishAfterSwap(bool finish_after_swap);
+
     std::optional<dmath::ivec2> aspectRatio() const;
     void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
     void freezeAspectRatio();
@@ -357,6 +360,7 @@ private:
     dmath::ivec2 fullscreen_restore_size_;
     std::optional<dmath::ivec2> aspect_ratio_;
     bool auto_adjust_viewport_ = true;
+    bool finish_after_swap_ = true;
     uint64_t last_time_ = 0;
     float delta_time_ = 0;
     float fps_ = 0;
