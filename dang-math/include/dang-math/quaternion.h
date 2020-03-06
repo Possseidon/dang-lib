@@ -253,6 +253,52 @@ struct Quaternion : private Vector<T, 4> {
     {
         return Base::operator!=(lhs, rhs);
     }
+
+    /// <summary>Helper for slerp, which returns, wether the target quaternion was negated to ensure the shortest path or needs to be normalized.</summary>
+    constexpr Quaternion slerp_helper(Quaternion target, T factor, bool& target_negated, bool& requires_normalization)
+    {
+        // Following article was used as a base:
+        // https://en.wikipedia.org/wiki/Slerp#Source_code
+
+        // If the dot product is negative, slerp won't take the shorter path. 
+        // Note that target and -target are equivalent when the negation is applied to all four components. 
+        // Fix by reversing one quaternion.
+        T dot_result = dot(target);
+        target_negated = dot_result < T();
+        if (target_negated) {
+            target = -target;
+            dot_result = -dot_result;
+        }
+
+        constexpr T epsilon = T(1) - T(1e-5);
+        requires_normalization = dot_result > epsilon;
+        if (requires_normalization) {
+            // If the inputs are too close for comfort, use classic lerp and normalize.
+            return interpolate(*this, target, factor);
+        }
+
+        T theta_0 = std::acos(dot_result);
+        T theta = theta_0 * factor;
+
+        T sin_theta_0 = std::sin(theta_0);
+        T sin_theta = std::sin(theta);
+
+        T target_factor = sin_theta / sin_theta_0;
+        T source_factor = std::cos(theta) - dot_result * target_factor;
+
+        return (source_factor * *this) + (target_factor * target);
+    }
+
+    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular lienar interpolation.</summary>
+    /// <remarks>Both quaternions should be normalized for correct results.</remarks>
+    constexpr Quaternion slerp(Quaternion target, T factor)
+    {
+        bool target_negated, requires_normalization;
+        Quaternion result = slerp_helper(target, factor, target_negated, requires_normalization);
+        if (requires_normalization)
+            return result.normalize();
+        return result;
+    }
 };
 
 /// <summary>A dual-quaternion, which can represent both rotation (real) and translation (dual).</summary>
@@ -488,6 +534,21 @@ struct DualQuaternion {
     friend constexpr Vector<T, 3> operator*(const DualQuaternion& dualquaternion, const Vector<T, 3>& vector)
     {
         return (dualquaternion.conjugate() * DualQuaternion(vector) * dualquaternion).dual.vector();
+    }
+
+    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular lienar interpolation.</summary>
+    /// <remarks>Both quaternions should be normalized for correct results.</remarks>
+    constexpr DualQuaternion slerp(DualQuaternion target, T factor)
+    {
+        DualQuaternion result;
+        bool target_negated, requires_normalization;
+        result.real = real.slerp_helper(target.real, factor, target_negated, requires_normalization);
+        if (target_negated)
+            target.dual = -target.dual;
+        result.dual = interpolate(dual, target.dual, factor);
+        if (requires_normalization)
+            return result.normalize();
+        return result;
     }
 };
 
