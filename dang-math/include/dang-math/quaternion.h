@@ -330,7 +330,7 @@ struct Quaternion : private Vector<T, 4> {
         return { source_factor, target_sign * target_factor };
     }
 
-    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular lienar interpolation.</summary>
+    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.</summary>
     /// <remarks>Both quaternions should be normalized for correct results.</remarks>
     constexpr Quaternion slerp(Quaternion target, T factor)
     {
@@ -616,7 +616,7 @@ struct DualQuaternion {
         return (dualquaternion.conjugate() * DualQuaternion(vector) * dualquaternion).dual.vector();
     }
 
-    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular lienar interpolation.</summary>
+    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.</summary>
     /// <remarks>Both quaternions should be normalized for correct results.</remarks>
     constexpr DualQuaternion slerp(DualQuaternion target, T factor)
     {
