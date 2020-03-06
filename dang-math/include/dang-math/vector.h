@@ -88,6 +88,18 @@ struct VectorBase : protected std::array<T, Dim> {
         return radToDeg(angleRadTo(other));
     }
 
+    /// <summary>Converts every component from radians into degrees.</summary>
+    constexpr Vector<T, Dim> radToDeg() const
+    {
+        return unary(&dmath::radToDeg<T>);
+    }
+
+    /// <summary>Converts every component from degrees into radians.</summary>
+    constexpr Vector<T, Dim> degToRad() const
+    {
+        return unary(&dmath::degToRad<T>);
+    }
+
     /// <summary>Returns the vector with each component being positive.</summary>
     constexpr Vector<T, Dim> abs() const
     {
