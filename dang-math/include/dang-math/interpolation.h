@@ -30,7 +30,7 @@ auto exp = [](auto x) { return x * std::exp(x) / std::exp(1); };
 /// <summary>True inverse-exponential interpolation, inv_quadratic is faster and usually sufficient.</summary>
 auto inv_exp = [](auto x) { x = 1 - x; return 1 - x * std::exp(x) / std::exp(1); };
 /// <summary>True cosine interpolation, cubic is faster and usually sufficient.</summary>
-auto cosine = [](auto x) { return (1 - std::cos(x * pi)) / 2; };
+auto cosine = [](auto x) { return (1 - std::cos(x * static_cast<decltype(x)>(pi))) / 2; };
 
 /// <summary>Alias for cubic.</summary>
 auto smooth = cubic;

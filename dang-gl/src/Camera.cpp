@@ -256,7 +256,7 @@ void Camera::render()
 
         if (auto& uniform = transform_uniforms_[CameraTransformType::ModelView]) {
             if (auto transform = renderable->transform())
-                uniform->force((view_transform * transform->fullTransform()).toMatrix2x4());
+                uniform->force((transform->fullTransform() * view_transform).toMatrix2x4());
             else
                 uniform->force(view_transform.toMatrix2x4());
         }

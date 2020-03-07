@@ -9,7 +9,7 @@ bool Renderable::isVisible() const
     return true;
 }
 
-const std::shared_ptr<Transform> Renderable::transform() const
+std::shared_ptr<Transform> Renderable::transform() const
 {
     return nullptr;
 }

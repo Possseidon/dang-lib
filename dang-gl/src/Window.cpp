@@ -657,6 +657,7 @@ void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double yp
     dmath::dvec2 window_pos(xpos, ypos);
     dmath::dvec2 window_size = static_cast<dmath::dvec2>(window.framebufferSize());
     dmath::dvec2 pos = (window_pos * 2) / window_size.y() - dmath::dvec2(window.aspect(), 1);
+    pos.y() = -pos.y();
     window.onCursorMove({ window, window_pos, static_cast<dmath::vec2>(pos) });
 }
 

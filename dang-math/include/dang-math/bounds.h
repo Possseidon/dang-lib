@@ -290,7 +290,7 @@ struct Bounds {
     /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
     constexpr BoundsIterator<T, Dim> end() const
     {
-        return ++BoundsIterator<T, Dim>(*this, high - 1);
+        return ++BoundsIterator<T, Dim>(*this, high - Vector<T, Dim>(1));
     }
 };
 

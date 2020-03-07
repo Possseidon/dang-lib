@@ -67,7 +67,7 @@ const dmath::dquat& Transform::fullTransform()
 {
     if (!full_transform_) {
         if (parent_)
-            full_transform_ = parent_->fullTransform() * own_transform_;
+            full_transform_ = own_transform_ * parent_->fullTransform();
         else
             full_transform_ = own_transform_;
     }
