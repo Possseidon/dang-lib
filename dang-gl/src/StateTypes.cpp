@@ -19,6 +19,21 @@ std::tuple<GLenum, GLenum> BlendFactor::toTuple() const
     return { static_cast<GLenum>(src), static_cast<GLenum>(dst) };
 }
 
+bool operator==(const PolygonOffset& lhs, const PolygonOffset& rhs)
+{
+    return std::tie(lhs.factor, lhs.units) == std::tie(rhs.factor, rhs.units);
+}
+
+bool operator!=(const PolygonOffset& lhs, const PolygonOffset& rhs)
+{
+    return !(lhs == rhs);
+}
+
+std::tuple<GLfloat, GLfloat> PolygonOffset::toTuple() const
+{
+    return { factor, units };
+}
+
 bool operator==(const SampleCoverage& lhs, const SampleCoverage& rhs)
 {
     return std::tie(lhs.value, lhs.invert) == std::tie(rhs.value, rhs.invert);
@@ -49,7 +64,7 @@ std::tuple<GLint, GLint, GLsizei, GLsizei> Scissor::toTuple() const
     const auto& size = bounds.size();
     return { bounds.low.x(), bounds.low.y(), size.x(), size.y() };
 }
-                             
+
 bool operator==(const StencilFunc& lhs, const StencilFunc& rhs)
 {
     return std::tie(lhs.func, lhs.ref, lhs.mask) == std::tie(rhs.func, rhs.ref, rhs.mask);

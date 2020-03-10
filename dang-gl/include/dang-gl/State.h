@@ -178,30 +178,38 @@ public:
     detail::StateFlag<GL_BLEND> blend{ *this };
     detail::StateFlag<GL_COLOR_LOGIC_OP> color_logic_op{ *this };
     detail::StateFlag<GL_CULL_FACE> cull_face{ *this };
+    detail::StateFlag<GL_DEBUG_OUTPUT> debug_output{ *this };
+    detail::StateFlag<GL_DEBUG_OUTPUT_SYNCHRONOUS> depth_output_synchronous{ *this };
+    detail::StateFlag<GL_DEPTH_CLAMP> depth_clamp{ *this };
     detail::StateFlag<GL_DEPTH_TEST> depth_test{ *this };
     detail::StateFlag<GL_DITHER> dither{ *this, true };
+    detail::StateFlag<GL_FRAMEBUFFER_SRGB> framebuffer_srgb{ *this };
     detail::StateFlag<GL_LINE_SMOOTH> line_smooth{ *this };
     detail::StateFlag<GL_MULTISAMPLE> multisample{ *this };
     detail::StateFlag<GL_POLYGON_SMOOTH> polygon_smooth{ *this };
     detail::StateFlag<GL_POLYGON_OFFSET_FILL> polygon_offset_fill{ *this };
     detail::StateFlag<GL_POLYGON_OFFSET_LINE> polygon_offset_line{ *this };
     detail::StateFlag<GL_POLYGON_OFFSET_POINT> polygon_offset_point{ *this };
+    detail::StateFlag<GL_PROGRAM_POINT_SIZE> program_point_size{ *this };
+    detail::StateFlag<GL_PRIMITIVE_RESTART> primitive_restart{ *this };
     detail::StateFlag<GL_SAMPLE_ALPHA_TO_COVERAGE> sample_alpha_to_coverage{ *this };
     detail::StateFlag<GL_SAMPLE_ALPHA_TO_ONE> sample_alpha_to_one{ *this };
     detail::StateFlag<GL_SAMPLE_COVERAGE> sample_coverage{ *this };
+    detail::StateFlag<GL_SAMPLE_MASK> sample_mask{ *this };
     detail::StateFlag<GL_SCISSOR_TEST> scissor_test{ *this };
     detail::StateFlag<GL_STENCIL_TEST> stencil_test{ *this };
-    detail::StateFlag<GL_TEXTURE_1D> texture_1d{ *this };
-    detail::StateFlag<GL_TEXTURE_2D> texture_2d{ *this };
-    detail::StateFlag<GL_TEXTURE_3D> texture_3d{ *this };
-    detail::StateFlag<GL_TEXTURE_CUBE_MAP> texture_cube_map{ *this };
-    detail::StateFlag<GL_VERTEX_ARRAY> vertex_array{ *this };
-    detail::StateFlag<GL_VERTEX_PROGRAM_POINT_SIZE> vertex_program_point_size{ *this };
+    detail::StateFlag<GL_TEXTURE_CUBE_MAP_SEAMLESS> texture_cube_map_seamless{ *this };
+
+    // TODO: GL_CLIP_DISTANCEi
 
     detail::StateFunc<&glBlendFunc, BlendFactor> blend_func{ *this, { BlendFactorSrc::One, BlendFactorDst::Zero} };
-    detail::StateFunc<&glLogicOp, LogicOp> logic_op{ *this, LogicOp::Copy };
     detail::StateFunc<&glCullFace, CullFaceMode> cull_face_mode{ *this, CullFaceMode::Back };
     detail::StateFunc<&glLineWidth, GLfloat> line_width{ *this, 1.0f };
+    detail::StateFunc<&glLogicOp, LogicOp> logic_op{ *this, LogicOp::Copy };
+    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Front>> polygon_mode_front{ *this, { PolygonMode::Fill } };
+    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Back>> polygon_mode_back{ *this, { PolygonMode::Fill } };
+    detail::StateFunc<&glPolygonOffset, PolygonOffset> polygon_offset{ *this, { 0.0f, 0.0f } };
+    detail::StateFunc<&glPrimitiveRestartIndex, GLuint> primitive_restart_index{ *this, 0 };
     detail::StateFunc<&glSampleCoverage, SampleCoverage> sample_coverage_value{ *this, { 1.0f, GL_FALSE } };
     detail::StateFunc<&glScissor, Scissor> scissor{ *this, { { 0, 0 } } }; // TODO: Set to window size
     detail::StateFunc<&glStencilFunc, StencilFunc> stencil_func{ *this, { CompareFunc::Always, 0, GLuint(-1) } };

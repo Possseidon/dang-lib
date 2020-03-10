@@ -40,14 +40,21 @@ enum class BlendFactorDst : GLenum {
     OneMinusConstantAlpha = GL_ONE_MINUS_CONSTANT_ALPHA
 };
 
-struct BlendFactor {
-    BlendFactorSrc src;
-    BlendFactorDst dst;
+enum class CompareFunc : GLenum {
+    Never = GL_NEVER,
+    Less = GL_LESS,
+    LessEqual = GL_LEQUAL,
+    Greater = GL_GREATER,
+    GreaterEqual = GL_GEQUAL,
+    Equal = GL_EQUAL,
+    NotEqual = GL_NOTEQUAL,
+    Always = GL_ALWAYS
+};
 
-    friend bool operator==(const BlendFactor& lhs, const BlendFactor& rhs);
-    friend bool operator!=(const BlendFactor& lhs, const BlendFactor& rhs);
-
-    std::tuple<GLenum, GLenum> toTuple() const;
+enum class CullFaceMode : GLenum {
+    Front = GL_FRONT,
+    Back = GL_BACK,
+    FrontAndBack = GL_FRONT_AND_BACK
 };
 
 enum class LogicOp : GLenum {
@@ -69,10 +76,58 @@ enum class LogicOp : GLenum {
     OrInverted = GL_OR_INVERTED
 };
 
-enum class CullFaceMode : GLenum {
+enum class PolygonSide : GLenum {
     Front = GL_FRONT,
-    Back = GL_BACK,
-    FrontAndBack = GL_FRONT_AND_BACK
+    Back = GL_BACK
+};
+
+enum class PolygonMode : GLenum {
+    Point = GL_POINT,
+    Line = GL_LINE,
+    Fill = GL_FILL
+};
+
+enum class StencilAction : GLenum {
+    Keep = GL_KEEP,
+    Zero = GL_ZERO,
+    Replace = GL_REPLACE,
+    Incr = GL_INCR,
+    IncrWrap = GL_INCR_WRAP,
+    Decr = GL_DECR,
+    DecrWrap = GL_DECR_WRAP,
+    Invert = GL_INVERT
+};
+
+struct BlendFactor {
+    BlendFactorSrc src;
+    BlendFactorDst dst;
+
+    friend bool operator==(const BlendFactor& lhs, const BlendFactor& rhs);
+    friend bool operator!=(const BlendFactor& lhs, const BlendFactor& rhs);
+
+    std::tuple<GLenum, GLenum> toTuple() const;
+};
+
+template <PolygonSide Side>
+struct PolygonSideMode {
+    PolygonMode mode;
+
+    PolygonSideMode(PolygonMode mode) : mode(mode) {}
+
+    friend bool operator==(const PolygonSideMode& lhs, const PolygonSideMode& rhs) { return lhs.mode == rhs.mode; }
+    friend bool operator!=(const PolygonSideMode& lhs, const PolygonSideMode& rhs) { return !(lhs == rhs); }
+
+    std::tuple<GLenum, GLenum> toTuple() const { return { static_cast<GLenum>(Side), static_cast<GLenum>(mode) }; }
+};
+
+struct PolygonOffset {
+    GLfloat factor;
+    GLfloat units;
+
+    friend bool operator==(const PolygonOffset& lhs, const PolygonOffset& rhs);
+    friend bool operator!=(const PolygonOffset& lhs, const PolygonOffset& rhs);
+
+    std::tuple<GLfloat, GLfloat> toTuple() const;
 };
 
 struct SampleCoverage {
@@ -94,44 +149,22 @@ struct Scissor {
     std::tuple<GLint, GLint, GLsizei, GLsizei> toTuple() const;
 };
 
-enum class CompareFunc : GLenum {
-    Never = GL_NEVER,
-    Less = GL_LESS,
-    LessEqual = GL_LEQUAL,
-    Greater = GL_GREATER,
-    GreaterEqual = GL_GEQUAL,
-    Equal = GL_EQUAL,
-    NotEqual = GL_NOTEQUAL,
-    Always = GL_ALWAYS
-};
-
 struct StencilFunc {
     CompareFunc func;
     GLint ref;
     GLuint mask;
-    
+
     friend bool operator==(const StencilFunc& lhs, const StencilFunc& rhs);
     friend bool operator!=(const StencilFunc& lhs, const StencilFunc& rhs);
 
     std::tuple<GLenum, GLint, GLuint> toTuple() const;
 };
 
-enum class StencilAction : GLenum {
-    Keep = GL_KEEP,
-    Zero = GL_ZERO,
-    Replace = GL_REPLACE,
-    Incr = GL_INCR,
-    IncrWrap = GL_INCR_WRAP,
-    Decr = GL_DECR,
-    DecrWrap = GL_DECR_WRAP,
-    Invert = GL_INVERT
-};
-
-struct StencilOp {      
+struct StencilOp {
     StencilAction sfail;
     StencilAction dpfail;
     StencilAction dppass;
-    
+
     friend bool operator==(const StencilOp& lhs, const StencilOp& rhs);
     friend bool operator!=(const StencilOp& lhs, const StencilOp& rhs);
 
