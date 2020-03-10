@@ -80,6 +80,14 @@ public:
     using std::runtime_error::runtime_error;
 };
 
+class ShaderFileNotFound : public std::runtime_error {
+public:
+    ShaderFileNotFound(const fs::path& path)
+        : std::runtime_error("Shader file not found: " + path.string())
+    {
+    }
+};
+
 struct ProgramInfo : public ObjectInfo {
     static GLuint create();
     static void destroy(GLuint handle);
@@ -151,7 +159,12 @@ public:
     friend class ShaderPreprocessor;
 
     void addInclude(const std::string& name, std::string code);
+    void addIncludeFromFile(const fs::path& path);
+    void addIncludeFromFile(const fs::path& path, const std::string& name);
+
     void addShader(ShaderType type, const std::string& shader_code);
+    void addShaderFromFile(ShaderType type, const fs::path& path);
+
     void link(const std::vector<std::string>& attribute_order = {});
 
     GLsizei attributeStride() const;

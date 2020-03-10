@@ -151,6 +151,21 @@ void Program::addInclude(const std::string& name, std::string code)
     includes_.emplace(name, std::move(code));
 }
 
+void Program::addIncludeFromFile(const fs::path& path)
+{
+    addIncludeFromFile(path, path.filename().string());
+}
+
+void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
+{
+    std::ifstream file_stream(path);
+    if (!file_stream)
+        throw ShaderFileNotFound(path);
+    std::ostringstream string_stream;
+    string_stream << file_stream.rdbuf();
+    addInclude(name, string_stream.str());
+}
+
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
     GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
@@ -163,6 +178,16 @@ void Program::addShader(ShaderType type, const std::string& shader_code)
     glCompileShader(shader_handle);
     checkShaderStatusAndInfoLog(shader_handle, type);
     glAttachShader(handle(), shader_handle);
+}
+
+void Program::addShaderFromFile(ShaderType type, const fs::path& path)
+{
+    std::ifstream file_stream(path);
+    if (!file_stream)
+        throw ShaderFileNotFound(path);
+    std::ostringstream string_stream;
+    string_stream << file_stream.rdbuf();
+    addShader(type, string_stream.str());
 }
 
 void Program::link(const std::vector<std::string>& attribute_order)
