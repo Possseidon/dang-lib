@@ -10,6 +10,7 @@
 #include "BindingPoint.h"
 #include "Input.h"
 #include "Monitor.h"
+#include "State.h"
 
 namespace dang::gl
 {
@@ -175,6 +176,7 @@ public:
     static Window& fromUserPointer(GLFWwindow* window);
 
     GLFWwindow* handle() const;
+    State& state();
 
     const std::string& title() const;
     void setTitle(const std::string& title);
@@ -354,6 +356,7 @@ private:
     void updateSizeLimits() const;
 
     GLFWwindow* handle_ = nullptr;
+    State state_;
     std::string title_;
     dmath::ibounds2 size_limits_;
     dmath::ivec2 fullscreen_restore_pos_;

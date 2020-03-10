@@ -54,6 +54,12 @@
     <ClCompile Include="src\Renderable.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="src\State.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StateTypes.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -123,6 +129,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Constants.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\State.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\StateTypes.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

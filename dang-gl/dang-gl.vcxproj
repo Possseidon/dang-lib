@@ -191,6 +191,8 @@
     <ClInclude Include="include\dang-gl\VAO.h" />
     <ClInclude Include="include\dang-gl\Monitor.h" />
     <ClInclude Include="include\dang-gl\Renderable.h" />
+    <ClInclude Include="include\dang-gl\State.h" />
+    <ClInclude Include="include\dang-gl\StateTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
@@ -216,6 +218,8 @@
     <ClCompile Include="src\VBO.cpp" />
     <ClCompile Include="src\VAO.cpp" />
     <ClCompile Include="src\Transform.cpp" />
+    <ClCompile Include="src\State.cpp" />
+    <ClCompile Include="src\StateTypes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

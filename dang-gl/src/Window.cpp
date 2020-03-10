@@ -93,6 +93,11 @@ GLFWwindow* Window::handle() const
     return handle_;
 }
 
+State& Window::state()
+{
+    return state_;
+}
+
 const std::string& Window::title() const
 {
     return title_;

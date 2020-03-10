@@ -18,6 +18,7 @@
 #include <regex>
 #include <set>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <utility>
 #include <vector>
