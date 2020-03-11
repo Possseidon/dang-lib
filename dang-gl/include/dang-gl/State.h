@@ -199,7 +199,7 @@ public:
     detail::StateFlag<GL_COLOR_LOGIC_OP> color_logic_op{ *this };
     detail::StateFlag<GL_CULL_FACE> cull_face{ *this };
     detail::StateFlag<GL_DEBUG_OUTPUT> debug_output{ *this };
-    detail::StateFlag<GL_DEBUG_OUTPUT_SYNCHRONOUS> depth_output_synchronous{ *this };
+    detail::StateFlag<GL_DEBUG_OUTPUT_SYNCHRONOUS> debug_output_synchronous{ *this };
     detail::StateFlag<GL_DEPTH_CLAMP> depth_clamp{ *this };
     detail::StateFlag<GL_DEPTH_TEST> depth_test{ *this };
     detail::StateFlag<GL_DITHER> dither{ *this, true };

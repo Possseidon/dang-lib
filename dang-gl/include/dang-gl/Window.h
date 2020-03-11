@@ -60,6 +60,34 @@ enum class CursorMode {
     Disabled = GLFW_CURSOR_DISABLED
 };
 
+enum class GLDebugSource {
+    API = GL_DEBUG_SOURCE_API,
+    WindowSystem = GL_DEBUG_SOURCE_WINDOW_SYSTEM,
+    ShaderCompiler = GL_DEBUG_SOURCE_SHADER_COMPILER,
+    ThirdParty = GL_DEBUG_SOURCE_THIRD_PARTY,
+    Application = GL_DEBUG_SOURCE_APPLICATION,
+    Other = GL_DEBUG_SOURCE_OTHER
+};
+
+enum class GLDebugType {
+    Error = GL_DEBUG_TYPE_ERROR,
+    DeprecatedBehaviour = GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR,
+    UndefinedBehaviour = GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR,
+    Portability = GL_DEBUG_TYPE_PORTABILITY,
+    Performance = GL_DEBUG_TYPE_PERFORMANCE,
+    Other = GL_DEBUG_TYPE_OTHER,
+    Marker = GL_DEBUG_TYPE_MARKER,
+    PushGroup = GL_DEBUG_TYPE_PUSH_GROUP,
+    PopGroup = GL_DEBUG_TYPE_POP_GROUP
+};
+
+enum class GLDebugSeverity {
+    dmsNotification = GL_DEBUG_SEVERITY_NOTIFICATION,
+    dmsLow = GL_DEBUG_SEVERITY_LOW,
+    dmsMedium = GL_DEBUG_SEVERITY_MEDIUM,
+    dmsHigh = GL_DEBUG_SEVERITY_HIGH
+};
+
 struct WindowInfo {
     GLFWwindow* createWindow() const;
 
@@ -163,12 +191,21 @@ public:
         ModifierKeys mods;
     };
 
+    struct GLDebugMessageInfo : EventInfoBase {
+        GLDebugSource source;
+        GLDebugType type;
+        GLuint id;
+        GLDebugSeverity severity;
+        std::string message;
+    };
+
     using Event = dutils::Event<Window&>;
     using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
     using ScrollEvent = dutils::Event<ScrollInfo>;
     using DropPathsEvent = dutils::Event<DropPathsInfo>;
     using KeyEvent = dutils::Event<KeyInfo>;
     using ButtonEvent = dutils::Event<ButtonInfo>;
+    using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
 
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
@@ -331,6 +368,8 @@ public:
     ButtonEvent onButton;
     ScrollEvent onScroll;
 
+    GLDebugMessageEvent onGLDebugMessage;
+
 private:
     void registerCallbacks();
 
@@ -351,6 +390,8 @@ private:
     static void windowPosCallback(GLFWwindow* window_handle, int xpos, int ypos);
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
+
+    static void debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
     void updateDeltaTime();
     void updateSizeLimits() const;
