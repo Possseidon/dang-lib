@@ -21,6 +21,18 @@ struct VectorBase : protected std::array<T, Dim> {
     /// <summary>Initializes all values with the given std::array.</summary>
     constexpr VectorBase(Base values) : Base(values) {}
 
+    /// <summary>Converts the vector back into its underlying array type.</summary>
+    constexpr Base& asArray()
+    {
+        return *this;
+    }
+
+    /// <summary>Converts the vector back into its underlying array type.</summary>
+    constexpr const Base& asArray() const
+    {
+        return *this;
+    }
+
     using Base::operator[];
 
     /// <summary>Returns the sum of all components.</summary>
