@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-math/vector.h"
+
 #include "StateTypes.h"
 
 namespace dang::gl
@@ -126,6 +128,24 @@ protected:
     }
 };
 
+template <auto Func, typename T, std::size_t Dim>
+class StateVector : public StateProperty<dmath::Vector<T, Dim>> {
+public:
+    using StateProperty<dmath::Vector<T, Dim>>::StateProperty;
+
+    StateVector& operator=(const dmath::Vector<T, Dim>& value)
+    {
+        StateProperty<dmath::Vector<T, Dim>>::operator=(value);
+        return *this;
+    }
+
+protected:
+    void update() override
+    {
+        std::apply(*Func, (*this)->asArray());
+    }
+};
+
 class StateBackupBase {
 public:
     virtual ~StateBackupBase() = 0;
@@ -214,6 +234,10 @@ public:
     detail::StateFunc<&glScissor, Scissor> scissor{ *this, { { 0, 0 } } }; // TODO: Set to window size
     detail::StateFunc<&glStencilFunc, StencilFunc> stencil_func{ *this, { CompareFunc::Always, 0, GLuint(-1) } };
     detail::StateFunc<&glStencilOp, StencilOp> stencil_op{ *this, { StencilAction::Keep, StencilAction::Keep, StencilAction::Keep } };
+
+    detail::StateVector<&glClearColor, GLfloat, 4> clear_color{ *this, { 0.0f, 0.0f, 0.0f, 0.0f } };
+    detail::StateFunc<&glClearDepth, GLfloat> clear_depth{ *this, 0.0f };
+    detail::StateFunc<&glClearStencil, GLint> clear_stencil{ *this, 0 };
 
 private:
     template <typename T>
