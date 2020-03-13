@@ -391,7 +391,7 @@ private:
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
 
-    static void debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+    static void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
     void updateDeltaTime();
     void updateSizeLimits() const;
