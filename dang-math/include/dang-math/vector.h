@@ -320,7 +320,7 @@ struct Vector<T, 1> : public detail::VectorBase<T, 1> {
     /// <summary>Initializes the values with zero.</summary>
     constexpr Vector() = default;
     /// <summary>Initializes the value with the given std::array.</summary>
-    constexpr Vector(std::array<T, 1> values) : detail::VectorBase(values) {}
+    constexpr Vector(std::array<T, 1> values) : detail::VectorBase<T, 1>(values) {}
     /// <summary>Initializes the value with the given value.</summary>
     constexpr Vector(T x) : detail::VectorBase<T, 1>({ x }) {}
 

@@ -49,8 +49,14 @@ struct Bounds;
 /// This results in better caching for the common use-case of iterating an array[x][y][z]
 /// </remarks>
 template <typename T, std::size_t Dim>
-struct BoundsIterator : public std::iterator<std::forward_iterator_tag, Vector<T, Dim>> {
+struct BoundsIterator {
     static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
+
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = Vector<T, Dim>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = Vector<T, Dim>*;
+    using reference = Vector<T, Dim>&;
 
     constexpr BoundsIterator() = default;
 
@@ -177,7 +183,7 @@ struct Bounds {
     /// <remarks>Comparison is exclusive for both low and high.</remarks>
     constexpr bool containsExclusive(const Vector<T, Dim>& vector) const
     {
-        return vector > low&& vector < high;
+        return vector > low && vector < high;
     }
 
     /// <summary>Clamps the given bounds, resulting in an intersection of both bounds.</summary>
