@@ -142,7 +142,7 @@ public:
 protected:
     void update() override
     {
-        std::apply(*Func, (*this)->asArray());
+        std::apply(*Func, **this);
     }
 };
 

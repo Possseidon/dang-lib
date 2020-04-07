@@ -5,40 +5,54 @@
 namespace dang::math
 {
 
+/// <summary>A vector of the templated type and dimension, using std::array as base.</summary>
 template <typename T, std::size_t Dim>
-struct Vector;
-
-namespace detail
-{
-
-/// <summary>Used as a base for Vector, which does not yet contain any swizzles.</summary>
-template <typename T, std::size_t Dim>
-struct VectorBase : protected std::array<T, Dim> {
-    using Base = std::array<T, Dim>;
-
-    /// <summary>Initializes all values with zero.</summary>
-    constexpr VectorBase() : Base{} {}
-    /// <summary>Initializes all values with the given std::array.</summary>
-    constexpr VectorBase(Base values) : Base(values) {}
-
-    /// <summary>Converts the vector back into its underlying array type.</summary>
-    constexpr Base& asArray()
+struct Vector : std::array<T, Dim> {
+    /// <summary>Initializes all values with default values.</summary>
+    constexpr Vector()
+        : std::array<T, Dim>{}
     {
-        return *this;
     }
 
-    /// <summary>Converts the vector back into its underlying array type.</summary>
-    constexpr const Base& asArray() const
+    /// <summary>Initializes all values with the given value.</summary>
+    constexpr Vector(T value)
     {
-        return *this;
+        for (std::size_t i = 0; i < Dim; i++)
+            (*this)[i] = value;
     }
 
-    using Base::operator[];
+    /// <summary>Initializes x and y with the given values.</summary>
+    template <typename = std::enable_if_t<Dim == 2>>
+    constexpr Vector(T x, T y)
+        : std::array<T, Dim>{ x, y }
+    {
+    }
+
+    /// <summary>Initializes x, y and z with the given values.</summary>
+    template <typename = std::enable_if_t<Dim == 3>>
+    constexpr Vector(T x, T y, T z)
+        : std::array<T, Dim>{ x, y, z }
+    {
+    }
+
+    /// <summary>Initializes x, y, z and optionally w with the given values.</summary>
+    template <typename = std::enable_if_t<Dim == 4>>
+    constexpr Vector(T x, T y, T z, T w = {})
+        : std::array<T, Dim>{ x, y, z, w }
+    {
+    }
+
+    /// <summary>Converts a three-dimensional into a four-dimensional vector with the given value for w.</summary>
+    template <typename = std::enable_if_t<Dim == 4>>
+    constexpr Vector(Vector<T, 3> vector, T w)
+        : std::array<T, Dim>{ vector[0], vector[1], vector[2], w }
+    {
+    }
 
     /// <summary>Returns the sum of all components.</summary>
     constexpr T sum() const
     {
-        T result = T();
+        T result{};
         for (std::size_t i = 0; i < Dim; i++)
             result += (*this)[i];
         return result;
@@ -47,13 +61,19 @@ struct VectorBase : protected std::array<T, Dim> {
     /// <summary>Returns the dot-product with the given vector.</summary>
     constexpr T dot(const Vector<T, Dim>& other) const
     {
-        return ((*this) * other).sum();
+        T result{};
+        for (std::size_t i = 0; i < Dim; i++)
+            result += (*this)[i] * other[i];
+        return result;
     }
 
     /// <summary>Returns the dot-product with the vector itself.</summary>
     constexpr T sqrdot() const
     {
-        return ((*this) * (*this)).sum();
+        T result{};
+        for (std::size_t i = 0; i < Dim; i++)
+            result += (*this)[i] * (*this)[i];
+        return result;
     }
 
     /// <summary>Returns the length of the vector.</summary>
@@ -103,45 +123,45 @@ struct VectorBase : protected std::array<T, Dim> {
     /// <summary>Converts every component from radians into degrees.</summary>
     constexpr Vector<T, Dim> radToDeg() const
     {
-        return unary(&dmath::radToDeg<T>);
+        return unaryOp(&dmath::radToDeg<T>);
     }
 
     /// <summary>Converts every component from degrees into radians.</summary>
     constexpr Vector<T, Dim> degToRad() const
     {
-        return unary(&dmath::degToRad<T>);
+        return unaryOp(&dmath::degToRad<T>);
     }
 
     /// <summary>Returns the vector with each component being positive.</summary>
     constexpr Vector<T, Dim> abs() const
     {
-        return unary([](T a) { return a < T(0) ? -a : a; });
+        return unaryOp([](T a) { return a < T(0) ? -a : a; });
     }
 
     /// <summary>Returns the vector with each component rounded down.</summary>
     constexpr Vector<T, Dim> floor() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::floor requires a floating point type");
-        return unary([](T a) { return std::floor(a); });
+        return unaryOp([](T a) { return std::floor(a); });
     }
 
     /// <summary>Returns the vector with each component rounded up.</summary>
     constexpr Vector<T, Dim> ceil() const
     {
         static_assert(std::is_floating_point_v<T>, "vec::ceil requires a floating point type");
-        return unary([](T a) { return std::ceil(a); });
+        return unaryOp([](T a) { return std::ceil(a); });
     }
 
     /// <summary>Returns a vector, only taking the smaller components of both vectors.</summary>
     constexpr Vector<T, Dim> min(const Vector<T, Dim>& other) const
     {
-        return binary(other, [](T a, T b) { return a < b ? a : b; });
+        return binaryOp(other, [](T a, T b) { return a < b ? a : b; });
     }
 
     /// <summary>Returns a vector, only taking the larger components of both vectors.</summary>
     constexpr Vector<T, Dim> max(const Vector<T, Dim>& other) const
     {
-        return binary(other, [](T a, T b) { return a > b ? a : b; });
+        return binaryOp(other, [](T a, T b) { return a > b ? a : b; });
     }
 
     /// <summary>Reflects the vector on the given plane normal.</summary>
@@ -159,44 +179,176 @@ struct VectorBase : protected std::array<T, Dim> {
     /// <summary>Returns the vector with each component negated.</summary>
     constexpr Vector<T, Dim> operator-() const
     {
-        return unary([](T a) { return -a; });
+        return unaryOp(std::negate<T>{});
     }
 
-#define DMATH_VECTOR_OPERATION(op) \
-    friend constexpr Vector<T, Dim> operator op(Vector<T, Dim> lhs, const Vector<T, Dim>& rhs) \
-    { return lhs op ## = rhs; } \
-    friend constexpr Vector<T, Dim>& operator op ## =(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
-    { return assignment(lhs, rhs, [](T& a, T b) { a op ## = b; }); }
+    /// <summary>Component-wise addition of two vectors.</summary>
+    friend constexpr Vector<T, Dim> operator+(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.binaryOp(rhs, std::plus<T>{});
+    }
 
-    /// <summary>Performs component-wise addition.</summary>
-    DMATH_VECTOR_OPERATION(+);
-    /// <summary>Performs component-wise subtraction.</summary>
-    DMATH_VECTOR_OPERATION(-);
-    /// <summary>Performs component-wise multiplication.</summary>
-    DMATH_VECTOR_OPERATION(*);
-    /// <summary>Performs component-wise division.</summary>
-    DMATH_VECTOR_OPERATION(/ );
+    /// <summary>Component-wise addition of two vectors.</summary>
+    friend constexpr Vector<T, Dim>& operator+=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.assignmentOp(rhs, std::plus<T>{});
+    }
 
-#undef DMATH_VECTOR_OPERATION
+    /// <summary>Component-wise subtraction of two vectors.</summary>
+    friend constexpr Vector<T, Dim> operator-(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.binaryOp(rhs, std::minus<T>{});
+    }
 
-#define DMATH_VECTOR_COMPARE(merge, op) \
-    friend constexpr bool operator op(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs) \
-    { return lhs.merge(rhs, [](T a, T b) { return a op b; }); }
+    /// <summary>Component-wise subtraction of two vectors.</summary>
+    friend constexpr Vector<T, Dim>& operator-=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.assignmentOp(rhs, std::minus<T>{});
+    }
 
-    /// <summary>Returns true if all components are equal.</summary>
-    DMATH_VECTOR_COMPARE(all, == );
-    /// <summary>Returns true if any components are not equal.</summary>
-    DMATH_VECTOR_COMPARE(any, != );
-    /// <summary>Returns true if all components are less than the other vector.</summary>
-    DMATH_VECTOR_COMPARE(all, < );
-    /// <summary>Returns true if all components are less or equal than the other vector.</summary>
-    DMATH_VECTOR_COMPARE(all, <= );
-    /// <summary>Returns true if all components are greater than the other vector.</summary>
-    DMATH_VECTOR_COMPARE(all, > );
-    /// <summary>Returns true if all components are greater of equal than the other vector.</summary>
-    DMATH_VECTOR_COMPARE(all, >= );
+    /// <summary>Component-wise multiplication of two vectors.</summary>
+    friend constexpr Vector<T, Dim> operator*(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.binaryOp(rhs, std::multiplies<T>{});
+    }
 
-#undef DMATH_VECTOR_COMPARE
+    /// <summary>Component-wise multiplication of two vectors.</summary>
+    friend constexpr Vector<T, Dim>& operator*=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.assignmentOp(rhs, std::multiplies<T>{});
+    }
+
+    /// <summary>Component-wise division of two vectors.</summary>
+    friend constexpr Vector<T, Dim> operator/(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.binaryOp(rhs, std::divides<T>{});
+    }
+
+    /// <summary>Component-wise division of two vectors.</summary>
+    friend constexpr Vector<T, Dim>& operator/=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.assignmentOp(rhs, std::divides<T>{});
+    }
+
+    /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
+    friend constexpr bool operator==(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.all(std::equal_to<T>{}, rhs);
+    }
+
+    /// <summary>Returns true, if, between both vectors, any components are not equal.</summary>
+    friend constexpr bool operator!=(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    {
+        return lhs.any(std::not_equal_to<T>{}, rhs);
+    }
+
+    /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
+    constexpr bool allEqualTo(const Vector<T, Dim>& other) const
+    {
+        return all(std::equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if, between both vectors, any components are equal.</summary>
+    constexpr bool anyEqualTo(const Vector<T, Dim>& other) const
+    {
+        return any(std::equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if, between both vectors, no components are equal.</summary>
+    constexpr bool noneEqualTo(const Vector<T, Dim>& other) const
+    {
+        return none(std::equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if, between both vectors, all components differ.</summary>
+    constexpr bool allNotEqualTo(const Vector<T, Dim>& other) const
+    {
+        return all(std::not_equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if, between both vectors, any components differ.</summary>
+    constexpr bool anyNotEqualTo(const Vector<T, Dim>& other) const
+    {
+        return any(std::not_equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if, between both vectors, no components differ.</summary>
+    constexpr bool noneNotEqualTo(const Vector<T, Dim>& other) const
+    {
+        return none(std::not_equal_to<T>{}, other);
+    }
+
+    /// <summary>Returns true, if all components are less than the components of the given vector.</summary>
+    constexpr bool allLess(const Vector<T, Dim>& other) const
+    {
+        return all(std::less<T>{}, other);
+    }
+
+    /// <summary>Returns true, if any component is less than the components of the given vector.</summary>
+    constexpr bool anyLess(const Vector<T, Dim>& other) const
+    {
+        return any(std::less<T>{}, other);
+    }
+
+    /// <summary>Returns true, if no component is less than the components of the given vector.</summary>
+    constexpr bool noneLess(const Vector<T, Dim>& other) const
+    {
+        return none(std::less<T>{}, other);
+    }
+
+    /// <summary>Returns true, if all components are less than or equal to the components of the given vector.</summary>
+    constexpr bool allLessEqual(const Vector<T, Dim>& other) const
+    {
+        return all(std::less_equal<T>{}, other);
+    }
+
+    /// <summary>Returns true, if any component is less than or equal to the components of the given vector.</summary>
+    constexpr bool anyLessEqual(const Vector<T, Dim>& other) const
+    {
+        return any(std::less_equal<T>{}, other);
+    }
+
+    /// <summary>Returns true, if no component is less than or equal to the components of the given vector.</summary>
+    constexpr bool noneLessEqual(const Vector<T, Dim>& other) const
+    {
+        return none(std::less_equal<T>{}, other);
+    }
+
+    /// <summary>Returns true, if all components are greater than the components of the given vector.</summary>
+    constexpr bool allGreater(const Vector<T, Dim>& other) const
+    {
+        return all(std::greater<T>{}, other);
+    }
+
+    /// <summary>Returns true, if any component is greater than the components of the given vector.</summary>
+    constexpr bool anyGreater(const Vector<T, Dim>& other) const
+    {
+        return any(std::greater<T>{}, other);
+    }
+
+    /// <summary>Returns true, if no component is greater than the components of the given vector.</summary>
+    constexpr bool noneGreater(const Vector<T, Dim>& other) const
+    {
+        return none(std::greater<T>{}, other);
+    }
+
+    /// <summary>Returns true, if all components are greater than or equal to the components of the given vector.</summary>
+    constexpr bool allGreaterEqual(const Vector<T, Dim>& other) const
+    {
+        return all(std::greater_equal<T>{}, other);
+    }
+
+    /// <summary>Returns true, if any component is greater than or equal to the components of the given vector.</summary>
+    constexpr bool anyGreaterEqual(const Vector<T, Dim>& other) const
+    {
+        return any(std::greater_equal<T>{}, other);
+    }
+
+    /// <summary>Returns true, if no component is greater than or equal to the components of the given vector.</summary>
+    constexpr bool noneGreaterEqual(const Vector<T, Dim>& other) const
+    {
+        return none(std::greater_equal<T>{}, other);
+    }
 
     /// <summary>Allows explicit casting between different types.</summary>
     template <typename TTarget>
@@ -209,151 +361,155 @@ struct VectorBase : protected std::array<T, Dim> {
     }
 
     /// <summary>Used for tuple-unpacking.</summary>
-    template <size_t Index>
+    template <std::size_t Index>
     constexpr T& get() noexcept
     {
         return std::get<Index>(*this);
     }
 
     /// <summary>Used for tuple-unpacking.</summary>
-    template <size_t Index>
+    template <std::size_t Index>
     constexpr const T& get() const noexcept
     {
         return std::get<Index>(*this);
     }
 
     /// <summary>Returns a swizzle of the given components.</summary>
-    template <size_t... Indices>
+    template <std::size_t... Indices>
     constexpr Vector<T, sizeof...(Indices)> swizzle() const
     {
         Vector<T, sizeof...(Indices)> result;
-        size_t resultIndex = 0;
-        for (size_t index : std::array{ Indices... })
+        std::size_t resultIndex = 0;
+        for (std::size_t index : std::array{ Indices... })
             result[resultIndex++] = (*this)[index];
         return result;
     }
 
     /// <summary>Sets a swizzle for the given components.</summary>
-    template <size_t... Indices>
+    template <std::size_t... Indices>
     constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
     {
-        size_t otherIndex = 0;
-        for (size_t index : std::array<std::size_t, sizeof...(Indices)>{ Indices... })
+        std::size_t otherIndex = 0;
+        for (std::size_t index : std::array{ Indices... })
             (*this)[index] = vector[otherIndex++];
     }
 
-    using Base::begin;
-    using Base::end;
-    using Base::cbegin;
-    using Base::cend;
-
-private:
-    template <typename Op>
-    static constexpr Vector<T, Dim>& assignment(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs, const Op& op)
-    {
-        for (std::size_t i = 0; i < Dim; i++)
-            op(lhs[i], rhs[i]);
-        return lhs;
-    }
-
-    template <typename Op>
-    constexpr Vector<T, Dim> binary(const Vector<T, Dim>& other, const Op& op) const
+    /// <summary>Performs a unary operation on each component and returns the result.</summary>
+    template <typename TOperation>
+    constexpr Vector<T, Dim> unaryOp(TOperation operation) const
     {
         Vector<T, Dim> result;
         for (std::size_t i = 0; i < Dim; i++)
-            result[i] = op((*this)[i], other[i]);
+            result[i] = operation((*this)[i]);
         return result;
     }
 
-    template <typename Op>
-    constexpr Vector<T, Dim> unary(const Op& op) const
+    /// <summary>Performs a binary operation with another vector and returns the result.</summary>
+    template <typename TOperation>
+    constexpr Vector<T, Dim> binaryOp(const Vector<T, Dim>& other, TOperation operation) const
     {
         Vector<T, Dim> result;
         for (std::size_t i = 0; i < Dim; i++)
-            result[i] = op((*this)[i]);
+            result[i] = operation((*this)[i], other[i]);
         return result;
     }
 
-    template <typename Op>
-    constexpr bool all(const Vector<T, Dim>& other, const Op& op) const
-    {
-        bool result = true;
-        for (std::size_t i = 0; i < Dim; i++)
-            result = result && op((*this)[i], other[i]);
-        return result;
-    }
-
-    template <typename Op>
-    constexpr bool any(const Vector<T, Dim>& other, const Op& op) const
-    {
-        bool result = false;
-        for (std::size_t i = 0; i < Dim; i++)
-            result = result || op((*this)[i], other[i]);
-        return result;
-    }
-};
-
-}
-
-/// <summary>A generic vector of any dimension.</summary>
-template <typename T, std::size_t Dim>
-struct Vector : public detail::VectorBase<T, Dim> {
-    /// <summary>Initializes all values with zero.</summary>
-    constexpr Vector() = default;
-    /// <summary>Initializes all values with the given std::array.</summary>
-    constexpr Vector(std::array<T, Dim> values) : detail::VectorBase<T, Dim>(values) {}
-    /// <summary>Initializes all values with the given value.</summary>
-    constexpr Vector(T value)
+    /// <summary>Performs a binary operation with another vector and assigns the result to itself and returns it.</summary>
+    template <typename TOperation>
+    constexpr Vector<T, Dim>& assignmentOp(const Vector<T, Dim>& other, TOperation operation)
     {
         for (std::size_t i = 0; i < Dim; i++)
-            (*this)[i] = value;
+            (*this)[i] = operation((*this)[i], other[i]);
+        return *this;
     }
-};
 
-#define DMATH_DEFINE_SWIZZLE(name, ...) \
-constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
-inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
+    /// <summary>Returns, wether all components satisfy a given predicate.</summary>
+    template <typename TPredicate, typename... TOthers>
+    constexpr bool all(TPredicate predicate, const TOthers&... others) const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if (!predicate((*this)[i], others[i]...))
+                return false;
+        return true;
+    }
 
-/// <summary>A one-dimensional vector with swizzle support for x and implicit conversion to the base type.</summary>
-template <typename T>
-struct Vector<T, 1> : public detail::VectorBase<T, 1> {
-    /// <summary>Initializes the values with zero.</summary>
-    constexpr Vector() = default;
-    /// <summary>Initializes the value with the given std::array.</summary>
-    constexpr Vector(std::array<T, 1> values) : detail::VectorBase<T, 1>(values) {}
-    /// <summary>Initializes the value with the given value.</summary>
-    constexpr Vector(T x) : detail::VectorBase<T, 1>({ x }) {}
+    /// <summary>Returns, wether any component satisfies a given predicate.</summary>
+    template <typename TPredicate, typename... TOthers>
+    constexpr bool any(TPredicate predicate, const TOthers&... others) const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if (predicate((*this)[i], others[i]...))
+                return true;
+        return false;
+    }
 
-    constexpr T& x() { return std::get<0>(*this); }
-    constexpr T x() const { return std::get<0>(*this); }
+    /// <summary>Returns, wether none of the components satisfy a given predicate.</summary>
+    template <typename TPredicate, typename... TOthers>
+    constexpr bool none(TPredicate predicate, const TOthers&... others) const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if (predicate((*this)[i], others[i]...))
+                return false;
+        return true;
+    }
 
-    constexpr operator T& () { return std::get<0>(*this); }
-    constexpr operator T() const { return std::get<0>(*this); }
-};
+    // --- Vector<T, 1> ---  
 
-/// <summary>A two-dimensional vector with full swizzle support for x and y.</summary>
-template <typename T>
-struct Vector<T, 2> : public detail::VectorBase<T, 2> {
-    /// <summary>Initializes all values with zero.</summary>
-    constexpr Vector() = default;
-    /// <summary>Initializes all values with the given std::array.</summary>
-    constexpr Vector(std::array<T, 2> values) : detail::VectorBase<T, 2>(values) {}
-    /// <summary>Initializes all values with the given value.</summary>
-    constexpr Vector(T value) : detail::VectorBase<T, 2>({ value, value }) {}
-    /// <summary>Initializes x and y with the given values.</summary>
-    constexpr Vector(T x, T y) : detail::VectorBase<T, 2>({ x, y }) {}
+    /// <summary>The x-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
+    constexpr T& x()
+    {
+        return std::get<0>(*this);
+    }
+
+    /// <summary>The x-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
+    constexpr T x() const
+    {
+        return std::get<0>(*this);
+    }
+
+    /// <summary>Allows for implicit conversion between a one-dimensional vector and its base type.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    constexpr operator T& ()
+    {
+        return std::get<0>(*this);
+    }
+
+    /// <summary>Allows for implicit conversion between a one-dimensional vector and its base type.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    constexpr operator T() const
+    {
+        return std::get<0>(*this);
+    }
+
+    // --- Vector<T, 2> ---
+
+    /// <summary>The y-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 2 && Dim <= 4>>
+    constexpr T& y()
+    {
+        return std::get<1>(*this);
+    }
+
+    /// <summary>The y-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 2 && Dim <= 4>>
+    constexpr T y() const
+    {
+        return std::get<1>(*this);
+    }
 
     /// <summary>Creates a vector from the given slope, which is NOT normalized.</summary>
     /// <remarks>The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.</remarks>
+    template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromSlope(std::optional<T> slope)
     {
-        if (slope)
-            return { 1, *slope };
-        return { 0, 1 };
+        return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
     }
 
     /// <summary>Creates a normalized vector of the given angle in radians.</summary>
     /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
+    template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromAngleRad(T radians)
     {
         return { std::cos(radians), std::sin(radians) };
@@ -361,20 +517,14 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
 
     /// <summary>Creates a normalized vector of the given angle in degrees.</summary>
     /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
+    template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromAngle(T degrees)
     {
         return fromAngleRad(degToRad(degrees));
     }
 
-    constexpr T& x() { return std::get<0>(*this); }
-    constexpr T x() const { return std::get<0>(*this); }
-    constexpr T& y() { return std::get<1>(*this); }
-    constexpr T y() const { return std::get<1>(*this); }
-
-    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
-    DMATH_DEFINE_SWIZZLE(yx, 1, 0);
-
     /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>
+    template <typename = std::enable_if_t<Dim == 2>>
     constexpr Vector<T, 2> cross() const
     {
         return { -y(), x() };
@@ -382,12 +532,14 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
 
     /// <summary>Returns the two-dimensional cross-product with the given vector.</summary>
     /// <remarks>Equivalent to <c>x1 * y2 - y1 * x2</c></remarks>
+    template <typename = std::enable_if_t<Dim == 2>>
     constexpr T cross(const Vector<T, 2>& other) const
     {
         return x() * other.y() - y() * other.x();
     }
 
     /// <summary>Returns the slope of the vector or std::nullopt if infinite.</summary>
+    template <typename = std::enable_if_t<Dim == 2>>
     constexpr std::optional<T> slope() const
     {
         static_assert(std::is_floating_point_v<T>, "vec2::slope requires a floating point type");
@@ -395,76 +547,55 @@ struct Vector<T, 2> : public detail::VectorBase<T, 2> {
             return y() / x();
         return std::nullopt;
     }
-};
 
-/// <summary>A three-dimensional vector with full swizzle support for x, y and z.</summary>
-template <typename T>
-struct Vector<T, 3> : public detail::VectorBase<T, 3> {
-    /// <summary>Initializes all values with zero.</summary>
-    constexpr Vector() = default;
-    /// <summary>Initializes all values with the given std::array.</summary>
-    constexpr Vector(std::array<T, 3> values) : detail::VectorBase<T, 3>(values) {}
-    /// <summary>Initializes all values with the given value.</summary>
-    constexpr Vector(T value) : detail::VectorBase<T, 3>({ value, value, value }) {}
-    /// <summary>Initializes x, y and z with the given values.</summary>
-    constexpr Vector(T x, T y, T z) : detail::VectorBase<T, 3>({ x, y, z }) {}
+    // --- Vector<T, 3> ---
 
-    constexpr T& x() { return std::get<0>(*this); }
-    constexpr T x() const { return std::get<0>(*this); }
-    constexpr T& y() { return std::get<1>(*this); }
-    constexpr T y() const { return std::get<1>(*this); }
-    constexpr T& z() { return std::get<2>(*this); }
-    constexpr T z() const { return std::get<2>(*this); }
+    /// <summary>The z-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 3 && Dim <= 4>>
+    constexpr T& z()
+    {
+        return std::get<2>(*this);
+    }
 
-    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
-    DMATH_DEFINE_SWIZZLE(xz, 0, 2);
-    DMATH_DEFINE_SWIZZLE(yx, 1, 0);
-    DMATH_DEFINE_SWIZZLE(yz, 1, 2);
-    DMATH_DEFINE_SWIZZLE(zx, 2, 0);
-    DMATH_DEFINE_SWIZZLE(zy, 2, 1);
-
-    DMATH_DEFINE_SWIZZLE(xyz, 0, 1, 2);
-    DMATH_DEFINE_SWIZZLE(xzy, 0, 2, 1);
-    DMATH_DEFINE_SWIZZLE(yxz, 1, 0, 2);
-    DMATH_DEFINE_SWIZZLE(yzx, 1, 2, 0);
-    DMATH_DEFINE_SWIZZLE(zxy, 2, 0, 1);
-    DMATH_DEFINE_SWIZZLE(zyx, 2, 1, 0);
+    /// <summary>The z-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim >= 3 && Dim <= 4>>
+    constexpr T z() const
+    {
+        return std::get<2>(*this);
+    }
 
     /// <summary>Returns the cross-product with the given vector.</summary>
+    template <typename = std::enable_if_t<Dim == 3>>
     constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
     {
         return { (*this)[1] * other[2] - (*this)[2] * other[1],
                  (*this)[2] * other[0] - (*this)[0] * other[2],
                  (*this)[0] * other[1] - (*this)[1] * other[0] };
     }
-};
 
-/// <summary>A four-dimensional vector with full swizzle support for x, y, z and w.</summary>
-template <typename T>
-struct Vector<T, 4> : public detail::VectorBase<T, 4> {
-    /// <summary>Initializes all values with zero.</summary>
-    constexpr Vector() = default;
-    /// <summary>Initializes all values with the given std::array.</summary>
-    constexpr Vector(std::array<T, 4> values) : detail::VectorBase<T, 4>(values) {}
-    /// <summary>Initializes all values with the given value.</summary>
-    constexpr Vector(T value) : detail::VectorBase<T, 4>({ value, value, value, value }) {}
-    /// <summary>Initializes x, y and z with the same given value and w separately.</summary>
-    constexpr Vector(T value, T w) : detail::VectorBase<T, 4>({ value, value, value, w }) {}
-    /// <summary>Initializes x, y and z with the given vector and w separately.</summary>
-    constexpr Vector(Vector<T, 3> vector, T w) : detail::VectorBase<T, 4>({ vector[0], vector[1], vector[2], w }) {}
-    /// <summary>Initializes x, y, z and w with the given values.</summary>
-    constexpr Vector(T x, T y, T z, T w) : detail::VectorBase<T, 4>({ x, y, z, w }) {}
+    // --- Vector<T, 4> ---
 
-    constexpr T& x() { return std::get<0>(*this); }
-    constexpr T x() const { return std::get<0>(*this); }
-    constexpr T& y() { return std::get<1>(*this); }
-    constexpr T y() const { return std::get<1>(*this); }
-    constexpr T& z() { return std::get<2>(*this); }
-    constexpr T z() const { return std::get<2>(*this); }
-    constexpr T& w() { return std::get<3>(*this); }
-    constexpr T w() const { return std::get<3>(*this); }
+    /// <summary>The w-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim == 4>>
+    constexpr T& w()
+    {
+        return std::get<3>(*this);
+    }
 
-    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
+    /// <summary>The w-component of the vector.</summary>
+    template <typename = std::enable_if_t<Dim == 4>>
+    constexpr T w() const
+    {
+        return std::get<3>(*this);
+    }
+
+    // --- Swizzles ---
+
+#define DMATH_DEFINE_SWIZZLE(name, ...) \
+constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
+inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
+
+    DMATH_DEFINE_SWIZZLE(xy, 0, 1); ;
     DMATH_DEFINE_SWIZZLE(xz, 0, 2);
     DMATH_DEFINE_SWIZZLE(xw, 0, 3);
     DMATH_DEFINE_SWIZZLE(yx, 1, 0);
@@ -520,9 +651,10 @@ struct Vector<T, 4> : public detail::VectorBase<T, 4> {
     DMATH_DEFINE_SWIZZLE(wzxy, 3, 2, 0, 1);
     DMATH_DEFINE_SWIZZLE(wxyz, 3, 0, 1, 2);
     DMATH_DEFINE_SWIZZLE(wxzy, 3, 0, 2, 1);
-};
 
 #undef DMATH_DEFINE_SWIZZLE
+
+};
 
 template <std::size_t Dim>
 using vec = Vector<float, Dim>;
@@ -577,7 +709,7 @@ struct std::tuple_size<Vector<T, Dim>> {
     static constexpr int value = Dim;
 };
 
-template <typename T, std::size_t Dim, size_t Index>
+template <typename T, std::size_t Dim, std::size_t Index>
 struct std::tuple_element<Index, Vector<T, Dim>> {
     using type = T;
 };

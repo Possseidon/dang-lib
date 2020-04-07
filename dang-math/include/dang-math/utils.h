@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <cstddef>
+#include <functional>
 #include <optional>
 
 namespace dang::math
