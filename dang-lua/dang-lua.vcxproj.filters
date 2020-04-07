@@ -36,6 +36,9 @@
     <ClInclude Include="include\dang-lua\Stack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-lua\Reference.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\State.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Stack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Reference.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

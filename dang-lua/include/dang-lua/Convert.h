@@ -3,7 +3,23 @@
 namespace dang::lua
 {
 
+template <typename... TBases>
+struct SubClassList {};
+
+template <typename T>
+struct SubClasses : SubClassList<> {};
+
+template <typename T>
+constexpr SubClasses<T> SubClassesOf{};
+
+template <typename T>
+const char* ClassName = typeid(T).name();
+
+template <typename T>
+const char* ClassNameRef = typeid(T*).name();
+
 /// <summary>Returns empty index and metatable.</summary>
+template <typename T>
 struct DefaultClassInfo {
     constexpr std::array<luaL_Reg, 0> table()
     {
@@ -18,15 +34,15 @@ struct DefaultClassInfo {
 
 /// <summary>Provides class info for index and metatable of a wrapped class.</summary>
 template <typename T>
-struct ClassInfo : DefaultClassInfo {};
+struct ClassInfo : DefaultClassInfo<T> {};
 
 /// <summary>Shorthand to access the index table of a wrapped class.</summary>
 template <typename T>
-constexpr auto ClassTable = ClassInfo<T>().table();
+const auto ClassTable = ClassInfo<T>().table();
 
 /// <summary>Shorthand to access the metatable of a wrapped class.</summary>
 template <typename T>
-constexpr auto ClassMetatable = ClassInfo<T>().metatable();
+const auto ClassMetatable = ClassInfo<T>().metatable();
 
 /// <summary>Provides an array of string names for a given enum to convert from and to lua.</summary>
 template <typename T>
@@ -48,7 +64,12 @@ void setfuncs(lua_State* L, const T& funcs)
 }
 
 /*
-Convert Protocol:
+
+--- Convert Protocol ---
+
+static constexpr std::optional<int> PushCount;
+    -> How many items are pushed by push, usually 1
+    -> Set to std::nullopt, if push returns how many items were pushed
 
 bool isExact(lua_State* L, int pos);
     -> Wether the given stack positions type matches exactly.
@@ -59,7 +80,7 @@ bool isValid(lua_State* L, int pos);
     -> lua_isT(L, pos)
 
 int push(lua_State* L, T value);
-    -> Pushes onto the stack the given value, returning how many items were pushed
+    -> Pushes the given value onto the stack, returning how many values actually got pushed
     -> lua_pushT(L, value)
 
 std::optional<T> at(lua_State* L, int pos);
@@ -72,28 +93,44 @@ T check(lua_State* L, int arg);
 
 */
 
+/// <summary>A lua class instance can either be its own value or reference an existing instance.</summary>
+enum class StoreType {
+    None,
+    Value,
+    Reference
+};
+
 /// <summary>Converts enums and instances of classes to and from lua as either value or reference.</summary>
 template <typename T>
 struct Convert {
     static_assert(dlua::EnumValues<T>[std::size(dlua::EnumValues<T>) - 1] == nullptr, "EnumValues is not null-terminated");
     static_assert(!std::is_enum_v<T> || std::size(dlua::EnumValues<T>) > 1, "EnumValues is empty");
 
-    /// <summary>A lua class instance can either be its own value or reference an existing instance.</summary>
-    enum class Type {
-        None,
-        Value,
-        Reference
-    };
+    static constexpr std::optional<int> PushCount = 1;
+
+    template <typename TFirst, typename... TRest>
+    static StoreType type(lua_State* L, int pos, SubClassList<TFirst, TRest...>)
+    {
+        auto result = Convert<TFirst>::type(L, pos);
+        if (result != StoreType::None)
+            return result;
+        return type<TRest...>(L, pos);
+    }
+
+    static StoreType type(lua_State* L, int, SubClassList<>)
+    {
+        return StoreType::None;
+    }
 
     /// <summary>Returns, wether a stack position is a value, reference or neither.</summary>
     template <typename = std::enable_if_t<std::is_class_v<T>>>
-    static Type type(lua_State* L, int pos)
+    static StoreType type(lua_State* L, int pos)
     {
-        if (luaL_testudata(L, pos, typeid(T).name()))
-            return Type::Value;
-        if (luaL_testudata(L, pos, typeid(T*).name()))
-            return Type::Reference;
-        return Type::None;
+        if (luaL_testudata(L, pos, ClassName<T>))
+            return StoreType::Value;
+        if (luaL_testudata(L, pos, ClassNameRef<T>))
+            return StoreType::Reference;
+        return type(L, pos, SubClassesOf<T>);
     }
 
     /// <summary>Finds the given string enum value or std::nullopt if not found.</summary>
@@ -110,7 +147,7 @@ struct Convert {
     static bool isExact(lua_State* L, int pos)
     {
         if constexpr (std::is_class_v<T>)
-            return type(L, pos) != Type::None;
+            return type(L, pos) != StoreType::None;
         else if constexpr (std::is_enum_v<T>) {
             return at(L, pos);
         }
@@ -124,16 +161,30 @@ struct Convert {
         return isExact(L, pos);
     }
 
+    template <typename TFirst, typename... TRest>
+    static auto at(lua_State* L, int pos, SubClassList<TFirst, TRest...>)
+        -> std::optional<std::reference_wrapper<T>>
+    {
+        auto result = Convert<TFirst>::at(L, pos);
+        return result ? result : at(L, pos, SubClassList<TRest...>{});
+    }
+
+    static auto at(lua_State*, int, SubClassList<>)
+        -> std::optional<std::reference_wrapper<T>>
+    {
+        return std::nullopt;
+    }
+
     /// <summary>Returns a reference to the value at the given stack position or std::nullopt on failure.</summary>
     static auto at(lua_State* L, int pos)
         -> std::optional<std::conditional_t<std::is_class_v<T>, std::reference_wrapper<T>, T>>
     {
         if constexpr (std::is_class_v<T>) {
-            if (void* pointer = luaL_testudata(L, pos, typeid(T*).name()))
-                return **static_cast<T**>(pointer);
-            if (void* value = luaL_testudata(L, pos, typeid(T).name()))
+            if (void* value = luaL_testudata(L, pos, ClassName<T>))
                 return *static_cast<T*>(value);
-            return std::nullopt;
+            if (void* pointer = luaL_testudata(L, pos, ClassNameRef<T>))
+                return **static_cast<T**>(pointer);
+            return at(L, pos, SubClassesOf<T>);
         }
         else if constexpr (std::is_enum_v<T>) {
             lua_pushvalue(L, pos);
@@ -150,10 +201,9 @@ struct Convert {
         -> std::conditional_t<std::is_class_v<T>, T&, T>
     {
         if constexpr (std::is_class_v<T>) {
-            if (void* test = luaL_testudata(L, arg, typeid(T*).name()))
-                return **static_cast<T**>(test);
-            void* test = luaL_checkudata(L, arg, typeid(T).name());
-            return *static_cast<T*>(test);
+            if (auto result = at(L, arg))
+                return *result;
+            throw luaL_checkudata(L, arg, ClassName<T>);
         }
         else if constexpr (std::is_enum_v<T>) {
             return static_cast<T>(luaL_checkoption(L, arg, nullptr, EnumValues<T>));
@@ -190,7 +240,7 @@ struct Convert {
     template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void pushValueMetatable(lua_State* L)
     {
-        if (luaL_newmetatable(L, typeid(T).name())) {
+        if (luaL_newmetatable(L, ClassName<T>)) {
             // luaL_setfuncs(L, ClassMetatable<T>, 0);
             detail::setfuncs(L, ClassMetatable<T>);
             lua_pushcfunction(L, cleanup);
@@ -213,7 +263,7 @@ struct Convert {
     template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void pushPointerMetatable(lua_State* L)
     {
-        if (luaL_newmetatable(L, typeid(T*).name())) {
+        if (luaL_newmetatable(L, ClassNameRef<T>)) {
             // luaL_setfuncs(L, ClassMetatable<T>, 0);
             detail::setfuncs(L, ClassMetatable<T>);
             pushValueMetatable(L);
@@ -238,7 +288,7 @@ struct Convert {
         new (userdata) T(std::forward<TArgs>(values)...);
         pushValueMetatable(L);
         lua_setmetatable(L, -2);
-        return 1;
+        return *PushCount;
     }
 
     /// <summary>Pushes a string for the given enum value on the stack.</summary>
@@ -246,7 +296,7 @@ struct Convert {
     static int push(lua_State* L, T value)
     {
         lua_pushstring(L, EnumValues<T>[static_cast<std::size_t>(value)]);
-        return 1;
+        return *PushCount;
     }
 
     /// <summary>Pushes a reference to the value onto the stack.</summary>
@@ -257,7 +307,7 @@ struct Convert {
         *userdata = &value;
         pushPointerMetatable(L);
         lua_setmetatable(L, -2);
-        return 1;
+        return *PushCount;
     }
 };
 
@@ -270,9 +320,17 @@ struct Convert<T*> : Convert<T> {};
 template <typename T>
 struct Convert<const T> : Convert<T> {};
 
+/// <summary>Converts nothing.</summary>
+template <>
+struct Convert<void> {
+    static constexpr std::optional<int> PushCount = 0;
+};
+
 /// <summary>Allows for conversion between lua boolean and C++ bool.</summary>
 template <>
 struct Convert<bool> {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Returns, wether the given stack position contains an actual boolean.</summary>
     static bool isExact(lua_State* L, int pos)
     {
@@ -301,7 +359,7 @@ struct Convert<bool> {
     static int push(lua_State* L, bool value)
     {
         lua_pushboolean(L, value);
-        return 1;
+        return *PushCount;
     }
 };
 
@@ -309,6 +367,8 @@ struct Convert<bool> {
 template <typename T>
 struct ConvertFloatingPoint {
     static_assert(std::is_floating_point_v<T>, "T must be floating point");
+
+    static constexpr std::optional<int> PushCount = 1;
 
     /// <summary>Returns, wether the stack position contains an actual number.</summary>
     static bool isExact(lua_State* L, int pos)
@@ -342,7 +402,7 @@ struct ConvertFloatingPoint {
     static int push(lua_State* L, T value)
     {
         lua_pushnumber(L, static_cast<lua_Number>(value));
-        return 1;
+        return *PushCount;
     }
 };
 
@@ -360,18 +420,25 @@ template <typename T>
 struct ConvertIntegral {
     static_assert(std::is_integral_v<T>, "T must be integral");
 
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Checks, wether the given lua integer fits into the range of the C++ integral type.</summary>
     static bool checkRange([[maybe_unused]] lua_Integer value)
     {
-        if constexpr (std::numeric_limits<T>::max() < std::numeric_limits<lua_Integer>::max()) {
-            if (value > std::numeric_limits<T>::max())
-                return false;
+        if constexpr (std::is_same_v<T, std::uint64_t>) {
+            return value >= 0;
         }
-        if constexpr (std::numeric_limits<T>::min() > std::numeric_limits<lua_Integer>::min()) {
-            if (value < std::numeric_limits<T>::min())
-                return false;
+        else {
+            if constexpr (std::numeric_limits<T>::max() < std::numeric_limits<lua_Integer>::max()) {
+                if (value > std::numeric_limits<T>::max())
+                    return false;
+            }
+            if constexpr (std::numeric_limits<T>::min() > std::numeric_limits<lua_Integer>::min()) {
+                if (value < std::numeric_limits<T>::min())
+                    return false;
+            }
+            return true;
         }
-        return true;
     }
 
     /// <summary>Returns, wether the value at the given stack position is an integer or a string convertible to an integer and fits the C++ integral type.</summary>
@@ -421,7 +488,7 @@ struct ConvertIntegral {
     static int push(lua_State* L, T value)
     {
         lua_pushinteger(L, static_cast<lua_Integer>(value));
-        return 1;
+        return *PushCount;
     }
 };
 
@@ -446,11 +513,14 @@ struct Convert<std::uint32_t> : ConvertIntegral<std::uint32_t> {};
 template <>
 struct Convert<std::int64_t> : ConvertIntegral<std::int64_t> {};
 
-// uint64_t does not fit all possible lua_Integer values and is omitted for now
+template <>
+struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
 
 /// <summary>Allows for conversion between lua strings and C++ std::string.</summary>
 template <>
 struct Convert<std::string> {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Returns, wether the value at the given stack position is a string.</summary>
     static bool isExact(lua_State* L, int pos)
     {
@@ -487,37 +557,87 @@ struct Convert<std::string> {
     static int push(lua_State* L, const std::string& value)
     {
         lua_pushlstring(L, value.c_str(), value.size());
-        return 1;
+        return *PushCount;
     }
 };
 
 template <std::size_t Count>
-struct Convert<const char[Count]> {
+struct Convert<char[Count]> {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Pushes the given string onto the stack, shortening a potential null-termination.</summary>
     static int push(lua_State* L, const char(&value)[Count])
     {
         lua_pushlstring(L, value, value[Count - 1] ? Count : Count - 1);
-        return 1;
+        return *PushCount;
     }
 };
 
 template <>
 struct Convert<const char*> {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Pushes the given null-terminated string onto the stack.</summary>
     static int push(lua_State* L, const char* value)
     {
         lua_pushstring(L, value);
-        return 1;
+        return *PushCount;
     }
 };
 
 template <>
 struct Convert<char*> : Convert<const char*> {};
 
+template <>
+struct Convert<lua_CFunction> {
+    static constexpr std::optional<int> PushCount = 1;
+
+    /// <summary>Returns, wether the value at the given stack position is a string.</summary>
+    static bool isExact(lua_State* L, int pos)
+    {
+        return lua_isfunction(L, pos);
+    }
+
+    /// <summary>Returns, wether the value at the given stack position is a string or a number.</summary>
+    static bool isValid(lua_State* L, int pos)
+    {
+        return isExact(L, pos);
+    }
+
+    /// <summary>Checks, wether the given argument stack position is a string or number and returns std::nullopt on failure.</summary>
+    /// <remarks>Numbers are actually converted to a string in place.</remarks>
+    static std::optional<lua_CFunction> at(lua_State* L, int pos)
+    {
+        if (auto result = lua_tocfunction(L, pos))
+            return result;
+        return std::nullopt;
+    }
+
+    /// <summary>Checks, wether the given argument stack position is a string or number and raises an error on failure.</summary>
+    /// <remarks>Numbers are actually converted to a string in place.</remarks>
+    static lua_CFunction check(lua_State* L, int arg)
+    {
+        luaL_checktype(L, arg, LUA_TFUNCTION);
+        return lua_tocfunction(L, arg);
+    }
+
+    /// <summary>Pushes the given string onto the stack.</summary>
+    static int push(lua_State* L, lua_CFunction value)
+    {
+        lua_pushcfunction(L, value);
+        return *PushCount;
+    }
+};
+
+template <>
+struct Convert<int(&)(lua_State*)> : Convert<lua_CFunction> {};
+
 /// <summary>Allows for conversion for possible nil values using std::optional.</summary>
 template <typename T>
 struct Convert<std::optional<T>> {
     using Base = Convert<T>;
+
+    static constexpr std::optional<int> PushCount = Base::PushCount;
 
     /// <summary>Returns, wether the value at the given stack position is nil or a valid value.</summary>
     static bool isExact(lua_State* L, int pos)
@@ -554,15 +674,17 @@ struct Convert<std::optional<T>> {
     static int push(lua_State* L, std::optional<T> value)
     {
         if (value)
-            return Base::push(L, *value);
-        lua_pushnil(L);
-        return 1;
+            Base::push(L, *value);
+        else // fill with nil
+            lua_settop(L, lua_gettop(L) + *PushCount);
+        return *PushCount;
     }
 };
 
 /// <summary>Allows for conversion for multiple values using std::tuple.</summary>
 template <typename... TValues>
 struct Convert<std::tuple<TValues...>> {
+    static constexpr std::optional<int> PushCount = (*Convert<TValues>::PushCount + ...);
 
     /// <summary>Returns, wether all stack positions starting at pos are exact.</summary>
     static bool isExact(lua_State* L, int pos)
@@ -591,7 +713,8 @@ struct Convert<std::tuple<TValues...>> {
     /// <summary>Pushes all values in the tuple onto the stack and returns the count.</summary>
     static int push(lua_State* L, std::tuple<TValues...> values)
     {
-        return std::apply(pushHelper, std::tuple_cat(std::tuple{ L }, values));
+        std::apply(pushHelper, std::tuple_cat(std::tuple{ L }, values));
+        return *PushCount;
     }
 
 private:
@@ -626,14 +749,9 @@ private:
         return { Convert<TValues>::check(L, arg + Indices)... };
     }
 
-    static int sum(std::initializer_list<int> counts)
+    static void pushHelper(lua_State* L, TValues... values)
     {
-        return std::accumulate(counts.begin(), counts.end(), 0);
-    }
-
-    static int pushHelper(lua_State* L, TValues... values)
-    {
-        return sum({ Convert<TValues>::push(L, values)... });
+        (Convert<TValues>::push(L, values), ...);
     }
 };
 

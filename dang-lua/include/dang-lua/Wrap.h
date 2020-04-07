@@ -2,6 +2,7 @@
 
 #include "Convert.h"
 #include "Stack.h"
+#include "Reference.h"
 
 namespace dang::lua
 {
@@ -114,7 +115,7 @@ int wrap(lua_State* L)
 
 /// <summary>Returns a luaL_Reg with the wrapped template supplied function and given name.</summary>
 template <auto Func>
-constexpr luaL_Reg wrap(const char* name)
+constexpr luaL_Reg reg(const char* name)
 {
     return { name, dlua::wrap<Func> };
 }
@@ -147,141 +148,19 @@ void pushFunction(lua_State* L, TFunc any_func)
     lua_pushcclosure(L, detail::wrappedFunction<decltype(std::function(any_func))>, 1);
 }
 
-/// <summary>Increases the lifetime of any given stack position using the registry table.</summary>
-class Reference {
-public:
-    /// <summary>Increases the lifetime of the given stack position by putting it in the registry table.</summary>
-    Reference(lua_State* state, int pos)
-        : state_(state)
-        , ref_((lua_pushvalue(state, pos), luaL_ref(state, LUA_REGISTRYINDEX)))
-    {
-    }
-
-    /// <summary>Removes the reference from the registry.</summary>
-    ~Reference()
-    {
-        if (ref_ != LUA_NOREF && ref_ != LUA_REFNIL)
-            luaL_unref(state_, LUA_REGISTRYINDEX, ref_);
-    }
-
-    Reference(const Reference&) = delete;
-
-    Reference(Reference&& other) noexcept
-        : state_(other.state_)
-        , ref_(other.ref_)
-    {
-        other.ref_ = LUA_NOREF;
-    }
-
-    Reference& operator=(const Reference&) = delete;
-
-    Reference& operator=(Reference&& other) noexcept
-    {
-        state_ = other.state_;
-        ref_ = other.ref_;
-        other.ref_ = LUA_NOREF;
-    }
-
-    /// <summary>The associated lua state for the reference.</summary>
-    lua_State* state()
-    {
-        return state_;
-    };
-
-    /// <summary>Pushes the referenced value on the stack again.</summary>
-    int push()
-    {
-        if (ref_ != LUA_REFNIL)
-            return lua_rawgeti(state_, LUA_REGISTRYINDEX, ref_);
-        lua_pushnil(state_);
-        return LUA_TNIL;
-    }
-
-    /// <summary>Pushes the referenced value on the stack of the given lua state.</summary>
-    int push(lua_State* L)
-    {
-        int result = push();
-        if (L != state_)
-            lua_xmove(state_, L, 1);
-        return result;
-    }
-
-private:
-    lua_State* state_;
-    int ref_;
-};
-
-/// <summary>Wraps any lua function by creating a reference to it.</summary>
-/// <remarks>Unlike references, this type is copyable, as it uses a shared_ptr for the reference.</remarks>
-class Function {
-public:
-    /// <summary>Creates a new reference to function at the given stack position.</summary>
-    Function(lua_State* state, int pos)
-        : ref_(std::make_shared<Reference>(state, pos))
-    {
-    }
-
-    /// <summary>Pushes the referenced function on the stack again.</summary>
-    void push() const
-    {
-        ref_->push();
-    }
-
-    /// <summary>Pushes the referenced function on the stack of the given lua state.</summary>
-    void push(lua_State* L) const
-    {
-        ref_->push(L);
-    }
-
-    /// <summary>Mimics a full call to the lua function with the given parameters and optional templated return value.</summary>
-    template <typename TRet = MultRet, typename... TArgs>
-    auto call(TArgs&&... args) const
-    {
-        int old_top = lua_gettop(ref_->state());
-        push();
-        int arg_count = Convert<std::tuple<TArgs...>>::push(ref_->state(), std::tuple<TArgs...>{ std::forward<TArgs>(args)... });
-        lua_call(ref_->state(), arg_count, LUA_MULTRET);
-        int result_count = lua_gettop(ref_->state()) - old_top;
-
-        if constexpr (!std::is_void_v<TRet>) {
-            auto result = Convert<TRet>::at(ref_->state(), -result_count);
-            if (!result)
-                luaL_error(ref_->state(), "bad function result (%s expected)", typeid(TRet).name());
-            if constexpr (!std::is_same_v<Ret, TRet> && !std::is_same_v<MultRet, TRet>)
-                lua_pop(ref_->state(), result_count);
-            return *result;
-        }
-        else
-            lua_pop(ref_->state(), result_count);
-    }
-
-    /// <summary>Mimics a full call to the lua function with the given parameters and a std::tuple of the given templated return values.</summary>
-    template <typename... TResult, typename... TArgs>
-    auto callMultRet(TArgs&&... args) const
-    {
-        return call<std::tuple<TResult...>>(std::forward<TArgs>(args)...);
-    }
-
-    /// <summary>Mimics a full call to the lua function, returning all values using a wrapper class, that basically wraps the lua stack.</summary>
-    template <typename... TArgs>
-    MultRet operator()(TArgs&&... args)
-    {
-        return call(std::forward<TArgs>(args)...);
-    }
-
-private:
-    std::shared_ptr<Reference> ref_;
+class Function : public Reference {
+    using Reference::Reference;
 };
 
 /// <summary>Wraps a lua function and has an overloaded call operator for the given return type.</summary>
 template <typename TRet>
-class FunctionRet : public Function {
+class FunctionRet : public Reference {
 public:
-    using Function::Function;
+    using Reference::Reference;
 
     /// <summary>Mimics a full call to the lua function with the given parameters and return type.</summary>
     template <typename... TArgs>
-    TRet operator()(TArgs&&... args)
+    TRet operator()(TArgs&&... args) const
     {
         return call<TRet>(std::forward<TArgs>(args)...);
     }
@@ -289,13 +168,13 @@ public:
 
 /// <summary>Wraps a lua function and has an overloaded call operator for a tuple out of the given return type.</summary>
 template <typename... TRets>
-class FunctionMultRet : public Function {
+class FunctionMultRet : public Reference {
 public:
-    using Function::Function;
+    using Reference::Reference;
 
     /// <summary>Mimics a full call to the lua function with the given parameters and return types as std::tuple.</summary>
     template <typename... TArgs>
-    auto operator()(TArgs&&... args)
+    auto operator()(TArgs&&... args) const
     {
         return callMultRet<TRets...>(std::forward<TArgs>(args)...);
     }
@@ -306,6 +185,8 @@ namespace detail
 
 template <typename T>
 struct FunctionConverter {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Returns, wether the given stack position is a function.</summary>
     static bool isExact(lua_State* L, int pos)
     {
@@ -337,7 +218,7 @@ struct FunctionConverter {
     static int push(lua_State* L, const T& function)
     {
         function.push(L);
-        return 1;
+        return *PushCount;
     }
 };
 

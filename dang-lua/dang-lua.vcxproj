@@ -169,8 +169,10 @@
     <ClInclude Include="include\dang-lua\State.h" />
     <ClInclude Include="include\dang-lua\Types.h" />
     <ClInclude Include="include\dang-lua\Wrap.h" />
+    <ClInclude Include="include\dang-lua\Reference.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Reference.cpp" />
     <ClCompile Include="src\Stack.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

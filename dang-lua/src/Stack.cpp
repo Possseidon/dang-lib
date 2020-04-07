@@ -6,7 +6,7 @@ namespace dang::lua
 
 StackPos::StackPos(lua_State* state, int pos)
     : state_(state)
-    , pos_(pos)
+    , pos_(lua_absindex(state, pos))
 {
 }
 
@@ -20,16 +20,23 @@ int StackPos::pos() const
     return pos_;
 }
 
-void StackPos::push() const
+StackPos StackPos::push() const
 {
     lua_pushvalue(state_, pos_);
+    return StackPos(state_, -1);
 }
 
-void StackPos::push(lua_State* L) const
+StackPos StackPos::push(lua_State* L) const
 {
     push();
-    if (L != state_)
-        lua_xmove(state_, L, 1);
+    lua_xmove(state_, L, 1);
+    return StackPos(L, -1);
+}
+
+void StackPos::pop() const
+{
+    assert(lua_gettop(state_) == pos_);
+    lua_pop(state_, 1);
 }
 
 Type StackPos::type() const
@@ -37,102 +44,64 @@ Type StackPos::type() const
     return static_cast<Type>(lua_type(state_, pos_));
 }
 
-inline StackIterator::StackIterator(StackPos arg)
-    : arg_(arg)
+StackPos VarStackPos::operator[](int pos) const
 {
+    return indexHelper<StackPos>(pos);
 }
 
-inline StackIterator::reference StackIterator::operator*()
+VarStackPos VarStackPos::substack(int from) const
 {
-    return arg_;
+    return substackHelper<VarStackPos>(from);
 }
 
-inline StackIterator::pointer StackIterator::operator->()
+StackIterator<StackPos> VarStackPos::begin() const
 {
-    return &arg_;
+    return beginHelper<StackPos>();
 }
 
-bool operator==(StackIterator lhs, StackIterator rhs)
+StackIterator<StackPos> VarStackPos::end() const
 {
-    return lhs.arg_.pos() == rhs.arg_.pos();
+    return endHelper<StackPos>();
 }
 
-bool operator!=(StackIterator lhs, StackIterator rhs)
+Arg VarArg::operator[](int pos) const
 {
-    return lhs.arg_.pos() != rhs.arg_.pos();
+    return indexHelper<Arg>(pos);
 }
 
-bool operator<(StackIterator lhs, StackIterator rhs)
+VarArg VarArg::substack(int from) const
 {
-    return lhs.arg_.pos() < rhs.arg_.pos();
+    return substackHelper<VarArg>(from);
 }
 
-bool operator<=(StackIterator lhs, StackIterator rhs)
+StackIterator<Arg> VarArg::begin() const
 {
-    return lhs.arg_.pos() <= rhs.arg_.pos();
+    return StackIterator<Arg>(Arg(state(), pos()));
 }
 
-bool operator>(StackIterator lhs, StackIterator rhs)
+StackIterator<Arg> VarArg::end() const
 {
-    return lhs.arg_.pos() > rhs.arg_.pos();
+    return StackIterator<Arg>(Arg(state(), pos() + size()));
 }
 
-bool operator>=(StackIterator lhs, StackIterator rhs)
+Ret MultRet::operator[](int pos) const
 {
-    return lhs.arg_.pos() >= rhs.arg_.pos();
+    return indexHelper<Ret>(pos);
 }
 
-inline StackIterator& StackIterator::operator++()
+MultRet MultRet::substack(int from) const
 {
-    arg_.pos_++;
-    return *this;
+    return substackHelper<MultRet>(from);
 }
 
-inline StackIterator StackIterator::operator++(int)
+StackIterator<Ret> MultRet::begin() const
 {
-    auto old = *this;
-    ++(*this);
-    return old;
+    return beginHelper<Ret>();
 }
 
-inline StackIterator& StackIterator::operator--()
+StackIterator<Ret> MultRet::end() const
 {
-    arg_.pos_--;
-    return *this;
-}
-
-inline StackIterator StackIterator::operator--(int)
-{
-    auto old = *this;
-    --(*this);
-    return old;
-}
-
-inline StackIterator& StackIterator::operator+=(difference_type offset)
-{
-    arg_.pos_ += offset;
-    return *this;
-}
-
-inline StackIterator StackIterator::operator+(difference_type offset) const
-{
-    return StackIterator(StackPos(arg_.state_, arg_.pos_ + offset));
-}
-
-inline StackIterator& StackIterator::operator-=(difference_type offset)
-{
-    arg_.pos_ -= offset;
-    return *this;
-}
-
-inline StackIterator StackIterator::operator-(difference_type offset) const
-{
-    return StackIterator(StackPos(arg_.state_, arg_.pos_ - offset));
-}
-
-inline StackIterator::value_type StackIterator::operator[](difference_type offset) const
-{
-    return StackPos(arg_.state_, arg_.pos_ + offset);
+    return endHelper<Ret>();
 }
 
 lua_State* VarStackPos::state() const
@@ -172,26 +141,6 @@ int VarStackPos::size() const
 int VarStackPos::max_size() const
 {
     return count_;
-}
-
-StackPos VarStackPos::operator[](int pos) const
-{
-    return StackPos(state_, pos_ + pos - 1);
-}
-
-VarStackPos VarStackPos::substack(int from) const
-{
-    return VarStackPos(state_, pos_ + from - 1, std::max(0, count_ - from + 1));
-}
-
-StackIterator VarStackPos::begin() const
-{
-    return StackIterator(StackPos(state_, pos_));
-}
-
-StackIterator VarStackPos::end() const
-{
-    return StackIterator(StackPos(state_, pos_ + count_));
 }
 
 }

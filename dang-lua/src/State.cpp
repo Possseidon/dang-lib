@@ -14,6 +14,26 @@ State::operator lua_State* () const
     return state_;
 }
 
+void State::pop(int count) const
+{
+    lua_pop(state_, count);
+}
+
+int State::top() const
+{
+    return lua_gettop(state_);
+}
+
+void State::setTop(int new_top) const
+{
+    lua_settop(state_, new_top);
+}
+
+StackPos State::operator[](int pos) const
+{
+    return StackPos(state_, pos);
+}
+
 OwnedState::OwnedState(bool open_libs)
     : State(luaL_newstate())
 {

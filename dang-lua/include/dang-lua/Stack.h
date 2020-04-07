@@ -6,13 +6,29 @@
 namespace dang::lua
 {
 
+template <typename T>
+class StackIterator;
+
+template <typename T>
+class TableWrapper;
+
+class StackPos;
+class Arg;
+class Ret;
+
+class VarStackPos;
+class VarArg;
+class MultRet;
+
 /// <summary>Wraps a position on the lua stack.</summary>
 class StackPos {
 public:
-    friend class StackIterator;
+    friend StackIterator<StackPos>;
+    friend StackIterator<Arg>;
+    friend StackIterator<Ret>;
 
-    /// <summary>Wraps the given stack position.</summary>
-    StackPos(lua_State* state, int pos);
+    /// <summary>Wraps the given stack position or the last element if omitted.</summary>
+    StackPos(lua_State* state, int pos = -1);
 
     /// <summary>Returns the associated lua state.</summary>
     lua_State* state() const;
@@ -20,19 +36,102 @@ public:
     int pos() const;
 
     /// <summary>Pushes a copy of the value on the stack.</summary>
-    void push() const;
+    StackPos push() const;
     /// <summary>Pushes a copy of the value on the stack of the given lua state.</summary>
-    void push(lua_State* L) const;
+    StackPos push(lua_State* L) const;
+
+    /// <summary>Convenience function to have named pop function calls with debug assert, that it actually pops the top.</summary>
+    void pop() const;
 
     /// <summary>Returns the type of the stack position.</summary>
     Type type() const;
 
     /// <summary>Tries to convert the value to the given type and return std::nullopt on failure.</summary>
     template <typename T>
-    std::optional<T> get() const
+    std::optional<T> value() const
     {
-        return Convert<T>::at(state(), pos());
+        return Convert<T>::at(state_, pos_);
     }
+
+    /// <summary>Tries to convert the stack position and raises and error on failure.</summary>
+    template <typename T>
+    T as() const
+    {
+        if (auto result = value<T>())
+            return *result;
+        throw luaL_error(state_, "invalid type");
+    }
+
+    /// <summary>Calls the stack position with the given parameters and returns the result.</summary>
+    template <typename TRet = void, typename... TArgs>
+    TRet call(TArgs&&... args)
+    {
+        using ConvertArgs = Convert<std::tuple<TArgs...>>;
+        using ConvertRet = Convert<TRet>;
+
+        [[maybe_unused]] int old_pos;
+        if constexpr (!ConvertRet::PushCount)
+            old_pos = lua_gettop(state_);
+
+        push();
+
+        int arg_count = ConvertArgs::push(state_, std::tuple<TArgs...>{ std::forward<TArgs>(args)... });
+        int result_count;
+        if constexpr (ConvertRet::PushCount) {
+            lua_call(state_, arg_count, *ConvertRet::PushCount);
+            result_count = *ConvertRet::PushCount;
+        }
+        else {
+            lua_call(state_, arg_count, LUA_MULTRET);
+            result_count = lua_gettop(state_) - old_pos;
+        }
+
+        if constexpr (ConvertRet::PushCount != 0) {
+            auto result = ConvertRet::at(state_, -result_count);
+            if (!result)
+                throw luaL_error(state_, "bad function result (%s expected)", ClassName<TRet>);
+            lua_pop(state_, result_count);
+            return *result;
+        }
+    }
+
+    /// <summary>Calls the stack position with the given parameters and returns the results as a std::tuple.</summary>
+    template <typename... TRets, typename... TArgs>
+    std::tuple<TRets...> callMultRet(TArgs&&... args)
+    {
+        return call<std::tuple<TRets...>>(std::forward<TArgs>(args)...);
+    }
+
+    /// <summary>Calls the stack position with the given parameters, discarding any return values.</summary>
+    template <typename... TArgs>
+    void operator()(TArgs&&... args)
+    {
+        call(std::forward<TArgs>(args)...);
+    }
+
+    /// <summary>Calls the stack position with the given parameters and pushes the single result on the stack, returning a wrapper to it.</summary>
+    template <typename... TArgs>
+    Ret callPushRet(TArgs&&... args);
+    /// <summary>Calls the stack position with the given parameters and pushes the results on the stack, returning a wrapper to them.</summary>
+    template <typename... TArgs>
+    MultRet callPushMultRet(TArgs&&... args);
+
+    /// <summary>Returns a wrapper, which can be used for table access.</summary>
+    template <typename T>
+    TableWrapper<T> operator[](T key)
+    {
+        return TableWrapper<T>(*this, key);
+    }
+
+private:
+    lua_State* state_;
+    int pos_;
+};
+
+/// <summary>Wraps an argument of a lua function as a stack position.</summary>
+class Arg : public StackPos {
+public:
+    using StackPos::StackPos;
 
     /// <summary>Tries to convert the value to the given type and raises and error on failure.</summary>
     template <typename T>
@@ -47,69 +146,124 @@ public:
     {
         return check<T>();
     }
-
-private:
-    lua_State* state_;
-    int pos_;
-};
-
-/// <summary>Wraps an argument of a lua function as a stack position.</summary>
-class Arg : public StackPos {
-public:
-    using StackPos::StackPos;
 };
 
 /// <summary>Wraps a single return value of a lua function.</summary>
 class Ret : public StackPos {
 public:
     using StackPos::StackPos;
-
-    /// <summary>Pushes the given value on the lua stack and returns a value, which can be returned from the function.</summary>
-    template <typename TRet>
-    static Ret push(lua_State* L, TRet&& value)
-    {
-        int pos = lua_gettop(L) + 1;
-        Convert<TRet>::push(L, std::forward<TRet>(value));
-        return Ret(L, pos);
-    }
 };
 
 /// <summary>Enables iteration over variadic arguments of a lua function.</summary>
+template <typename T>
 class StackIterator {
 public:
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = StackPos;
+    using value_type = T;
     using difference_type = int;
-    using pointer = StackPos*;
-    using reference = StackPos&;
+    using pointer = T*;
+    using reference = T&;
 
-    inline StackIterator() = default;
-    inline explicit StackIterator(StackPos arg);
+    StackIterator() = default;
+    explicit StackIterator(T arg)
+        : arg_(arg)
+    {
+    }
 
-    inline reference operator*();
-    inline pointer operator->();
+    reference operator*()
+    {
+        return arg_;
+    }
 
-    inline friend bool operator==(StackIterator lhs, StackIterator rhs);
-    inline friend bool operator!=(StackIterator lhs, StackIterator rhs);
-    inline friend bool operator<(StackIterator lhs, StackIterator rhs);
-    inline friend bool operator<=(StackIterator lhs, StackIterator rhs);
-    inline friend bool operator>(StackIterator lhs, StackIterator rhs);
-    inline friend bool operator>=(StackIterator lhs, StackIterator rhs);
+    pointer operator->()
+    {
+        return &arg_;
+    }
 
-    inline StackIterator& operator++();
-    inline StackIterator operator++(int);
-    inline StackIterator& operator--();
-    inline StackIterator operator--(int);
+    friend bool operator==(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() == rhs.arg_.pos();
+    }
 
-    inline StackIterator& operator+=(difference_type offset);
-    inline StackIterator operator+(difference_type offset) const;
-    inline StackIterator& operator-=(difference_type offset);
-    inline StackIterator operator-(difference_type offset) const;
+    friend bool operator!=(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() != rhs.arg_.pos();
+    }
 
-    inline value_type operator[](difference_type offset) const;
+    friend bool operator<(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() < rhs.arg_.pos();
+    }
+
+    friend bool operator<=(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() <= rhs.arg_.pos();
+    }
+
+    friend bool operator>(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() > rhs.arg_.pos();
+    }
+
+    friend bool operator>=(StackIterator lhs, StackIterator rhs)
+    {
+        return lhs.arg_.pos() >= rhs.arg_.pos();
+    }
+
+    StackIterator& operator++()
+    {
+        arg_.pos_++;
+        return *this;
+    }
+
+    StackIterator operator++(int)
+    {
+        auto old = *this;
+        ++(*this);
+        return old;
+    }
+    StackIterator& operator--()
+    {
+        arg_.pos_--;
+        return *this;
+    }
+
+    StackIterator operator--(int)
+    {
+        auto old = *this;
+        --(*this);
+        return old;
+    }
+
+    StackIterator& operator+=(difference_type offset)
+    {
+        arg_.pos_ += offset;
+        return *this;
+    }
+
+    StackIterator operator+(difference_type offset) const
+    {
+        return StackIterator(StackPos(arg_.state_, arg_.pos_ + offset));
+    }
+
+    StackIterator& operator-=(difference_type offset)
+    {
+        arg_.pos_ -= offset;
+        return *this;
+    }
+
+    StackIterator operator-(difference_type offset) const
+    {
+        return StackIterator(StackPos(arg_.state_, arg_.pos_ - offset));
+    }
+
+    value_type operator[](difference_type offset) const
+    {
+        return StackPos(arg_.state_, arg_.pos_ + offset);
+    }
 
 private:
-    StackPos arg_;
+    T arg_;
 };
 
 /// <summary>Wraps muiltiple consecutive stack positions and mimics a container.</summary>
@@ -154,23 +308,38 @@ public:
     VarStackPos substack(int from) const;
 
     /// <summary>Returns a stack iterator for the first element.</summary>
-    StackIterator begin() const;
+    StackIterator<StackPos> begin() const;
     /// <summary>Returns a stack iterator, one after the last element.</summary>
-    StackIterator end() const;
+    StackIterator<StackPos> end() const;
 
-    /// <summary>Tries to convert all stack positions starting at the optional zero-based offset to a tuple of the specified types and raises and error on failure.</summary>
-    template <typename... T>
-    std::tuple<T...> check(int offset = 0)
+protected:
+    /// <summary>Returns the the wrapped stack positions at the given one-based index.</summary>
+    template <typename T>
+    T indexHelper(int pos) const
     {
-        return Convert<std::tuple<T...>>::check(state(), pos() + offset);
+        return T(state_, pos_ + pos - 1);
     }
 
-    /// <summary>Tries to convert all stack positions starting at the optional zero-based offset to a tuple of the specified types and raises and error on failure.</summary>
-    template <typename... T>
-    operator std::tuple<T...>()
+    /// <summary>Returns a substack, starting at the given one-based index.</summary>
+    template <typename T>
+    T substackHelper(int from) const
     {
-        return check<T...>();
-    };
+        return T(state_, pos_ + from - 1, std::max(0, count_ - from + 1));
+    }
+
+    /// <summary>Returns a stack iterator for the first element.</summary>
+    template <typename T>
+    StackIterator<T> beginHelper() const
+    {
+        return StackIterator<T>(T(state_, pos_));
+    }
+
+    /// <summary>Returns a stack iterator, one after the last element.</summary>
+    template <typename T>
+    StackIterator<T> endHelper() const
+    {
+        return StackIterator<T>(T(state_, pos_ + count_));
+    }
 
 private:
     lua_State* state_;
@@ -182,12 +351,46 @@ private:
 class VarArg : public VarStackPos {
 public:
     using VarStackPos::VarStackPos;
+
+    /// <summary>Returns the the wrapped stack positions at the given one-based index.</summary>
+    Arg operator[](int pos) const;
+    /// <summary>Returns a substack, starting at the given one-based index.</summary>
+    VarArg substack(int from) const;
+
+    /// <summary>Returns a stack iterator for the first element.</summary>
+    StackIterator<Arg> begin() const;
+    /// <summary>Returns a stack iterator, one after the last element.</summary>
+    StackIterator<Arg> end() const;
+
+    /// <summary>Tries to convert all stack positions starting at the optional zero-based offset to a tuple of the specified types and raises and error on failure.</summary>
+    template <typename... T>
+    std::tuple<T...> check(int offset = 0) const
+    {
+        return Convert<std::tuple<T...>>::check(state(), pos() + offset);
+    }
+
+    /// <summary>Tries to convert all stack positions to a tuple of the specified types and raises and error on failure.</summary>
+    template <typename... T>
+    operator std::tuple<T...>() const
+    {
+        return check<T...>();
+    };
 };
 
 /// <summary>Wraps muiltiple consecutive return values of a lua function and mimics a container.</summary>
 class MultRet : public VarStackPos {
 public:
     using VarStackPos::VarStackPos;
+
+    /// <summary>Returns the the wrapped stack positions at the given one-based index.</summary>
+    Ret operator[](int pos) const;
+    /// <summary>Returns a substack, starting at the given one-based index.</summary>
+    MultRet substack(int from) const;
+
+    /// <summary>Returns a stack iterator for the first element.</summary>
+    StackIterator<Ret> begin() const;
+    /// <summary>Returns a stack iterator, one after the last element.</summary>
+    StackIterator<Ret> end() const;
 
     /// <summary>Pushes the given value on the lua stack and returns a value, which can be returned from the function.</summary>
     template <typename... TRets>
@@ -201,6 +404,8 @@ public:
 
 template <>
 struct Convert<StackPos> {
+    static constexpr std::optional<int> PushCount = 1;
+
     /// <summary>Always returns true.</summary>
     static constexpr bool isExact(lua_State*, int)
     {
@@ -217,7 +422,7 @@ struct Convert<StackPos> {
     static int push(lua_State* L, const StackPos& arg)
     {
         arg.push(L);
-        return 1;
+        return *PushCount;
     }
 };
 
@@ -231,16 +436,9 @@ struct Convert<Arg> : Convert<StackPos> {
 };
 
 template <>
-struct Convert<Ret> : Convert<StackPos> {
-    /// <summary>Wraps the given argument stack position.</summary>
-    static std::optional<Ret> at(lua_State* L, int pos)
-    {
-        return Ret(L, pos);
-    }
-};
-
-template <>
 struct Convert<VarStackPos> {
+    static constexpr std::optional<int> PushCount = std::nullopt;
+
     /// <summary>Always returns true.</summary>
     static constexpr bool isExact(lua_State*, int)
     {
@@ -256,7 +454,8 @@ struct Convert<VarStackPos> {
     /// <summary>Pushes a copy of each argument on the stack.</summary>
     static int push(lua_State* L, const VarStackPos& arg)
     {
-        return arg.pushAll(L);
+        arg.pushAll(L);
+        return arg.size();
     }
 };
 
@@ -277,5 +476,147 @@ struct Convert<MultRet> : Convert<VarStackPos> {
         return MultRet(L, pos);
     }
 };
+
+template <typename TKey>
+class TableWrapper {
+public:
+    static_assert(Convert<TKey>::PushCount == 1, "table[key] only allows one key");
+
+    TableWrapper(StackPos pos, TKey key)
+        : pos_(pos)
+        , key_(key)
+    {
+    }
+
+    StackPos push() const
+    {
+        Convert<TKey>::push(pos_.state(), key_);
+        lua_gettable(pos_.state(), pos_.pos());
+        return StackPos(pos_.state());
+    }
+
+    StackPos push(lua_State* L)
+    {
+        push();
+        lua_xmove(pos_.state(), L, 1);
+        return StackPos(L);
+    }
+
+    template <typename TValue>
+    TableWrapper& operator=(TValue&& value)
+    {
+        static_assert(Convert<TValue>::PushCount == 1, "table[key] = value only allows one value");
+
+        Convert<TKey>::push(pos_.state(), key_);
+        Convert<TValue>::push(pos_.state(), std::forward<TValue>(value));
+        lua_settable(pos_.state(), pos_.pos());
+        return *this;
+    }
+
+    template <typename TValue>
+    TValue as() const
+    {
+        static_assert(Convert<TValue>::PushCount == 1, "value = table[key] only allows one value");
+
+        push();
+        auto result = Convert<TValue>::at(pos_.state(), -1);
+        if constexpr (!std::is_base_of_v<StackPos, TValue> && !std::is_base_of_v<VarStackPos, TValue>)
+            lua_pop(pos_.state(), 1);
+        if (result)
+            return *result;
+        throw luaL_error(pos_.state(), "table value has incorrect type");
+    }
+
+    template <typename TValue>
+    operator TValue() const
+    {
+        return as<TValue>();
+    }
+
+    template <typename TValue>
+    TValue& ref() const
+    {
+        static_assert(std::is_same_v<std::invoke_result_t<decltype(Convert<TValue>::check), lua_State*, int>, TValue&>, "value type does not allow references");
+        static_assert(Convert<TValue>::PushCount == 1, "value = table[key] only allows one value");
+
+        push();
+        auto result = Convert<TValue>::at(pos_.state(), -1);
+        if constexpr (!std::is_base_of_v<StackPos, TValue> && !std::is_base_of_v<VarStackPos, TValue>)
+            lua_pop(pos_.state(), 1);
+        if (result)
+            return *result;
+        throw luaL_error(pos_.state(), "table value has incorrect type");
+    }
+
+    /// <summary>Mimics a full call to the stack position  with the given parameters and optional templated return value.</summary>
+    template <typename TRet = MultRet, typename... TArgs>
+    auto call(TArgs&&... args) const
+    {
+        auto value = push();
+        auto result = value.call<TRet>(std::forward<TArgs>(args)...);
+        lua_pop(pos_.state(), 1);
+        return result;
+    }
+
+    /// <summary>Mimics a full call to the stack position with the given parameters and a std::tuple of the given templated return values.</summary>
+    template <typename... TRets, typename... TArgs>
+    auto callMultRet(TArgs&&... args) const
+    {
+        return call<std::tuple<TRets...>>(std::forward<TArgs>(args)...);
+    }
+
+    /// <summary>Mimics a full call to the stack position, returning all values using a wrapper class, that basically wraps the lua stack.</summary>
+    template <typename... TArgs>
+    MultRet operator()(TArgs&&... args) const
+    {
+        return call(std::forward<TArgs>(args)...);
+    }
+
+    /// <summary>Accesses a table and pushes the value on the stack, returning a wrapper to it.</summary>
+    template <typename T>
+    TableWrapper<T> operator[](T&& key) const
+    {
+        auto value = push();
+        auto result = value[std::forward<T>(key)];
+        lua_pop(pos_.state(), 1);
+        return result;
+    }
+
+private:
+    StackPos pos_;
+    TKey key_;
+};
+
+template <typename TKey>
+struct Convert<TableWrapper<TKey>> {
+    static constexpr std::optional<int> PushCount = 1;
+
+    static int push(lua_State* L, TableWrapper<TKey> wrapper)
+    {
+        wrapper.push(L);
+        return *PushCount;
+    }
+};
+
+template<typename ...TArgs>
+inline Ret StackPos::callPushRet(TArgs&& ...args)
+{
+    using ConvertArgs = Convert<std::tuple<TArgs...>>;
+    push();
+    int arg_count = ConvertArgs::push(state_, std::tuple<TArgs...>{ std::forward<TArgs>(args)... });
+    lua_call(state_, arg_count, 1);
+    return Ret(state_);
+}
+
+template<typename ...TArgs>
+inline MultRet StackPos::callPushMultRet(TArgs&& ...args)
+{
+    using ConvertArgs = Convert<std::tuple<TArgs...>>;
+    push();
+    int ret_pos = lua_gettop(state_);
+    int arg_count = ConvertArgs::push(state_, std::tuple<TArgs...>{ std::forward<TArgs>(args)... });
+    lua_call(state_, arg_count, LUA_MULTRET);
+    return MultRet(state_, ret_pos);
+}
 
 }

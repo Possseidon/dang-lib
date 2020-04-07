@@ -16,40 +16,79 @@ public:
     /// <summary>Allows for implicit conversion to the actual lua state pointer.</summary>
     operator lua_State* () const;
 
-    /// <summary>Pushes a wrapped version of the given template parameter function onto the stack.</summary>
+    /// <summary>Pushes a wrapped version of the given template parameter function onto the stack and returns a wrapper to it.</summary>
     template <auto Func, typename = detail::SignatureInfo<decltype(Func)>>
-    void push()
+    StackPos push()
     {
         lua_pushcfunction(state_, wrap<Func>);
+        return StackPos(state_, -1);
     }
 
-    /// <summary>Pushes a wrapped closure of the given function onto the stack.</summary>
+    /// <summary>Pushes a wrapped closure of the given function onto the stack and returns a wrapper to it.</summary>
     template <typename TFunc>
-    void pushFunction(TFunc func)
+    StackPos pushFunction(TFunc func)
     {
         dlua::pushFunction<TFunc>(state_, func);
+        return StackPos(state_, -1);
     }
 
-    /// <summary>Pushes an in-place constructed object onto the stack.</summary>
+    /// <summary>Pushes an in-place constructed object onto the stack and returns a wrapper to it/them.</summary>
     template <typename T, typename... TArgs>
-    void push(TArgs&&... args)
+    auto push(TArgs&&... args)
     {
-        Convert<T>::push(state_, std::forward<TArgs>(args)...);
+        if constexpr (Convert<T>::PushCount == 1) {
+            Convert<T>::push(state_, std::forward<TArgs>(args)...);
+            return StackPos(state_, -1);
+        }
+        else {
+            int old_top = lua_gettop(state_);
+            Convert<T>::push(state_, std::forward<TArgs>(args)...);
+            return VarStackPos(state_, old_top + 1);
+        }
     }
 
-    /// <summary>Pushes a move constructed object on the stack.</summary>
+    /// <summary>Pushes a move constructed object on the stack and returns a wrapper to it.</summary>
     template <typename T>
-    void push(T&& value)
+    StackPos push(T&& value)
     {
-        Convert<T>::push(state_, std::forward<T>(value));
+        if constexpr (Convert<T>::PushCount == 1) {
+            Convert<T>::push(state_, std::forward<T>(value));
+            return StackPos(state_, -1);
+        }
+        else {
+            int old_top = lua_gettop(state_);
+            Convert<T>::push(state_, std::forward<T>(value));
+            return StackPos(state_, old_top + 1);
+        }
+
     }
 
-    /// <summary>Pushes a reference to the given object onto the stack.</summary>
+    /// <summary>Pushes a reference to the given object onto the stack and returns a wrapper to it.</summary>
     template <typename T>
-    void pushRef(T& value)
+    StackPos pushRef(T& value)
     {
         Convert<T>::pushRef(state_, value);
+        return StackPos(state_, -1);
     }
+
+    /// <summary>Pushes the global table on the stack and returns a wrapper to it and returns a wrapper to it.</summary>
+    StackPos pushGlobal()
+    {
+        lua_pushglobaltable(state_);
+        return StackPos(state_, -1);
+    }
+
+    /// <summary>Pops one or as many values as specified from the stack.</summary>
+    void pop(int count = 1) const;
+
+    /// <summary>Returns the size of the lua stack.</summary>
+    int top() const;
+
+    /// <summary>Sets the size of the lua stack, filling new values with nil.</summary>
+    void setTop(int new_top) const;
+
+    /// <summary>Wraps the given one-based stack position.</summary>
+    StackPos operator[](int pos) const;
 
     /// <summary>Used as in combination with a return statement to return any value.</summary>
     template <typename TRet>
