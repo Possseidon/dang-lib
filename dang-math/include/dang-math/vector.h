@@ -593,7 +593,7 @@ struct Vector : std::array<T, Dim> {
 
 #define DMATH_DEFINE_SWIZZLE(name, ...) \
 constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
-inline void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
+void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
 
     DMATH_DEFINE_SWIZZLE(xy, 0, 1); ;
     DMATH_DEFINE_SWIZZLE(xz, 0, 2);

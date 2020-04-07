@@ -110,7 +110,7 @@ struct LineBase : public AxisSystemBase<T, Dim, 1> {
     }
 
     /// <summary>Changes the head of the line to the given position without modifying the tail position.</summary>
-    inline void setHead(const Vector<T, Dim>& position)
+    void setHead(const Vector<T, Dim>& position)
     {
         direction() = position - this->support;
     }
@@ -122,7 +122,7 @@ struct LineBase : public AxisSystemBase<T, Dim, 1> {
     }
 
     /// <summary>Changes the tail of the line to the given position without modifying the head position.</summary>
-    inline void setTail(const Vector<T, Dim>& position)
+    void setTail(const Vector<T, Dim>& position)
     {
         direction() += position - this->support;
         this->support = position;

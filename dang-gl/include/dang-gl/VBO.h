@@ -73,98 +73,98 @@ public:
         using pointer = T*;
         using reference = T&;
 
-        inline iterator() = default;
-        inline explicit iterator(pointer position) : position_(position) {}
+        iterator() = default;
+        explicit iterator(pointer position) : position_(position) {}
 
-        inline reference operator*()
+        reference operator*()
         {
             return *position_;
         }
 
-        inline pointer operator->()
+        pointer operator->()
         {
             return position_;
         }
 
-        inline friend bool operator==(iterator lhs, iterator rhs)
+        friend bool operator==(iterator lhs, iterator rhs)
         {
             return lhs.position_ == rhs.position_;
         }
 
-        inline friend bool operator!=(iterator lhs, iterator rhs)
+        friend bool operator!=(iterator lhs, iterator rhs)
         {
             return lhs.position_ != rhs.position_;
         }
 
-        inline friend bool operator<(iterator lhs, iterator rhs)
+        friend bool operator<(iterator lhs, iterator rhs)
         {
             return lhs.position_ < rhs.position_;
         }
 
-        inline friend bool operator<=(iterator lhs, iterator rhs)
+        friend bool operator<=(iterator lhs, iterator rhs)
         {
             return lhs.position_ <= rhs.position_;
         }
 
-        inline friend bool operator>(iterator lhs, iterator rhs)
+        friend bool operator>(iterator lhs, iterator rhs)
         {
             return lhs.position_ > rhs.position_;
         }
 
-        inline friend bool operator>=(iterator lhs, iterator rhs)
+        friend bool operator>=(iterator lhs, iterator rhs)
         {
             return lhs.position_ >= rhs.position_;
         }
 
-        inline iterator& operator++()
+        iterator& operator++()
         {
             position_++;
             return *this;
         }
 
-        inline iterator operator++(int)
+        iterator operator++(int)
         {
             auto old = *this;
             position_++;
             return old;
         }
 
-        inline iterator& operator--()
+        iterator& operator--()
         {
             position_--;
             return *this;
         }
 
-        inline iterator operator--(int)
+        iterator operator--(int)
         {
             auto old = *this;
             position_--;
             return old;
         }
 
-        inline iterator& operator+=(std::ptrdiff_t offset)
+        iterator& operator+=(std::ptrdiff_t offset)
         {
             position_ += offset;
             return *this;
         }
 
-        inline iterator operator+(std::ptrdiff_t offset) const
+        iterator operator+(std::ptrdiff_t offset) const
         {
             return *this += offset;
         }
 
-        inline iterator& operator-=(std::ptrdiff_t offset)
+        iterator& operator-=(std::ptrdiff_t offset)
         {
             position_ -= offset;
             return *this;
         }
 
-        inline iterator operator-(std::ptrdiff_t offset) const
+        iterator operator-(std::ptrdiff_t offset) const
         {
             return *this -= offset;
         }
 
-        inline reference operator[](std::ptrdiff_t offset) const
+        reference operator[](std::ptrdiff_t offset) const
         {
             return position_[offset];
         }

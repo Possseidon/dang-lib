@@ -14,14 +14,14 @@ struct UniformWrapper {};
 
 template <>
 struct UniformWrapper<GLfloat> {
-    inline static GLfloat get(GLuint program, GLint location)
+    static GLfloat get(GLuint program, GLint location)
     {
         GLfloat value;
         glGetUniformfv(program, location, &value);
         return value;
     }
 
-    inline static void set(GLint location, GLfloat value)
+    static void set(GLint location, GLfloat value)
     {
         glUniform1f(location, value);
     }
@@ -29,14 +29,14 @@ struct UniformWrapper<GLfloat> {
 
 template <>
 struct UniformWrapper<GLdouble> {
-    inline static GLdouble get(GLuint program, GLint location)
+    static GLdouble get(GLuint program, GLint location)
     {
         GLdouble value;
         glGetUniformdv(program, location, &value);
         return value;
     }
 
-    inline static void set(GLint location, GLdouble value)
+    static void set(GLint location, GLdouble value)
     {
         glUniform1d(location, value);
     }
@@ -44,14 +44,14 @@ struct UniformWrapper<GLdouble> {
 
 template <>
 struct UniformWrapper<GLint> {
-    inline static GLint get(GLuint program, GLint location)
+    static GLint get(GLuint program, GLint location)
     {
         GLint value;
         glGetUniformiv(program, location, &value);
         return value;
     }
 
-    inline static void set(GLint location, GLint value)
+    static void set(GLint location, GLint value)
     {
         glUniform1i(location, value);
     }
@@ -59,14 +59,14 @@ struct UniformWrapper<GLint> {
 
 template <>
 struct UniformWrapper<GLuint> {
-    inline static GLuint get(GLuint program, GLint location)
+    static GLuint get(GLuint program, GLint location)
     {
         GLuint value;
         glGetUniformuiv(program, location, &value);
         return value;
     }
 
-    inline static void set(GLint location, GLuint value)
+    static void set(GLint location, GLuint value)
     {
         glUniform1ui(location, value);
     }
@@ -74,14 +74,14 @@ struct UniformWrapper<GLuint> {
 
 template <>
 struct UniformWrapper<GLboolean> {
-    inline static GLboolean get(GLuint program, GLint location)
+    static GLboolean get(GLuint program, GLint location)
     {
         GLint value;
         glGetUniformiv(program, location, &value);
         return value != 0;
     }
 
-    inline static void set(GLint location, GLboolean value)
+    static void set(GLint location, GLboolean value)
     {
         glUniform1i(location, static_cast<GLint>(value));
     }
@@ -89,7 +89,7 @@ struct UniformWrapper<GLboolean> {
 
 template <typename T, std::size_t Dim>
 struct UniformWrapper<dmath::Vector<T, Dim>> {
-    inline static dmath::Vector<T, Dim> get(GLuint program, GLint location)
+    static dmath::Vector<T, Dim> get(GLuint program, GLint location)
     {
         if constexpr (std::is_same_v<T, GLboolean>) {
             dgl::ivec<Dim> value;
@@ -110,7 +110,7 @@ struct UniformWrapper<dmath::Vector<T, Dim>> {
         }
     }
 
-    inline static void set(GLint location, const dmath::Vector<T, Dim>& value)
+    static void set(GLint location, const dmath::Vector<T, Dim>& value)
     {
         if constexpr (std::is_same_v<T, GLboolean>) {
             dgl::ivec<Dim> bvalue(value);
@@ -129,7 +129,7 @@ struct UniformWrapper<dmath::Vector<T, Dim>> {
 
 template <typename T, std::size_t Cols, std::size_t Rows>
 struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
-    inline static dmath::Matrix<T, Cols, Rows> get(GLuint program, GLint location)
+    static dmath::Matrix<T, Cols, Rows> get(GLuint program, GLint location)
     {
         dmath::Matrix<T, Cols, Rows> value;
         if constexpr (std::is_same_v<T, GLfloat>)
@@ -143,7 +143,7 @@ struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
         return value;
     }
 
-    inline static void set(GLint location, const dmath::Matrix<T, Cols, Rows>& value)
+    static void set(GLint location, const dmath::Matrix<T, Cols, Rows>& value)
     {
         if constexpr (std::is_same_v<T, GLfloat>) {
             if constexpr (Cols == 2) {
