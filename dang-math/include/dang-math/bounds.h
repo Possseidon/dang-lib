@@ -78,6 +78,13 @@ struct BoundsIterator {
         return *this;
     }
 
+    constexpr BoundsIterator& operator++(int)
+    {
+        BoundsIterator old(*this);
+        ++(*this);
+        return old;
+    }
+
     constexpr bool operator==(const BoundsIterator& other) const
     {
         return current_ == other.current_;
@@ -91,6 +98,11 @@ struct BoundsIterator {
     constexpr const Vector<T, Dim>& operator*() const
     {
         return current_;
+    }
+
+    constexpr const Vector<T, Dim>* operator->() const
+    {
+        return &current_;
     }
 
 private:
@@ -124,7 +136,7 @@ struct Bounds {
     /// <summary>Returns true, when high is bigger than or equal to low.</summary>
     constexpr bool isNormalized() const
     {
-        return low <= high;
+        return low.allLessEqual(high);
     }
 
     /// <summary>Returns bounds with any non-normalized components swapped.</summary>
@@ -162,28 +174,28 @@ struct Bounds {
     /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
     constexpr bool contains(const Bounds& other) const
     {
-        return other.low >= low && other.high <= high;
+        return other.low.allGreaterEqual(low) && other.high.allLessEqual(high);
     }
 
     /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
     /// <remarks>Comparison is inclusive for low and exclusive for high.</remarks>
     constexpr bool contains(const Vector<T, Dim>& vector) const
     {
-        return vector >= low && vector < high;
+        return vector.allGreaterEqual(low) && vector.allLess(high);
     }
 
     /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
     /// <remarks>Comparison is inclusive for both low and high.</remarks>
     constexpr bool containsInclusive(const Vector<T, Dim>& vector) const
     {
-        return vector >= low && vector <= high;
+        return vector.allGreaterEqual(low) && vector.allLessEqual(high);
     }
 
     /// <summary>Returns true, if other is enclosed by the calling bounds.</summary>
     /// <remarks>Comparison is exclusive for both low and high.</remarks>
     constexpr bool containsExclusive(const Vector<T, Dim>& vector) const
     {
-        return vector > low && vector < high;
+        return vector.allGreater(low) && vector.allLess(high);
     }
 
     /// <summary>Clamps the given bounds, resulting in an intersection of both bounds.</summary>
@@ -266,25 +278,25 @@ struct Bounds {
     /// <summary>Returns true, if high of the first bounds is less than low of the second bounds.</summary>
     friend constexpr bool operator<(const Bounds& lhs, const Bounds& rhs)
     {
-        return lhs.high < rhs.low;
+        return lhs.high.allLess(rhs.low);
     }
 
     /// <summary>Returns true, if high of the first bounds is less than or equal to low of the second bounds.</summary>
     friend constexpr bool operator<=(const Bounds& lhs, const Bounds& rhs)
     {
-        return lhs.high <= rhs.low;
+        return lhs.high.allLessEqual(rhs.low);
     }
 
     /// <summary>Returns true, if low of the first bounds is greater than high of the second bounds.</summary>
     friend constexpr bool operator>(const Bounds& lhs, const Bounds& rhs)
     {
-        return lhs.low > rhs.high;
+        return lhs.low.allGreater(rhs.high);
     }
 
     /// <summary>Returns true, if low of the first bounds is greater than or equal to high of the second bounds.</summary>
     friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs)
     {
-        return lhs.low >= rhs.high;
+        return lhs.low.allGreaterEqual(rhs.high);
     }
 
     /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
@@ -296,7 +308,7 @@ struct Bounds {
     /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
     constexpr BoundsIterator<T, Dim> end() const
     {
-        return ++BoundsIterator<T, Dim>(*this, high - Vector<T, Dim>(1));
+        return ++BoundsIterator<T, Dim>(*this, high - 1);
     }
 };
 
