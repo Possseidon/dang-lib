@@ -81,8 +81,8 @@ public:
     /// <summary>Pops one or as many values as specified from the stack.</summary>
     void pop(int count = 1) const;
 
-    /// <summary>Returns the size of the Lua stack.</summary>
-    int top() const;
+    /// <summary>Returns the top element of the stack.</summary>
+    StackPos top() const;
 
     /// <summary>Sets the size of the Lua stack, filling new values with nil.</summary>
     void setTop(int new_top) const;

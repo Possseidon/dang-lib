@@ -6,11 +6,16 @@
 namespace dang::lua
 {
 
+class Reference;
+
 template <typename T>
 class StackIterator;
 
 template <typename T>
 class TableWrapper;
+
+class PairsWrapper;
+class IPairsWrapper;
 
 class StackPos;
 class Arg;
@@ -27,6 +32,8 @@ public:
     friend StackIterator<Arg>;
     friend StackIterator<Ret>;
 
+    /// <summary>Initializes a stack position without state and 0 position.</summary>
+    StackPos();
     /// <summary>Wraps the given stack position or the last element if omitted.</summary>
     StackPos(lua_State* state, int pos = -1);
 
@@ -64,7 +71,7 @@ public:
 
     /// <summary>Calls the stack position with the given parameters and returns the result.</summary>
     template <typename TRet = void, typename... TArgs>
-    TRet call(TArgs&&... args)
+    TRet call(TArgs&&... args) const
     {
         using ConvertArgs = Convert<std::tuple<TArgs...>>;
         using ConvertRet = Convert<TRet>;
@@ -97,31 +104,96 @@ public:
 
     /// <summary>Calls the stack position with the given parameters and returns the results as a std::tuple.</summary>
     template <typename... TRets, typename... TArgs>
-    std::tuple<TRets...> callMultRet(TArgs&&... args)
+    std::tuple<TRets...> callMultRet(TArgs&&... args) const
     {
         return call<std::tuple<TRets...>>(std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the stack position with the given parameters, discarding any return values.</summary>
     template <typename... TArgs>
-    void operator()(TArgs&&... args)
+    void operator()(TArgs&&... args) const
     {
         call(std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the stack position with the given parameters and pushes the single result on the stack, returning a wrapper to it.</summary>
     template <typename... TArgs>
-    Ret callPushRet(TArgs&&... args);
+    Ret callPushRet(TArgs&&... args) const;
     /// <summary>Calls the stack position with the given parameters and pushes the results on the stack, returning a wrapper to them.</summary>
     template <typename... TArgs>
-    MultRet callPushMultRet(TArgs&&... args);
+    MultRet callPushMultRet(TArgs&&... args) const;
 
+    // --- arithmetic operations ---
+
+    /// <summary>Pushes the result of a binary arithmetic operation with a given stack position on the stack.</summary>
+    StackPos arithPush(ArithOp operation, StackPos other) const;
+    /// <summary>Returns a reference to the result of a binary arithmetic operation with a given stack position.</summary>
+    Reference arith(ArithOp operation, StackPos other) const;
+
+    /// <summary>Pushes the result of a unary arithmetic operation with a given stack position on the stack.</summary>
+    StackPos arithPush(ArithOp operation) const;
+    /// <summary>Returns a reference to the result of a unary arithmetic operation with a given stack position.</summary>
+    Reference arith(ArithOp operation) const;
+
+    // --- binary operations ---
+
+    friend Reference operator+(StackPos lhs, StackPos rhs);
+    friend Reference operator-(StackPos lhs, StackPos rhs);
+    friend Reference operator*(StackPos lhs, StackPos rhs);
+    friend Reference operator/(StackPos lhs, StackPos rhs);
+    Reference idiv(StackPos other);
+    friend Reference operator%(StackPos lhs, StackPos rhs);
+    friend Reference operator&(StackPos lhs, StackPos rhs);   
+    friend Reference operator|(StackPos lhs, StackPos rhs);
+    friend Reference operator^(StackPos lhs, StackPos rhs);
+    friend Reference operator<<(StackPos lhs, StackPos rhs);
+    friend Reference operator>>(StackPos lhs, StackPos rhs);
+
+    // --- unary operations ---
+
+    Reference operator-() const;
+    Reference operator~() const;
+                   
+    // --- compare operations ---
+
+    /// <summary>Compares two stack positions with the given operation, respecting metamethods.</summary>
+    bool compare(CompareOp operation, StackPos other);
+
+    /// <summary>Tests two stack positions for equality, respecting the __eq metamethod.</summary>
+    friend bool operator==(StackPos lhs, StackPos rhs);
+    /// <summary>Tests two stack positions for inequality, respecting the __eq metamethod.</summary>
+    friend bool operator!=(StackPos lhs, StackPos rhs);
+    /// <summary>Tests, if a stack position is less than another stack position, respecting the __lt metamethod.</summary>
+    friend bool operator<(StackPos lhs, StackPos rhs);
+    /// <summary>Tests, if a stack position is less than or equal to another stack position, respecting the __le metamethod.</summary>
+    friend bool operator<=(StackPos lhs, StackPos rhs);
+    /// <summary>Tests, if a stack position is greater than another stack position, respecting the __lt metamethod.</summary>
+    /// <remarks>This simply swaps the operands and uses __lt, as in Lua.</remarks>
+    friend bool operator>(StackPos lhs, StackPos rhs);
+    /// <summary>Tests, if a stack position is greater than or equal to another stack position, respecting the __le metamethod.</summary>
+    /// <remarks>This simply swaps the operands and uses __le, as in Lua.</remarks>
+    friend bool operator>=(StackPos lhs, StackPos rhs);
+              
+    // --- formatting ---
+
+    /// <summary>Converts the stack position into a string, respecting the __tostring metamethod.</summary>
+    std::string tostring() const;
+    /// <summary>Performs a tostring on the stack position, which is printed to the stream.</summary>
+    friend std::ostream& operator<<(std::ostream& ostream, StackPos pos);
+    
+    // --- table access --
+                  
     /// <summary>Returns a wrapper, which can be used for table access.</summary>
     template <typename T>
-    TableWrapper<T> operator[](T key)
+    TableWrapper<T> operator[](T key) const
     {
         return TableWrapper<T>(*this, key);
     }
+
+    /// <summary>Allows for range based for loops, which work in a similar fashion to a Lua pairs for loop.</summary>
+    PairsWrapper pairs() const;
+    /// <summary>Allows for range based for loops, which work in a similar fashion to a Lua ipairs for loop.</summary>
+    IPairsWrapper ipairs() const;
 
 private:
     lua_State* state_;
@@ -255,6 +327,11 @@ public:
     StackIterator operator-(difference_type offset) const
     {
         return StackIterator(StackPos(arg_.state_, arg_.pos_ - offset));
+    }
+
+    difference_type operator-(StackIterator other) const
+    {
+        return arg_.pos_ - other.arg_.pos_;
     }
 
     value_type operator[](difference_type offset) const
@@ -584,6 +661,181 @@ private:
     TKey key_;
 };
 
+class PairsIterator {
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = std::pair<StackPos, StackPos>;
+    using difference_type = lua_Integer;
+    using pointer = value_type*;
+    using reference = value_type&;
+
+    /// <summary>Initializes an end iterator.</summary>
+    PairsIterator() = default;
+
+    /// <summary>Initializes a begin iterator for the given table.</summary>
+    PairsIterator(StackPos iterable)
+        : iterable_(iterable)
+        , pair_({ {}, {} })
+    {
+        lua_pushnil(iterable.state());
+        pair_->first = StackPos(iterable.state());
+        next();
+        pair_->second = StackPos(iterable.state());
+    }
+
+    const value_type& operator*() const
+    {
+        return *pair_;
+    }
+
+    const value_type* operator->() const
+    {
+        return &*pair_;
+    }
+
+    friend bool operator==(const PairsIterator& lhs, const PairsIterator& rhs)
+    {
+        return lhs.pair_ == rhs.pair_;
+    }
+
+    friend bool operator!=(const PairsIterator& lhs, const PairsIterator& rhs)
+    {
+        return lhs.pair_ != rhs.pair_;
+    }
+
+    PairsIterator& operator++()
+    {
+        pair_->second.pop();
+        next();
+        return *this;
+    }
+
+    void operator++(int)
+    {
+        ++(*this);
+    }
+
+private:
+    void next()
+    {
+        if (!lua_next(iterable_.state(), iterable_.pos()))
+            pair_ = std::nullopt;
+    }
+
+    StackPos iterable_;
+    std::optional<std::pair<StackPos, StackPos>> pair_;
+};
+
+class IPairsIterator {
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = std::pair<lua_Integer, StackPos>;
+    using difference_type = lua_Integer;
+    using pointer = value_type*;
+    using reference = value_type&;
+
+    /// <summary>Initializes an end iterator.</summary>
+    IPairsIterator() = default;
+
+    /// <summary>Initializes a begin iterator for the given table.</summary>
+    IPairsIterator(StackPos iterable)
+        : iterable_(iterable)
+        , ipair_(1, {})
+    {
+        next();
+        ipair_.second = StackPos(iterable_.state());
+    }
+
+    const value_type& operator*() const
+    {
+        return ipair_;
+    }
+
+    const value_type* operator->() const
+    {
+        return &ipair_;
+    }
+
+    friend bool operator==(const IPairsIterator& lhs, const IPairsIterator& rhs)
+    {
+        return lhs.ipair_.first == rhs.ipair_.first;
+    }
+
+    friend bool operator!=(const IPairsIterator& lhs, const IPairsIterator& rhs)
+    {
+        return lhs.ipair_.first != rhs.ipair_.first;
+    }
+
+    IPairsIterator& operator++()
+    {
+        ipair_.second.pop();
+        ipair_.first++;
+        next();
+        return *this;
+    }
+
+    void operator++(int)
+    {
+        ++(*this);
+    }
+
+private:
+    void next()
+    {
+        if (lua_geti(iterable_.state(), iterable_.pos(), ipair_.first) == LUA_TNIL) {
+            ipair_.first = 0;
+            lua_pop(iterable_.state(), 1);
+        }
+    }
+
+    StackPos iterable_;
+    std::pair<lua_Integer, StackPos> ipair_;
+};
+
+/// <summary>Wraps the iteration process using pairs.</summary>
+class PairsWrapper {
+public:
+    PairsWrapper(StackPos iterable)
+        : iterable_(iterable)
+    {
+    }
+
+    PairsIterator begin()
+    {
+        return { iterable_ };
+    }
+
+    PairsIterator end()
+    {
+        return {};
+    }
+
+private:
+    StackPos iterable_;
+};
+
+/// <summary>Wraps the iteration process using ipairs.</summary>
+class IPairsWrapper {
+public:
+    IPairsWrapper(StackPos iterable)
+        : iterable_(iterable)
+    {
+    }
+
+    IPairsIterator begin()
+    {
+        return { iterable_ };
+    }
+
+    IPairsIterator end()
+    {
+        return {};
+    }
+
+private:
+    StackPos iterable_;
+};
+
 /// <summary>Allows for conversion between any table wrapper type and Lua.</summary>
 template <typename TKey>
 struct Convert<TableWrapper<TKey>> {
@@ -597,7 +849,7 @@ struct Convert<TableWrapper<TKey>> {
 };
 
 template<typename ...TArgs>
-inline Ret StackPos::callPushRet(TArgs&& ...args)
+inline Ret StackPos::callPushRet(TArgs&& ...args) const
 {
     using ConvertArgs = Convert<std::tuple<TArgs...>>;
     push();
@@ -607,7 +859,7 @@ inline Ret StackPos::callPushRet(TArgs&& ...args)
 }
 
 template<typename ...TArgs>
-inline MultRet StackPos::callPushMultRet(TArgs&& ...args)
+inline MultRet StackPos::callPushMultRet(TArgs&& ...args) const
 {
     using ConvertArgs = Convert<std::tuple<TArgs...>>;
     push();

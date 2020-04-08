@@ -19,9 +19,9 @@ void State::pop(int count) const
     lua_pop(state_, count);
 }
 
-int State::top() const
+StackPos State::top() const
 {
-    return lua_gettop(state_);
+    return StackPos(state_, -1);
 }
 
 void State::setTop(int new_top) const

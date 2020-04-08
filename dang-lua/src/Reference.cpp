@@ -10,6 +10,11 @@ Reference::Reference(lua_State* state, int pos)
 {
 }
 
+Reference::Reference(StackPos pos)
+    : Reference(pos.state(), pos.pos())
+{
+}
+
 Reference::~Reference()
 {
     luaL_unref(state_, LUA_REGISTRYINDEX, ref_);
@@ -28,6 +33,11 @@ Reference& Reference::operator=(Reference&& other) noexcept
     ref_ = other.ref_;
     other.ref_ = LUA_NOREF;
     return *this;
+}
+
+Reference Reference::take(lua_State* state)
+{
+    return Reference(state);
 }
 
 lua_State* Reference::state() const
@@ -49,6 +59,12 @@ StackPos Reference::push(lua_State* L) const
     push();
     lua_xmove(state_, L, 1);
     return StackPos(L, -1);
+}
+     
+Reference::Reference(lua_State* state)
+    : state_(state)
+    , ref_(luaL_ref(state, LUA_REGISTRYINDEX))
+{
 }
 
 }

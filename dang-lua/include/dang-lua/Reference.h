@@ -10,6 +10,8 @@ class Reference {
 public:
     /// <summary>Increases the lifetime of the given stack position by putting it in the registry table.</summary>
     Reference(lua_State* state, int pos);
+    /// <summary>Increases the lifetime of the given stack position by putting it in the registry table.</summary>
+    Reference(StackPos pos);
     /// <summary>Removes the reference from the registry.</summary>
     ~Reference();
 
@@ -17,6 +19,9 @@ public:
     Reference(Reference&& other) noexcept;
     Reference& operator=(const Reference&) = delete;
     Reference& operator=(Reference&& other) noexcept;
+
+    /// <summary>Turns the top of the stack into a reference and pops the original value.</summary>
+    static Reference take(lua_State* state);
 
     /// <summary>The associated Lua state for the reference.</summary>
     lua_State* state() const;
@@ -56,6 +61,9 @@ public:
     }
 
 private:
+    /// <summary>Turns the top of the stack into a reference and pops the original value.</summary>
+    explicit Reference(lua_State* state);
+    
     lua_State* state_;
     int ref_;
 };
