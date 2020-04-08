@@ -18,12 +18,12 @@ public:
     Reference& operator=(const Reference&) = delete;
     Reference& operator=(Reference&& other) noexcept;
 
-    /// <summary>The associated lua state for the reference.</summary>
+    /// <summary>The associated Lua state for the reference.</summary>
     lua_State* state() const;
 
     /// <summary>Pushes the referenced value on the stack again, returning a wrapper to the pushed value.</summary>
     StackPos push() const;
-    /// <summary>Pushes the referenced value on the stack of the given lua state, returning a wrapper to the pushed value.</summary>
+    /// <summary>Pushes the referenced value on the stack of the given Lua state, returning a wrapper to the pushed value.</summary>
     StackPos push(lua_State* L) const;
 
     /// <summary>Calls the referenced value with the given parameters and returns the result.</summary>

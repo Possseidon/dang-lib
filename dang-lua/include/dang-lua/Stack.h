@@ -20,7 +20,7 @@ class VarStackPos;
 class VarArg;
 class MultRet;
 
-/// <summary>Wraps a position on the lua stack.</summary>
+/// <summary>Wraps a position on the Lua stack.</summary>
 class StackPos {
 public:
     friend StackIterator<StackPos>;
@@ -30,14 +30,14 @@ public:
     /// <summary>Wraps the given stack position or the last element if omitted.</summary>
     StackPos(lua_State* state, int pos = -1);
 
-    /// <summary>Returns the associated lua state.</summary>
+    /// <summary>Returns the associated Lua state.</summary>
     lua_State* state() const;
     /// <summary>Returns the stack position.</summary>
     int pos() const;
 
     /// <summary>Pushes a copy of the value on the stack.</summary>
     StackPos push() const;
-    /// <summary>Pushes a copy of the value on the stack of the given lua state.</summary>
+    /// <summary>Pushes a copy of the value on the stack of the given Lua state.</summary>
     StackPos push(lua_State* L) const;
 
     /// <summary>Convenience function to have named pop function calls with debug assert, that it actually pops the top.</summary>
@@ -128,7 +128,7 @@ private:
     int pos_;
 };
 
-/// <summary>Wraps an argument of a lua function as a stack position.</summary>
+/// <summary>Wraps an argument of a Lua function as a stack position.</summary>
 class Arg : public StackPos {
 public:
     using StackPos::StackPos;
@@ -148,13 +148,13 @@ public:
     }
 };
 
-/// <summary>Wraps a single return value of a lua function.</summary>
+/// <summary>Wraps a single return value of a Lua function.</summary>
 class Ret : public StackPos {
 public:
     using StackPos::StackPos;
 };
 
-/// <summary>Enables iteration over variadic arguments of a lua function.</summary>
+/// <summary>Enables iteration over variadic arguments of a Lua function.</summary>
 template <typename T>
 class StackIterator {
 public:
@@ -285,14 +285,14 @@ public:
     {
     }
 
-    /// <summary>Returns the associated lua state.</summary>
+    /// <summary>Returns the associated Lua state.</summary>
     lua_State* state() const;
     /// <summary>Returns the first stack position.</summary>
     int pos() const;
 
     /// <summary>Copies all values onto the stack.</summary>
     int pushAll() const;
-    /// <summary>Copies all values onto the stack of the given lua state.</summary>
+    /// <summary>Copies all values onto the stack of the given Lua state.</summary>
     int pushAll(lua_State* L) const;
 
     /// <summary>Returns, wether there are no wrapped stack positions.</summary>
@@ -347,7 +347,7 @@ private:
     int count_;
 };
 
-/// <summary>Wraps variadic arguments to a lua function and mimics a container.</summary>
+/// <summary>Wraps variadic arguments to a Lua function and mimics a container.</summary>
 class VarArg : public VarStackPos {
 public:
     using VarStackPos::VarStackPos;
@@ -377,7 +377,7 @@ public:
     };
 };
 
-/// <summary>Wraps muiltiple consecutive return values of a lua function and mimics a container.</summary>
+/// <summary>Wraps muiltiple consecutive return values of a Lua function and mimics a container.</summary>
 class MultRet : public VarStackPos {
 public:
     using VarStackPos::VarStackPos;
@@ -392,7 +392,7 @@ public:
     /// <summary>Returns a stack iterator, one after the last element.</summary>
     StackIterator<Ret> end() const;
 
-    /// <summary>Pushes the given value on the lua stack and returns a value, which can be returned from the function.</summary>
+    /// <summary>Pushes the given value on the Lua stack and returns a value, which can be returned from the function.</summary>
     template <typename... TRets>
     static MultRet push(lua_State* L, TRets&&... value)
     {
@@ -477,6 +477,7 @@ struct Convert<MultRet> : Convert<VarStackPos> {
     }
 };
 
+/// <summary>Wraps the entry of a table on the stack using a key of any type.</summary>
 template <typename TKey>
 class TableWrapper {
 public:
@@ -488,6 +489,7 @@ public:
     {
     }
 
+    /// <summary>Pushes the value of the table with the key of that wrapper onto the stack.</summary>
     StackPos push() const
     {
         Convert<TKey>::push(pos_.state(), key_);
@@ -495,6 +497,7 @@ public:
         return StackPos(pos_.state());
     }
 
+    /// <summary>Pushes the value of the table with the key of that wrapper onto the given stack.</summary>
     StackPos push(lua_State* L)
     {
         push();
@@ -502,6 +505,7 @@ public:
         return StackPos(L);
     }
 
+    /// <summary>Assigns the given value to the table at the key of the wrapper.</summary>
     template <typename TValue>
     TableWrapper& operator=(TValue&& value)
     {
@@ -513,6 +517,7 @@ public:
         return *this;
     }
 
+    /// <summary>Treats value of the table at the key of the wrapper as a tempalted type and throws an error on failure.</summary>
     template <typename TValue>
     TValue as() const
     {
@@ -527,12 +532,14 @@ public:
         throw luaL_error(pos_.state(), "table value has incorrect type");
     }
 
+    /// <summary>Treats value of the table at the key of the wrapper as a tempalted type and throws an error on failure.</summary>
     template <typename TValue>
     operator TValue() const
     {
         return as<TValue>();
     }
 
+    /// <summary>Treats value of the table at the key of the wrapper as a reference to the tempalted type and throws an error on failure.</summary>
     template <typename TValue>
     TValue& ref() const
     {
@@ -548,7 +555,7 @@ public:
         throw luaL_error(pos_.state(), "table value has incorrect type");
     }
 
-    /// <summary>Mimics a full call to the stack position  with the given parameters and optional templated return value.</summary>
+    /// <summary>Calls the value of the table at the key of the wrapper with the given parameters and returns the result.</summary>
     template <typename TRet = MultRet, typename... TArgs>
     auto call(TArgs&&... args) const
     {
@@ -558,28 +565,18 @@ public:
         return result;
     }
 
-    /// <summary>Mimics a full call to the stack position with the given parameters and a std::tuple of the given templated return values.</summary>
+    /// <summary>Calls the value of the table at the key of the wrapper with the given parameters and returns the results as a std::tuple.</summary>
     template <typename... TRets, typename... TArgs>
     auto callMultRet(TArgs&&... args) const
     {
         return call<std::tuple<TRets...>>(std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Mimics a full call to the stack position, returning all values using a wrapper class, that basically wraps the lua stack.</summary>
+    /// <summary>Calls the value of the table at the key of the wrapper with the given parameters, discarding any return values.</summary>
     template <typename... TArgs>
     MultRet operator()(TArgs&&... args) const
     {
         return call(std::forward<TArgs>(args)...);
-    }
-
-    /// <summary>Accesses a table and pushes the value on the stack, returning a wrapper to it.</summary>
-    template <typename T>
-    TableWrapper<T> operator[](T&& key) const
-    {
-        auto value = push();
-        auto result = value[std::forward<T>(key)];
-        lua_pop(pos_.state(), 1);
-        return result;
     }
 
 private:
@@ -587,6 +584,7 @@ private:
     TKey key_;
 };
 
+/// <summary>Allows for conversion between any table wrapper type and Lua.</summary>
 template <typename TKey>
 struct Convert<TableWrapper<TKey>> {
     static constexpr std::optional<int> PushCount = 1;

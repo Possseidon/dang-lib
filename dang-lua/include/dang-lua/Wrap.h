@@ -98,7 +98,7 @@ struct SignatureInfo<TRet(TClass::*)(TArgs...) const noexcept> : SignatureInfo<T
 
 }
 
-/// <summary>Wraps the in the template supplied function into a lua function.</summary>
+/// <summary>Wraps the in the template supplied function into a Lua function.</summary>
 template <auto Func>
 int wrap(lua_State* L)
 {
@@ -152,13 +152,13 @@ class Function : public Reference {
     using Reference::Reference;
 };
 
-/// <summary>Wraps a lua function and has an overloaded call operator for the given return type.</summary>
+/// <summary>Wraps a Lua function and has an overloaded call operator for the given return type.</summary>
 template <typename TRet>
 class FunctionRet : public Reference {
 public:
     using Reference::Reference;
 
-    /// <summary>Mimics a full call to the lua function with the given parameters and return type.</summary>
+    /// <summary>Mimics a full call to the Lua function with the given parameters and return type.</summary>
     template <typename... TArgs>
     TRet operator()(TArgs&&... args) const
     {
@@ -166,13 +166,13 @@ public:
     }
 };
 
-/// <summary>Wraps a lua function and has an overloaded call operator for a tuple out of the given return type.</summary>
+/// <summary>Wraps a Lua function and has an overloaded call operator for a tuple out of the given return type.</summary>
 template <typename... TRets>
 class FunctionMultRet : public Reference {
 public:
     using Reference::Reference;
 
-    /// <summary>Mimics a full call to the lua function with the given parameters and return types as std::tuple.</summary>
+    /// <summary>Mimics a full call to the Lua function with the given parameters and return types as std::tuple.</summary>
     template <typename... TArgs>
     auto operator()(TArgs&&... args) const
     {
@@ -224,15 +224,15 @@ struct FunctionConverter {
 
 }
 
-/// <summary>Allows for conversion between lua functions and the Function wrapper class.</summary>
+/// <summary>Allows for conversion between Lua functions and the Function wrapper class.</summary>
 template <>
 struct Convert<Function> : detail::FunctionConverter<Function> {};
 
-/// <summary>Allows for conversion between lua functions and the Function wrapper class.</summary>
+/// <summary>Allows for conversion between Lua functions and the Function wrapper class.</summary>
 template <typename TRet>
 struct Convert<FunctionRet<TRet>> : detail::FunctionConverter<FunctionRet<TRet>> {};
 
-/// <summary>Allows for conversion between lua functions and the Function wrapper class.</summary>
+/// <summary>Allows for conversion between Lua functions and the Function wrapper class.</summary>
 template <typename... TRets>
 struct Convert<FunctionMultRet<TRets...>> : detail::FunctionConverter<FunctionMultRet<TRets...>> {};
 

@@ -3,7 +3,7 @@
 namespace dang::lua
 {
 
-/// <summary>An enum class for the different types, a lua value can have.</summary>
+/// <summary>An enum class for the different types, a Lua value can have.</summary>
 enum class Type {
     None = LUA_TNONE,
     Nil = LUA_TNIL,

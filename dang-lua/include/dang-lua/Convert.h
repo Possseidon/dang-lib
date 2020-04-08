@@ -44,7 +44,7 @@ const auto ClassTable = ClassInfo<T>().table();
 template <typename T>
 const auto ClassMetatable = ClassInfo<T>().metatable();
 
-/// <summary>Provides an array of string names for a given enum to convert from and to lua.</summary>
+/// <summary>Provides an array of string names for a given enum to convert from and to Lua.</summary>
 template <typename T>
 constexpr const char* EnumValues[1]{};
 
@@ -93,14 +93,14 @@ T check(lua_State* L, int arg);
 
 */
 
-/// <summary>A lua class instance can either be its own value or reference an existing instance.</summary>
+/// <summary>A Lua class instance can either be its own value or reference an existing instance.</summary>
 enum class StoreType {
     None,
     Value,
     Reference
 };
 
-/// <summary>Converts enums and instances of classes to and from lua as either value or reference.</summary>
+/// <summary>Converts enums and instances of classes to and from Lua as either value or reference.</summary>
 template <typename T>
 struct Convert {
     static_assert(dlua::EnumValues<T>[std::size(dlua::EnumValues<T>) - 1] == nullptr, "EnumValues is not null-terminated");
@@ -326,7 +326,7 @@ struct Convert<void> {
     static constexpr std::optional<int> PushCount = 0;
 };
 
-/// <summary>Allows for conversion between lua boolean and C++ bool.</summary>
+/// <summary>Allows for conversion between Lua boolean and C++ bool.</summary>
 template <>
 struct Convert<bool> {
     static constexpr std::optional<int> PushCount = 1;
@@ -363,7 +363,7 @@ struct Convert<bool> {
     }
 };
 
-/// <summary>Allows for conversion between lua numbers and C++ floating point types.</summary>
+/// <summary>Allows for conversion between Lua numbers and C++ floating point types.</summary>
 template <typename T>
 struct ConvertFloatingPoint {
     static_assert(std::is_floating_point_v<T>, "T must be floating point");
@@ -382,7 +382,7 @@ struct ConvertFloatingPoint {
         return lua_isnumber(L, pos);
     }
 
-    /// <summary>Converts the given argument stack position into a lua number and returns std::nullopt on failure.</summary>
+    /// <summary>Converts the given argument stack position into a Lua number and returns std::nullopt on failure.</summary>
     static std::optional<T> at(lua_State* L, int pos)
     {
         int isnum;
@@ -415,14 +415,14 @@ struct Convert<double> : ConvertFloatingPoint<double> {};
 template <>
 struct Convert<long double> : ConvertFloatingPoint<long double> {};
 
-/// <summary>Allows for conversion between lua integers and C++ integral types.</summary>
+/// <summary>Allows for conversion between Lua integers and C++ integral types.</summary>
 template <typename T>
 struct ConvertIntegral {
     static_assert(std::is_integral_v<T>, "T must be integral");
 
     static constexpr std::optional<int> PushCount = 1;
 
-    /// <summary>Checks, wether the given lua integer fits into the range of the C++ integral type.</summary>
+    /// <summary>Checks, wether the given Lua integer fits into the range of the C++ integral type.</summary>
     static bool checkRange([[maybe_unused]] lua_Integer value)
     {
         if constexpr (std::is_same_v<T, std::uint64_t>) {
@@ -516,7 +516,7 @@ struct Convert<std::int64_t> : ConvertIntegral<std::int64_t> {};
 template <>
 struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
 
-/// <summary>Allows for conversion between lua strings and C++ std::string.</summary>
+/// <summary>Allows for conversion between Lua strings and C++ std::string.</summary>
 template <>
 struct Convert<std::string> {
     static constexpr std::optional<int> PushCount = 1;

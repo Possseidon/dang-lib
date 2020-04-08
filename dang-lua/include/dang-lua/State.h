@@ -7,13 +7,13 @@
 namespace dang::lua
 {
 
-/// <summary>Wraps a lua state and some useful methods to interact with the lua stack.</summary>
+/// <summary>Wraps a Lua state and some useful methods to interact with the lua stack.</summary>
 class State {
 public:
-    /// <summary>Allows for implicit conversion from an existing lua state.</summary>
+    /// <summary>Allows for implicit conversion from an existing Lua state.</summary>
     State(lua_State* state);
 
-    /// <summary>Allows for implicit conversion to the actual lua state pointer.</summary>
+    /// <summary>Allows for implicit conversion to the actual Lua state pointer.</summary>
     operator lua_State* () const;
 
     /// <summary>Pushes a wrapped version of the given template parameter function onto the stack and returns a wrapper to it.</summary>
@@ -81,10 +81,10 @@ public:
     /// <summary>Pops one or as many values as specified from the stack.</summary>
     void pop(int count = 1) const;
 
-    /// <summary>Returns the size of the lua stack.</summary>
+    /// <summary>Returns the size of the Lua stack.</summary>
     int top() const;
 
-    /// <summary>Sets the size of the lua stack, filling new values with nil.</summary>
+    /// <summary>Sets the size of the Lua stack, filling new values with nil.</summary>
     void setTop(int new_top) const;
 
     /// <summary>Wraps the given one-based stack position.</summary>
@@ -108,7 +108,7 @@ private:
     lua_State* state_;
 };
 
-/// <summary>Owns a lua state and closes it, once it goes out of scope.</summary>
+/// <summary>Owns a Lua state and closes it, once it goes out of scope.</summary>
 class OwnedState : public State {
 public:
     OwnedState(bool open_libs = true);
