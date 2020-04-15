@@ -4,7 +4,6 @@
 #include "dang-math/bounds.h"
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
-#include "dang-utils/NonCopyable.h"
 
 #include "Binding.h"
 #include "BindingPoint.h"
@@ -159,7 +158,7 @@ struct WindowInfo {
     } x11;
 };
 
-class Window : public dutils::NonCopyable {
+class Window {
 public:
 
     struct EventInfoBase {
@@ -209,6 +208,11 @@ public:
 
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
+                                   
+    Window(const Window&) = delete;
+    Window(Window&&) = delete;        
+    Window& operator=(const Window&) = delete;
+    Window& operator=(Window&&) = delete;
 
     static Window& fromUserPointer(GLFWwindow* window);
 

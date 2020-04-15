@@ -1,7 +1,5 @@
 #pragma once
 
-#include "dang-utils/NonCopyable.h"
-
 #include "Object.h"
 
 namespace dang::gl
@@ -62,7 +60,7 @@ template <typename T>
 class VBO;
 
 template <typename T>
-class VBOMapping : dutils::NonCopyable {
+class VBOMapping {
 public:
 
     class iterator {
@@ -186,6 +184,11 @@ public:
         vbo_.binding().unlock();
         glUnmapBuffer(GL_ARRAY_BUFFER);
     }
+
+    VBOMapping(const VBOMapping&) = delete;
+    VBOMapping(VBOMapping&&) = delete;
+    VBOMapping& operator=(const VBOMapping&) = delete;
+    VBOMapping& operator=(VBOMapping&&) = delete;
 
     std::size_t size() const
     {

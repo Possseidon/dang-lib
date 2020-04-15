@@ -24,9 +24,6 @@
     <ClInclude Include="include\dang-utils\event.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-utils\NonCopyable.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-utils\metaclass.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>

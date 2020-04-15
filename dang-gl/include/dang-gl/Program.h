@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-utils/enum.h"
-#include "dang-utils/NonCopyable.h"
 
 #include "BindingPoint.h"
 #include "DataType.h"
@@ -98,7 +97,7 @@ struct ProgramInfo : public ObjectInfo {
 
 class Program;
 
-class ShaderVariable : public dutils::NonCopyable {
+class ShaderVariable {
 public:
     ShaderVariable(Program& program, GLint count, DataType type, std::string name, GLint location);
 
@@ -133,6 +132,11 @@ class ShaderUniformBase : public ShaderVariable {
 public:
     ShaderUniformBase(Program& program, GLint count, DataType type, std::string name);
     virtual ~ShaderUniformBase() {}
+                                         
+    ShaderUniformBase(const ShaderUniformBase&) = delete;
+    ShaderUniformBase(ShaderUniformBase&&) = delete;
+    ShaderUniformBase& operator=(const ShaderUniformBase&) = delete;
+    ShaderUniformBase& operator=(ShaderUniformBase&&) = delete;
 
     static std::unique_ptr<ShaderUniformBase> create(Program& program, GLint count, DataType type, std::string name);
 };
