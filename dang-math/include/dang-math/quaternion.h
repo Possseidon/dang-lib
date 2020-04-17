@@ -401,25 +401,25 @@ struct DualQuaternion {
     }
 
     /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YXZ-order.</summary>
-    static constexpr DualQuaternion fromEulerRad(const Vector<T, 3>& radians)
+    static constexpr DualQuaternion fromEulerRadYXZ(const Vector<T, 3>& radians)
     {
         return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
     }
 
     /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YXZ-order.</summary>
-    static constexpr DualQuaternion fromEuler(const Vector<T, 3>& degrees)
+    static constexpr DualQuaternion fromEulerYXZ(const Vector<T, 3>& degrees)
     {
         return DualQuaternion(Quaternion<T>::fromEuler(degrees));
     }
 
     /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YX-order.</summary>
-    static constexpr DualQuaternion fromEulerRad(const Vector<T, 2>& radians)
+    static constexpr DualQuaternion fromEulerRadYX(const Vector<T, 2>& radians)
     {
         return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
     }
 
     /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YX-order.</summary>
-    static constexpr DualQuaternion fromEuler(const Vector<T, 2>& degrees)
+    static constexpr DualQuaternion fromEulerYX(const Vector<T, 2>& degrees)
     {
         return DualQuaternion(Quaternion<T>::fromEuler(degrees));
     }
