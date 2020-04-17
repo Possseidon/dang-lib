@@ -9,66 +9,100 @@
 namespace dang::gl
 {
 
-template <typename T>
-struct UniformWrapper {};
+namespace detail
+{
 
-template <>
-struct UniformWrapper<GLfloat> {
-    static GLfloat get(GLuint program, GLint location)
+template <std::size_t Dim, typename T>
+constexpr auto glUniform = nullptr;
+
+template <> constexpr auto& glUniform<1, GLfloat> = glUniform1f;
+template <> constexpr auto& glUniform<2, GLfloat> = glUniform2f;
+template <> constexpr auto& glUniform<3, GLfloat> = glUniform3f;
+template <> constexpr auto& glUniform<4, GLfloat> = glUniform4f;
+
+template <> constexpr auto& glUniform<1, GLdouble> = glUniform1d;
+template <> constexpr auto& glUniform<2, GLdouble> = glUniform2d;
+template <> constexpr auto& glUniform<3, GLdouble> = glUniform3d;
+template <> constexpr auto& glUniform<4, GLdouble> = glUniform4d;
+
+template <> constexpr auto& glUniform<1, GLint> = glUniform1i;
+template <> constexpr auto& glUniform<2, GLint> = glUniform2i;
+template <> constexpr auto& glUniform<3, GLint> = glUniform3i;
+template <> constexpr auto& glUniform<4, GLint> = glUniform4i;
+
+template <> constexpr auto& glUniform<1, GLuint> = glUniform1ui;
+template <> constexpr auto& glUniform<2, GLuint> = glUniform2ui;
+template <> constexpr auto& glUniform<3, GLuint> = glUniform3ui;
+template <> constexpr auto& glUniform<4, GLuint> = glUniform4ui;
+
+template <std::size_t Dim, typename T>
+constexpr auto glUniformv = nullptr;
+
+template <> constexpr auto& glUniformv<1, GLfloat> = glUniform1fv;
+template <> constexpr auto& glUniformv<2, GLfloat> = glUniform2fv;
+template <> constexpr auto& glUniformv<3, GLfloat> = glUniform3fv;
+template <> constexpr auto& glUniformv<4, GLfloat> = glUniform4fv;
+
+template <> constexpr auto& glUniformv<1, GLdouble> = glUniform1dv;
+template <> constexpr auto& glUniformv<2, GLdouble> = glUniform2dv;
+template <> constexpr auto& glUniformv<3, GLdouble> = glUniform3dv;
+template <> constexpr auto& glUniformv<4, GLdouble> = glUniform4dv;
+
+template <> constexpr auto& glUniformv<1, GLint> = glUniform1iv;
+template <> constexpr auto& glUniformv<2, GLint> = glUniform2iv;
+template <> constexpr auto& glUniformv<3, GLint> = glUniform3iv;
+template <> constexpr auto& glUniformv<4, GLint> = glUniform4iv;
+
+template <> constexpr auto& glUniformv<1, GLuint> = glUniform1uiv;
+template <> constexpr auto& glUniformv<2, GLuint> = glUniform2uiv;
+template <> constexpr auto& glUniformv<3, GLuint> = glUniform3uiv;
+template <> constexpr auto& glUniformv<4, GLuint> = glUniform4uiv;
+
+template <typename T>
+constexpr auto glGetUniformv = nullptr;
+
+template <> constexpr auto& glGetUniformv<GLfloat> = glGetUniformfv;
+template <> constexpr auto& glGetUniformv<GLdouble> = glGetUniformdv;
+template <> constexpr auto& glGetUniformv<GLint> = glGetUniformiv;
+template <> constexpr auto& glGetUniformv<GLuint> = glGetUniformuiv;
+
+template <std::size_t Cols, std::size_t Rows, typename T>
+constexpr auto glUniformMatrixv = nullptr;
+
+template <> constexpr auto& glUniformMatrixv<2, 2, GLfloat> = glUniformMatrix2fv;
+template <> constexpr auto& glUniformMatrixv<2, 3, GLfloat> = glUniformMatrix2x3fv;
+template <> constexpr auto& glUniformMatrixv<2, 4, GLfloat> = glUniformMatrix2x4fv;
+template <> constexpr auto& glUniformMatrixv<3, 2, GLfloat> = glUniformMatrix3x2fv;
+template <> constexpr auto& glUniformMatrixv<3, 3, GLfloat> = glUniformMatrix3fv;
+template <> constexpr auto& glUniformMatrixv<3, 4, GLfloat> = glUniformMatrix3x4fv;
+template <> constexpr auto& glUniformMatrixv<4, 2, GLfloat> = glUniformMatrix4x2fv;
+template <> constexpr auto& glUniformMatrixv<4, 3, GLfloat> = glUniformMatrix4x3fv;
+template <> constexpr auto& glUniformMatrixv<4, 4, GLfloat> = glUniformMatrix4fv;
+
+template <> constexpr auto& glUniformMatrixv<2, 2, GLdouble> = glUniformMatrix2dv;
+template <> constexpr auto& glUniformMatrixv<2, 3, GLdouble> = glUniformMatrix2x3dv;
+template <> constexpr auto& glUniformMatrixv<2, 4, GLdouble> = glUniformMatrix2x4dv;
+template <> constexpr auto& glUniformMatrixv<3, 2, GLdouble> = glUniformMatrix3x2dv;
+template <> constexpr auto& glUniformMatrixv<3, 3, GLdouble> = glUniformMatrix3dv;
+template <> constexpr auto& glUniformMatrixv<3, 4, GLdouble> = glUniformMatrix3x4dv;
+template <> constexpr auto& glUniformMatrixv<4, 2, GLdouble> = glUniformMatrix4x2dv;
+template <> constexpr auto& glUniformMatrixv<4, 3, GLdouble> = glUniformMatrix4x3dv;
+template <> constexpr auto& glUniformMatrixv<4, 4, GLdouble> = glUniformMatrix4dv;
+
+}
+
+template <typename T>
+struct UniformWrapper {
+    static T get(GLuint program, GLint location)
     {
-        GLfloat value;
-        glGetUniformfv(program, location, &value);
+        T value;
+        detail::glGetUniformv<T>(program, location, &value);
         return value;
     }
 
     static void set(GLint location, GLfloat value)
     {
-        glUniform1f(location, value);
-    }
-};
-
-template <>
-struct UniformWrapper<GLdouble> {
-    static GLdouble get(GLuint program, GLint location)
-    {
-        GLdouble value;
-        glGetUniformdv(program, location, &value);
-        return value;
-    }
-
-    static void set(GLint location, GLdouble value)
-    {
-        glUniform1d(location, value);
-    }
-};
-
-template <>
-struct UniformWrapper<GLint> {
-    static GLint get(GLuint program, GLint location)
-    {
-        GLint value;
-        glGetUniformiv(program, location, &value);
-        return value;
-    }
-
-    static void set(GLint location, GLint value)
-    {
-        glUniform1i(location, value);
-    }
-};
-
-template <>
-struct UniformWrapper<GLuint> {
-    static GLuint get(GLuint program, GLint location)
-    {
-        GLuint value;
-        glGetUniformuiv(program, location, &value);
-        return value;
-    }
-
-    static void set(GLint location, GLuint value)
-    {
-        glUniform1ui(location, value);
+        detail::glUniform<1, T>(location, value);
     }
 };
 
@@ -91,39 +125,30 @@ template <typename T, std::size_t Dim>
 struct UniformWrapper<dmath::Vector<T, Dim>> {
     static dmath::Vector<T, Dim> get(GLuint program, GLint location)
     {
-        if constexpr (std::is_same_v<T, GLboolean>) {
-            dgl::ivec<Dim> value;
-            glGetUniformiv(program, location, &value[0]);
-            return static_cast<dgl::bvec<Dim>>(value);
-        }
-        else {
-            dmath::Vector<T, Dim> value;
-            if constexpr (std::is_same_v<T, GLfloat>)
-                glGetUniformfv(program, location, &value[0]);
-            else if constexpr (std::is_same_v<T, GLdouble>)
-                glGetUniformdv(program, location, &value[0]);
-            else if constexpr (std::is_same_v<T, GLint>)
-                glGetUniformiv(program, location, &value[0]);
-            else if constexpr (std::is_same_v<T, GLuint>)
-                glGetUniformuiv(program, location, &value[0]);
-            return value;
-        }
+        dmath::Vector<T, Dim> value;
+        detail::glGetUniformv<T>(program, location, &value[0]);
+        return value;
     }
 
     static void set(GLint location, const dmath::Vector<T, Dim>& value)
     {
-        if constexpr (std::is_same_v<T, GLboolean>) {
-            dgl::ivec<Dim> bvalue(value);
-            glUniform1iv(location, 1, &bvalue[0]);
-        }
-        else if constexpr (std::is_same_v<T, GLfloat>)
-            glUniform1fv(location, 1, &value[0]);
-        else if constexpr (std::is_same_v<T, GLdouble>)
-            glUniform1dv(location, 1, &value[0]);
-        else if constexpr (std::is_same_v<T, GLint>)
-            glUniform1iv(location, 1, &value[0]);
-        else if constexpr (std::is_same_v<T, GLuint>)
-            glUniform1uiv(location, 1, &value[0]);
+        detail::glUniformv<Dim, T>(location, 1, &value[0]);
+    }
+};
+
+template <std::size_t Dim>
+struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
+    static dmath::Vector<GLboolean, Dim> get(GLuint program, GLint location)
+    {
+        dgl::ivec<Dim> value;
+        glGetUniformiv(program, location, &value[0]);
+        return static_cast<dgl::bvec<Dim>>(value);
+    }
+
+    static void set(GLint location, const dmath::Vector<GLboolean, Dim>& value)
+    {
+        dgl::ivec<Dim> bvalue(value);
+        detail::glUniformv<Dim, GLint>(location, 1, &bvalue[0]);
     }
 };
 
@@ -132,71 +157,13 @@ struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
     static dmath::Matrix<T, Cols, Rows> get(GLuint program, GLint location)
     {
         dmath::Matrix<T, Cols, Rows> value;
-        if constexpr (std::is_same_v<T, GLfloat>)
-            glGetUniformfv(program, location, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLdouble>)
-            glGetUniformdv(program, location, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLint>)
-            glGetUniformiv(program, location, &value(0, 0));
-        else if constexpr (std::is_same_v<T, GLuint>)
-            glGetUniformuiv(program, location, &value(0, 0));
+        detail::glGetUniformv<T>(program, location, &value(0, 0));
         return value;
     }
 
     static void set(GLint location, const dmath::Matrix<T, Cols, Rows>& value)
     {
-        if constexpr (std::is_same_v<T, GLfloat>) {
-            if constexpr (Cols == 2) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix2fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix2x3fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix2x4fv(location, 1, GL_FALSE, &value(0, 0));
-            }
-            else if constexpr (Cols == 3) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix3x2fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix3fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix3x4fv(location, 1, GL_FALSE, &value(0, 0));
-            }
-            else if constexpr (Cols == 4) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix4x2fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix4x3fv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, &value(0, 0));
-            }
-        }
-        else if constexpr (std::is_same_v<T, GLdouble>) {
-            if constexpr (Cols == 2) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix2dv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix2x3dv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix2x4dv(location, 1, GL_FALSE, &value(0, 0));
-            }
-            else if constexpr (Cols == 3) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix3x2dv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix3dv(location, 1, GL_FALSE, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix3x4dv(location, 1, GL_FALSE, &value(0, 0));
-            }
-            else if constexpr (Cols == 4) {
-                if constexpr (Rows == 2)
-                    glUniformMatrix4x2dv(location, 1, &value(0, 0));
-                else if constexpr (Rows == 3)
-                    glUniformMatrix4x3dv(location, 1, &value(0, 0));
-                else if constexpr (Rows == 4)
-                    glUniformMatrix4dv(location, 1, &value(0, 0));
-            }
-        }
+        detail::glUniformMatrixv<Cols, Rows, T>(location, 1, GL_FALSE, &value(0, 0));
     }
 };
 
