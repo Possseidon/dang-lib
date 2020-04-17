@@ -189,9 +189,9 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
-    friend constexpr Vector<T, Dim>& operator+=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    constexpr Vector<T, Dim>& operator+=(const Vector<T, Dim>& other)
     {
-        return lhs.assignmentOp(rhs, std::plus<T>{});
+        return assignmentOp(other, std::plus<T>{});
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
@@ -201,9 +201,9 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
-    friend constexpr Vector<T, Dim>& operator-=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    constexpr Vector<T, Dim>& operator-=(const Vector<T, Dim>& other)
     {
-        return lhs.assignmentOp(rhs, std::minus<T>{});
+        return assignmentOp(other, std::minus<T>{});
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
@@ -213,9 +213,9 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
-    friend constexpr Vector<T, Dim>& operator*=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    constexpr Vector<T, Dim>& operator*=(const Vector<T, Dim>& other)
     {
-        return lhs.assignmentOp(rhs, std::multiplies<T>{});
+        return assignmentOp(other, std::multiplies<T>{});
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
@@ -225,9 +225,9 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
-    friend constexpr Vector<T, Dim>& operator/=(Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    constexpr Vector<T, Dim>& operator/=(const Vector<T, Dim>& other)
     {
-        return lhs.assignmentOp(rhs, std::divides<T>{});
+        return assignmentOp(other, std::divides<T>{});
     }
 
     /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
