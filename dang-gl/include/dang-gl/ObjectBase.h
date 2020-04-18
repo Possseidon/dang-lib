@@ -7,11 +7,7 @@ class Window;
 
 class ObjectBase {
 public:
-    ObjectBase(const ObjectBase&) = delete;
     ObjectBase(ObjectBase&& other) noexcept;
-
-    ObjectBase& operator=(const ObjectBase&) = delete;
-    ObjectBase& operator=(ObjectBase&&) = delete;
 
     GLuint handle() const;
     Window& window() const;

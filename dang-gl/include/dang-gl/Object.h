@@ -10,8 +10,6 @@
 namespace dang::gl
 {
 
-class GLFW;
-
 struct ObjectInfo {
     // Inherite and implement the following:
     // static GLuint create();
@@ -33,6 +31,12 @@ public:
     {
     }
 
+    Object(Object&& other) noexcept
+        : ObjectBase(std::move(other))
+    {
+        binding().move<TInfo>(other, *this);
+    }
+
     ~Object()
     {
         if (handle() != 0)
@@ -46,7 +50,7 @@ public:
 
     void bind() const
     {
-        binding().bind<TInfo>(this);
+        binding().bind<TInfo>(*this);
     }
 };
 

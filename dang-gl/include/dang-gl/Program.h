@@ -132,7 +132,7 @@ class ShaderUniformBase : public ShaderVariable {
 public:
     ShaderUniformBase(Program& program, GLint count, DataType type, std::string name);
     virtual ~ShaderUniformBase() {}
-                                         
+
     ShaderUniformBase(const ShaderUniformBase&) = delete;
     ShaderUniformBase(ShaderUniformBase&&) = delete;
     ShaderUniformBase& operator=(const ShaderUniformBase&) = delete;
@@ -161,6 +161,9 @@ private:
 class Program : public Object<ProgramInfo> {
 public:
     friend class ShaderPreprocessor;
+
+    Program() = default;
+    Program(Program&&) = delete;
 
     void addInclude(const std::string& name, std::string code);
     void addIncludeFromFile(const fs::path& path);
