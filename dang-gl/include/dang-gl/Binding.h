@@ -5,8 +5,10 @@
 namespace dang::gl
 {
 
+/// <summary>A context specific object binding, which remembers the currently bound object to minimize redundant bind calls.</summary>
 class Binding {
 public:
+    /// <summary>Binds the object using the bind function of the TInfo struct, unless the object is already bound.</summary>
     template <class TInfo>
     void bind(const ObjectBase& object)
     {
@@ -16,6 +18,7 @@ public:
         bound_object_ = &object;
     }
 
+    /// <summary>Used in the move constructor of Object to update the bound object if necessary.</summary>
     template <class TInfo>
     void move(const ObjectBase& from, const ObjectBase& to)
     {

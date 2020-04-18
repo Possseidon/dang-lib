@@ -5,6 +5,7 @@
 namespace dang::gl
 {
 
+/// <summary>A list of all separately bindable targets for glBind functions.</summary>
 enum class BindingPoint {
     // glBindBuffer
     ArrayBuffer,
@@ -55,7 +56,7 @@ enum class BindingPoint {
     COUNT
 };
 
-
+/// <summary>Maps from binding points to their respective target constant, which needs to be supplied to the glBind function.</summary>
 constexpr dutils::EnumArray<BindingPoint, GLenum> BindingPointTargets
 {
     // glBindBuffer
