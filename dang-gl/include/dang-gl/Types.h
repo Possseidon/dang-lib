@@ -7,20 +7,22 @@
 namespace dang::gl
 {
 
-template <std::size_t Dim>
-using vec = dmath::Vector<GLfloat, Dim>;
+// Aliases for vector and matrix types, using GLSL naming
 
 template <std::size_t Dim>
-using dvec = dmath::Vector<GLdouble, Dim>;
+using vec = dang::math::Vector<GLfloat, Dim>;
 
 template <std::size_t Dim>
-using ivec = dmath::Vector<GLint, Dim>;
+using dvec = dang::math::Vector<GLdouble, Dim>;
 
 template <std::size_t Dim>
-using uvec = dmath::Vector<GLuint, Dim>;
+using ivec = dang::math::Vector<GLint, Dim>;
 
 template <std::size_t Dim>
-using bvec = dmath::Vector<GLboolean, Dim>;
+using uvec = dang::math::Vector<GLuint, Dim>;
+
+template <std::size_t Dim>
+using bvec = dang::math::Vector<GLboolean, Dim>;
 
 using vec1 = vec<1>;
 using vec2 = vec<2>;
@@ -48,16 +50,16 @@ using bvec3 = bvec<3>;
 using bvec4 = bvec<4>;
 
 template <std::size_t Dim>
-using bounds = dmath::Bounds<GLfloat, Dim>;
+using bounds = dang::math::Bounds<GLfloat, Dim>;
 
 template <std::size_t Dim>
-using dbounds = dmath::Bounds<GLdouble, Dim>;
+using dbounds = dang::math::Bounds<GLdouble, Dim>;
 
 template <std::size_t Dim>
-using ibounds = dmath::Bounds<GLint, Dim>;
+using ibounds = dang::math::Bounds<GLint, Dim>;
 
 template <std::size_t Dim>
-using ubounds = dmath::Bounds<GLuint, Dim>;
+using ubounds = dang::math::Bounds<GLuint, Dim>;
 
 using bounds1 = bounds<1>;
 using bounds2 = bounds<2>;
@@ -78,7 +80,7 @@ using ubounds3 = ubounds<3>;
 DMATH_MATRIX_DEFINE(mat, GLfloat)
 DMATH_MATRIX_DEFINE(dmat, GLdouble)
 
-using quat = dmath::Quaternion<GLfloat>;
-using dquat = dmath::DualQuaternion<GLfloat>;
+using quat = dang::math::Quaternion<GLfloat>;
+using dquat = dang::math::DualQuaternion<GLfloat>;
 
 };
