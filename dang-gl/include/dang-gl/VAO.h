@@ -63,55 +63,50 @@ public:
     }
 
 private:
+    /// <summary>Automatically enables the correct attributes for the VAO, as specified in the program.</summary>
     void enableAttributes()
     {
         bind();
         vbo_.bind();
         // TODO: Instancing -> multiple VBOs and glVertexAttribDivisor
         for (ShaderAttribute& attribute : program().attributeOrder()) {
-            auto base_type = getBaseDataType(attribute.type());
-            auto component_count = getDataTypeComponentCount(attribute.type());
-            auto component_size = getDataTypeSize(base_type) * component_count;
+            const auto component_count = getDataTypeComponentCount(attribute.type());
+            const auto base_type = getBaseDataType(attribute.type());
+            const auto component_size = component_count * getDataTypeSize(base_type);
+
+            const auto index = [&attribute](GLuint offset) -> GLuint { return attribute.location() + offset; };
+            const GLint size = component_count;
+            const GLenum type = static_cast<GLenum>(base_type);
+            const GLboolean normalized = GL_FALSE;
+            const GLsizei stride = program().attributeStride();
+            const auto pointer = [&attribute, component_size](GLuint offset) {
+                const auto result = static_cast<std::uintptr_t>(offset) * component_size + attribute.offset();
+                return reinterpret_cast<const void*>(result);
+            };
 
             // matrices take up one location per column
             // arrays take up one location per index
             GLuint location_count = getDataTypeColumnCount(attribute.type()) * attribute.count();
 
             for (GLuint offset = 0; offset < location_count; offset++)
-                glEnableVertexAttribArray(attribute.location() + offset);
+                glEnableVertexAttribArray(index(offset));
 
             switch (base_type) {
             case DataType::Float:
                 for (GLuint offset = 0; offset < location_count; offset++)
-                    glVertexAttribPointer(
-                        attribute.location() + offset,
-                        component_count,
-                        static_cast<GLenum>(base_type),
-                        GL_FALSE,
-                        program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
+                    glVertexAttribPointer(index(offset), size, type, normalized, stride, pointer(offset));
                 break;
 
             case DataType::Double:
                 for (GLuint offset = 0; offset < location_count; offset++)
-                    glVertexAttribLPointer(
-                        attribute.location() + offset,
-                        component_count,
-                        static_cast<GLenum>(base_type),
-                        program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
+                    glVertexAttribLPointer(index(offset), size, type, stride, pointer(offset));
                 break;
 
             case DataType::Bool:
             case DataType::Int:
             case DataType::UInt:
                 for (GLuint offset = 0; offset < location_count; offset++)
-                    glVertexAttribIPointer(
-                        attribute.location() + offset,
-                        component_count,
-                        static_cast<GLenum>(base_type),
-                        program().attributeStride(),
-                        reinterpret_cast<void*>(static_cast<std::uintptr_t>(offset)* component_size + attribute.offset()));
+                    glVertexAttribIPointer(index(offset), size, type, stride, pointer(offset));
             }
         }
     }
