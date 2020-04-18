@@ -95,12 +95,12 @@ template <typename T>
 struct UniformWrapper {
     static T get(GLuint program, GLint location)
     {
-        T value;
+        T value{};
         detail::glGetUniformv<T>(program, location, &value);
         return value;
     }
 
-    static void set(GLint location, GLfloat value)
+    static void set(GLint location, T value)
     {
         detail::glUniform<1, T>(location, value);
     }
@@ -110,7 +110,7 @@ template <>
 struct UniformWrapper<GLboolean> {
     static GLboolean get(GLuint program, GLint location)
     {
-        GLint value;
+        GLint value{};
         glGetUniformiv(program, location, &value);
         return value != 0;
     }
