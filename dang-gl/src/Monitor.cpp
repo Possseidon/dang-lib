@@ -58,17 +58,17 @@ void Monitor::setGamma(float gamma) const
     glfwSetGamma(handle_, gamma);
 }
 
-void Monitor::setGammaRamp(const GammaRamp* gamma_ramp) const
+void Monitor::setGammaRamp(const GammaRamp& gamma_ramp) const
 {
-    glfwSetGammaRamp(handle_, gamma_ramp);
+    glfwSetGammaRamp(handle_, &gamma_ramp);
 }
 
-const GammaRamp* Monitor::gammaRamp() const
+const GammaRamp& Monitor::gammaRamp() const
 {
-    return glfwGetGammaRamp(handle_);
+    return *glfwGetGammaRamp(handle_);
 }
 
-VideoMode Monitor::videoMode() const
+const VideoMode& Monitor::videoMode() const
 {
     return *glfwGetVideoMode(handle_);
 }
@@ -77,6 +77,7 @@ std::vector<VideoMode> Monitor::videoModes() const
 {
     int count;
     const VideoMode* first = glfwGetVideoModes(handle_, &count);
+    // on error, first is nullptr and count is zero, resulting in an empty vector
     return std::vector<VideoMode>(first, first + count);
 }
 

@@ -164,7 +164,7 @@ void Window::makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size, s
     if (size)
         glfwSetWindowMonitor(handle_, monitor, 0, 0, size->x(), size->y(), refresh_rate.value_or(GLFW_DONT_CARE));
     else {
-        VideoMode video_mode = monitor.videoMode();
+        const VideoMode& video_mode = monitor.videoMode();
         glfwSetWindowMonitor(handle_, monitor, 0, 0, video_mode.width, video_mode.height, refresh_rate.value_or(GLFW_DONT_CARE));
     }
 }
