@@ -471,8 +471,6 @@ constexpr GLsizei getDataTypeComponentCount(DataType type)
     default:
         return 1;
     }
-
-    throw std::runtime_error("Unknown GL-DataType.");
 }
 
 /// <summary>Returns the column count for the given type, which is 1 for all non-matrix types, where matrices are column-major.</summary>
@@ -506,8 +504,6 @@ constexpr GLsizei getDataTypeColumnCount(DataType type)
     default:
         return 1;
     }
-
-    throw std::runtime_error("Unknown GL-DataType.");
 }
 
 }
