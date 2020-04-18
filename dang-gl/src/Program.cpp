@@ -16,7 +16,7 @@ GLuint ProgramInfo::create()
 
 void ProgramInfo::destroy(GLuint handle)
 {
-    return glDeleteProgram(handle);
+    glDeleteProgram(handle);
 }
 
 void ProgramInfo::bind(GLuint handle)
@@ -460,8 +460,7 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
         line_index++;
         line_buffer.push_back(read_line);
 
-        if (!read_line.empty() && read_line.back() == '\\')
-        {
+        if (!read_line.empty() && read_line.back() == '\\') {
             read_line.pop_back();
             full_line += read_line;
             continue;
