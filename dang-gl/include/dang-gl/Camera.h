@@ -54,8 +54,8 @@ protected:
     dgl::mat4 calculateMatrix() override;
 
 private:
-    float field_of_view_ = 90.0f;
-    dgl::bounds1 clip_ = { 0.1f, 100.0f };
+    float field_of_view_;
+    dgl::bounds1 clip_;
 };
 
 class OrthoProjection : public ProjectionProvider {
