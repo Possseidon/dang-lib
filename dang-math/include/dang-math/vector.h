@@ -379,20 +379,21 @@ struct Vector : std::array<T, Dim> {
     template <std::size_t... Indices>
     constexpr Vector<T, sizeof...(Indices)> swizzle() const
     {
-        Vector<T, sizeof...(Indices)> result;
-        std::size_t resultIndex = 0;
-        for (std::size_t index : std::array{ Indices... })
-            result[resultIndex++] = (*this)[index];
-        return result;
+        return { std::get<Indices>(*this)... };
+    }
+
+    /// <summary>Sets a swizzle for the given components.</summary>
+    template <std::size_t... Indices, std::size_t... OtherIndices>
+    constexpr void setSwizzleHelper(Vector<T, sizeof...(Indices)> vector, std::index_sequence<OtherIndices...>)
+    {
+        ((std::get<Indices>(*this) = std::get<OtherIndices>(vector)), ...);
     }
 
     /// <summary>Sets a swizzle for the given components.</summary>
     template <std::size_t... Indices>
     constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
     {
-        std::size_t otherIndex = 0;
-        for (std::size_t index : std::array{ Indices... })
-            (*this)[index] = vector[otherIndex++];
+        setSwizzleHelper<Indices...>(vector, std::make_index_sequence<sizeof...(Indices)>());
     }
 
     /// <summary>Performs a unary operation on each component and returns the result.</summary>
@@ -593,10 +594,12 @@ struct Vector : std::array<T, Dim> {
     // --- Swizzles ---
 
 #define DMATH_DEFINE_SWIZZLE(name, ...) \
-constexpr Vector<T, sizeof(#name) - 1> name() const { return this->swizzle<__VA_ARGS__>(); } \
-void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { this->setSwizzle<__VA_ARGS__>(vector); }
+template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>> \
+constexpr Vector<T, sizeof(#name) - 1> name() const { return swizzle<__VA_ARGS__>(); } \
+template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>> \
+void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { setSwizzle<__VA_ARGS__>(vector); }
 
-    DMATH_DEFINE_SWIZZLE(xy, 0, 1); ;
+    DMATH_DEFINE_SWIZZLE(xy, 0, 1);
     DMATH_DEFINE_SWIZZLE(xz, 0, 2);
     DMATH_DEFINE_SWIZZLE(xw, 0, 3);
     DMATH_DEFINE_SWIZZLE(yx, 1, 0);
