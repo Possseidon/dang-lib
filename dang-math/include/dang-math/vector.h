@@ -10,12 +10,13 @@ template <typename T, std::size_t Dim>
 struct Vector : std::array<T, Dim> {
     /// <summary>Initializes all values with default values.</summary>
     constexpr Vector()
-        : std::array<T, Dim>{}
+        : std::array<T, Dim>()
     {
     }
 
     /// <summary>Initializes all values with the given value.</summary>
     constexpr Vector(T value)
+        : std::array<T, Dim>()
     {
         for (std::size_t i = 0; i < Dim; i++)
             (*this)[i] = value;
@@ -35,9 +36,9 @@ struct Vector : std::array<T, Dim> {
     {
     }
 
-    /// <summary>Initializes x, y, z and optionally w with the given values.</summary>
+    /// <summary>Initializes x, y, z and w with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
-    constexpr Vector(T x, T y, T z, T w = {})
+    constexpr Vector(T x, T y, T z, T w)
         : std::array<T, Dim>{ x, y, z, w }
     {
     }
