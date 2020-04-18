@@ -3,12 +3,14 @@
 namespace dang::gl
 {
 
+/// <summary>Wether a mouse button has been pressed or released.</summary>
 enum class ButtonAction : int {
     Release = GLFW_RELEASE,
     Press = GLFW_PRESS,
     COUNT
 };
 
+/// <summary>A list of possible mouse buttons.</summary>
 enum class Button : int {
     Left = GLFW_MOUSE_BUTTON_LEFT,
     Right = GLFW_MOUSE_BUTTON_RIGHT,
@@ -26,6 +28,7 @@ enum class Button : int {
     COUNT
 };
 
+/// <summary>Wether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
 enum class KeyAction : int {
     Release = GLFW_RELEASE,
     Press = GLFW_PRESS,
@@ -33,6 +36,7 @@ enum class KeyAction : int {
     COUNT
 };
 
+/// <summary>A list of all possible keyboard keys.</summary>
 enum class Key : int {
     Unknown = GLFW_KEY_UNKNOWN,
     Space = GLFW_KEY_SPACE,
@@ -170,14 +174,20 @@ enum class Key : int {
     Menu = GLFW_KEY_MENU
 };
 
+/// <summary>Wraps a key and an optional scancode.</summary>
 class KeyData {
 public:
+    /// <summary>Initializes the key data with the given key and optional pre-supplied scancode.</summary>
     KeyData(Key key, int scancode = 0);
 
+    /// <summary>Returns the keyboard key.</summary>
     Key key() const;
+    /// <summary>Returns the scancode of the key attempting to query it, if it has not been supplied in the constuctor.</summary>
     int scancode();
+    /// <summary>Returns a displayable name for the key or an empty string.</summary>
     std::string name() const;
 
+    /// <summary>Allows for implicit conversion to the key enum.</summary>
     operator Key() const;
 
 private:
@@ -185,6 +195,7 @@ private:
     int scancode_;
 };
 
+/// <summary>A set-style enum of all possible modifier keys, which can be held down in key-combinations.</summary>
 enum class ModifierKeys {
     NONE = 0,
     Shift = GLFW_MOD_SHIFT,
