@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.h"
+
 namespace dang::lua
 {
 
@@ -18,8 +20,9 @@ enum class Type {
     COUNT = LUA_NUMTAGS
 };
 
-/// <summary>Operations for lua_arith.</summary>
+/// <summary>Possible operations for lua_arith.</summary>
 enum class ArithOp {
+    // binary (pop 2, push 1)
     Add = LUA_OPADD,
     Sub = LUA_OPSUB,
     Mul = LUA_OPMUL,
@@ -32,11 +35,13 @@ enum class ArithOp {
     BinaryXOr = LUA_OPBXOR,
     LeftShift = LUA_OPSHL,
     RightShift = LUA_OPSHR,
+
+    // unary (pop 1, push 1)
     UnaryMinus = LUA_OPUNM,
     BinaryNot = LUA_OPBNOT
 };
 
-/// <summary>Operations for lua_compare.</summary>
+/// <summary>Possible operations for lua_compare.</summary>
 enum class CompareOp {
     Equal = LUA_OPEQ,
     LessThan = LUA_OPLT,
