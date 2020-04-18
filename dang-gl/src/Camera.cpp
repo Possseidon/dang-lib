@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Camera.h"
 
-#include "Renderable.h"
-
 namespace dang::gl
 {
 
@@ -151,9 +149,8 @@ dgl::mat4 OrthoProjection::calculateMatrix()
     return dgl::mat4();
 }
 
-Camera::Camera(std::shared_ptr<ProjectionProvider> view_matrix_provider)
+Camera::Camera(SharedProjectionProvider view_matrix_provider)
     : projection_provider_(std::move(view_matrix_provider))
-    , transform_(std::make_shared<Transform>())
 {
 }
 
@@ -177,12 +174,12 @@ Camera Camera::ortho(Window& window, dgl::bounds3 clip)
     return Camera(std::make_shared<OrthoProjection>(window, clip));
 }
 
-const std::shared_ptr<ProjectionProvider>& Camera::projectionProvider() const
+const SharedProjectionProvider& Camera::projectionProvider() const
 {
     return projection_provider_;
 }
 
-const std::shared_ptr<Transform>& Camera::transform() const
+const SharedTransform& Camera::transform() const
 {
     return transform_;
 }
@@ -207,20 +204,14 @@ void Camera::resetTransformUniform(CameraTransformType type)
     transform_uniforms_[type] = nullptr;
 }
 
-void Camera::addRenderable(std::weak_ptr<Renderable> renderable)
+void Camera::addRenderable(SharedRenderable renderable)
 {
     renderables_.push_back(std::move(renderable));
 }
 
-void Camera::removeRenderable(const std::weak_ptr<Renderable>& renderable)
+void Camera::removeRenderable(const SharedRenderable& renderable)
 {
-    auto pos = std::find_if(
-        renderables_.begin(), renderables_.end(),
-        [&](std::weak_ptr<Renderable>& current)
-        {
-            return !current.owner_before(renderable) && !renderable.owner_before(current);
-        });
-
+    auto pos = std::find(renderables_.begin(), renderables_.end(), renderable);
     if (pos != renderables_.end())
         renderables_.erase(pos);
 }
@@ -232,8 +223,6 @@ void Camera::clearRenderables()
 
 void Camera::render()
 {
-    removeExpiredRenderables();
-
     if (projection_uniform_)
         projection_uniform_->force(projection_provider_->matrix());
 
@@ -242,8 +231,7 @@ void Camera::render()
     if (auto& uniform = transform_uniforms_[CameraTransformType::View])
         uniform->force(view_transform.toMatrix2x4());
 
-    for (const auto& weak_renderable : renderables_) {
-        auto renderable = weak_renderable.lock();
+    for (const auto& renderable : renderables_) {
         if (!renderable || !renderable->isVisible())
             continue;
 
@@ -263,15 +251,6 @@ void Camera::render()
 
         renderable->draw();
     }
-}
-
-void Camera::removeExpiredRenderables()
-{
-    renderables_.erase(
-        std::remove_if(
-            renderables_.begin(), renderables_.end(),
-            std::mem_fn(&std::weak_ptr<Renderable>::expired)),
-        renderables_.end());
 }
 
 }
