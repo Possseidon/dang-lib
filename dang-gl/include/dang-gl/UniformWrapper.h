@@ -91,6 +91,7 @@ template <> constexpr auto& glUniformMatrixv<4, 4, GLdouble> = glUniformMatrix4d
 
 }
 
+/// <summary>Wraps shader uniform access with a consistent interface.</summary>
 template <typename T>
 struct UniformWrapper {
     static T get(GLuint program, GLint location)
@@ -106,6 +107,7 @@ struct UniformWrapper {
     }
 };
 
+/// <summary>Specializes uniform access for GLboolean, using GLint.</summary>
 template <>
 struct UniformWrapper<GLboolean> {
     static GLboolean get(GLuint program, GLint location)
@@ -121,6 +123,7 @@ struct UniformWrapper<GLboolean> {
     }
 };
 
+/// <summary>Specializes uniform access for vectors of any supported type and size.</summary>
 template <typename T, std::size_t Dim>
 struct UniformWrapper<dmath::Vector<T, Dim>> {
     static dmath::Vector<T, Dim> get(GLuint program, GLint location)
@@ -136,6 +139,7 @@ struct UniformWrapper<dmath::Vector<T, Dim>> {
     }
 };
 
+/// <summary>Specializes uniform access for vectors of GLboolean and any supported size.</summary>
 template <std::size_t Dim>
 struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
     static dmath::Vector<GLboolean, Dim> get(GLuint program, GLint location)
@@ -152,6 +156,7 @@ struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
     }
 };
 
+/// <summary>Specializes uniform access for matrices of any supported type and dimensions.</summary>
 template <typename T, std::size_t Cols, std::size_t Rows>
 struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
     static dmath::Matrix<T, Cols, Rows> get(GLuint program, GLint location)
