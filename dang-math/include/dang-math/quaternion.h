@@ -295,8 +295,14 @@ struct Quaternion : private Vector<T, 4> {
         return Base::operator!=(lhs, rhs);
     }
 
+    struct SlerpResult {
+        T source_factor;
+        T target_factor;
+        bool requires_normalization;
+    };
+
     /// <summary>Helper for slerp, which returns source and target factor and wether the result needs to be normalized.</summary>
-    constexpr std::tuple<T, T> slerpHelper(Quaternion target, T factor, bool& requires_normalization)
+    constexpr SlerpResult slerpHelper(Quaternion target, T factor)
     {
         // Following article was used as a base:
         // https://en.wikipedia.org/wiki/Slerp#Source_code
@@ -312,10 +318,10 @@ struct Quaternion : private Vector<T, 4> {
         }
 
         constexpr T epsilon = T(1) - T(1e-5);
-        requires_normalization = dot_result > epsilon;
+        bool requires_normalization = dot_result > epsilon;
         if (requires_normalization) {
             // If the inputs are too close for comfort, use classic lerp and normalize.
-            return { T(1) - factor, target_sign * factor };
+            return { T(1) - factor, target_sign * factor, requires_normalization };
         }
 
         T theta_0 = std::acos(dot_result);
@@ -327,17 +333,16 @@ struct Quaternion : private Vector<T, 4> {
         T target_factor = sin_theta / sin_theta_0;
         T source_factor = std::cos(theta) - dot_result * target_factor;
 
-        return { source_factor, target_sign * target_factor };
+        return { source_factor, target_sign * target_factor, requires_normalization };
     }
 
     /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.</summary>
     /// <remarks>Both quaternions should be normalized for correct results.</remarks>
     constexpr Quaternion slerp(Quaternion target, T factor)
     {
-        bool requires_normalization;
-        auto [source_factor, target_factor] = slerpHelper(target, factor, requires_normalization);
-        Quaternion result = source_factor * *this + target_factor * target;
-        if (requires_normalization)
+        auto slerp_result = slerpHelper(target, factor);
+        Quaternion result = slerp_result.source_factor * *this + slerp_result.target_factor * target;
+        if (slerp_result.requires_normalization)
             return result.normalize();
         return result;
     }
@@ -601,7 +606,7 @@ struct DualQuaternion {
     /// <summary>Combines the transformation of the inverse of rhs onto lhs.</summary>
     friend constexpr DualQuaternion& operator/=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
-        return lhs *= rhs.inverse;
+        return lhs *= rhs.inverse();
     }
 
     /// <summary>Combines the transformation of lhs with the inverse of rhs.</summary>
@@ -620,11 +625,9 @@ struct DualQuaternion {
     /// <remarks>Both quaternions should be normalized for correct results.</remarks>
     constexpr DualQuaternion slerp(DualQuaternion target, T factor)
     {
-        DualQuaternion result;
-        bool requires_normalization;
-        auto [source_factor, target_factor] = real.slerpHelper(target.real, factor, requires_normalization);
-        result = source_factor * *this + target_factor * target;
-        if (requires_normalization)
+        auto slerp_result = real.slerpHelper(target.real, factor);
+        DualQuaternion result = slerp_result.source_factor * *this + slerp_result.target_factor * target;
+        if (slerp_result.requires_normalization)
             return result.normalize();
         return result;
     }
