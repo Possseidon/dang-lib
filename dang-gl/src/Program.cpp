@@ -168,7 +168,7 @@ void Program::addShader(ShaderType type, const std::string& shader_code)
     GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
     shader_handles_.push_back(shader_handle);
 
-    std::string preprocessed = ShaderPreprocessor(*this, shader_code);
+    std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();
     const GLchar* full_code = preprocessed.c_str();
 
     glShaderSource(shader_handle, 1, &full_code, nullptr);
@@ -437,7 +437,7 @@ ShaderPreprocessor::ShaderPreprocessor(const Program& program, const std::string
     process(code, 0);
 }
 
-ShaderPreprocessor::operator std::string() const
+std::string ShaderPreprocessor::result() const
 {
     return output_.str();
 }
