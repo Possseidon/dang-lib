@@ -7,6 +7,7 @@
 namespace dang::gl
 {
 
+/// <summary>A list of all supported modes on how to draw vertex data.</summary>
 enum class BeginMode : GLenum {
     Points = GL_POINTS,
     Lines = GL_LINES,
@@ -22,6 +23,7 @@ enum class BeginMode : GLenum {
     Patches = GL_PATCHES
 };
 
+/// <summary>Info struct to create, destroy and bind VAOs.</summary>
 struct VAOInfo : public ObjectInfo {
     static GLuint create();
     static void destroy(GLuint handle);
@@ -30,13 +32,19 @@ struct VAOInfo : public ObjectInfo {
     static constexpr BindingPoint BindingPoint = BindingPoint::VertexArray;
 };
 
+/// <summary>A base class for all vertex array objects, which is not templated yet.</summary>
 class VAOBase : public Object<VAOInfo> {
 public:
+    /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
 
+    /// <summary>The GL-Program associated with the VAO.</summary>
     Program& program() const;
 
+    /// <summary>Returns the current render mode, which is used in draw calls.</summary>
     BeginMode mode() const;
+    /// <summary>Although not always senseful, allows to modify the render mode after construction.</summary>
+    /// <remarks>Different render modes require very different data layouts, often making it impossible to use the same data with different modes.</remarks>
     void setMode(BeginMode mode);
 
 private:
@@ -44,9 +52,12 @@ private:
     BeginMode mode_;
 };
 
+/// <summary>A vertex array object, which basically combines a VBO with a GL-Program, making it drawable.</summary>
 template <typename T>
 class VAO : public VAOBase {
 public:
+    /// <summary>Creates a new VAO and binds it to the given GL-Program and VBO.</summary>
+    /// <remarks>A debug assertion checks, that the size of the Data struct matches the program stride.</remarks>
     VAO(Program& program, VBO<T>& vbo, BeginMode mode = BeginMode::Triangles)
         : VAOBase(program, mode)
         , vbo_(vbo)
@@ -55,6 +66,7 @@ public:
         enableAttributes();
     }
 
+    /// <summary>Draws the full content off the associated VBO using the likewise associated GL-Program.</summary>
     void draw() const
     {
         bind();
@@ -69,7 +81,7 @@ private:
         bind();
         vbo_.bind();
         // TODO: Instancing -> multiple VBOs and glVertexAttribDivisor
-        for (ShaderAttribute& attribute : program().attributeOrder()) {
+        for (const ShaderAttribute& attribute : program().attributeOrder()) {
             const auto component_count = getDataTypeComponentCount(attribute.type());
             const auto base_type = getBaseDataType(attribute.type());
             const auto component_size = component_count * getDataTypeSize(base_type);
@@ -77,7 +89,7 @@ private:
             const auto index = [&attribute](GLuint offset) -> GLuint { return attribute.location() + offset; };
             const GLint size = component_count;
             const GLenum type = static_cast<GLenum>(base_type);
-            const GLboolean normalized = GL_FALSE;
+            constexpr GLboolean normalized = GL_FALSE;
             const GLsizei stride = program().attributeStride();
             const auto pointer = [&attribute, component_size](GLuint offset) {
                 const auto result = static_cast<std::uintptr_t>(offset) * component_size + attribute.offset();
