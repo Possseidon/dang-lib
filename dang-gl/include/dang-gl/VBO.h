@@ -239,6 +239,7 @@ private:
     T* data_;
 };
 
+/// <summary>A vertex buffer object for a given data struct.</summary>
 template <typename T>
 class VBO : public Object<VBOInfo> {
 public:
