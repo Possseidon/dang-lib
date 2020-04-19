@@ -544,7 +544,7 @@ bool Window::shouldClose() const
 
 void Window::activate()
 {
-    dgl::GLFW::Instance.setActiveWindow(this);
+    GLFW::Instance.setActiveWindow(this);
 }
 
 void Window::update()

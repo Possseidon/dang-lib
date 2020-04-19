@@ -9,19 +9,19 @@ UniqueTransform Transform::create()
     return std::make_unique<Transform>();
 }
 
-const dmath::dquat& Transform::ownTransform() const
+const dquat& Transform::ownTransform() const
 {
     return own_transform_;
 }
 
-void Transform::setOwnTransform(const dmath::dquat& transform)
+void Transform::setOwnTransform(const dquat& transform)
 {
     own_transform_ = transform;
     full_transform_.reset();
     onChange(*this);
 }
 
-const dmath::dquat& Transform::fullTransform()
+const dquat& Transform::fullTransform()
 {
     if (!full_transform_) {
         if (parent_)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dang-math/quaternion.h"
-#include "dang-math/vector.h"
 #include "dang-utils/event.h"
+
+#include "Types.h"
 
 namespace dang::gl
 {
@@ -28,12 +28,12 @@ public:
     static UniqueTransform create();
 
     /// <summary>The own transformation, without any parent transform.</summary>
-    const dmath::dquat& ownTransform() const;
+    const dquat& ownTransform() const;
     /// <summary>Sets the own transform to the given quaternion, triggering the onChange event.</summary>
-    void setOwnTransform(const dmath::dquat& transform);
+    void setOwnTransform(const dquat& transform);
 
     /// <summary>The full transformation, including all parent transformations.</summary>
-    const dmath::dquat& fullTransform();
+    const dquat& fullTransform();
 
     /// <summary>The optional parent of this transformation.</summary>
     SharedTransform parent() const;
@@ -53,8 +53,8 @@ public:
     Event onParentChange;
 
 private:
-    dmath::dquat own_transform_;
-    std::optional<dmath::dquat> full_transform_;
+    dquat own_transform_;
+    std::optional<dquat> full_transform_;
     SharedTransform parent_;
     std::optional<Event::Subscription> parent_change_;
 };

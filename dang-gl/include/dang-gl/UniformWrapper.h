@@ -144,14 +144,14 @@ template <std::size_t Dim>
 struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
     static dmath::Vector<GLboolean, Dim> get(GLuint program, GLint location)
     {
-        dgl::ivec<Dim> value;
+        ivec<Dim> value;
         glGetUniformiv(program, location, &value[0]);
-        return static_cast<dgl::bvec<Dim>>(value);
+        return static_cast<bvec<Dim>>(value);
     }
 
     static void set(GLint location, const dmath::Vector<GLboolean, Dim>& value)
     {
-        dgl::ivec<Dim> bvalue(value);
+        ivec<Dim> bvalue(value);
         detail::glUniformv<Dim, GLint>(location, 1, &bvalue[0]);
     }
 };

@@ -28,7 +28,7 @@ void ProjectionProvider::setAspect(float aspect)
     invalidateMatrix();
 }
 
-const dgl::mat4& ProjectionProvider::matrix()
+const mat4& ProjectionProvider::matrix()
 {
     if (!matrix_)
         matrix_ = calculateMatrix();
@@ -40,14 +40,14 @@ void ProjectionProvider::invalidateMatrix()
     matrix_ = std::nullopt;
 }
 
-PerspectiveProjection::PerspectiveProjection(float aspect, float field_of_view, dmath::bounds1 clip)
+PerspectiveProjection::PerspectiveProjection(float aspect, float field_of_view, bounds1 clip)
     : ProjectionProvider(aspect)
     , field_of_view_(field_of_view)
     , clip_(clip)
 {
 }
 
-PerspectiveProjection::PerspectiveProjection(Window& window, float field_of_view, dmath::bounds1 clip)
+PerspectiveProjection::PerspectiveProjection(Window& window, float field_of_view, bounds1 clip)
     : ProjectionProvider(window)
     , field_of_view_(field_of_view)
     , clip_(clip)
@@ -67,12 +67,12 @@ void PerspectiveProjection::setFieldOfView(float field_of_view)
     invalidateMatrix();
 }
 
-dmath::bounds1 PerspectiveProjection::clip() const
+bounds1 PerspectiveProjection::clip() const
 {
     return clip_;
 }
 
-void PerspectiveProjection::setClip(dmath::bounds1 clip)
+void PerspectiveProjection::setClip(bounds1 clip)
 {
     if (clip_ == clip)
         return;
@@ -106,9 +106,9 @@ void PerspectiveProjection::setFarClip(float far_clip)
     invalidateMatrix();
 }
 
-dgl::mat4 PerspectiveProjection::calculateMatrix()
+mat4 PerspectiveProjection::calculateMatrix()
 {
-    dgl::mat4 result;
+    mat4 result;
     float a = dmath::degToRad(field_of_view_) / 2;
     float f = std::cos(a) / std::sin(a);
     result(0, 0) = f / aspect();
@@ -119,24 +119,24 @@ dgl::mat4 PerspectiveProjection::calculateMatrix()
     return result;
 }
 
-OrthoProjection::OrthoProjection(float aspect, dgl::bounds3 clip)
+OrthoProjection::OrthoProjection(float aspect, bounds3 clip)
     : ProjectionProvider(aspect)
     , clip_(clip)
 {
 }
 
-OrthoProjection::OrthoProjection(Window& window, dgl::bounds3 clip)
+OrthoProjection::OrthoProjection(Window& window, bounds3 clip)
     : ProjectionProvider(window)
     , clip_(clip)
 {
 }
 
-const dmath::bounds3& OrthoProjection::clip() const
+const bounds3& OrthoProjection::clip() const
 {
     return clip_;
 }
 
-void OrthoProjection::setClip(const dmath::bounds3& clip)
+void OrthoProjection::setClip(const bounds3& clip)
 {
     if (clip_ == clip)
         return;
@@ -144,9 +144,9 @@ void OrthoProjection::setClip(const dmath::bounds3& clip)
     invalidateMatrix();
 }
 
-dgl::mat4 OrthoProjection::calculateMatrix()
+mat4 OrthoProjection::calculateMatrix()
 {
-    return dgl::mat4();
+    return mat4();
 }
 
 Camera::Camera(SharedProjectionProvider view_matrix_provider)
@@ -154,22 +154,22 @@ Camera::Camera(SharedProjectionProvider view_matrix_provider)
 {
 }
 
-Camera Camera::perspective(float aspect, float field_of_view, dmath::bounds1 clip)
+Camera Camera::perspective(float aspect, float field_of_view, bounds1 clip)
 {
     return Camera(std::make_shared<PerspectiveProjection>(aspect, field_of_view, clip));
 }
 
-Camera Camera::perspective(Window& window, float field_of_view, dmath::bounds1 clip)
+Camera Camera::perspective(Window& window, float field_of_view, bounds1 clip)
 {
     return Camera(std::make_shared<PerspectiveProjection>(window, field_of_view, clip));
 }
 
-Camera Camera::ortho(float aspect, dgl::bounds3 clip)
+Camera Camera::ortho(float aspect, bounds3 clip)
 {
     return Camera(std::make_shared<OrthoProjection>(aspect, clip));
 }
 
-Camera Camera::ortho(Window& window, dgl::bounds3 clip)
+Camera Camera::ortho(Window& window, bounds3 clip)
 {
     return Camera(std::make_shared<OrthoProjection>(window, clip));
 }
@@ -184,7 +184,7 @@ const SharedTransform& Camera::transform() const
     return transform_;
 }
 
-void Camera::setProjectionUniform(ShaderUniform<dgl::mat4>& uniform)
+void Camera::setProjectionUniform(ShaderUniform<mat4>& uniform)
 {
     projection_uniform_ = &uniform;
 }
@@ -194,7 +194,7 @@ void Camera::resetProjectionUniform()
     projection_uniform_ = nullptr;
 }
 
-void Camera::setTransformUniform(CameraTransformType type, ShaderUniform<dgl::mat2x4>& uniform)
+void Camera::setTransformUniform(CameraTransformType type, ShaderUniform<mat2x4>& uniform)
 {
     transform_uniforms_[type] = &uniform;
 }

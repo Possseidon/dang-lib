@@ -141,7 +141,7 @@ struct SampleCoverage {
 };
 
 struct Scissor {
-    dgl::ibounds2 bounds;
+    ibounds2 bounds;
 
     friend bool operator==(const Scissor& lhs, const Scissor& rhs);
     friend bool operator!=(const Scissor& lhs, const Scissor& rhs);

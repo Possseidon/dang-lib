@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "Program.h"
 
-#include "dang-math/vector.h"
-#include "dang-math/matrix.h"
-
 #include "Types.h"
 
 namespace dang::gl
@@ -270,85 +267,85 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(Program& program, G
     case DataType::Float:
         return std::make_unique<ShaderUniform<GLfloat>>(program, count, type, name);
     case DataType::Vec2:
-        return std::make_unique<ShaderUniform<dgl::vec2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<vec2>>(program, count, type, name);
     case DataType::Vec3:
-        return std::make_unique<ShaderUniform<dgl::vec3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<vec3>>(program, count, type, name);
     case DataType::Vec4:
-        return std::make_unique<ShaderUniform<dgl::vec4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<vec4>>(program, count, type, name);
 
     case DataType::Double:
         return std::make_unique<ShaderUniform<GLdouble>>(program, count, type, name);
     case DataType::DVec2:
-        return std::make_unique<ShaderUniform<dgl::dvec2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dvec2>>(program, count, type, name);
     case DataType::DVec3:
-        return std::make_unique<ShaderUniform<dgl::dvec3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dvec3>>(program, count, type, name);
     case DataType::DVec4:
-        return std::make_unique<ShaderUniform<dgl::dvec4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dvec4>>(program, count, type, name);
 
     case DataType::Int:
         return std::make_unique<ShaderUniform<GLint>>(program, count, type, name);
     case DataType::IVec2:
-        return std::make_unique<ShaderUniform<dgl::ivec2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<ivec2>>(program, count, type, name);
     case DataType::IVec3:
-        return std::make_unique<ShaderUniform<dgl::ivec3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<ivec3>>(program, count, type, name);
     case DataType::IVec4:
-        return std::make_unique<ShaderUniform<dgl::ivec4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<ivec4>>(program, count, type, name);
 
     case DataType::UInt:
         return std::make_unique<ShaderUniform<GLuint>>(program, count, type, name);
     case DataType::UVec2:
-        return std::make_unique<ShaderUniform<dgl::uvec2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<uvec2>>(program, count, type, name);
     case DataType::UVec3:
-        return std::make_unique<ShaderUniform<dgl::uvec3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<uvec3>>(program, count, type, name);
     case DataType::UVec4:
-        return std::make_unique<ShaderUniform<dgl::uvec4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<uvec4>>(program, count, type, name);
 
     case DataType::Bool:
         return std::make_unique<ShaderUniform<GLboolean>>(program, count, type, name);
     case DataType::BVec2:
-        return std::make_unique<ShaderUniform<dgl::bvec2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<bvec2>>(program, count, type, name);
     case DataType::BVec3:
-        return std::make_unique<ShaderUniform<dgl::bvec3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<bvec3>>(program, count, type, name);
     case DataType::BVec4:
-        return std::make_unique<ShaderUniform<dgl::bvec4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<bvec4>>(program, count, type, name);
 
     case DataType::Mat2:
-        return std::make_unique<ShaderUniform<dgl::mat2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat2>>(program, count, type, name);
     case DataType::Mat3:
-        return std::make_unique<ShaderUniform<dgl::mat3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat3>>(program, count, type, name);
     case DataType::Mat4:
-        return std::make_unique<ShaderUniform<dgl::mat4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat4>>(program, count, type, name);
     case DataType::Mat2x3:
-        return std::make_unique<ShaderUniform<dgl::mat2x3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat2x3>>(program, count, type, name);
     case DataType::Mat2x4:
-        return std::make_unique<ShaderUniform<dgl::mat2x4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat2x4>>(program, count, type, name);
     case DataType::Mat3x2:
-        return std::make_unique<ShaderUniform<dgl::mat3x2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat3x2>>(program, count, type, name);
     case DataType::Mat3x4:
-        return std::make_unique<ShaderUniform<dgl::mat3x4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat3x4>>(program, count, type, name);
     case DataType::Mat4x2:
-        return std::make_unique<ShaderUniform<dgl::mat4x2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat4x2>>(program, count, type, name);
     case DataType::Mat4x3:
-        return std::make_unique<ShaderUniform<dgl::mat4x3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<mat4x3>>(program, count, type, name);
 
     case DataType::DMat2:
-        return std::make_unique<ShaderUniform<dgl::dmat2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat2>>(program, count, type, name);
     case DataType::DMat3:
-        return std::make_unique<ShaderUniform<dgl::dmat3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat3>>(program, count, type, name);
     case DataType::DMat4:
-        return std::make_unique<ShaderUniform<dgl::dmat4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat4>>(program, count, type, name);
     case DataType::DMat2x3:
-        return std::make_unique<ShaderUniform<dgl::dmat2x3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat2x3>>(program, count, type, name);
     case DataType::DMat2x4:
-        return std::make_unique<ShaderUniform<dgl::dmat2x4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat2x4>>(program, count, type, name);
     case DataType::DMat3x2:
-        return std::make_unique<ShaderUniform<dgl::dmat3x2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat3x2>>(program, count, type, name);
     case DataType::DMat3x4:
-        return std::make_unique<ShaderUniform<dgl::dmat3x4>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat3x4>>(program, count, type, name);
     case DataType::DMat4x2:
-        return std::make_unique<ShaderUniform<dgl::dmat4x2>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat4x2>>(program, count, type, name);
     case DataType::DMat4x3:
-        return std::make_unique<ShaderUniform<dgl::dmat4x3>>(program, count, type, name);
+        return std::make_unique<ShaderUniform<dmat4x3>>(program, count, type, name);
 
     case DataType::Sampler1D:
     case DataType::Sampler2D:
