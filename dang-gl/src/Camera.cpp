@@ -146,7 +146,17 @@ void OrthoProjection::setClip(const bounds3& clip)
 
 mat4 OrthoProjection::calculateMatrix()
 {
-    return mat4();
+    auto size = clip_.size();
+    auto offset = -(clip_.high + clip_.low) / size;
+    mat4 result;
+    result(0, 0) = 2.0f / size.x() / aspect();
+    result(1, 1) = 2.0f / size.y();
+    result(2, 2) = -2.0f / size.z();
+    result(3, 0) = offset.x();
+    result(3, 1) = offset.y();
+    result(3, 2) = offset.z();
+    result(3, 3) = 1.0f;
+    return result;
 }
 
 Camera::Camera(SharedProjectionProvider view_matrix_provider)
