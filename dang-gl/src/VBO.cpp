@@ -21,4 +21,14 @@ void VBOInfo::bind(GLuint handle)
     glBindBuffer(GL_ARRAY_BUFFER, handle);
 }
 
+void VBOBinding::lock()
+{
+    lock_count_++;
+}
+
+void VBOBinding::unlock()
+{
+    lock_count_--;
+}
+
 }
