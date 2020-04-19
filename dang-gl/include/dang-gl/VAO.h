@@ -114,7 +114,6 @@ private:
                     glVertexAttribLPointer(index(offset), size, type, stride, pointer(offset));
                 break;
 
-            case DataType::Bool:
             case DataType::Int:
             case DataType::UInt:
                 for (GLuint offset = 0; offset < location_count; offset++)
