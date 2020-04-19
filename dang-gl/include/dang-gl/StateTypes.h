@@ -5,6 +5,7 @@
 namespace dang::gl
 {
 
+/// <summary>The source factor, used for the blending function.</summary>
 enum class BlendFactorSrc : GLenum {
     Zero = GL_ZERO,
     One = GL_ONE,
@@ -23,6 +24,7 @@ enum class BlendFactorSrc : GLenum {
     SrcAlphaSaturate = GL_SRC_ALPHA_SATURATE
 };
 
+/// <summary>The destination factor, used for the blending function.</summary>
 enum class BlendFactorDst : GLenum {
     Zero = GL_ZERO,
     One = GL_ONE,
@@ -40,6 +42,7 @@ enum class BlendFactorDst : GLenum {
     OneMinusConstantAlpha = GL_ONE_MINUS_CONSTANT_ALPHA
 };
 
+/// <summary>Used by functions to compare values.</summary>
 enum class CompareFunc : GLenum {
     Never = GL_NEVER,
     Less = GL_LESS,
@@ -51,12 +54,14 @@ enum class CompareFunc : GLenum {
     Always = GL_ALWAYS
 };
 
+/// <summary>Which face to hide/cull.</summary>
 enum class CullFaceMode : GLenum {
     Front = GL_FRONT,
     Back = GL_BACK,
     FrontAndBack = GL_FRONT_AND_BACK
 };
 
+/// <summary>A list of all binary operations of boolean algebra.</summary>
 enum class LogicOp : GLenum {
     Clear = GL_CLEAR,
     Set = GL_SET,
@@ -76,17 +81,20 @@ enum class LogicOp : GLenum {
     OrInverted = GL_OR_INVERTED
 };
 
+/// <summary>Specifies the side of a polygon.</summary>
 enum class PolygonSide : GLenum {
     Front = GL_FRONT,
     Back = GL_BACK
 };
 
+/// <summary>Specfies, wether polygons should render full faces, the outline or just corner points.</summary>
 enum class PolygonMode : GLenum {
     Point = GL_POINT,
     Line = GL_LINE,
     Fill = GL_FILL
 };
 
+/// <summary>Actions, which can be performed on the stencil buffer.</summary>
 enum class StencilAction : GLenum {
     Keep = GL_KEEP,
     Zero = GL_ZERO,
@@ -98,6 +106,7 @@ enum class StencilAction : GLenum {
     Invert = GL_INVERT
 };
 
+/// <summary>Combines blending source and destination factors into a single type.</summary>
 struct BlendFactor {
     BlendFactorSrc src;
     BlendFactorDst dst;
@@ -108,6 +117,7 @@ struct BlendFactor {
     std::tuple<GLenum, GLenum> toTuple() const;
 };
 
+/// <summary>Which polygon mode to use for a template specified polygon side.</summary>
 template <PolygonSide Side>
 struct PolygonSideMode {
     PolygonMode mode;
@@ -120,6 +130,7 @@ struct PolygonSideMode {
     std::tuple<GLenum, GLenum> toTuple() const { return { static_cast<GLenum>(Side), static_cast<GLenum>(mode) }; }
 };
 
+/// <summary>Polygon offset, consisting of a factor and units value.</summary>
 struct PolygonOffset {
     GLfloat factor;
     GLfloat units;
@@ -130,6 +141,7 @@ struct PolygonOffset {
     std::tuple<GLfloat, GLfloat> toTuple() const;
 };
 
+/// <summary>A sample coverage, consisting of a clamped value and an invert flag.</summary>
 struct SampleCoverage {
     GLclampf value;
     GLboolean invert;
@@ -140,6 +152,7 @@ struct SampleCoverage {
     std::tuple<GLclampf, GLboolean> toTuple() const;
 };
 
+/// <summary>Two-dimensional integer bounds for a scissor-test.</summary>
 struct Scissor {
     ibounds2 bounds;
 
@@ -149,6 +162,7 @@ struct Scissor {
     std::tuple<GLint, GLint, GLsizei, GLsizei> toTuple() const;
 };
 
+/// <summary>The full parameter-set to change the stencil function with reference value and bit mask.</summary>
 struct StencilFunc {
     CompareFunc func;
     GLint ref;
@@ -160,6 +174,7 @@ struct StencilFunc {
     std::tuple<GLenum, GLint, GLuint> toTuple() const;
 };
 
+/// <summary>A set of stencil actions, which should be executed for different checks.</summary>
 struct StencilOp {
     StencilAction sfail;
     StencilAction dpfail;
