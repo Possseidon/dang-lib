@@ -81,7 +81,7 @@ private:
     bounds1 clip_;
 };
 
-/// <summary>An orthogonal projection provider with simple 3D clipping bounds, defaulting to [-1, 1] on all axes.</summary>
+/// <summary>An orthogonal projection provider with simple 3D clipping bounds, defaulting to [-1, 1] on all axes, while the actual clipping planes also have the aspect applied.</summary>
 class OrthoProjection : public ProjectionProvider {
 public:
     static constexpr bounds3 DefaultClip = { -1.0f, 1.0f };
