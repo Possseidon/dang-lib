@@ -42,7 +42,7 @@ protected:
 
 private:
     float aspect_;
-    std::optional<Window::Event::Subscription> window_resize_;
+    std::optional<WindowEvent::Subscription> window_resize_;
     std::optional<dgl::mat4> matrix_;
 };
 

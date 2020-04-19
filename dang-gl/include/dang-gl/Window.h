@@ -158,59 +158,59 @@ struct WindowInfo {
     } x11;
 };
 
+struct WindowEventInfo {
+    Window& window;
+};
+
+struct CursorMoveInfo : WindowEventInfo {
+    dmath::dvec2 window_pos;
+    dmath::vec2 pos;
+};
+
+struct ScrollInfo : WindowEventInfo {
+    dmath::dvec2 offset;
+};
+
+struct DropPathsInfo : WindowEventInfo {
+    std::vector<fs::path> paths;
+};
+
+struct ButtonInfo : WindowEventInfo {
+    ButtonAction action;
+    Button button;
+    ModifierKeys mods;
+};
+
+struct KeyInfo : WindowEventInfo {
+    KeyAction action;
+    KeyData key;
+    ModifierKeys mods;
+};
+
+struct GLDebugMessageInfo : WindowEventInfo {
+    GLDebugSource source;
+    GLDebugType type;
+    GLuint id;
+    GLDebugSeverity severity;
+    std::string message;
+};
+
+using WindowEvent = dutils::Event<Window&>;
+using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
+using ScrollEvent = dutils::Event<ScrollInfo>;
+using DropPathsEvent = dutils::Event<DropPathsInfo>;
+using KeyEvent = dutils::Event<KeyInfo>;
+using ButtonEvent = dutils::Event<ButtonInfo>;
+using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
+
 class Window {
 public:
 
-    struct EventInfoBase {
-        Window& window;
-    };
-
-    struct CursorMoveInfo : EventInfoBase {
-        dmath::dvec2 window_pos;
-        dmath::vec2 pos;
-    };
-
-    struct ScrollInfo : EventInfoBase {
-        dmath::dvec2 offset;
-    };
-
-    struct DropPathsInfo : EventInfoBase {
-        std::vector<fs::path> paths;
-    };
-
-    struct ButtonInfo : EventInfoBase {
-        ButtonAction action;
-        Button button;
-        ModifierKeys mods;
-    };
-
-    struct KeyInfo : EventInfoBase {
-        KeyAction action;
-        KeyData key;
-        ModifierKeys mods;
-    };
-
-    struct GLDebugMessageInfo : EventInfoBase {
-        GLDebugSource source;
-        GLDebugType type;
-        GLuint id;
-        GLDebugSeverity severity;
-        std::string message;
-    };
-
-    using Event = dutils::Event<Window&>;
-    using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
-    using ScrollEvent = dutils::Event<ScrollInfo>;
-    using DropPathsEvent = dutils::Event<DropPathsInfo>;
-    using KeyEvent = dutils::Event<KeyInfo>;
-    using ButtonEvent = dutils::Event<ButtonInfo>;
-    using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
-
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
-                                   
+
     Window(const Window&) = delete;
-    Window(Window&&) = delete;        
+    Window(Window&&) = delete;
     Window& operator=(const Window&) = delete;
     Window& operator=(Window&&) = delete;
 
@@ -347,26 +347,26 @@ public:
 
     bool shouldClose() const;
 
-    Event onUpdate;
-    Event onRender;
+    WindowEvent onUpdate;
+    WindowEvent onRender;
 
-    Event onClose;
-    Event onContentScale;
-    Event onFocus;
-    Event onUnfocus;
-    Event onIconify;
-    Event onUniconify;
-    Event onMaximize;
-    Event onUnmaximize;
-    Event onRestore;
-    Event onMove;
-    Event onResize;
-    Event onFramebufferResize;
+    WindowEvent onClose;
+    WindowEvent onContentScale;
+    WindowEvent onFocus;
+    WindowEvent onUnfocus;
+    WindowEvent onIconify;
+    WindowEvent onUniconify;
+    WindowEvent onMaximize;
+    WindowEvent onUnmaximize;
+    WindowEvent onRestore;
+    WindowEvent onMove;
+    WindowEvent onResize;
+    WindowEvent onFramebufferResize;
 
-    Event onType;
+    WindowEvent onType;
     KeyEvent onKey;
-    Event onCursorEnter;
-    Event onCursorLeave;
+    WindowEvent onCursorEnter;
+    WindowEvent onCursorLeave;
     CursorMoveEvent onCursorMove;
     DropPathsEvent onDropPaths;
     ButtonEvent onButton;
