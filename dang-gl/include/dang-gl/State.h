@@ -15,13 +15,16 @@ namespace detail
 template <typename T>
 class StateProperty;
 
+/// <summary>A base class for all different OpenGL states.</summary>
 class StatePropertyBase {
 public:
     friend class State;
 
+    /// <summary>Initializes the property, automatically incrementing the property count on the state itself.</summary>
     StatePropertyBase(State& state);
 
 protected:
+    /// <summary>Simply delegates to the backup function of the state.</summary>
     template <typename T>
     void backupValue(detail::StateProperty<T>& property);
 
@@ -29,9 +32,12 @@ protected:
     std::size_t index_;
 };
 
+/// <summary>A polymorphic templated state property to provide a type-safe, but uniform access to OpenGL states.</summary>
 template <typename T>
 class StateProperty : public StatePropertyBase {
 public:
+    /// <summary>Initializes the property with the given state and an optional default value, which default to the actual default value of the type.</summary>
+    /// <remarks>The supplied default value should match the actual default value of the OpenGL state.</remarks>
     StateProperty(State& state, const T& default_value = T())
         : StatePropertyBase(state)
         , default_value_(default_value)
@@ -39,44 +45,55 @@ public:
     {
     }
 
+    /// <summary>Ensure the correct destructors are called, as the class is polymorphic.</summary>
+    virtual ~StateProperty() = default;
+
     StateProperty(const StateProperty&) = delete;
     StateProperty(StateProperty&&) = delete;
     StateProperty& operator=(const StateProperty&) = delete;
     StateProperty& operator=(StateProperty&&) = delete;
 
+    /// <summary>Allows for implicit assignment of the value type.</summary>
     StateProperty& operator=(const T& value);
 
+    /// <summary>Allows for implicit conversion to the cached value.</summary>
     operator const T& () const
     {
         return value_;
     }
 
+    /// <summary>Returns the cached value.</summary>
     const T& operator*() const
     {
         return value_;
     }
 
+    /// <summary>Returns the cached value.</summary>
     const T* operator->() const
     {
         return &value_;
     }
 
+    /// <summary>Returns the cached value.</summary>
     const T& value() const
     {
         return value_;
     }
 
+    /// <summary>Returns the default value.</summary>
     const T& defaultValue() const
     {
         return default_value_;
     }
 
+    /// <summary>Resets the state to its default value.</summary>
     void reset()
     {
         *this = default_value_;
     }
 
 protected:
+    /// <summary>Virtual </summary>
     virtual void update() = 0;
 
 private:
@@ -84,11 +101,13 @@ private:
     T value_;
 };
 
+/// <summary>State flags that can be enabled and disabled with glEnable and glDisable respectively.</summary>
 template <GLenum Flag>
 class StateFlag : public StateProperty<bool> {
 public:
     using StateProperty<bool>::StateProperty;
 
+    /// <summary>Allows for implicit assignment of the flag.</summary>
     StateFlag& operator=(bool value)
     {
         StateProperty<bool>::operator=(value);
@@ -96,6 +115,7 @@ public:
     }
 
 protected:
+    /// <summary>Calls glEnable and glDisable.</summary>
     void update() override
     {
         if (*this)
@@ -105,11 +125,13 @@ protected:
     }
 };
 
+/// <summary>A state property, which calls a template supplied function with a single enum, arithmetic value or struct with a toTuple method.</summary>
 template <auto Func, typename T>
 class StateFunc : public StateProperty<T> {
 public:
     using StateProperty<T>::StateProperty;
 
+    /// <summary>Allows for implicit assignment of the state.</summary>
     StateFunc& operator=(const T& value)
     {
         StateProperty<T>::operator=(value);
@@ -117,6 +139,7 @@ public:
     }
 
 protected:
+    /// <summary>Calls the template specified function with the current value.</summary>
     void update() override
     {
         if constexpr (std::is_enum_v<T>)
@@ -128,11 +151,13 @@ protected:
     }
 };
 
+/// <summary>A state property, which calls the template supplied function with each vector component as a separate parameter.</summary>
 template <auto Func, typename T, std::size_t Dim>
 class StateVector : public StateProperty<dmath::Vector<T, Dim>> {
 public:
     using StateProperty<dmath::Vector<T, Dim>>::StateProperty;
 
+    /// <summary>Allows for implicit assignment of the state.</summary>
     StateVector& operator=(const dmath::Vector<T, Dim>& value)
     {
         StateProperty<dmath::Vector<T, Dim>>::operator=(value);
@@ -140,28 +165,34 @@ public:
     }
 
 protected:
+    /// <summary>Calls the template specified function with the current vector components.</summary>
     void update() override
     {
         std::apply(*Func, **this);
     }
 };
 
+/// <summary>A polymorphic base class for state backups.</summary>
 class StateBackupBase {
 public:
     virtual ~StateBackupBase() = 0;
 };
 
+/// <summary>A map from property index to state backup.</summary>
 using StateBackupSet = std::map<std::size_t, std::unique_ptr<StateBackupBase>>;
 
+/// <summary>A templated state backup, which automatically resets a state to its original value on destruction.</summary>
 template <typename T>
 class StateBackup : public StateBackupBase {
 public:
+    /// <summary>Stores the current value of the state.</summary>
     StateBackup(StateProperty<T>& property)
         : property_(property)
         , old_value_(property)
     {
     }
 
+    /// <summary>Automatically resets the state to it old value.</summary>
     ~StateBackup() override
     {
         property_ = old_value_;
@@ -174,25 +205,34 @@ private:
 
 }
 
+/// <summary>A scope based state modification, which automatically reverts to the old state, when it goes out of scope.</summary>
 class ScopedState {
 public:
+    /// <summary>Allows for temporary modifications, which get reverted at the end of the scope.</summary>
     ScopedState(State& state);
+    /// <summary>Automatically reverts all modified states to their old values.</summary>
     ~ScopedState();
 
+    /// <summary>Returns the actual state.</summary>
     State& operator*() const;
+    /// <summary>Allows access to the state through this wrapper.</summary>
     State* operator->() const;
 
 private:
     State& state_;
 };
 
+/// <summary>Wraps the full state of an OpenGL context and supports efficient push/pop semantics, to temporarily modify a set of states.</summary>
 class State {
 public:
     friend class detail::StatePropertyBase;
 
+    /// <summary>Allows for temporary modifications, which get reverted by the matching pop call.</summary>
     void push();
+    /// <summary>Reverts all modified states to their old values.</summary>
     void pop();
 
+    /// <summary>Uses an RAII wrapper, to ensure pop is called at the end of the scope, even in case of exceptions.</summary>
     ScopedState scoped();
 
     detail::StateFlag<GL_BLEND> blend{ *this };
@@ -240,6 +280,7 @@ public:
     detail::StateFunc<&glClearStencil, GLint> clear_stencil{ *this, 0 };
 
 private:
+    /// <summary>If the property hasn't been backed up yet, it gets added to the top of the state backup stack.</summary>
     template <typename T>
     void backupValue(detail::StateProperty<T>& property);
 
