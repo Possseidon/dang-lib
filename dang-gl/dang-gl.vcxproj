@@ -177,8 +177,10 @@
     <ClInclude Include="include\dang-gl\Input.h" />
     <ClInclude Include="include\dang-gl\Object.h" />
     <ClInclude Include="include\dang-gl\ObjectBase.h" />
+    <ClInclude Include="include\dang-gl\ObjectContext.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\Texture.h" />
     <ClInclude Include="include\dang-gl\Transform.h" />
     <ClInclude Include="include\dang-gl\Types.h" />
     <ClInclude Include="include\dang-gl\UniformWrapper.h" />
@@ -186,7 +188,7 @@
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\dang-gl\Program.h" />
-    <ClInclude Include="include\dang-gl\Binding.h" />
+    <ClInclude Include="include\dang-gl\ObjectBinding.h" />
     <ClInclude Include="include\dang-gl\VBO.h" />
     <ClInclude Include="include\dang-gl\VAO.h" />
     <ClInclude Include="include\dang-gl\Monitor.h" />
@@ -195,6 +197,8 @@
     <ClInclude Include="include\dang-gl\StateTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\ObjectContext.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Renderable.cpp" />
     <ClCompile Include="src\Monitor.cpp" />

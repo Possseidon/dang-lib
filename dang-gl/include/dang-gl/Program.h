@@ -105,6 +105,7 @@ struct ProgramInfo : public ObjectInfo {
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
+    static constexpr ObjectType ObjectType = ObjectType::Program;
     static constexpr BindingPoint BindingPoint = BindingPoint::Program;
 };
 

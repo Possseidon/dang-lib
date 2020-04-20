@@ -203,6 +203,70 @@ private:
     T old_value_;
 };
 
+template <typename T>
+constexpr auto glGet = nullptr;
+
+template <> constexpr auto& glGet<GLboolean> = glGetBooleanv;
+template <> constexpr auto& glGet<GLdouble> = glGetDoublev;
+template <> constexpr auto& glGet<GLfloat> = glGetFloatv;
+template <> constexpr auto& glGet<GLint> = glGetIntegerv;
+template <> constexpr auto& glGet<GLint64> = glGetInteger64v;
+
+/// <summary>A constant, which is queried on first use, but cached for further accesses.</summary>
+template <typename T, GLenum Name>
+class Constant {
+public:
+    /// <summary>Calls glGet the first time, but caches the value.</summary>
+    const T& value() const
+    {
+        if (!value_) {
+            value_.emplace();
+            glGet<T>(Name, &*value_);
+        }
+        return *value_;
+    }
+
+    /// <summary>Allows for implicit conversion to the value type.</summary>
+    operator const T& () const
+    {
+        return value();
+    }
+
+private:
+    mutable std::optional<T> value_;
+};
+
+template <typename T>
+constexpr auto glGeti = nullptr;
+
+template <> constexpr auto& glGeti<GLboolean> = glGetBooleani_v;
+template <> constexpr auto& glGeti<GLdouble> = glGetDoublei_v;
+template <> constexpr auto& glGeti<GLfloat> = glGetFloati_v;
+template <> constexpr auto& glGeti<GLint> = glGetIntegeri_v;
+template <> constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
+
+/// <summary>A list of constants, which is queried on first use, but cached for further accesses.</summary>
+template <typename T, GLenum Name>
+class IndexedConstant {
+public:
+    /// <summary>Queries the given index, but caches all indices.</summary>
+    const T& operator [](std::size_t index) const
+    {
+        if (index >= values_.size())
+            values_.resize(index + 1);
+        else if (values_[index])
+            return values_[index];
+        values_[index].emplace();
+        glGeti<T>(Name, index, &values_[index]);
+        return values_[index];
+    }
+
+private:
+    mutable std::vector<std::optional<T>> values_;
+};
+
+// TODO: Add size for IndexedConstant and create a separate class, which can query the size from another state.
+
 }
 
 /// <summary>A scope based state modification, which automatically reverts to the old state, when it goes out of scope.</summary>
@@ -224,6 +288,10 @@ private:
 
 /// <summary>Wraps the full state of an OpenGL context and supports efficient push/pop semantics, to temporarily modify a set of states.</summary>
 class State {
+private:
+    // Must be initialized before the properties
+    std::size_t property_count_ = 0;
+
 public:
     friend class detail::StatePropertyBase;
 
@@ -279,13 +347,14 @@ public:
     detail::StateFunc<&glClearDepth, GLfloat> clear_depth{ *this, 0.0f };
     detail::StateFunc<&glClearStencil, GLint> clear_stencil{ *this, 0 };
 
+    detail::Constant<GLint, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS> max_combined_texture_image_units;
+
 private:
     /// <summary>If the property hasn't been backed up yet, it gets added to the top of the state backup stack.</summary>
     template <typename T>
     void backupValue(detail::StateProperty<T>& property);
 
     std::stack<detail::StateBackupSet> state_backup_;
-    std::size_t property_count_ = 0;
 };
 
 template<typename T>

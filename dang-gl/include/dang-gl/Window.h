@@ -2,13 +2,16 @@
 
 #include "dang-math/vector.h"
 #include "dang-math/bounds.h"
+
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
 
-#include "Binding.h"
 #include "BindingPoint.h"
 #include "Input.h"
 #include "Monitor.h"
+#include "ObjectBinding.h"
+#include "ObjectContext.h"
+#include "ObjectType.h"
 #include "State.h"
 
 namespace dang::gl
@@ -328,8 +331,11 @@ public:
     void setRawMouseMotion(bool raw_mouse_motion);
     static bool supportsRawMouseMotion();
 
-    template <class TInfo>
-    typename TInfo::Binding& binding();
+    template <typename TInfo>
+    typename TInfo::Context& objectContext();
+
+    template <typename TInfo>
+    typename TInfo::Binding& objectBinding();
 
     void activate();
 
@@ -413,15 +419,24 @@ private:
     float delta_time_ = 0;
     float fps_ = 0;
     std::string text_input_;
-    dutils::EnumArray<BindingPoint, std::unique_ptr<Binding>> bindings_;
+    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContext>> object_contexts_;
+    dutils::EnumArray<BindingPoint, std::unique_ptr<ObjectBindingBase>> object_bindings_;
 };
 
-template<class TInfo>
-inline typename TInfo::Binding& Window::binding()
+template <typename TInfo>
+inline typename TInfo::Context& Window::objectContext()
 {
-    if (const auto& binding = bindings_[TInfo::BindingPoint])
+    if (const auto& binding = object_contexts_[TInfo::ObjectType])
+        return static_cast<typename TInfo::Context&>(*binding);
+    return static_cast<typename TInfo::Context&>(*(object_contexts_[TInfo::ObjectType] = std::make_unique<TInfo::Context>(*this)));
+}
+
+template <typename TInfo>
+inline typename TInfo::Binding& Window::objectBinding()
+{
+    if (const auto& binding = object_bindings_[TInfo::BindingPoint])
         return static_cast<typename TInfo::Binding&>(*binding);
-    return static_cast<typename TInfo::Binding&>(*(bindings_[TInfo::BindingPoint] = std::make_unique<TInfo::Binding>()));
+    return static_cast<typename TInfo::Binding&>(*(object_bindings_[TInfo::BindingPoint] = std::make_unique<TInfo::Binding>(objectContext<TInfo>())));
 }
 
 }

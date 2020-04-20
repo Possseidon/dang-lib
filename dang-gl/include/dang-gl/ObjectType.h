@@ -5,6 +5,7 @@
 namespace dang::gl
 {
 
+/// <summary>A list of all OpenGL objects, which can be created, some with multiple binding points.</summary>
 enum class ObjectType {
     Buffer,
     Shader,
@@ -20,6 +21,7 @@ enum class ObjectType {
     COUNT
 };
 
+/// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
 constexpr dutils::EnumArray<ObjectType, GLenum> ObjectTypesGL
 {
    GL_BUFFER,

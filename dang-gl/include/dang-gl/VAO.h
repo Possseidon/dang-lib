@@ -29,6 +29,7 @@ struct VAOInfo : public ObjectInfo {
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
+    static constexpr ObjectType ObjectType = ObjectType::VertexArray;
     static constexpr BindingPoint BindingPoint = BindingPoint::VertexArray;
 };
 

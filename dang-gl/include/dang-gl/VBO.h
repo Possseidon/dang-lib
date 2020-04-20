@@ -25,14 +25,16 @@ class VBOBindError : public std::runtime_error {
 };
 
 /// <summary>A custom binding class for VBOs, which supports locking.</summary>
-class VBOBinding : public Binding {
+class VBOBinding : public ObjectBinding<> {
 public:
-    template <class TInfo>
+    using ObjectBinding::ObjectBinding;
+
+    template <typename TInfo>
     void bind(const ObjectBase& object)
     {
         if (lock_count_ > 0)
             throw VBOBindError("The current VBO is locked and cannot be rebound.");
-        Binding::bind<TInfo>(object);
+        ObjectBinding::bind<TInfo>(object);
     }
 
     void lock();
@@ -48,9 +50,10 @@ struct VBOInfo : public ObjectInfo {
     static void destroy(GLuint handle);
     static void bind(GLuint handle);
 
-    static constexpr BindingPoint BindingPoint = BindingPoint::ArrayBuffer;
+    static constexpr ObjectType ObjectType = ObjectType::Buffer;
 
     using Binding = VBOBinding;
+    static constexpr BindingPoint BindingPoint = BindingPoint::ArrayBuffer;
 };
 
 template <typename T>
@@ -83,6 +86,7 @@ template <typename T>
 class VBOMapping {
 public:
 
+    /// <summary>An iterator, allowing random access to mapped VBO data.</summary>
     class iterator {
     public:
         using iterator_category = std::random_access_iterator_tag;
