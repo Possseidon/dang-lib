@@ -24,13 +24,13 @@ dang::utils::ClassRef<name> name::metaclass() const { return static_cast<dang::u
 namespace dang::utils
 {
 
-template <class T>
+template <typename T>
 struct Class;
 
-template <class T>
+template <typename T>
 using ClassRef = const Class<T>&;
 
-template <class T>
+template <typename T>
 using ClassPtr = const Class<T>*;
 
 struct BaseClass {
@@ -50,7 +50,7 @@ using BaseClassRef = const BaseClass&;
 
 using BaseClassPtr = const BaseClass*;
 
-template <class T, typename = std::enable_if_t<std::is_base_of_v<BaseClass, Class<T>>>>
+template <typename T, typename = std::enable_if_t<std::is_base_of_v<BaseClass, Class<T>>>>
 const Class<T> ClassOf;
 
 }
