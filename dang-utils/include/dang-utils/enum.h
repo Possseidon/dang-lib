@@ -26,11 +26,9 @@ constexpr std::array<T, EnumCount<T>> EnumValues = getEnumValues<T>();
 /// <summary>A wrapper around std::array, allowing the use of an enum with COUNT as index.</summary>
 template <typename TEnum, typename TValue, typename = std::enable_if_t<std::is_enum_v<TEnum>>, TEnum = TEnum::COUNT>
 class EnumArray : public std::array<TValue, EnumCount<TEnum>> {
-    static_assert(std::is_enum_v<TEnum>, "EnumArray can only be used with enum types");
-
+public:
     using Base = std::array<TValue, EnumCount<TEnum>>;
 
-public:
     constexpr TValue& operator[](TEnum pos) noexcept
     {
         return Base::operator[](static_cast<typename Base::size_type>(pos));
@@ -161,7 +159,7 @@ template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NON
 constexpr T operator&(T lhs, T rhs)
 {
     using BaseType = std::underlying_type_t<T>;
-    return static_cast<T>(static_cast<BaseType>(lhs)& static_cast<BaseType>(rhs));
+    return static_cast<T>(static_cast<BaseType>(lhs) & static_cast<BaseType>(rhs));
 }
 
 /// <summary>Stores the intersection of both enum-sets in the first.</summary>
