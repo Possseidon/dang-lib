@@ -149,5 +149,11 @@
     <ClInclude Include="include\dang-gl\ObjectContext.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-gl\PixelData.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\PixelInternalFormat.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 
 #include "Object.h"
 #include "ObjectBinding.h"
+#include "PixelData.h"
 
 namespace dang::gl
 {

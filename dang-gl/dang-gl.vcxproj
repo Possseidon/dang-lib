@@ -180,7 +180,9 @@
     <ClInclude Include="include\dang-gl\ObjectContext.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\PixelInternalFormat.h" />
     <ClInclude Include="include\dang-gl\Texture.h" />
+    <ClInclude Include="include\dang-gl\PixelData.h" />
     <ClInclude Include="include\dang-gl\Transform.h" />
     <ClInclude Include="include\dang-gl\Types.h" />
     <ClInclude Include="include\dang-gl\UniformWrapper.h" />
