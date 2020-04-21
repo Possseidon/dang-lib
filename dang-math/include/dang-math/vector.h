@@ -59,6 +59,15 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
+    /// <summary>Returns the product of all components.</summary>
+    constexpr T product() const
+    {
+        T result = T(1);
+        for (std::size_t i = 0; i < Dim; i++)
+            result *= (*this)[i];
+        return result;
+    }
+
     /// <summary>Returns the dot-product with the given vector.</summary>
     constexpr T dot(const Vector<T, Dim>& other) const
     {
