@@ -10,6 +10,7 @@ class ObjectContext {
 public:
     /// <summary>Initializes the object context with the given window context.</summary>
     ObjectContext(Window& window);
+    virtual ~ObjectContext() = default;
 
     /// <summary>Returns the associated window.</summary>
     Window& window() const;

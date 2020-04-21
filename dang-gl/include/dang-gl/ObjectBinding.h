@@ -8,7 +8,10 @@ namespace dang::gl
 class ObjectContext;
 
 /// <summary>A base class, for when the default binding mechanism is not favorable.</summary>
-class ObjectBindingBase {};
+class ObjectBindingBase {
+public:
+    virtual ~ObjectBindingBase() = default;
+};
 
 /// <summary>A context specific object binding, which remembers the currently bound object to minimize redundant bind calls.</summary>
 template <typename TContext = ObjectContext>
