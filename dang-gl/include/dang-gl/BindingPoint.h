@@ -57,7 +57,7 @@ enum class BindingPoint {
 };
 
 /// <summary>Maps from binding points to their respective target constant, which needs to be supplied to the glBind function.</summary>
-constexpr dutils::EnumArray<BindingPoint, GLenum> BindingPointTargets
+constexpr dutils::EnumArray<BindingPoint, GLenum> BindingPointsGL
 {
     // glBindBuffer
     GL_ARRAY_BUFFER,

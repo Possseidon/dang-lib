@@ -25,7 +25,7 @@ void TextureContext::bind(const TextureBase& texture)
         throw TextureError("Cannot bind texture, as all slots are in use.");
     GLenum slot = GL_TEXTURE0 + static_cast<GLenum>(std::distance(active_textures_.begin(), first_free_slot_));
     setActiveTexture(slot);
-    glBindTexture(BindingPointTargets[texture.binding_point_], texture.handle());
+    glBindTexture(BindingPointsGL[texture.binding_point_], texture.handle());
     *first_free_slot_ = &texture;
     texture.active_texture_slot_ = slot;
     first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), nullptr);
