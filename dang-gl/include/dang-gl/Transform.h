@@ -40,12 +40,14 @@ public:
     /// <summary>Checks, if the chain of parents contains the given transform.</summary>
     bool parentChainContains(const Transform& transform) const;
     /// <summary>UNSAFE! Forces the parent of this transform to the given transform, without checking for potential cycles.</summary>
-    /// <remarks>A cycle will cause the full transform calculation to recurse indefinitely and likely cause a stack overflow.</remarks>
+    /// <remarks>A cycle will cause an immediate stack overflow, from recursively calling parent change events.</remarks>
     void forceParent(const SharedTransform& parent);
     /// <summary>Tries to set the parent of this transform to the given transform and returns false if it would introduce a cycle.</summary>
     bool trySetParent(const SharedTransform& parent);
     /// <summary>Tries to set the parent of this transform to the given transform and throws a TransformCycleError if it would introduce a cycle.</summary>
     void setParent(const SharedTransform& parent);
+    /// <summary>Removes the current parent, which is the same as setting the parent to nullptr.</summary>
+    void resetParent();
 
     /// <summary>Triggered, when the full transformation changes, because either the own transformation or that of any parent changed.</summary>
     Event onChange;

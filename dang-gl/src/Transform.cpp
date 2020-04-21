@@ -52,14 +52,16 @@ bool Transform::parentChainContains(const Transform& transform) const
 
 void Transform::forceParent(const SharedTransform& parent)
 {
-    parent_change_ = std::nullopt;
     parent_ = parent;
     if (parent) {
-        parent_change_.emplace(parent->onChange.subscribe(
-            [&] {
-                full_transform_.reset();
-                onChange(*this);
-            }));
+        auto parent_change = [&] {
+            full_transform_.reset();
+            onChange(*this);
+        };
+        parent_change_.emplace(parent->onChange.subscribe(parent_change));
+    }
+    else {
+        parent_change_ = std::nullopt;
     }
     full_transform_.reset();
     onParentChange(*this);
@@ -83,6 +85,12 @@ void Transform::setParent(const SharedTransform& parent)
 {
     if (!trySetParent(parent))
         throw TransformCycleError("Cannot set transform parent, as it would introduce a cycle.");
+}
+
+void Transform::resetParent()
+{
+    if (parent_)
+        forceParent(nullptr);
 }
 
 }
