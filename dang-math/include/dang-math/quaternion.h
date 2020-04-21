@@ -132,8 +132,14 @@ struct Quaternion : private Vector<T, 4> {
         return Quaternion(scalar(), -vector());
     }
 
-    /// <summary>Returns the inverse of the quaternion, which is calculated from the conjugate and dot-product with itself.</summary>
-    constexpr Quaternion inverse() const
+    /// <summary>Returns the inverse of the quaternion, assuming it is normalized, for which it simply calculates the conjugate.</summary>
+    constexpr Quaternion inverseFast() const
+    {
+        return conjugate();
+    }
+
+    /// <summary>Returns the inverse of the quaternion, even if the quaternion is not normalized.</summary>
+    constexpr Quaternion inverseSafe() const
     {
         return conjugate() / Base::sqrdot();
     }
@@ -218,7 +224,7 @@ struct Quaternion : private Vector<T, 4> {
     /// <summary>Combines the transformation of lhs with the inverse of rhs.</summary>
     friend constexpr Quaternion operator/(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return lhs * rhs.inverse();
+        return lhs * rhs.inverseSafe();
     }
 
     /// <summary>Combines the transformation of the inverse of rhs onto lhs.</summary>
@@ -477,10 +483,16 @@ struct DualQuaternion {
         return real.dot(other.real);
     }
 
-    /// <summary>Returns the inverse of the dual-quaternion, which when applied reverts the original transformation.</summary>
-    constexpr DualQuaternion inverse() const
+    /// <summary>Returns the inverse of the dual-quaternion, assuming it is normalized, for which it simply calculates the conjugate for both parts.</summary>
+    constexpr DualQuaternion inverseFast() const
     {
-        Quaternion<T> realInverse = real.inverse();
+        return quatConjugate();
+    }
+
+    /// <summary>Returns the inverse of the dual-quaternion, even if the dual-quaternion is not normalized.</summary>
+    constexpr DualQuaternion inverseSafe() const
+    {
+        Quaternion<T> realInverse = real.inverseSafe();
         return DualQuaternion(realInverse, -realInverse * dual * realInverse);
     }
 
@@ -606,7 +618,7 @@ struct DualQuaternion {
     /// <summary>Combines the transformation of the inverse of rhs onto lhs.</summary>
     friend constexpr DualQuaternion& operator/=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
-        return lhs *= rhs.inverse();
+        return lhs *= rhs.inverseSafe();
     }
 
     /// <summary>Combines the transformation of lhs with the inverse of rhs.</summary>

@@ -236,7 +236,7 @@ void Camera::render()
     if (projection_uniform_)
         projection_uniform_->force(projection_provider_->matrix());
 
-    const auto& view_transform = transform_->fullTransform().inverse();
+    const auto& view_transform = transform_->fullTransform().inverseFast();
 
     if (auto& uniform = transform_uniforms_[CameraTransformType::View])
         uniform->force(view_transform.toMatrix2x4());
