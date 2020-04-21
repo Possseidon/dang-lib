@@ -84,10 +84,10 @@ enum class GLDebugType {
 };
 
 enum class GLDebugSeverity {
-    dmsNotification = GL_DEBUG_SEVERITY_NOTIFICATION,
-    dmsLow = GL_DEBUG_SEVERITY_LOW,
-    dmsMedium = GL_DEBUG_SEVERITY_MEDIUM,
-    dmsHigh = GL_DEBUG_SEVERITY_HIGH
+    Notification = GL_DEBUG_SEVERITY_NOTIFICATION,
+    Low = GL_DEBUG_SEVERITY_LOW,
+    Medium = GL_DEBUG_SEVERITY_MEDIUM,
+    High = GL_DEBUG_SEVERITY_HIGH
 };
 
 struct WindowInfo {
