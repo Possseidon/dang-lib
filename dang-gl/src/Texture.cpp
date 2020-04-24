@@ -19,8 +19,10 @@ void TextureContext::setActiveTexture(GLenum active_texture)
 
 void TextureContext::bind(const TextureBase& texture)
 {
-    if (texture.active_texture_slot_)
+    if (texture.active_texture_slot_) {
+        setActiveTexture(*texture.active_texture_slot_);
         return;
+    }
     if (first_free_slot_ == active_textures_.end())
         throw TextureError("Cannot bind texture, as all slots are in use.");
     GLenum slot = GL_TEXTURE0 + static_cast<GLenum>(std::distance(active_textures_.begin(), first_free_slot_));
