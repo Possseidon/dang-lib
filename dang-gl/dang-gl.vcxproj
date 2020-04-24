@@ -251,7 +251,11 @@
     <ClInclude Include="include\dang-gl\ObjectContext.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
+    <ClInclude Include="include\dang-gl\Pixel.h" />
+    <ClInclude Include="include\dang-gl\PixelFormat.h" />
     <ClInclude Include="include\dang-gl\PixelInternalFormat.h" />
+    <ClInclude Include="include\dang-gl\PixelType.h" />
+    <ClInclude Include="include\dang-gl\PNGLoader.h" />
     <ClInclude Include="include\dang-gl\Texture.h" />
     <ClInclude Include="include\dang-gl\PixelData.h" />
     <ClInclude Include="include\dang-gl\Transform.h" />
@@ -270,6 +274,7 @@
     <ClInclude Include="include\dang-gl\StateTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\PNGLoader.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\ObjectContext.cpp" />
     <ClCompile Include="src\Camera.cpp" />
@@ -308,11 +313,19 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\glfw.3.3.2\build\native\glfw.targets" Condition="Exists('..\packages\glfw.3.3.2\build\native\glfw.targets')" />
+    <Import Project="..\packages\libpng-msvc-x64.1.6.33.8807\build\native\libpng-msvc-x64.targets" Condition="Exists('..\packages\libpng-msvc-x64.1.6.33.8807\build\native\libpng-msvc-x64.targets')" />
+    <Import Project="..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets" Condition="Exists('..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets')" />
+    <Import Project="..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
+    <Import Project="..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets" Condition="Exists('..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Dieses Projekt verweist auf mindestens ein NuGet-Paket, das auf diesem Computer fehlt. Verwenden Sie die Wiederherstellung von NuGet-Paketen, um die fehlenden Dateien herunterzuladen. Weitere Informationen finden Sie unter "http://go.microsoft.com/fwlink/?LinkID=322105". Die fehlende Datei ist "{0}".</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\glfw.3.3.2\build\native\glfw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glfw.3.3.2\build\native\glfw.targets'))" />
+    <Error Condition="!Exists('..\packages\libpng-msvc-x64.1.6.33.8807\build\native\libpng-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng-msvc-x64.1.6.33.8807\build\native\libpng-msvc-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets'))" />
+    <Error Condition="!Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets'))" />
   </Target>
 </Project>

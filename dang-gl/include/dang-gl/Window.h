@@ -90,6 +90,8 @@ enum class GLDebugSeverity {
     High = GL_DEBUG_SEVERITY_HIGH
 };
 
+class Window;
+
 struct WindowInfo {
     GLFWwindow* createWindow() const;
 
@@ -208,7 +210,6 @@ using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
 
 class Window {
 public:
-
     Window(const WindowInfo& info = WindowInfo());
     ~Window();
 
