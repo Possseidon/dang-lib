@@ -125,17 +125,26 @@ void Program::loadUniformLocations()
     }
 }
 
-void Program::setAttributeOrder(const std::vector<std::string>& attribute_order)
+void Program::setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order)
 {
-    attribute_stride_ = 0;
-    for (auto& name : attribute_order) {
+    auto add_attribute = [&](const auto& name, AttributeOrder& order) {
         auto pos = attributes_.find(name);
         if (pos == attributes_.end())
             throw ShaderAttributeError("Shader-Attribute missing or optimized: " + name);
         auto& attribute = pos->second;
-        attribute.offset_ = attribute_stride_;
-        attribute_order_.push_back(attribute);
-        attribute_stride_ += attribute.size();
+        attribute.offset_ = order.stride;
+        order.attributes.push_back(attribute);
+        order.stride += attribute.size();
+    };
+
+    for (auto& name : attribute_order)
+        add_attribute(name, attribute_order_);
+
+    for (auto& instance : instanced_attribute_order) {
+        auto& attributes = instanced_attribute_order_.emplace_back();
+        attributes.divisor = instance.divisor;
+        for (auto& name : instance.order)
+            add_attribute(name, attributes);
     }
 
     for (auto& [name, attribute] : attributes_)
@@ -187,14 +196,14 @@ void Program::addShaderFromFile(ShaderType type, const fs::path& path)
     addShader(type, string_stream.str());
 }
 
-void Program::link(const std::vector<std::string>& attribute_order)
+void Program::link(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order)
 {
     glLinkProgram(handle());
     checkLinkStatusAndInfoLog();
     postLinkCleanup();
     loadAttributeLocations();
     loadUniformLocations();
-    setAttributeOrder(attribute_order);
+    setAttributeOrder(attribute_order, instanced_attribute_order);
 }
 
 void Program::postLinkCleanup()
@@ -207,14 +216,19 @@ void Program::postLinkCleanup()
     includes_.clear();
 }
 
-GLsizei Program::attributeStride() const
-{
-    return attribute_stride_;
-}
-
-const std::vector<std::reference_wrapper<ShaderAttribute>>& Program::attributeOrder() const
+const AttributeOrder& Program::attributeOrder() const
 {
     return attribute_order_;
+}
+
+const std::vector<AttributeOrder>& Program::instancedAttributeOrder() const
+{
+    return instanced_attribute_order_;
+}
+
+ShaderUniformSampler& Program::uniformSampler(const std::string& name, GLint count)
+{
+    return uniform<GLint>(name, count);
 }
 
 ShaderVariable::ShaderVariable(Program& program, GLint count, DataType type, std::string name, GLint location)

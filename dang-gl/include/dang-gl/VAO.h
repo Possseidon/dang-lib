@@ -53,36 +53,72 @@ private:
     BeginMode mode_;
 };
 
-/// <summary>A vertex array object, which basically combines a VBO with a GL-Program, making it drawable.</summary>
-template <typename T>
+/// <summary>A vertex array object, combining a GL-Program with a VBO and optional additional VBOs for instancing.</summary>
+template <typename TData, typename... TInstanceData>
 class VAO : public VAOBase {
 public:
-    /// <summary>Creates a new VAO and binds it to the given GL-Program and VBO.</summary>
-    /// <remarks>A debug assertion checks, that the size of the Data struct matches the program stride.</remarks>
-    VAO(Program& program, VBO<T>& vbo, BeginMode mode = BeginMode::Triangles)
+    /// <summary>Creates a new VAO and binds it to the given GL-Program, VBO and potential additional VBOs for instancing.</summary>
+    /// <remarks>Various debug assertings check, that the GL-Program and VBOs match.</remarks>
+    VAO(Program& program, VBO<TData>& data_vbo, VBO<TInstanceData>&... instance_vbo, BeginMode mode = BeginMode::Triangles)
         : VAOBase(program, mode)
-        , vbo_(vbo)
+        , data_vbo_(data_vbo)
+        , instance_vbos_(instance_vbo...)
     {
-        assert(program.attributeStride() == sizeof(T));
-        enableAttributes();
+        assert(program.instancedAttributeOrder().size() == sizeof...(TInstanceData));
+        enableAttributes(std::index_sequence_for<TInstanceData...>());
     }
 
-    /// <summary>Draws the full content off the associated VBO using the likewise associated GL-Program.</summary>
+    /// <summary>Returns the instance count, which should match for all instance VBOs, checked by a debug assertion.</summary>
+    GLsizei instanceCount() const
+    {
+        return instanceCountHelper(std::make_index_sequence<sizeof...(TInstanceData) - 1>());
+    }
+
+    /// <summary>Draws the full content of the VBO, potentially using instanced rendering, if at least one instance VBO was specified.</summary>
     void draw() const
     {
         bind();
         program().bind();
-        glDrawArrays(static_cast<GLenum>(mode()), 0, vbo_.count());
+        if constexpr (sizeof...(TInstanceData) == 0)
+            glDrawArrays(static_cast<GLenum>(mode()), 0, data_vbo_.count());
+        else
+            glDrawArraysInstanced(static_cast<GLenum>(mode()), 0, data_vbo_.count(), instanceCount());
     }
 
 private:
-    /// <summary>Automatically enables the correct attributes for the VAO, as specified in the program.</summary>
-    void enableAttributes()
+    /// <summary>Returns the instance count of the VBO with the given index.</summary>
+    template <std::size_t VBOIndex>
+    GLsizei instanceCountOf() const
+    {
+        return std::get<VBOIndex>(instance_vbos_).count() * program().instancedAttributeOrder()[VBOIndex].divisor;
+    }
+
+    /// <summary>Helper function for instance counting, which takes an index list of one less than the actual instance VBO count.</summary>
+    template <std::size_t... Indices>
+    GLsizei instanceCountHelper(std::index_sequence<Indices...>) const
+    {
+        if constexpr (sizeof...(TInstanceData) > 1)
+            assert(((instanceCountOf<Indices>() == instanceCountOf<Indices + 1>()) && ...));
+        return instanceCountOf<0>();
+    }
+
+    /// <summary>Enables all attributes for both data and specified instance VBOs.</summary>
+    template <std::size_t... Indices>
+    void enableAttributes(std::index_sequence<Indices...>)
     {
         bind();
-        vbo_.bind();
-        // TODO: Instancing -> multiple VBOs and glVertexAttribDivisor
-        for (const ShaderAttribute& attribute : program().attributeOrder()) {
+        enableAttributes(data_vbo_, program().attributeOrder());
+        (enableAttributes(std::get<Indices>(instance_vbos_), program().instancedAttributeOrder()[Indices]), ...);
+    }
+
+    /// <summary>Enables attributes for the given VBO with the given attribute order.</summary>
+    template <typename T>
+    void enableAttributes(const VBO<T>& vbo, const AttributeOrder& attribute_order)
+    {
+        assert(attribute_order.stride == sizeof(T));
+
+        vbo.bind();
+        for (const ShaderAttribute& attribute : attribute_order.attributes) {
             const auto component_count = getDataTypeComponentCount(attribute.type());
             const auto base_type = getBaseDataType(attribute.type());
             const auto component_size = component_count * getDataTypeSize(base_type);
@@ -91,7 +127,7 @@ private:
             const GLint size = component_count;
             const GLenum type = static_cast<GLenum>(base_type);
             constexpr GLboolean normalized = GL_FALSE;
-            const GLsizei stride = program().attributeStride();
+            const GLsizei stride = attribute_order.stride;
             const auto pointer = [&attribute, component_size](GLuint offset) {
                 const auto result = static_cast<std::uintptr_t>(offset) * component_size + attribute.offset();
                 return reinterpret_cast<const void*>(result);
@@ -101,8 +137,10 @@ private:
             // arrays take up one location per index
             GLuint location_count = getDataTypeColumnCount(attribute.type()) * attribute.count();
 
-            for (GLuint offset = 0; offset < location_count; offset++)
+            for (GLuint offset = 0; offset < location_count; offset++) {
                 glEnableVertexAttribArray(index(offset));
+                glVertexAttribDivisor(index(offset), attribute_order.divisor);
+            }
 
             switch (base_type) {
             case DataType::Float:
@@ -123,7 +161,8 @@ private:
         }
     }
 
-    VBO<T>& vbo_;
+    VBO<TData>& data_vbo_;
+    std::tuple<VBO<TInstanceData>&...> instance_vbos_;
 };
 
 }

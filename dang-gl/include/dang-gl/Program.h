@@ -5,6 +5,7 @@
 #include "BindingPoint.h"
 #include "DataType.h"
 #include "Object.h"
+#include "Texture.h"
 #include "UniformWrapper.h"
 
 namespace dang::gl
@@ -146,6 +147,7 @@ public:
     ShaderAttribute(Program& program, GLint count, DataType type, std::string name);
 
     friend class Program;
+
     /// <summary>The byte-offset of the variable, set by the program.</summary>
     GLsizei offset() const;
 
@@ -191,14 +193,39 @@ public:
     /// <summary>Allows for implicit conversion using a call to get.</summary>
     operator T();
 
+    /// <summary>Automatically binds the texture and assigns the returned slot to the sampler uniform.</summary>
+    template <typename = std::enable_if_t<std::is_same_v<T, GLint>>>
+    ShaderUniform& operator=(const TextureBase& texture)
+    {
+        set(texture.bind());
+        return *this;
+    }
+
 private:
     std::vector<T> values_;
+};
+
+using ShaderUniformSampler = ShaderUniform<int>;
+
+struct AttributeOrder {
+    std::vector<std::reference_wrapper<ShaderAttribute>> attributes;
+    GLsizei stride = 0;
+    GLsizei divisor = 0;
 };
 
 /// <summary>A GL-Program, built up of various shader stages which get linked together.</summary>
 class Program : public Object<ProgramInfo> {
 public:
     friend class ShaderPreprocessor;
+
+    using AttributeNames = std::vector<std::string>;
+
+    struct InstancedAttributes {
+        GLsizei divisor;
+        AttributeNames order;
+    };
+
+    using InstancedAttributeNames = std::vector<InstancedAttributes>;
 
     Program() = default;
     Program(Program&&) = delete;
@@ -217,17 +244,21 @@ public:
 
     /// <summary>Links all previously added shader stages together, cleans them up.</summary>
     /// <param name="attribute_order">The order of the attributes of the Data struct, used in the VBO.</param>
-    void link(const std::vector<std::string>& attribute_order = {});
+    void link(const AttributeNames& attribute_order = {}, const InstancedAttributeNames& instanced_attribute_order = {});
 
-    /// <summary>Should be the same as the size of the data struct, used in the VBO.</summary>
-    GLsizei attributeStride() const;
     /// <summary>Should return the attributes in the same order as they show up in the Data struct, used in the VBO.</summary>
-    const std::vector<std::reference_wrapper<ShaderAttribute>>& attributeOrder() const;
+    const AttributeOrder& attributeOrder() const;
+    /// <summary>TODO</summary>
+    const std::vector<AttributeOrder>& instancedAttributeOrder() const;
 
     /// <summary>Returns a wrapper to a uniform of the templated type, name and optional array size.</summary>
     /// <remarks>Will throw ShaderUniformError if the type or count doesn't match.</remarks>
     template <typename T>
     ShaderUniform<T>& uniform(const std::string& name, GLint count = 1);
+
+    /// <summary>Returns a wrapper to a sampler (int) uniform, for the given name and optional array size.</summary>
+    /// <remarks>Will throw ShaderUniformError if the type or count doesn't match.</remarks>
+    ShaderUniformSampler& uniformSampler(const std::string& name, GLint count = 1);
 
 private:
     /// <summary>Replaces source integer with the actual name of the source file.</summary>
@@ -246,15 +277,15 @@ private:
     void loadAttributeLocations();
     /// <summary>Queries all uniforms after the program has been linked successfully.</summary>
     void loadUniformLocations();
-    /// <summary>Sets the order of attributes, which should be the order of the Data struct, used in the VBO.</summary>
-    void setAttributeOrder(const std::vector<std::string>& attribute_order);
+    /// <summary>Sets the order of attributes, which should be the order of the Data structs, used in the VBO.</summary>
+    void setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order);
 
     std::vector<GLuint> shader_handles_;
     std::map<std::string, std::string> includes_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;
-    std::vector<std::reference_wrapper<ShaderAttribute>> attribute_order_;
-    GLsizei attribute_stride_ = 0;
+    AttributeOrder attribute_order_;
+    std::vector<AttributeOrder> instanced_attribute_order_;
 };
 
 /// <summary>Processes shader source code for #include directives.</summary>
