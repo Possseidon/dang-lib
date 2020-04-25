@@ -48,8 +48,9 @@ public:
 
     /// <summary>Converts the data into the specified format and returns a consecutive vector of pixels.</summary>
     /// <remarks>Use the size method to query the width and height of the returned data.</remarks>
+    /// <param name="flip">Wether to flip the top and bottom of the PNG.</param>
     template <PixelFormat Format = PixelFormat::RGBA>
-    std::vector<Pixel<Format>> read();
+    std::vector<Pixel<Format>> read(bool flip = false);
 
     /// <summary>While errors throw an exception, warnings simply trigger this event.</summary>
     PNGWarningEvent onWarning;
@@ -100,7 +101,7 @@ private:
 };
 
 template <PixelFormat Format>
-inline std::vector<Pixel<Format>> PNGLoader::read()
+inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
 {
     if (!initialized_)
         throw PNGError("PNG not initialized.");
@@ -133,8 +134,14 @@ inline std::vector<Pixel<Format>> PNGLoader::read()
 
     // fill offsets with the row-pointers to the actual image data
     std::vector<png_bytep> offsets(size_.y());
+
     png_bytep current = reinterpret_cast<png_bytep>(image.data());
-    std::generate(offsets.begin(), offsets.end(), [&] { return std::exchange(current, current + rowbytes); });
+    auto fill = [&] { return std::exchange(current, current + rowbytes); };
+
+    if (flip)
+        std::generate(offsets.rbegin(), offsets.rend(), fill);
+    else
+        std::generate(offsets.begin(), offsets.end(), fill);
 
     png_read_image(png_ptr_, offsets.data());
     png_read_end(png_ptr_, nullptr);

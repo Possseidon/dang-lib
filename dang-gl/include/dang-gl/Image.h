@@ -10,40 +10,40 @@
 namespace dang::gl
 {
 
-/// <summary>Stores pixel data in a template specified type.</summary>
+/// <summary>Stores pixels data for an n-dimensional image in a template specified type.</summary>
 template <std::size_t Dim, PixelFormat Format = PixelFormat::RGBA, PixelType Type = PixelType::UNSIGNED_BYTE>
-class PixelData {
+class Image {
 public:
     using Pixel = Pixel<Format, Type>;
 
-    /// <summary>Initializes the pixel data with a width and height of zero.</summary>
-    PixelData() = default;
+    /// <summary>Initializes the image with a width and height of zero.</summary>
+    Image() = default;
 
-    /// <summary>Initializes the pixel data using the given size with zero.</summary>
-    explicit PixelData(dmath::svec<Dim> size)
+    /// <summary>Initializes the image using the given size with zero.</summary>
+    explicit Image(dmath::svec<Dim> size)
         : size_(size)
         , data_(size)
     {
     }
 
-    /// <summary>Initializes the pixel data using the given size and fills it with the value.</summary>
-    PixelData(dmath::svec<Dim> size, const Pixel& value)
+    /// <summary>Initializes the image using the given size and fills it with the value.</summary>
+    Image(dmath::svec<Dim> size, const Pixel& value)
         : size_(size)
         , data_(size, value)
     {
     }
 
-    /// <summary>Initializes the pixel data using the given size and data iterator.</summary>
+    /// <summary>Initializes the image using the given size and data iterator.</summary>
     template <typename Iter>
-    PixelData(dmath::svec<Dim> size, Iter first)
+    Image(dmath::svec<Dim> size, Iter first)
         : size_(size)
         , data_(first, std::next(first, size))
     {
     }
 
-    /// <summary>Initializes the pixel data using the given size and pre-existing vector of data, which should match the size.</summary>
+    /// <summary>Initializes the image using the given size and pre-existing vector of data, which should match the size.</summary>
     /// <remarks>Highly consider passing the data as an r-value using std::move to avoid a copy.</remarks>
-    PixelData(dmath::svec<Dim> size, std::vector<Pixel> data)
+    Image(dmath::svec<Dim> size, std::vector<Pixel> data)
         : size_(size)
         , data_(std::move(data))
     {
@@ -52,20 +52,20 @@ public:
 
     /// <summary>Loads a PNG image from the given stream and returns it.</summary>
     /// <remarks>Throws a PNGError if the stream does not contain a valid PNG.</remarks>
-    static PixelData loadFromPNG(std::istream& stream)
+    static Image loadFromPNG(std::istream& stream)
     {
         static_assert(Type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
         PNGLoader png_loader;
         // TODO: Better logging
         png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << std::endl; });
         png_loader.init(stream);
-        std::vector<Pixel> data = png_loader.read<Format>();
-        return PixelData(png_loader.size(), data);
+        std::vector<Pixel> data = png_loader.read<Format>(true);
+        return Image(png_loader.size(), data);
     }
 
     /// <summary>Loads a PNG image from the given file and returns it.</summary>
     /// <remarks>Throws a PNGError if the file does not represent a valid PNG.</remarks>
-    static PixelData loadFromPNG(const fs::path& path)
+    static Image loadFromPNG(const fs::path& path)
     {
         std::ifstream stream(path, std::ios::binary);
         if (!stream)
@@ -73,7 +73,7 @@ public:
         return loadFromPNG(stream);
     }
 
-    /// <summary>Returns the size of the pixel data along each axis.</summary>
+    /// <summary>Returns the size of the image along each axis.</summary>
     dmath::svec<Dim> size() const
     {
         return size_;
@@ -141,8 +141,8 @@ private:
     std::vector<Pixel> data_;
 };
 
-using PixelData1D = PixelData<1>;
-using PixelData2D = PixelData<2>;
-using PixelData3D = PixelData<3>;
+using Image1D = Image<1>;
+using Image2D = Image<2>;
+using Image3D = Image<3>;
 
 }

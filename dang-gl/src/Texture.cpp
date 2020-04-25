@@ -4,57 +4,53 @@
 namespace dang::gl
 {
 
-GLenum TextureContext::activeTexture()
+GLint TextureContext::activeSlot()
 {
-    return active_texture_;
+    return active_slot_;
 }
 
-void TextureContext::setActiveTexture(GLenum active_texture)
+void TextureContext::setActiveSlot(GLint active_slot)
 {
-    if (active_texture_ == active_texture)
+    if (active_slot_ == active_slot)
         return;
-    glActiveTexture(active_texture);
-    active_texture_ = active_texture;
+    glActiveTexture(GL_TEXTURE0 + active_slot);
+    active_slot_ = active_slot;
 }
 
-void TextureContext::bind(const TextureBase& texture)
+GLint TextureContext::bind(const TextureBase& texture)
 {
-    if (texture.active_texture_slot_) {
-        setActiveTexture(*texture.active_texture_slot_);
-        return;
+    if (texture.active_slot_) {
+        setActiveSlot(*texture.active_slot_);
+        return *texture.active_slot_;
     }
     if (first_free_slot_ == active_textures_.end())
         throw TextureError("Cannot bind texture, as all slots are in use.");
-    GLenum slot = GL_TEXTURE0 + static_cast<GLenum>(std::distance(active_textures_.begin(), first_free_slot_));
-    setActiveTexture(slot);
+    GLint slot = static_cast<GLint>(std::distance(active_textures_.begin(), first_free_slot_));
+    setActiveSlot(slot);
     glBindTexture(BindingPointsGL[texture.binding_point_], texture.handle());
     *first_free_slot_ = &texture;
-    texture.active_texture_slot_ = slot;
+    texture.active_slot_ = slot;
     first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), nullptr);
+    return slot;
 }
 
 void TextureContext::release(const TextureBase& texture)
 {
-    if (!texture.active_texture_slot_)
+    if (!texture.active_slot_)
         return;
-    auto texture_to_free = std::next(active_textures_.begin(), *texture.active_texture_slot_ - GL_TEXTURE0);
+    auto texture_to_free = std::next(active_textures_.begin(), *texture.active_slot_ - GL_TEXTURE0);
     *texture_to_free = nullptr;
-    texture.active_texture_slot_ = std::nullopt;
+    texture.active_slot_ = std::nullopt;
     if (texture_to_free < first_free_slot_)
         first_free_slot_ = texture_to_free;
 }
 
 void TextureContext::move(const TextureBase& from, const TextureBase& to)
 {
-    if (!from.active_texture_slot_)
+    if (!from.active_slot_)
         return;
-    auto texture_to_move = std::next(active_textures_.begin(), *from.active_texture_slot_ - GL_TEXTURE0);
+    auto texture_to_move = std::next(active_textures_.begin(), *from.active_slot_ - GL_TEXTURE0);
     *texture_to_move = &to;
-}
-
-std::optional<GLenum> TextureBase::activeTextureSlot()
-{
-    return active_texture_slot_;
 }
 
 }

@@ -2,6 +2,8 @@
 
 #include "dang-utils/enum.h"
 
+#include "PixelInternalFormat.h"
+
 namespace dang::gl
 {
 
@@ -28,41 +30,73 @@ enum class PixelFormat {
     COUNT
 };
 
-namespace detail
-{
-
-/// <summary>Helper struct, which simply sets the component count to the template specified value.</summary>
-template <std::size_t ComponentCount>
-struct PixelFormatCompnentCount {
-    static constexpr std::size_t ComponentCount = ComponentCount;
-};
-
-}
-
 /// <summary>Provides info about a pixel format, like its component count, which is necessary to find out the storage size.</summary>
 template <PixelFormat>
 struct PixelFormatInfo {};
 
-template <> struct PixelFormatInfo<PixelFormat::RED> : detail::PixelFormatCompnentCount<1> {};
-template <> struct PixelFormatInfo<PixelFormat::RG> : detail::PixelFormatCompnentCount<2> {};
-template <> struct PixelFormatInfo<PixelFormat::RGB> : detail::PixelFormatCompnentCount<3> {};
-template <> struct PixelFormatInfo<PixelFormat::BGR> : detail::PixelFormatCompnentCount<3> {};
-template <> struct PixelFormatInfo<PixelFormat::RGBA> : detail::PixelFormatCompnentCount<4> {};
-template <> struct PixelFormatInfo<PixelFormat::BGRA> : detail::PixelFormatCompnentCount<4> {};
+template <> struct PixelFormatInfo<PixelFormat::RED> {
+    static constexpr std::size_t ComponentCount = 1;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::R8;
+};
 
-template <> struct PixelFormatInfo<PixelFormat::RED_INTEGER> : detail::PixelFormatCompnentCount<1> {};
-template <> struct PixelFormatInfo<PixelFormat::RG_INTEGER> : detail::PixelFormatCompnentCount<2> {};
-template <> struct PixelFormatInfo<PixelFormat::RGB_INTEGER> : detail::PixelFormatCompnentCount<3> {};
-template <> struct PixelFormatInfo<PixelFormat::BGR_INTEGER> : detail::PixelFormatCompnentCount<3> {};
-template <> struct PixelFormatInfo<PixelFormat::RGBA_INTEGER> : detail::PixelFormatCompnentCount<4> {};
-template <> struct PixelFormatInfo<PixelFormat::BGRA_INTEGER> : detail::PixelFormatCompnentCount<4> {};
+template <> struct PixelFormatInfo<PixelFormat::RG> {
+    static constexpr std::size_t ComponentCount = 2;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RG8;
+};
 
-// TODO: What are the actual component counts?
-/*
-template <> struct PixelFormatInfo<PixelFormat::STENCIL_INDEX> : detail::PixelFormatCompnentCount<4> {};
-template <> struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> : detail::PixelFormatCompnentCount<4> {};
-template <> struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> : detail::PixelFormatCompnentCount<4> {};
-*/
+template <> struct PixelFormatInfo<PixelFormat::RGB> {
+    static constexpr std::size_t ComponentCount = 3;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::BGR> {
+    static constexpr std::size_t ComponentCount = 3;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::RGBA> {
+    static constexpr std::size_t ComponentCount = 4;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::BGRA> {
+    static constexpr std::size_t ComponentCount = 4;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::RED_INTEGER> {
+    static constexpr std::size_t ComponentCount = 1;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::R8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::RG_INTEGER> {
+    static constexpr std::size_t ComponentCount = 2;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RG8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::RGB_INTEGER> {
+    static constexpr std::size_t ComponentCount = 3;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::BGR_INTEGER> {
+    static constexpr std::size_t ComponentCount = 3;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::RGBA_INTEGER> {
+    static constexpr std::size_t ComponentCount = 4;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::BGRA_INTEGER> {
+    static constexpr std::size_t ComponentCount = 4;
+    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8UI;
+};
+
+template <> struct PixelFormatInfo<PixelFormat::STENCIL_INDEX> { /* TODO */ };
+template <> struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO */ };
+template <> struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO */ };
 
 /// <summary>The GL-Constants for the pixel formats.</summary>
 constexpr dutils::EnumArray<PixelFormat, GLenum> PixelFormatsGL

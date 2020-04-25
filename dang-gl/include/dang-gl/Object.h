@@ -26,19 +26,19 @@ struct ObjectInfo {
 };
 
 /// <summary>Serves as a base class for all GL-Objects and provides creation, destruction and binding facilities using the supplied TInfo struct.</summary>
-template <typename TInfo, typename TBase = ObjectBase>
-class Object : public TBase {
+template <typename TInfo>
+class Object : public ObjectBase {
 public:
     /// <summary>Initializes the GL-Object using the create function of the TInfo struct and simply uses the active window for the GL-Context.</summary>
     template <typename... TArgs>
     Object(TArgs&&... args)
-        : TBase(TInfo::create(), GLFW::Instance.activeWindow(), std::forward<TArgs>(args)...)
+        : ObjectBase(TInfo::create(), GLFW::Instance.activeWindow(), std::forward<TArgs>(args)...)
     {
     }
 
     /// <summary>Move-constructs an object, updating the binding if the moved-from object is currently bound.</summary>
     Object(Object&& other) noexcept
-        : TBase(std::move(other))
+        : ObjectBase(std::move(other))
     {
         binding().move<TInfo>(other, *this);
     }

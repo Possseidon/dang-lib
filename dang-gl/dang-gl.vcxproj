@@ -257,7 +257,7 @@
     <ClInclude Include="include\dang-gl\PixelType.h" />
     <ClInclude Include="include\dang-gl\PNGLoader.h" />
     <ClInclude Include="include\dang-gl\Texture.h" />
-    <ClInclude Include="include\dang-gl\PixelData.h" />
+    <ClInclude Include="include\dang-gl\Image.h" />
     <ClInclude Include="include\dang-gl\Transform.h" />
     <ClInclude Include="include\dang-gl\Types.h" />
     <ClInclude Include="include\dang-gl\UniformWrapper.h" />
