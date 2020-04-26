@@ -38,7 +38,7 @@ void TextureContext::release(const TextureBase& texture)
 {
     if (!texture.active_slot_)
         return;
-    auto texture_to_free = std::next(active_textures_.begin(), *texture.active_slot_ - GL_TEXTURE0);
+    auto texture_to_free = std::next(active_textures_.begin(), static_cast<std::size_t>(*texture.active_slot_) - GL_TEXTURE0);
     *texture_to_free = nullptr;
     texture.active_slot_ = std::nullopt;
     if (texture_to_free < first_free_slot_)
@@ -49,7 +49,7 @@ void TextureContext::move(const TextureBase& from, const TextureBase& to)
 {
     if (!from.active_slot_)
         return;
-    auto texture_to_move = std::next(active_textures_.begin(), *from.active_slot_ - GL_TEXTURE0);
+    auto texture_to_move = std::next(active_textures_.begin(), static_cast<std::size_t>(*from.active_slot_) - GL_TEXTURE0);
     *texture_to_move = &to;
 }
 
