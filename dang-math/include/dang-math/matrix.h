@@ -108,7 +108,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Returns the transposed matrix.</summary>
-    constexpr Matrix<T, Rows, Cols> transpose()
+    constexpr Matrix<T, Rows, Cols> transpose() const
     {
         Matrix<T, Rows, Cols> result;
         for (const auto& pos : dmath::sbounds2{ {Cols, Rows} })
