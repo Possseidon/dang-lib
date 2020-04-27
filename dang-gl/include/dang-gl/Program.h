@@ -3,7 +3,8 @@
 #include "dang-utils/enum.h"
 
 #include "BindingPoint.h"
-#include "DataType.h"
+#include "DataTypes.h"
+#include "GLConstants.h"
 #include "Object.h"
 #include "Texture.h"
 #include "UniformWrapper.h"
@@ -21,12 +22,13 @@ enum class ShaderType {
     TesselationControl,
     TesselationEvaluation,
     Compute,
+
     COUNT
 };
 
 /// <summary>A mapping to the GL-Constants for each shader stage.</summary>
-constexpr dutils::EnumArray<ShaderType, GLenum> ShaderTypesGL
-{
+template <>
+constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {
     GL_VERTEX_SHADER,
     GL_FRAGMENT_SHADER,
     GL_GEOMETRY_SHADER,

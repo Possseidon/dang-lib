@@ -2,6 +2,8 @@
 
 #include "dang-utils/enum.h"
 
+#include "GLConstants.h"
+
 namespace dang::gl
 {
 
@@ -18,12 +20,13 @@ enum class ObjectType {
     Texture,
     Renderbuffer,
     Framebuffer,
+
     COUNT
 };
 
 /// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
-constexpr dutils::EnumArray<ObjectType, GLenum> ObjectTypesGL
-{
+template <>
+constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {
    GL_BUFFER,
    GL_SHADER,
    GL_PROGRAM,

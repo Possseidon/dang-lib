@@ -1,5 +1,8 @@
 #pragma once
 
+#include "dang-utils/enum.h"
+
+#include "GLConstants.h"
 #include "Object.h"
 #include "Program.h"
 #include "VBO.h"
@@ -8,19 +11,37 @@ namespace dang::gl
 {
 
 /// <summary>A list of all supported modes on how to draw vertex data.</summary>
-enum class BeginMode : GLenum {
-    Points = GL_POINTS,
-    Lines = GL_LINES,
-    LineLoop = GL_LINE_LOOP,
-    LineStrip = GL_LINE_STRIP,
-    Triangles = GL_TRIANGLES,
-    TriangleStrip = GL_TRIANGLE_STRIP,
-    TriangleFan = GL_TRIANGLE_FAN,
-    LinesAdjacency = GL_LINES_ADJACENCY,
-    LineStripAdjacency = GL_LINE_STRIP_ADJACENCY,
-    TrianglesAdjacency = GL_TRIANGLES_ADJACENCY,
-    TriangleStripAdjacency = GL_TRIANGLE_STRIP_ADJACENCY,
-    Patches = GL_PATCHES
+enum class BeginMode {
+    Points,
+    Lines,
+    LineLoop,
+    LineStrip,
+    Triangles,
+    TriangleStrip,
+    TriangleFan,
+    LinesAdjacency,
+    LineStripAdjacency,
+    TrianglesAdjacency,
+    TriangleStripAdjacency,
+    Patches,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
+    GL_POINTS,
+    GL_LINES,
+    GL_LINE_LOOP,
+    GL_LINE_STRIP,
+    GL_TRIANGLES,
+    GL_TRIANGLE_STRIP,
+    GL_TRIANGLE_FAN,
+    GL_LINES_ADJACENCY,
+    GL_LINE_STRIP_ADJACENCY,
+    GL_TRIANGLES_ADJACENCY,
+    GL_TRIANGLE_STRIP_ADJACENCY,
+    GL_PATCHES
 };
 
 /// <summary>Info struct to create, destroy and bind VAOs.</summary>
@@ -80,9 +101,9 @@ public:
         bind();
         program().bind();
         if constexpr (sizeof...(TInstanceData) == 0)
-            glDrawArrays(static_cast<GLenum>(mode()), 0, data_vbo_.count());
+            glDrawArrays(toGLConstant(mode()), 0, data_vbo_.count());
         else
-            glDrawArraysInstanced(static_cast<GLenum>(mode()), 0, data_vbo_.count(), instanceCount());
+            glDrawArraysInstanced(toGLConstant(mode()), 0, data_vbo_.count(), instanceCount());
     }
 
 private:

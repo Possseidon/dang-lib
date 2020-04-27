@@ -3,8 +3,8 @@
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 
-#include "DataType.h"
-#include "Types.h"
+#include "DataTypes.h"
+#include "MathTypes.h"
 
 namespace dang::gl
 {

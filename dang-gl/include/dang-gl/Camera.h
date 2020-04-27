@@ -1,9 +1,9 @@
 #pragma once
 
+#include "DataTypes.h"
 #include "Program.h"
 #include "Renderable.h"
 #include "Transform.h"
-#include "Types.h"
 #include "Window.h"
 
 namespace dang::gl

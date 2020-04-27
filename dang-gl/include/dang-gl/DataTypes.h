@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Types.h"
+#include "MathTypes.h"
 
 namespace dang::gl
 {
 
 /// <summary>A list of all data types, which can be used in GLSL.</summary>
+/// <remarks>Not using GLConstants, as this also has to be querried, which is faster this way.</remarks>
 enum class DataType {
     None = 0,
 

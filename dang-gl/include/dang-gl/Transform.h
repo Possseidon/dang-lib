@@ -2,7 +2,7 @@
 
 #include "dang-utils/event.h"
 
-#include "Types.h"
+#include "MathTypes.h"
 
 namespace dang::gl
 {

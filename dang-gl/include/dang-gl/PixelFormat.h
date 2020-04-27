@@ -2,6 +2,7 @@
 
 #include "dang-utils/enum.h"
 
+#include "GLConstants.h"
 #include "PixelInternalFormat.h"
 
 namespace dang::gl
@@ -99,8 +100,8 @@ template <> struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO */ };
 template <> struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO */ };
 
 /// <summary>The GL-Constants for the pixel formats.</summary>
-constexpr dutils::EnumArray<PixelFormat, GLenum> PixelFormatsGL
-{
+template <>
+constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {
     GL_RED,
     GL_RG,
     GL_RGB,

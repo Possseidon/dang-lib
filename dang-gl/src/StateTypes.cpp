@@ -16,7 +16,7 @@ bool operator!=(const BlendFactor& lhs, const BlendFactor& rhs)
 
 std::tuple<GLenum, GLenum> BlendFactor::toTuple() const
 {
-    return { static_cast<GLenum>(src), static_cast<GLenum>(dst) };
+    return { toGLConstant(src), toGLConstant(dst) };
 }
 
 bool operator==(const PolygonOffset& lhs, const PolygonOffset& rhs)
@@ -77,7 +77,7 @@ bool operator!=(const StencilFunc& lhs, const StencilFunc& rhs)
 
 std::tuple<GLenum, GLint, GLuint> StencilFunc::toTuple() const
 {
-    return { static_cast<GLenum>(func), ref, mask };
+    return { toGLConstant(func), ref, mask };
 }
 
 bool operator==(const StencilOp& lhs, const StencilOp& rhs)
@@ -92,7 +92,7 @@ bool operator!=(const StencilOp& lhs, const StencilOp& rhs)
 
 std::tuple<GLenum, GLenum, GLenum> StencilOp::toTuple() const
 {
-    return { static_cast<GLenum>(sfail), static_cast<GLenum>(dpfail), static_cast<GLenum>(dppass) };
+    return { toGLConstant(sfail), toGLConstant(dpfail), toGLConstant(dppass) };
 }
 
 }

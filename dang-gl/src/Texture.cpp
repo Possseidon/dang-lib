@@ -27,7 +27,7 @@ GLint TextureContext::bind(const TextureBase& texture)
         throw TextureError("Cannot bind texture, as all slots are in use.");
     GLint slot = static_cast<GLint>(std::distance(active_textures_.begin(), first_free_slot_));
     setActiveSlot(slot);
-    glBindTexture(BindingPointsGL[texture.binding_point_], texture.handle());
+    glBindTexture(toGLConstant(texture.binding_point_), texture.handle());
     *first_free_slot_ = &texture;
     texture.active_slot_ = slot;
     first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), nullptr);

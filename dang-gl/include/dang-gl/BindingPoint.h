@@ -2,6 +2,8 @@
 
 #include "dang-utils/enum.h"
 
+#include "GLConstants.h"
+
 namespace dang::gl
 {
 
@@ -57,8 +59,8 @@ enum class BindingPoint {
 };
 
 /// <summary>Maps from binding points to their respective target constant, which needs to be supplied to the glBind function.</summary>
-constexpr dutils::EnumArray<BindingPoint, GLenum> BindingPointsGL
-{
+template <>
+constexpr dutils::EnumArray<BindingPoint, GLenum> GLConstants<BindingPoint> = {
     // glBindBuffer
     GL_ARRAY_BUFFER,
     GL_ATOMIC_COUNTER_BUFFER,

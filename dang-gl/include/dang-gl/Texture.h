@@ -178,7 +178,7 @@ template <> constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 template <std::size_t Dim, BindingPoint TextureBindingPoint>
 class TextureBaseTyped : public TextureBase {
 public:
-    static constexpr GLenum Target = BindingPointsGL[TextureBindingPoint];
+    static constexpr GLenum Target = toGLConstant(TextureBindingPoint);
     template <PixelFormat Format>
     static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<Format>::Internal;
 
@@ -220,8 +220,8 @@ protected:
             mipmap_level,
             static_cast<GLint>(offset[Indices])...,
             static_cast<GLsizei>(Indices < image.size().size() ? image.size()[Indices] : 1)...,
-            PixelFormatsGL[Format],
-            PixelTypesGL[Type],
+            toGLConstant(Format),
+            toGLConstant(Type),
             image.data());
     }
 };
@@ -321,7 +321,7 @@ private:
         glTexStorage<Dim>(
             TextureBaseTyped<Dim, TextureBindingPoint>::Target,
             actual_mipmap_levels,
-            PixelInternalFormatsGL[internal_format],
+            toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...);
     }
 };
@@ -395,7 +395,7 @@ private:
         glTexStorageMultisample<Dim>(
             TextureBaseTyped<Dim, TextureBindingPoint>::Target,
             samples,
-            PixelInternalFormatsGL[internal_format],
+            toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...,
             static_cast<GLboolean>(fixed_sample_locations));
     }

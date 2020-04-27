@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Program.h"
 
-#include "Types.h"
+#include "DataTypes.h"
 
 namespace dang::gl
 {
@@ -174,7 +174,7 @@ void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
-    GLuint shader_handle = glCreateShader(ShaderTypesGL[type]);
+    GLuint shader_handle = glCreateShader(toGLConstant(type));
     shader_handles_.push_back(shader_handle);
 
     std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();

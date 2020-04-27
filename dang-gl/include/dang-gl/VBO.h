@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GLConstants.h"
 #include "Object.h"
 
 namespace dang::gl
@@ -7,16 +8,31 @@ namespace dang::gl
 
 /// <summary>Usage hints for how a VBO is going to be used.</summary>
 /// <remarks>DynamicDraw is usually the best choice.</remarks>
-enum class BufferUsageHint : GLenum {
-    StreamDraw = GL_STREAM_DRAW,
-    StreamRead = GL_STREAM_READ,
-    StreamCopy = GL_STREAM_COPY,
-    StaticDraw = GL_STATIC_DRAW,
-    StaticRead = GL_STATIC_READ,
-    StaticCopy = GL_STATIC_COPY,
-    DynamicDraw = GL_DYNAMIC_DRAW,
-    DynamicRead = GL_DYNAMIC_READ,
-    DynamicCopy = GL_DYNAMIC_COPY
+enum class BufferUsageHint {
+    StreamDraw,
+    StreamRead,
+    StreamCopy,
+    StaticDraw,
+    StaticRead,
+    StaticCopy,
+    DynamicDraw,
+    DynamicRead,
+    DynamicCopy,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<BufferUsageHint, GLenum> GLConstants<BufferUsageHint> = {
+    GL_STREAM_DRAW,
+    GL_STREAM_READ,
+    GL_STREAM_COPY,
+    GL_STATIC_DRAW,
+    GL_STATIC_READ,
+    GL_STATIC_COPY,
+    GL_DYNAMIC_DRAW,
+    GL_DYNAMIC_READ,
+    GL_DYNAMIC_COPY
 };
 
 /// <summary>Thrown, when a VBO is locked (e.g. it is mapped) and cannot be rebound.</summary>
@@ -260,7 +276,7 @@ public:
     {
         bind();
         count_ = count;
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(T), data, static_cast<GLenum>(usage));
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(T), data, toGLConstant(usage));
     }
 
     /// <summary>Creates new uninitialized data for a given number of elements.</summary>

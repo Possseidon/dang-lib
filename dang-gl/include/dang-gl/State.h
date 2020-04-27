@@ -143,7 +143,7 @@ protected:
     void update() override
     {
         if constexpr (std::is_enum_v<T>)
-            (*Func)(static_cast<std::underlying_type_t<T>>(**this));
+            (*Func)(toGLConstant(**this));
         else if constexpr (std::is_arithmetic_v<T>)
             (*Func)(**this);
         else

@@ -101,16 +101,10 @@
     <ClInclude Include="include\dang-gl\UniformWrapper.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\DataType.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\VBO.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\VAO.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Types.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\BindingPoint.h">
@@ -132,9 +126,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Renderable.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Constants.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\State.h">
@@ -168,6 +159,18 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Image.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\MathConstants.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\GLConstants.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\MathTypes.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\DataTypes.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

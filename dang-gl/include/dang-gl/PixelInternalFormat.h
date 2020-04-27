@@ -2,6 +2,8 @@
 
 #include "dang-utils/enum.h"
 
+#include "GLConstants.h"
+
 namespace dang::gl
 {
 
@@ -98,8 +100,8 @@ enum class PixelInternalFormat {
 };
 
 /// <summary>GL-Constants for internal pixel formats.</summary>
-constexpr dutils::EnumArray<PixelInternalFormat, GLenum> PixelInternalFormatsGL
-{
+template <>
+constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {
     // base formats
     GL_DEPTH_COMPONENT,
     GL_DEPTH_STENCIL,

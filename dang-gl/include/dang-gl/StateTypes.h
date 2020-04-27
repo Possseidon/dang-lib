@@ -1,109 +1,229 @@
 #pragma once
 
-#include "Types.h"
+#include "dang-utils/enum.h"
+
+#include "GLConstants.h"
+#include "MathTypes.h"
 
 namespace dang::gl
 {
 
 /// <summary>The source factor, used for the blending function.</summary>
-enum class BlendFactorSrc : GLenum {
-    Zero = GL_ZERO,
-    One = GL_ONE,
-    SrcColor = GL_SRC_COLOR,
-    OneMinusSrcColor = GL_ONE_MINUS_SRC_COLOR,
-    DstColor = GL_DST_COLOR,
-    OneMinusDstColor = GL_ONE_MINUS_DST_COLOR,
-    SrcAlpha = GL_SRC_ALPHA,
-    OneMinusSrcAlpha = GL_ONE_MINUS_SRC_ALPHA,
-    DstAlpha = GL_DST_ALPHA,
-    OneMinusDstAlpha = GL_ONE_MINUS_DST_ALPHA,
-    ConstantColor = GL_CONSTANT_COLOR,
-    OneMinusConstantColor = GL_ONE_MINUS_CONSTANT_COLOR,
-    ConstantAlpha = GL_CONSTANT_ALPHA,
-    OneMinusConstantAlpha = GL_ONE_MINUS_CONSTANT_ALPHA,
-    SrcAlphaSaturate = GL_SRC_ALPHA_SATURATE
+enum class BlendFactorSrc {
+    Zero,
+    One,
+    SrcColor,
+    OneMinusSrcColor,
+    DstColor,
+    OneMinusDstColor,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    DstAlpha,
+    OneMinusDstAlpha,
+    ConstantColor,
+    OneMinusConstantColor,
+    ConstantAlpha,
+    OneMinusConstantAlpha,
+    SrcAlphaSaturate,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<BlendFactorSrc, GLenum> GLConstants<BlendFactorSrc> = {
+    GL_ZERO,
+    GL_ONE,
+    GL_SRC_COLOR,
+    GL_ONE_MINUS_SRC_COLOR,
+    GL_DST_COLOR,
+    GL_ONE_MINUS_DST_COLOR,
+    GL_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_DST_ALPHA,
+    GL_ONE_MINUS_DST_ALPHA,
+    GL_CONSTANT_COLOR,
+    GL_ONE_MINUS_CONSTANT_COLOR,
+    GL_CONSTANT_ALPHA,
+    GL_ONE_MINUS_CONSTANT_ALPHA,
+    GL_SRC_ALPHA_SATURATE
 };
 
 /// <summary>The destination factor, used for the blending function.</summary>
-enum class BlendFactorDst : GLenum {
-    Zero = GL_ZERO,
-    One = GL_ONE,
-    SrcColor = GL_SRC_COLOR,
-    OneMinusSrcColor = GL_ONE_MINUS_SRC_COLOR,
-    DstColor = GL_DST_COLOR,
-    OneMinusDstColor = GL_ONE_MINUS_DST_COLOR,
-    SrcAlpha = GL_SRC_ALPHA,
-    OneMinusSrcAlpha = GL_ONE_MINUS_SRC_ALPHA,
-    DstAlpha = GL_DST_ALPHA,
-    OneMinusDstAlpha = GL_ONE_MINUS_DST_ALPHA,
-    ConstantColor = GL_CONSTANT_COLOR,
-    OneMinusConstantColor = GL_ONE_MINUS_CONSTANT_COLOR,
-    ConstantAlpha = GL_CONSTANT_ALPHA,
-    OneMinusConstantAlpha = GL_ONE_MINUS_CONSTANT_ALPHA
+enum class BlendFactorDst {
+    Zero,
+    One,
+    SrcColor,
+    OneMinusSrcColor,
+    DstColor,
+    OneMinusDstColor,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    DstAlpha,
+    OneMinusDstAlpha,
+    ConstantColor,
+    OneMinusConstantColor,
+    ConstantAlpha,
+    OneMinusConstantAlpha,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<BlendFactorDst, GLenum> GLConstants<BlendFactorDst> = {
+    GL_ZERO,
+    GL_ONE,
+    GL_SRC_COLOR,
+    GL_ONE_MINUS_SRC_COLOR,
+    GL_DST_COLOR,
+    GL_ONE_MINUS_DST_COLOR,
+    GL_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_DST_ALPHA,
+    GL_ONE_MINUS_DST_ALPHA,
+    GL_CONSTANT_COLOR,
+    GL_ONE_MINUS_CONSTANT_COLOR,
+    GL_CONSTANT_ALPHA,
+    GL_ONE_MINUS_CONSTANT_ALPHA
 };
 
 /// <summary>Used by functions to compare values.</summary>
-enum class CompareFunc : GLenum {
-    Never = GL_NEVER,
-    Less = GL_LESS,
-    LessEqual = GL_LEQUAL,
-    Greater = GL_GREATER,
-    GreaterEqual = GL_GEQUAL,
-    Equal = GL_EQUAL,
-    NotEqual = GL_NOTEQUAL,
-    Always = GL_ALWAYS
+enum class CompareFunc {
+    Never,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    Equal,
+    NotEqual,
+    Always,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<CompareFunc, GLenum> GLConstants<CompareFunc> = {
+    GL_NEVER,
+    GL_LESS,
+    GL_LEQUAL,
+    GL_GREATER,
+    GL_GEQUAL,
+    GL_EQUAL,
+    GL_NOTEQUAL,
+    GL_ALWAYS
 };
 
 /// <summary>Which face to hide/cull.</summary>
-enum class CullFaceMode : GLenum {
-    Front = GL_FRONT,
-    Back = GL_BACK,
-    FrontAndBack = GL_FRONT_AND_BACK
+enum class CullFaceMode {
+    Front,
+    Back,
+    FrontAndBack,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<CullFaceMode, GLenum> GLConstants<CullFaceMode> = {
+    GL_FRONT,
+    GL_BACK,
+    GL_FRONT_AND_BACK
 };
 
 /// <summary>A list of all binary operations of boolean algebra.</summary>
-enum class LogicOp : GLenum {
-    Clear = GL_CLEAR,
-    Set = GL_SET,
-    Copy = GL_COPY,
-    Copy_inverted = GL_COPY_INVERTED,
-    Noop = GL_NOOP,
-    Invert = GL_INVERT,
-    And = GL_AND,
-    Nand = GL_NAND,
-    Or = GL_OR,
-    Nor = GL_NOR,
-    Xor = GL_XOR,
-    Equiv = GL_EQUIV,
-    AndReverse = GL_AND_REVERSE,
-    AndInverted = GL_AND_INVERTED,
-    OrReverse = GL_OR_REVERSE,
-    OrInverted = GL_OR_INVERTED
+enum class LogicOp {
+    Clear,
+    Set,
+    Copy,
+    Copy_inverted,
+    Noop,
+    Invert,
+    And,
+    Nand,
+    Or,
+    Nor,
+    Xor,
+    Equiv,
+    AndReverse,
+    AndInverted,
+    OrReverse,
+    OrInverted,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<LogicOp, GLenum> GLConstants<LogicOp> = {
+    GL_CLEAR,
+    GL_SET,
+    GL_COPY,
+    GL_COPY_INVERTED,
+    GL_NOOP,
+    GL_INVERT,
+    GL_AND,
+    GL_NAND,
+    GL_OR,
+    GL_NOR,
+    GL_XOR,
+    GL_EQUIV,
+    GL_AND_REVERSE,
+    GL_AND_INVERTED,
+    GL_OR_REVERSE,
+    GL_OR_INVERTED
 };
 
 /// <summary>Specifies the side of a polygon.</summary>
-enum class PolygonSide : GLenum {
-    Front = GL_FRONT,
-    Back = GL_BACK
+enum class PolygonSide {
+    Front,
+    Back,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<PolygonSide, GLenum> GLConstants<PolygonSide> = {
+    GL_FRONT,
+    GL_BACK
 };
 
 /// <summary>Specfies, wether polygons should render full faces, the outline or just corner points.</summary>
-enum class PolygonMode : GLenum {
-    Point = GL_POINT,
-    Line = GL_LINE,
-    Fill = GL_FILL
+enum class PolygonMode {
+    Point,
+    Line,
+    Fill,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<PolygonMode, GLenum> GLConstants<PolygonMode> = {
+    GL_POINT,
+    GL_LINE,
+    GL_FILL,
 };
 
 /// <summary>Actions, which can be performed on the stencil buffer.</summary>
-enum class StencilAction : GLenum {
-    Keep = GL_KEEP,
-    Zero = GL_ZERO,
-    Replace = GL_REPLACE,
-    Incr = GL_INCR,
-    IncrWrap = GL_INCR_WRAP,
-    Decr = GL_DECR,
-    DecrWrap = GL_DECR_WRAP,
-    Invert = GL_INVERT
+enum class StencilAction {
+    Keep,
+    Zero,
+    Replace,
+    Incr,
+    IncrWrap,
+    Decr,
+    DecrWrap,
+    Invert,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<StencilAction, GLenum> GLConstants<StencilAction> = {
+    GL_KEEP,
+    GL_ZERO,
+    GL_REPLACE,
+    GL_INCR,
+    GL_INCR_WRAP,
+    GL_DECR,
+    GL_DECR_WRAP,
+    GL_INVERT
 };
 
 /// <summary>Combines blending source and destination factors into a single type.</summary>
@@ -127,7 +247,7 @@ struct PolygonSideMode {
     friend bool operator==(const PolygonSideMode& lhs, const PolygonSideMode& rhs) { return lhs.mode == rhs.mode; }
     friend bool operator!=(const PolygonSideMode& lhs, const PolygonSideMode& rhs) { return !(lhs == rhs); }
 
-    std::tuple<GLenum, GLenum> toTuple() const { return { static_cast<GLenum>(Side), static_cast<GLenum>(mode) }; }
+    std::tuple<GLenum, GLenum> toTuple() const { return { GLConstants<PolygonSide>[Side], GLConstants<PolygonMode>[mode] }; }
 };
 
 /// <summary>Polygon offset, consisting of a factor and units value.</summary>
