@@ -82,12 +82,12 @@ void PerspectiveProjection::setClip(bounds1 clip)
 
 float PerspectiveProjection::nearClip() const
 {
-    return clip_.low;
+    return clip_.lowValue();
 }
 
 void PerspectiveProjection::setNearClip(float near_clip)
 {
-    if (clip_.low.x() == near_clip)
+    if (clip_.lowValue() == near_clip)
         return;
     clip_.low = near_clip;
     invalidateMatrix();
@@ -95,12 +95,12 @@ void PerspectiveProjection::setNearClip(float near_clip)
 
 float PerspectiveProjection::farClip() const
 {
-    return clip_.high;
+    return clip_.highValue();
 }
 
 void PerspectiveProjection::setFarClip(float far_clip)
 {
-    if (clip_.high.x() == far_clip)
+    if (clip_.highValue() == far_clip)
         return;
     clip_.high = far_clip;
     invalidateMatrix();

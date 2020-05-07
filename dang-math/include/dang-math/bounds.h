@@ -133,6 +133,34 @@ struct Bounds {
     {
     }
 
+    /// <summary>Provides simplified access for one-dimensional bounds.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    T& lowValue()
+    {
+        return low.x();
+    }
+
+    /// <summary>Provides simplified access for one-dimensional bounds.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    constexpr T lowValue() const
+    {
+        return low.x();
+    }
+
+    /// <summary>Provides simplified access for one-dimensional bounds.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    T& highValue()
+    {
+        return high.x();
+    }
+
+    /// <summary>Provides simplified access for one-dimensional bounds.</summary>
+    template <typename = std::enable_if_t<Dim == 1>>
+    constexpr T highValue() const
+    {
+        return high.x();
+    }
+
     /// <summary>Returns true, when high is bigger than or equal to low.</summary>
     constexpr bool isNormalized() const
     {

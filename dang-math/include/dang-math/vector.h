@@ -50,6 +50,15 @@ struct Vector : std::array<T, Dim> {
     {
     }
 
+    /// <summary>Allows explicit casting between vector of same size but different types.</summary>
+    template <typename TFrom>
+    explicit constexpr Vector(const Vector<TFrom, Dim>& other)
+        : Vector()
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            (*this)[i] = static_cast<T>(other[i]);
+    }
+
     /// <summary>Returns the sum of all components.</summary>
     constexpr T sum() const
     {
@@ -360,16 +369,6 @@ struct Vector : std::array<T, Dim> {
         return none(std::greater_equal<T>{}, other);
     }
 
-    /// <summary>Allows explicit casting between different types.</summary>
-    template <typename TTarget>
-    explicit constexpr operator Vector<TTarget, Dim>() const
-    {
-        Vector<TTarget, Dim> result;
-        for (std::size_t i = 0; i < Dim; i++)
-            result[i] = static_cast<TTarget>((*this)[i]);
-        return result;
-    }
-
     /// <summary>Used for tuple-unpacking.</summary>
     template <std::size_t Index>
     constexpr T& get() noexcept
@@ -476,20 +475,6 @@ struct Vector : std::array<T, Dim> {
     /// <summary>The x-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
     constexpr T x() const
-    {
-        return std::get<0>(*this);
-    }
-
-    /// <summary>Allows for implicit conversion between a one-dimensional vector and its base type.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
-    constexpr operator T& ()
-    {
-        return std::get<0>(*this);
-    }
-
-    /// <summary>Allows for implicit conversion between a one-dimensional vector and its base type.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
-    constexpr operator T() const
     {
         return std::get<0>(*this);
     }
