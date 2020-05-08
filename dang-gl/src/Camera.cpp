@@ -159,6 +159,35 @@ mat4 OrthoProjection::calculateMatrix()
     return result;
 }
 
+CameraUniforms::CameraUniforms(Program& program, const CameraUniformNames& names)
+    : program_(program)
+    , projection_uniform_(program.uniform<mat4>(names.ProjectionMatrix))
+    , transform_uniforms_{
+        program.uniform<mat2x4>(names.ModelTransform),
+        program.uniform<mat2x4>(names.ViewTransform),
+        program.uniform<mat2x4>(names.ModelViewTransform) }
+{
+}
+
+Program& CameraUniforms::program() const
+{
+    return program_;
+}
+
+void CameraUniforms::updateProjectionMatrix(const mat4& projection_matrix) const
+{
+    ShaderUniform<mat4>& uniform = projection_uniform_;
+    if (uniform.exists())
+        uniform.force(projection_matrix);
+}
+
+void CameraUniforms::updateTransform(CameraTransformType type, const dquat& transform) const
+{
+    ShaderUniform<mat2x4>& uniform = transform_uniforms_[type];
+    if (uniform.exists())
+        uniform.force(transform.toMatrix2x4());
+}
+
 Camera::Camera(SharedProjectionProvider view_matrix_provider)
     : projection_provider_(std::move(view_matrix_provider))
 {
@@ -194,24 +223,17 @@ const SharedTransform& Camera::transform() const
     return transform_;
 }
 
-void Camera::setProjectionUniform(ShaderUniform<mat4>& uniform)
+void Camera::setCustomUniforms(Program& program, const CameraUniformNames& names)
 {
-    projection_uniform_ = &uniform;
-}
+    auto program_matches = [&](const CameraUniforms& uniforms) {
+        return &uniforms.program() != &program;
+    };
 
-void Camera::resetProjectionUniform()
-{
-    projection_uniform_ = nullptr;
-}
-
-void Camera::setTransformUniform(CameraTransformType type, ShaderUniform<mat2x4>& uniform)
-{
-    transform_uniforms_[type] = &uniform;
-}
-
-void Camera::resetTransformUniform(CameraTransformType type)
-{
-    transform_uniforms_[type] = nullptr;
+    auto uniforms = std::find_if(uniforms_.begin(), uniforms_.end(), program_matches);
+    if (uniforms == uniforms_.end())
+        uniforms_.emplace_back(program, names);
+    else
+        *uniforms = CameraUniforms(program, names);
 }
 
 void Camera::addRenderable(SharedRenderable renderable)
@@ -233,30 +255,39 @@ void Camera::clearRenderables()
 
 void Camera::render()
 {
-    if (projection_uniform_)
-        projection_uniform_->force(projection_provider_->matrix());
+    auto force_all = [](const auto& uniforms, const auto& value) {
+        for (auto& uniform : uniforms)
+            uniform->force(value);
+    };
 
     const auto& view_transform = transform_->fullTransform().inverseFast();
 
-    if (auto& uniform = transform_uniforms_[CameraTransformType::View])
-        uniform->force(view_transform.toMatrix2x4());
+    for (const auto& uniforms : uniforms_) {
+        uniforms.updateProjectionMatrix(projection_provider_->matrix());
+        uniforms.updateTransform(CameraTransformType::View, view_transform);
+    }
 
     for (const auto& renderable : renderables_) {
-        if (!renderable || !renderable->isVisible())
+        if (!renderable->isVisible())
             continue;
 
-        if (auto& uniform = transform_uniforms_[CameraTransformType::Model]) {
-            if (auto transform = renderable->transform())
-                uniform->force(transform->fullTransform().toMatrix2x4());
-            else
-                uniform->force(dquat().toMatrix2x4());
+        auto program_matches = [&](const CameraUniforms& uniforms) {
+            return &uniforms.program() == &renderable->program();
+        };
+
+        auto uniforms = std::find_if(uniforms_.begin(), uniforms_.end(), program_matches);
+        if (uniforms == uniforms_.end()) {
+            uniforms_.emplace_back(renderable->program());
+            uniforms = std::prev(uniforms_.end());
         }
 
-        if (auto& uniform = transform_uniforms_[CameraTransformType::ModelView]) {
-            if (auto transform = renderable->transform())
-                uniform->force((transform->fullTransform() * view_transform).toMatrix2x4());
-            else
-                uniform->force(view_transform.toMatrix2x4());
+        if (const auto& model_transform = renderable->transform()) {
+            uniforms->updateTransform(CameraTransformType::Model, model_transform->fullTransform());
+            uniforms->updateTransform(CameraTransformType::ModelView, view_transform * model_transform->fullTransform());
+        }
+        else {
+            uniforms->updateTransform(CameraTransformType::Model, dquat());
+            uniforms->updateTransform(CameraTransformType::ModelView, view_transform);
         }
 
         renderable->draw();

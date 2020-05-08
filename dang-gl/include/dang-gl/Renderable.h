@@ -1,6 +1,7 @@
 #pragma once
 
-#include "dang-gl/Transform.h"
+#include "Program.h"
+#include "Transform.h"
 
 namespace dang::gl
 {
@@ -20,6 +21,8 @@ public:
     virtual bool isVisible() const;
     /// <summary>An optional transformation, describing where to render the object.</summary>
     virtual SharedTransform transform() const;
+    /// <summary>Returns the GL-Program, which is used in the draw method, so that uniforms can be upated.</summary>
+    virtual Program& program() const = 0;
     /// <summary>Draws the object.</summary>
     virtual void draw() const = 0;
 };

@@ -145,10 +145,10 @@ private:
 /// <summary>A shader attribute, which additionally stores the byte-offset, which gets set by the program.</summary>
 class ShaderAttribute : public ShaderVariable {
 public:
+    friend class Program;
+
     /// <summary>Initializes a shader attribute wrapper with the given introspection information.</summary>
     ShaderAttribute(Program& program, GLint count, DataType type, std::string name);
-
-    friend class Program;
 
     /// <summary>The byte-offset of the variable, set by the program.</summary>
     GLsizei offset() const;
@@ -183,17 +183,20 @@ public:
     /// <summary>Initializes a dummy shader uniform wrapper, which does not actually exist in the shader.</summary>
     ShaderUniform(Program& program, GLint count, std::string name);
 
+    /// <summary>Returns, wether this uniform actually exists in the shader or is merely a dummy.</summary>
+    bool exists() const;
+
     /// <summary>Forces the value using glUniform calls.</summary>
     void force(const T& value, GLint index = 0);
     /// <summary>Updates the uniform, if it differs from the cached value.</summary>
     void set(const T& value, GLint index = 0);
     /// <summary>Returns the cached value of the uniform, which is queried once at creation.</summary>
-    T get(GLint index = 0);
+    T get(GLint index = 0) const;
 
     /// <summary>Allows for implicit assignment using a call to set.</summary>
     ShaderUniform& operator=(const T& value);
     /// <summary>Allows for implicit conversion using a call to get.</summary>
-    operator T();
+    operator T() const;
 
     /// <summary>Automatically binds the texture and assigns the returned slot to the sampler uniform.</summary>
     template <typename = std::enable_if_t<std::is_same_v<T, GLint>>>
@@ -325,9 +328,15 @@ inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, std::strin
 }
 
 template<typename T>
+inline bool ShaderUniform<T>::exists() const
+{
+    return location() != -1;
+}
+
+template<typename T>
 inline void ShaderUniform<T>::force(const T& value, GLint index)
 {
-    if (location() != -1) {
+    if (exists()) {
         program().bind();
         UniformWrapper<T>::set(location() + index, value);
     }
@@ -343,7 +352,7 @@ inline void ShaderUniform<T>::set(const T& value, GLint index)
 }
 
 template<typename T>
-inline T ShaderUniform<T>::get(GLint index)
+inline T ShaderUniform<T>::get(GLint index) const
 {
     return values_[index];
 }
@@ -356,7 +365,7 @@ inline ShaderUniform<T>& ShaderUniform<T>::operator=(const T& value)
 }
 
 template<typename T>
-inline ShaderUniform<T>::operator T()
+inline ShaderUniform<T>::operator T() const
 {
     return get();
 }

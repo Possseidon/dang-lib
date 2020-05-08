@@ -112,6 +112,43 @@ enum class CameraTransformType {
     COUNT
 };
 
+/// <summary>A simple struct for all the different uniform names, which a camera can write to.</summary>
+struct CameraUniformNames {
+    std::string ProjectionMatrix;
+    std::string ModelTransform;
+    std::string ViewTransform;
+    std::string ModelViewTransform;
+};
+
+/// <summary>The default names for all camera related uniforms.</summary>
+// TODO: C++20 use named initializers { .name = value }
+inline const CameraUniformNames DefaultCameraUniformNames = {
+    "projection_matrix",
+    "model_transform",
+    "view_transform",
+    "modelview_transform"
+};
+
+/// <summary>Contains references to camera related uniforms of a single GL-Program.</summary>
+class CameraUniforms {
+public:
+    /// <summary>Queries all relevant uniforms using the given uniform names.</summary>
+    CameraUniforms(Program& program, const CameraUniformNames& names = DefaultCameraUniformNames);
+
+    /// <summary>Returns the associated GL-Program for the collection of uniforms.</summary>
+    Program& program() const;
+
+    /// <summary>Updates the content of the uniform for the projection matrix.</summary>
+    void updateProjectionMatrix(const mat4& projection_matrix) const;
+    /// <summary>Updates the content of the uniform for the given transform type.</summary>
+    void updateTransform(CameraTransformType type, const dquat& transform) const;
+
+private:
+    std::reference_wrapper<Program> program_;
+    std::reference_wrapper<ShaderUniform<mat4>> projection_uniform_;
+    dutils::EnumArray<CameraTransformType, std::reference_wrapper<ShaderUniform<mat2x4>>> transform_uniforms_;
+};
+
 /// <summary>A camera, which is capable of drawing objects, deriving the Renderable base class.</summary>
 class Camera {
 public:
@@ -131,15 +168,8 @@ public:
     /// <summary>Returns the transform of the camera itself.</summary>
     const SharedTransform& transform() const;
 
-    /// <summary>Sets the shader uniform to send the projection matrix to.</summary>
-    void setProjectionUniform(ShaderUniform<mat4>& uniform);
-    /// <summary>Resets the shader uniform to send the projection matrix to.</summary>
-    void resetProjectionUniform();
-
-    /// <summary>Sets the shader uniform for a specified transform to send the transformation quaternion to.</summary>
-    void setTransformUniform(CameraTransformType type, ShaderUniform<mat2x4>& uniform);
-    /// <summary>Resets the shader uniform for a specified transform to send the transformation quaternion to.</summary>
-    void resetTransformUniform(CameraTransformType type);
+    /// <summary>Allows the given program to use custom uniform names instead of the default ones.</summary>
+    void setCustomUniforms(Program& program, const CameraUniformNames& names);
 
     /// <summary>Adds a new object to the list of renderables.</summary>
     void addRenderable(SharedRenderable renderable);
@@ -155,8 +185,7 @@ private:
     SharedProjectionProvider projection_provider_;
     SharedTransform transform_ = Transform::create();
     std::vector<SharedRenderable> renderables_;
-    ShaderUniform<mat4>* projection_uniform_ = nullptr;
-    dutils::EnumArray<CameraTransformType, ShaderUniform<mat2x4>*> transform_uniforms_{};
+    std::vector<CameraUniforms> uniforms_;
 };
 
 }
