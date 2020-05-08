@@ -67,6 +67,27 @@ public:
     {
         binding().bind<TInfo>(*this);
     }
+
+    /// <summary>Sets a label for the object, which is used in by OpenGL generated debug messages.</summary>
+    /// <remarks>Passing an empty string effectively resets the name, so that it shows the default instead of an empty string.</remarks>
+    void setLabel(std::string label)
+    {
+        label_ = std::move(label);
+        if (label_.empty())
+            glObjectLabel(toGLConstant(TInfo::ObjectType), handle(), 0, nullptr);
+        else
+            glObjectLabel(toGLConstant(TInfo::ObjectType), handle(), static_cast<GLsizei>(label_.length()), label_.c_str());
+    }
+
+    /// <summary>Returns the label used in OpenGL generated debug messages.</summary>
+    /// <remarks>Defaults to an empty string.</remarks>
+    const std::string& label() const
+    {
+        return label_;
+    }
+
+private:
+    std::string label_;
 };
 
 }
