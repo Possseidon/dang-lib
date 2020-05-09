@@ -7,7 +7,7 @@ namespace dang::gl
 template <typename T>
 constexpr auto GLConstants = nullptr;
 
-/// <summary>Mainly for automatic type deduction.</summary>
+/// <summary>Same as GLConstants, but allows for automatic type deduction.</summary>
 template <typename T>
 constexpr auto toGLConstant(T value)
 {

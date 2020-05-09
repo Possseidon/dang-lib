@@ -151,6 +151,118 @@ private:
     mutable std::optional<GLint> active_slot_;
 };
 
+enum class TextureDepthStencilMode {
+    DepthComponent,
+    StencilIndex,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
+    GL_DEPTH_COMPONENT,
+    GL_STENCIL_INDEX
+};
+
+enum class TextureMagFilter {
+    Nearest,
+    Linear,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {
+    GL_NEAREST,
+    GL_LINEAR
+};
+
+enum class TextureMinFilter {
+    Nearest,
+    Linear,
+    NearestMipmapNearest,
+    LinearMipmapNearest,
+    NearestMipmapLinear,
+    LinearMipmapLinear,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {
+    GL_NEAREST,
+    GL_LINEAR,
+    GL_NEAREST_MIPMAP_NEAREST,
+    GL_LINEAR_MIPMAP_NEAREST,
+    GL_NEAREST_MIPMAP_LINEAR,
+    GL_LINEAR_MIPMAP_LINEAR
+};
+
+enum class TextureCompareFunc {
+    Never,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
+    GL_NEVER,
+    GL_LESS,
+    GL_EQUAL,
+    GL_LEQUAL,
+    GL_GREATER,
+    GL_NOTEQUAL,
+    GL_GEQUAL,
+    GL_ALWAYS
+};
+
+enum class TextureSwizzle {
+    Red,
+    Green,
+    Blue,
+    Alpha,
+    Zero,
+    One,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
+    GL_RED,
+    GL_GREEN,
+    GL_BLUE,
+    GL_ALPHA,
+    GL_ZERO,
+    GL_ONE
+};
+
+enum class TextureWrap {
+    Repeat,
+    ClampToBorder,
+    ClampToEdge,
+    MirroredRepeat,
+    MirrorClampToEdge,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
+    GL_REPEAT,
+    GL_CLAMP_TO_BORDER,
+    GL_CLAMP_TO_EDGE,
+    GL_MIRRORED_REPEAT,
+    GL_MIRROR_CLAMP_TO_EDGE
+};
+
 namespace detail
 {
 
@@ -206,6 +318,227 @@ public:
         glGenerateMipmap(Target);
     }
 
+    const vec4& borderColor() const
+    {
+        return border_color_;
+    }
+
+    void setBorderColor(const vec4& color)
+    {
+        if (border_color_ == color)
+            return;
+        glTexParameterfv(Target, GL_TEXTURE_BORDER_COLOR, &color[0]);
+        border_color_ = color;
+    }
+
+    TextureDepthStencilMode depthStencilMode() const
+    {
+        return depth_stencil_mode_;
+    }
+
+    void setDepthStencilMode(TextureDepthStencilMode mode)
+    {
+        if (depth_stencil_mode_ == mode)
+            return;
+        glTexParameteri(Target, GL_DEPTH_STENCIL_TEXTURE_MODE, toGLConstant(mode));
+        depth_stencil_mode_ = mode;
+    }
+
+    TextureCompareFunc compareFunc() const
+    {
+        return compare_func_;
+    }
+
+    void setCompareFunc(TextureCompareFunc func)
+    {
+        if (compare_func_ == func)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_COMPARE_FUNC, toGLConstant(func));
+        compare_func_ = func;
+    }
+
+    GLfloat minLevelOfDetail() const
+    {
+        return min_level_of_detail_;
+    }
+
+    void setMinLevelOfDetail(GLfloat level)
+    {
+        if (min_level_of_detail_ == level)
+            return;
+        glTexParameterf(Target, GL_TEXTURE_MIN_LOD, level);
+        min_level_of_detail_ = level;
+    }
+
+    GLfloat maxLevelOfDetail() const
+    {
+        return max_level_of_detail_;
+    }
+
+    void setMaxLevelOfDetail(GLfloat level)
+    {
+        if (max_level_of_detail_ == level)
+            return;
+        glTexParameterf(Target, GL_TEXTURE_MAX_LOD, level);
+        max_level_of_detail_ = level;
+    }
+
+    GLfloat levelOfDetailBias() const
+    {
+        return level_of_detail_bias_;
+    }
+
+    void setLevelOfDetailBias(GLfloat bias)
+    {
+        if (level_of_detail_bias_ == bias)
+            return;
+        glTexParameterf(Target, GL_TEXTURE_LOD_BIAS, bias);
+        level_of_detail_bias_ = bias;
+    }
+
+    TextureMagFilter magFilter() const
+    {
+        return mag_filter_;
+    }
+
+    void setMagFilter(TextureMagFilter mag_filter)
+    {
+        if (mag_filter_ == mag_filter)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_MAG_FILTER, toGLConstant(mag_filter));
+        mag_filter_ = mag_filter;
+    }
+
+    TextureMinFilter minFilter() const
+    {
+        return min_filter_;
+    }
+
+    void setMinFilter(TextureMinFilter min_filter)
+    {
+        if (min_filter_ == min_filter)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_MIN_FILTER, toGLConstant(min_filter));
+        min_filter_ = min_filter;
+    }
+
+    GLint baseLevel() const
+    {
+        return base_level_;
+    }
+
+    void setBaseLevel(GLint base_level)
+    {
+        if (base_level_ == base_level)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_BASE_LEVEL, base_level);
+        base_level_ = base_level;
+    }
+
+    GLint maxLevel() const
+    {
+        return max_level_;
+    }
+
+    void setMaxLevel(GLint max_level)
+    {
+        if (max_level_ == max_level)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_MAX_LEVEL, max_level);
+        max_level_ = max_level;
+    }
+
+    TextureSwizzle swizzleRed() const
+    {
+        return swizzle_red_;
+    }
+
+    void setSwizzleRed(TextureSwizzle swizzle)
+    {
+        if (swizzle_red_ == swizzle)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_R, toGLConstant(swizzle));
+        swizzle_red_ = swizzle;
+    }
+
+    TextureSwizzle swizzleGreen() const
+    {
+        return swizzle_green_;
+    }
+
+    void setSwizzleGreen(TextureSwizzle swizzle)
+    {
+        if (swizzle_green_ == swizzle)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_G, toGLConstant(swizzle));
+        swizzle_green_ = swizzle;
+    }
+
+    TextureSwizzle swizzleBlue() const
+    {
+        return swizzle_blue_;
+    }
+
+    void setSwizzleBlue(TextureSwizzle swizzle)
+    {
+        if (swizzle_blue_ == swizzle)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_B, toGLConstant(swizzle));
+        swizzle_blue_ = swizzle;
+    }
+
+    TextureSwizzle swizzleAlpha() const
+    {
+        return swizzle_alpha_;
+    }
+
+    void setSwizzleAlpha(TextureSwizzle swizzle)
+    {
+        if (swizzle_alpha_ == swizzle)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_A, toGLConstant(swizzle));
+        swizzle_alpha_ = swizzle;
+    }
+
+    TextureWrap wrapS() const
+    {
+        return wrap_s_;
+    }
+
+    void setWrapS(TextureWrap wrap)
+    {
+        if (wrap_s_ == wrap)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_WRAP_S, toGLConstant(wrap));
+        wrap_s_ = wrap;
+    }
+
+    TextureWrap wrapT() const
+    {
+        return wrap_t_;
+    }
+
+    void setWrapT(TextureWrap wrap)
+    {
+        if (wrap_t_ == wrap)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_WRAP_T, toGLConstant(wrap));
+        wrap_t_ = wrap;
+    }
+
+    TextureWrap wrapR() const
+    {
+        return wrap_r_;
+    }
+
+    void setWrapR(TextureWrap wrap)
+    {
+        if (wrap_r_ == wrap)
+            return;
+        glTexParameteri(Target, GL_TEXTURE_WRAP_R, toGLConstant(wrap));
+        wrap_r_ = wrap;
+    }
+
 protected:
     /// <summary>Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.</summary>
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type, std::size_t... Indices>
@@ -224,6 +557,31 @@ protected:
             toGLConstant(Type),
             image.data());
     }
+
+private:
+    vec4 border_color_;
+
+    TextureDepthStencilMode depth_stencil_mode_ = TextureDepthStencilMode::DepthComponent;
+    TextureCompareFunc compare_func_ = TextureCompareFunc::LessEqual;
+
+    GLfloat min_level_of_detail_ = -1000.0f;
+    GLfloat max_level_of_detail_ = 1000.0f;
+    GLfloat level_of_detail_bias_ = 0.0f;
+
+    TextureMagFilter mag_filter_ = TextureMagFilter::Linear;
+    TextureMinFilter min_filter_ = TextureMinFilter::NearestMipmapLinear;
+
+    GLint base_level_ = 0;
+    GLint max_level_ = 1000;
+
+    TextureSwizzle swizzle_red_ = TextureSwizzle::Red;
+    TextureSwizzle swizzle_green_ = TextureSwizzle::Green;
+    TextureSwizzle swizzle_blue_ = TextureSwizzle::Blue;
+    TextureSwizzle swizzle_alpha_ = TextureSwizzle::Alpha;
+
+    TextureWrap wrap_s_ = TextureWrap::Repeat;
+    TextureWrap wrap_t_ = TextureWrap::Repeat;
+    TextureWrap wrap_r_ = TextureWrap::Repeat;
 };
 
 /// <summary>Base class for all regluar, non-multisampled textures.</summary>
