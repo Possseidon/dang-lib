@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-math/vector.h"
+
 #include "Image.h"
 #include "Object.h"
 #include "ObjectBinding.h"
@@ -300,6 +302,12 @@ public:
     {
     }
 
+    /// <summary>Returns the size of the image along each axis.</summary>
+    dmath::svec<Dim> size() const
+    {
+        return size_;
+    }
+
     /// <summary>Modifies a part of the stored texture at the optional given offset and mipmap level.</summary>
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type>
     void modify(
@@ -540,6 +548,12 @@ public:
     }
 
 protected:
+    /// <summary>Sets the internal size to the given value.</summary>
+    void setSize(dmath::svec<Dim> size)
+    {
+        size_ = size;
+    }
+
     /// <summary>Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.</summary>
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type, std::size_t... Indices>
     void subImage(
@@ -559,6 +573,8 @@ protected:
     }
 
 private:
+    dmath::svec<Dim> size_;
+
     vec4 border_color_;
 
     TextureDepthStencilMode depth_stencil_mode_ = TextureDepthStencilMode::DepthComponent;
@@ -644,15 +660,15 @@ public:
 private:
     /// <summary>Returns the biggest component of a given vector.</summary>
     template <std::size_t... Indices>
-    std::size_t maxSize(dmath::svec<Dim> size, std::index_sequence<Indices...>)
+    static std::size_t maxSize(dmath::svec<Dim> size, std::index_sequence<Indices...>)
     {
         std::size_t result = 0;
         ((result = std::max(result, size[Indices])), ...);
         return result;
     }
 
-    /// <summary>Calculates the integer log2 of the given value, which is the required mipmap count for a given size.</summary>
-    std::size_t ilog2PlusOne(std::size_t value)
+    /// <summary>Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given size.</summary>
+    static std::size_t mipmapCount(std::size_t value)
     {
         // TODO: Use std::bit_width in C++20
         std::size_t result = 1;
@@ -664,7 +680,7 @@ private:
     /// <summary>Returns the required count to generate a full mipmap down to 1x1 for the given size.</summary>
     GLsizei maxMipmapLevelsFor(dmath::svec<Dim> size)
     {
-        return static_cast<GLsizei>(ilog2PlusOne(maxSize(size, std::make_index_sequence<Dim>())));
+        return static_cast<GLsizei>(mipmapCount(maxSize(size, std::make_index_sequence<Dim>())));
     }
 
     /// <summary>Calls glTexStorage with the provided parameters and index sequence of the textures dimension.</summary>
@@ -675,12 +691,12 @@ private:
         std::optional<GLsizei> mipmap_levels = std::nullopt,
         PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        GLsizei actual_mipmap_levels = mipmap_levels.value_or(maxMipmapLevelsFor(size));
         glTexStorage<Dim>(
             TextureBaseTyped<Dim, TextureBindingPoint>::Target,
-            actual_mipmap_levels,
+            mipmap_levels.value_or(maxMipmapLevelsFor(size)),
             toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...);
+        this->setSize(size);
     }
 };
 
@@ -756,6 +772,7 @@ private:
             toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...,
             static_cast<GLboolean>(fixed_sample_locations));
+        this->setSize(size);
     }
 };
 
