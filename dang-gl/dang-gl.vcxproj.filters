@@ -257,9 +257,6 @@
     <ClInclude Include="include\dang-gl\PixelType.h">
       <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Transform.h">
-      <Filter>Header Files\Components\Camera</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\pch.h">
       <Filter>Header Files\Other</Filter>
     </ClInclude>
@@ -301,6 +298,9 @@
     </ClInclude>
     <ClInclude Include="include\dang-gl\GLConstants.h">
       <Filter>Header Files\OpenGL\General</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Transform.h">
+      <Filter>Header Files\Maths</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

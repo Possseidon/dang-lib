@@ -23,7 +23,7 @@ public:
     /// <summary>Automatically updates the aspect to match the given window.</summary>
     ProjectionProvider(Window& window);
 
-    /// <summary>Returns the current aspect ratio (widht/height).</summary>
+    /// <summary>Returns the current aspect ratio (width/height).</summary>
     float aspect() const;
     /// <summary>Sets the aspect ratio (width/height) to the given value.</summary>
     /// <remarks>This value will only be overwritten on the next window resize, if a window was provided.</remarks>

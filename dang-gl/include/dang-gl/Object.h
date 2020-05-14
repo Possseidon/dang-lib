@@ -70,7 +70,6 @@ public:
     {
         this->context().bind(this->handle());
     }
-
 };
 
 }
