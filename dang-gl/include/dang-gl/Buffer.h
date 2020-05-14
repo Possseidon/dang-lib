@@ -30,8 +30,10 @@ public:
     /// <summary>Resets the bound buffer of the specified target, if the given handle is currently bound to it.</summary>
     void reset(BufferTarget target, GLuint handle)
     {
-        if (bound_buffers_[target] == handle)
-            bound_buffers_[target] = 0;
+        if (bound_buffers_[target] != handle)
+            return;
+        ObjectWrapper<ObjectType::Buffer>::bind(target, 0);
+        bound_buffers_[target] = 0;
     }
 
 private:

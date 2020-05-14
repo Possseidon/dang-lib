@@ -792,7 +792,7 @@ inline GLint ObjectContext<ObjectType::Texture>::bind(const TextureBase& texture
         throw TextureError("Cannot bind texture, as all slots are in use.");
     GLint slot = static_cast<GLint>(std::distance(active_textures_.begin(), first_free_slot_));
     setActiveSlot(slot);
-    glBindTexture(toGLConstant(texture.target_), texture.handle());
+    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, texture.handle());
     *first_free_slot_ = texture.handle();
     texture.active_slot_ = slot;
     first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), GLuint(0));
@@ -803,6 +803,8 @@ inline void ObjectContext<ObjectType::Texture>::release(const TextureBase& textu
 {
     if (!texture.active_slot_)
         return;
+    setActiveSlot(*texture.active_slot_);
+    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, 0);
     auto texture_to_free = std::next(active_textures_.begin(), static_cast<std::size_t>(*texture.active_slot_));
     *texture_to_free = 0;
     texture.active_slot_ = std::nullopt;

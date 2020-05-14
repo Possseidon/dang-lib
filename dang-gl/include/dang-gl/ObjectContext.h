@@ -40,8 +40,10 @@ public:
     /// <summary>Resets the bound GL-Object, if the given handle is currently bound.</summary>
     void reset(GLuint handle)
     {
-        if (bound_object_ == handle)
-            bound_object_ = 0;
+        if (bound_object_ != handle)
+            return;
+        ObjectWrapper<Type>::bind(0);
+        bound_object_ = 0;
     }
 
 private:
