@@ -101,6 +101,26 @@ private:
     std::underlying_type_t<T> value_{};
 };
 
+/// <summary>Used in the same fashion as std::index_sequence.</summary>
+template <typename T, T... Values>
+struct EnumSequence {
+    static_assert(std::is_enum_v<T>, "Enum sequence requires enumeration type.");
+};
+
+/// <summary>Helper function to create an enum sequences from a given integer sequence.</summary>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT, std::underlying_type_t<T>... Indices>
+constexpr auto makeEnumSequence(std::integer_sequence<std::underlying_type_t<T>, Indices...>)
+{
+    return EnumSequence<T, static_cast<T>(Indices)...>();
+}
+
+/// <summary>Used in the same fashion as std::make_index_sequence.</summary>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
+constexpr auto makeEnumSequence()
+{
+    return makeEnumSequence<T>(std::make_integer_sequence<std::underlying_type_t<T>, static_cast<std::underlying_type_t<T>>(T::COUNT)>());
+}
+
 }
 
 namespace std
