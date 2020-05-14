@@ -33,9 +33,6 @@
     <ClCompile Include="src\ObjectBase.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="src\VBO.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="src\VAO.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -61,9 +58,6 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="src\ObjectContext.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Texture.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="src\PNGLoader.cpp">
@@ -107,9 +101,6 @@
     <ClInclude Include="include\dang-gl\VAO.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\BindingPoint.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\ObjectType.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -135,9 +126,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Texture.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectBinding.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\ObjectContext.h">
@@ -171,6 +159,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\DataTypes.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Buffer.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

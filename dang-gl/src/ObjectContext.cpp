@@ -4,12 +4,12 @@
 namespace dang::gl
 {
 
-ObjectContext::ObjectContext(Window& window)
+ObjectContextBase::ObjectContextBase(Window& window)
     : window_(window)
 {
 }
 
-Window& ObjectContext::window() const
+Window& ObjectContextBase::window() const
 {
     return window_;
 }

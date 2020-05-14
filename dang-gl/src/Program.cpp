@@ -6,21 +6,6 @@
 namespace dang::gl
 {
 
-GLuint ProgramInfo::create()
-{
-    return glCreateProgram();
-}
-
-void ProgramInfo::destroy(GLuint handle)
-{
-    glDeleteProgram(handle);
-}
-
-void ProgramInfo::bind(GLuint handle)
-{
-    glUseProgram(handle);
-}
-
 std::string Program::replaceInfoLogShaderNames(std::string info_log) const
 {
     std::vector<std::string> names{ "main" };

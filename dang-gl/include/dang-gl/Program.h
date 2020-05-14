@@ -2,10 +2,11 @@
 
 #include "dang-utils/enum.h"
 
-#include "BindingPoint.h"
 #include "DataTypes.h"
 #include "GLConstants.h"
 #include "Object.h"
+#include "ObjectContext.h"
+#include "ObjectType.h"
 #include "Texture.h"
 #include "UniformWrapper.h"
 
@@ -57,12 +58,14 @@ public:
 /// <summary>Thrown, when a shader has compilation errors.</summary>
 class ShaderCompilationError : public ShaderError {
 public:
+    /// <summary>Creates an error message using the name of the shader stage, followed by the info log.</summary>
     ShaderCompilationError(ShaderType type, const std::string& info_log)
         : ShaderError(ShaderTypeNames[type] + "\n" + info_log)
         , type_(type)
     {
     }
 
+    /// <summary>The associated shader type.</summary>
     ShaderType type() const
     {
         return type_;
@@ -75,6 +78,7 @@ private:
 /// <summary>Thrown, when the shader stages of a program cannot be linked.</summary>
 class ShaderLinkError : public ShaderError {
 public:
+    /// <summary>Creates an error message using the info log with a header.</summary>
     ShaderLinkError(const std::string& info_log)
         : ShaderError("Shader-Linking\n" + info_log)
     {
@@ -100,16 +104,6 @@ public:
         : std::runtime_error("Shader file not found: " + path.string())
     {
     }
-};
-
-/// <summary>Info struct to create, destroy and bind (actually use) a program object.</summary>
-struct ProgramInfo : public ObjectInfo {
-    static GLuint create();
-    static void destroy(GLuint handle);
-    static void bind(GLuint handle);
-
-    static constexpr ObjectType ObjectType = ObjectType::Program;
-    static constexpr BindingPoint BindingPoint = BindingPoint::Program;
 };
 
 class Program;
@@ -212,19 +206,27 @@ private:
 
 using ShaderUniformSampler = ShaderUniform<int>;
 
+/// <summary>Contains the attribute order, stride and also supports instance division.</summary>
 struct AttributeOrder {
     std::vector<std::reference_wrapper<ShaderAttribute>> attributes;
     GLsizei stride = 0;
     GLsizei divisor = 0;
 };
 
+/// <summary>Specialization for GL-Programs using the default bindable context.</summary>
+template <>
+class ObjectContext<ObjectType::Program> : public ObjectContextBindable<ObjectType::Program> {
+    using ObjectContextBindable::ObjectContextBindable;
+};
+
 /// <summary>A GL-Program, built up of various shader stages which get linked together.</summary>
-class Program : public Object<ProgramInfo> {
+class Program : public ObjectBindable<ObjectType::Program> {
 public:
     friend class ShaderPreprocessor;
 
     using AttributeNames = std::vector<std::string>;
 
+    /// <summary>Used to supply the attribute order to the link function.</summary>
     struct InstancedAttributes {
         GLsizei divisor;
         AttributeNames order;

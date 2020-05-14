@@ -6,13 +6,11 @@
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
 
-#include "BindingPoint.h"
 #include "Input.h"
 #include "Monitor.h"
-#include "ObjectBinding.h"
+#include "State.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
-#include "State.h"
 
 namespace dang::gl
 {
@@ -332,11 +330,8 @@ public:
     void setRawMouseMotion(bool raw_mouse_motion);
     static bool supportsRawMouseMotion();
 
-    template <typename TInfo>
-    typename TInfo::Context& objectContext();
-
-    template <typename TInfo>
-    typename TInfo::Binding& objectBinding();
+    template <ObjectType Type>
+    ObjectContext<Type>& objectContext();
 
     void activate();
 
@@ -382,6 +377,9 @@ public:
     GLDebugMessageEvent onGLDebugMessage;
 
 private:
+    template <ObjectType... Types>
+    void initializeContexts(dutils::EnumSequence<ObjectType, Types...>);
+
     void registerCallbacks();
 
     static void charCallback(GLFWwindow* window_handle, unsigned int codepoint);
@@ -420,24 +418,13 @@ private:
     float delta_time_ = 0;
     float fps_ = 0;
     std::string text_input_;
-    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContext>> object_contexts_;
-    dutils::EnumArray<BindingPoint, std::unique_ptr<ObjectBindingBase>> object_bindings_;
+    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
 };
 
-template <typename TInfo>
-inline typename TInfo::Context& Window::objectContext()
+template <ObjectType Type>
+inline ObjectContext<Type>& Window::objectContext()
 {
-    if (const auto& binding = object_contexts_[TInfo::ObjectType])
-        return static_cast<typename TInfo::Context&>(*binding);
-    return static_cast<typename TInfo::Context&>(*(object_contexts_[TInfo::ObjectType] = std::make_unique<TInfo::Context>(*this)));
-}
-
-template <typename TInfo>
-inline typename TInfo::Binding& Window::objectBinding()
-{
-    if (const auto& binding = object_bindings_[TInfo::BindingPoint])
-        return static_cast<typename TInfo::Binding&>(*binding);
-    return static_cast<typename TInfo::Binding&>(*(object_bindings_[TInfo::BindingPoint] = std::make_unique<TInfo::Binding>(objectContext<TInfo>())));
+    return static_cast<ObjectContext<Type>&>(*object_contexts_[Type]);
 }
 
 }

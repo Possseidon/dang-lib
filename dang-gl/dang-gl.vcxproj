@@ -240,8 +240,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\dang-gl\Buffer.h" />
     <ClInclude Include="include\dang-gl\Camera.h" />
-    <ClInclude Include="include\dang-gl\BindingPoint.h" />
     <ClInclude Include="include\dang-gl\GLConstants.h" />
     <ClInclude Include="include\dang-gl\MathConstants.h" />
     <ClInclude Include="include\dang-gl\DataTypes.h" />
@@ -266,7 +266,6 @@
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\dang-gl\Program.h" />
-    <ClInclude Include="include\dang-gl\ObjectBinding.h" />
     <ClInclude Include="include\dang-gl\VBO.h" />
     <ClInclude Include="include\dang-gl\VAO.h" />
     <ClInclude Include="include\dang-gl\Monitor.h" />
@@ -276,7 +275,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PNGLoader.cpp" />
-    <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\ObjectContext.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Renderable.cpp" />
@@ -302,7 +300,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Window.cpp" />
-    <ClCompile Include="src\VBO.cpp" />
     <ClCompile Include="src\VAO.cpp" />
     <ClCompile Include="src\Transform.cpp" />
     <ClCompile Include="src\State.cpp" />

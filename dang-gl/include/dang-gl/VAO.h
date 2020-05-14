@@ -28,6 +28,7 @@ enum class BeginMode {
     COUNT
 };
 
+/// <summary>Maps the different begin modes to their GL-Constants.</summary>
 template <>
 constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
     GL_POINTS,
@@ -44,18 +45,14 @@ constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
     GL_PATCHES
 };
 
-/// <summary>Info struct to create, destroy and bind VAOs.</summary>
-struct VAOInfo : public ObjectInfo {
-    static GLuint create();
-    static void destroy(GLuint handle);
-    static void bind(GLuint handle);
-
-    static constexpr ObjectType ObjectType = ObjectType::VertexArray;
-    static constexpr BindingPoint BindingPoint = BindingPoint::VertexArray;
+/// <summary>Specialization for VertexArrays using the default bindable context.</summary>
+template <>
+class ObjectContext<ObjectType::VertexArray> : public ObjectContextBindable<ObjectType::VertexArray> {
+    using ObjectContextBindable::ObjectContextBindable;
 };
 
 /// <summary>A base class for all vertex array objects, which is not templated yet.</summary>
-class VAOBase : public Object<VAOInfo> {
+class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
 public:
     /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);

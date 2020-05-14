@@ -1,7 +1,11 @@
 #include "pch.h"
 #include "Window.h"
 
+#include "Buffer.h"
 #include "GLFW.h"
+#include "Program.h"
+#include "Texture.h"
+#include "VAO.h"
 
 namespace dang::gl
 {
@@ -75,6 +79,7 @@ Window::Window(const WindowInfo& info)
 {
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();
+    initializeContexts(dutils::makeEnumSequence<ObjectType>());
     last_time_ = GLFW::Instance.timerValue();
 }
 
@@ -617,6 +622,13 @@ bool Window::supportsAdaptiveVSync()
     activate();
     return glfwExtensionSupported("WGL_EXT_swap_control_tear") || glfwExtensionSupported("GLX_EXT_swap_control_tear");
 }
+
+template <ObjectType... Types>
+void Window::initializeContexts(dutils::EnumSequence<ObjectType, Types...>)
+{
+    activate();
+    ((object_contexts_[Types] = std::make_unique<ObjectContext<Types>>(*this)), ...);
+};
 
 void Window::registerCallbacks()
 {

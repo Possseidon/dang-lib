@@ -4,7 +4,8 @@
 
 #include "Image.h"
 #include "Object.h"
-#include "ObjectBinding.h"
+#include "ObjectContext.h"
+#include "ObjectType.h"
 #include "PixelFormat.h"
 #include "PixelInternalFormat.h"
 #include "PixelType.h"
@@ -41,10 +42,11 @@ class TextureBase;
 // Possibly consider modification, to allow a texture to be bound for multiple slots, as the spec does technically allows this
 // -> This greatly complicates everything and might not be worth the cost (both run-time and possibly ease-of-use)
 
-/// <summary>The context for all different texture types, as binding closely related all different types.</summary>
-class TextureContext : public ObjectContext {
+/// <summary>Specializes the context class for texture objects.</summary>
+template <>
+class ObjectContext<ObjectType::Texture> : public ObjectContextBase {
 public:
-    using ObjectContext::ObjectContext;
+    using ObjectContextBase::ObjectContextBase;
 
     /// <summary>Returns the currently active texture slot.</summary>
     GLint activeSlot();
@@ -55,78 +57,23 @@ public:
     GLint bind(const TextureBase& texture);
     /// <summary>If the texture is currently bound to a slot, makes that slot free for another texture to use.</summary>
     void release(const TextureBase& texture);
-    /// <summary>Used for texture move semantics, to update the references of bound textures.</summary>
-    void move(const TextureBase& from, const TextureBase& to);
 
 private:
     GLint active_slot_;
-    std::vector<const TextureBase*> active_textures_{ window().state().max_combined_texture_image_units };
-    std::vector<const TextureBase*>::iterator first_free_slot_ = active_textures_.begin();
+    std::vector<GLuint> active_textures_ = std::vector<GLuint>(window().state().max_combined_texture_image_units);
+    std::vector<GLuint>::iterator first_free_slot_ = active_textures_.begin();
 };
 
-/// <summary>As texture types are closely related, this simply relays to the global texture context.</summary>
-class TextureBinding : public ObjectBindingBase {
+/// <summary>Serves as a base class for all texture classes.</summary>
+class TextureBase : public Object<ObjectType::Texture> {
 public:
-    /// <summary>Initializes the binding with the given context.</summary>
-    TextureBinding(TextureContext& context)
-        : context_(context)
+    friend ObjectContext<ObjectType::Texture>;
+
+    /// <summary>Resets the bound texture of the context, in case of the texture still being bound.</summary>
+    ~TextureBase()
     {
+        this->context().release(*this);
     }
-
-    /// <summary>Returns the associated context.</summary>
-    TextureContext& context()
-    {
-        return context_;
-    }
-
-    /// <summary>Relays to the context, effectively binding the texture to the first free slot.</summary>
-    template <typename TInfo>
-    GLint bind(const TextureBase& object)
-    {
-        return context_.bind(object);
-    }
-
-    /// <summary>Relays to the context, effectively freeing up the slot, that the texture is currently occupying.</summary>
-    void release(const TextureBase& object)
-    {
-        context_.release(object);
-    }
-
-    /// <summary>Relays to the context, updating a potentially bound texture.</summary>
-    template <typename TInfo>
-    void move(const TextureBase& from, const TextureBase& to)
-    {
-        context_.move(from, to);
-    }
-
-private:
-    TextureContext& context_;
-};
-
-/// <summary>Info struct to create and destroy textures.</summary>
-struct TextureInfo : public ObjectInfo {
-    static GLuint create()
-    {
-        GLuint handle;
-        glGenTextures(1, &handle);
-        return handle;
-    }
-
-    static void destroy(GLuint handle)
-    {
-        glDeleteTextures(1, &handle);
-    }
-
-    using Context = TextureContext;
-    static constexpr ObjectType ObjectType = ObjectType::Texture;
-
-    using Binding = TextureBinding;
-};
-
-/// <summary>Serves as a base class for all texture classes, as texture types are closely related in binding.</summary>
-class TextureBase : public Object<TextureInfo> {
-public:
-    friend TextureContext;
 
     /// <summary>Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.</summary>
     GLint bind() const
@@ -141,15 +88,15 @@ public:
     }
 
 protected:
-    /// <summary>Initializes the texture base with the given texture handle, window and binding point.</summary>
-    explicit TextureBase(BindingPoint binding_point)
+    /// <summary>Initializes the texture base with the given texture handle, window and binding target.</summary>
+    explicit TextureBase(TextureTarget target)
         : Object()
-        , binding_point_(binding_point)
+        , target_(target)
     {
     }
 
 private:
-    BindingPoint binding_point_;
+    TextureTarget target_;
     mutable std::optional<GLint> active_slot_;
 };
 
@@ -288,17 +235,16 @@ template <> constexpr auto& glTexSubImage<1> = glTexSubImage1D;
 template <> constexpr auto& glTexSubImage<2> = glTexSubImage2D;
 template <> constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 
-/// <summary>A base for all textures with template parameters for the dimension and binding point.</summary>
-template <std::size_t Dim, BindingPoint TextureBindingPoint>
+/// <summary>A base for all textures with template parameters for the dimension and texture target.</summary>
+template <std::size_t Dim, TextureTarget Target>
 class TextureBaseTyped : public TextureBase {
 public:
-    static constexpr GLenum Target = toGLConstant(TextureBindingPoint);
     template <PixelFormat Format>
     static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<Format>::Internal;
 
-    /// <summary>Simply calls the base constructor with the templated binding point.</summary>
+    /// <summary>Simply calls the base constructor with the templated texture target.</summary>
     TextureBaseTyped()
-        : TextureBase(TextureBindingPoint)
+        : TextureBase(Target)
     {
     }
 
@@ -323,7 +269,7 @@ public:
     void generateMipmap()
     {
         this->bind();
-        glGenerateMipmap(Target);
+        glGenerateMipmap(toGLConstant(Target));
     }
 
     const vec4& borderColor() const
@@ -335,7 +281,7 @@ public:
     {
         if (border_color_ == color)
             return;
-        glTexParameterfv(Target, GL_TEXTURE_BORDER_COLOR, &color[0]);
+        glTexParameterfv(toGLConstant(Target), GL_TEXTURE_BORDER_COLOR, &color[0]);
         border_color_ = color;
     }
 
@@ -348,7 +294,7 @@ public:
     {
         if (depth_stencil_mode_ == mode)
             return;
-        glTexParameteri(Target, GL_DEPTH_STENCIL_TEXTURE_MODE, toGLConstant(mode));
+        glTexParameteri(toGLConstant(Target), GL_DEPTH_STENCIL_TEXTURE_MODE, toGLConstant(mode));
         depth_stencil_mode_ = mode;
     }
 
@@ -361,7 +307,7 @@ public:
     {
         if (compare_func_ == func)
             return;
-        glTexParameteri(Target, GL_TEXTURE_COMPARE_FUNC, toGLConstant(func));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_COMPARE_FUNC, toGLConstant(func));
         compare_func_ = func;
     }
 
@@ -374,7 +320,7 @@ public:
     {
         if (min_level_of_detail_ == level)
             return;
-        glTexParameterf(Target, GL_TEXTURE_MIN_LOD, level);
+        glTexParameterf(toGLConstant(Target), GL_TEXTURE_MIN_LOD, level);
         min_level_of_detail_ = level;
     }
 
@@ -387,7 +333,7 @@ public:
     {
         if (max_level_of_detail_ == level)
             return;
-        glTexParameterf(Target, GL_TEXTURE_MAX_LOD, level);
+        glTexParameterf(toGLConstant(Target), GL_TEXTURE_MAX_LOD, level);
         max_level_of_detail_ = level;
     }
 
@@ -400,7 +346,7 @@ public:
     {
         if (level_of_detail_bias_ == bias)
             return;
-        glTexParameterf(Target, GL_TEXTURE_LOD_BIAS, bias);
+        glTexParameterf(toGLConstant(Target), GL_TEXTURE_LOD_BIAS, bias);
         level_of_detail_bias_ = bias;
     }
 
@@ -413,7 +359,7 @@ public:
     {
         if (mag_filter_ == mag_filter)
             return;
-        glTexParameteri(Target, GL_TEXTURE_MAG_FILTER, toGLConstant(mag_filter));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MAG_FILTER, toGLConstant(mag_filter));
         mag_filter_ = mag_filter;
     }
 
@@ -426,7 +372,7 @@ public:
     {
         if (min_filter_ == min_filter)
             return;
-        glTexParameteri(Target, GL_TEXTURE_MIN_FILTER, toGLConstant(min_filter));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MIN_FILTER, toGLConstant(min_filter));
         min_filter_ = min_filter;
     }
 
@@ -439,7 +385,7 @@ public:
     {
         if (base_level_ == base_level)
             return;
-        glTexParameteri(Target, GL_TEXTURE_BASE_LEVEL, base_level);
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_BASE_LEVEL, base_level);
         base_level_ = base_level;
     }
 
@@ -452,7 +398,7 @@ public:
     {
         if (max_level_ == max_level)
             return;
-        glTexParameteri(Target, GL_TEXTURE_MAX_LEVEL, max_level);
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MAX_LEVEL, max_level);
         max_level_ = max_level;
     }
 
@@ -465,7 +411,7 @@ public:
     {
         if (swizzle_red_ == swizzle)
             return;
-        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_R, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_R, toGLConstant(swizzle));
         swizzle_red_ = swizzle;
     }
 
@@ -478,7 +424,7 @@ public:
     {
         if (swizzle_green_ == swizzle)
             return;
-        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_G, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_G, toGLConstant(swizzle));
         swizzle_green_ = swizzle;
     }
 
@@ -491,7 +437,7 @@ public:
     {
         if (swizzle_blue_ == swizzle)
             return;
-        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_B, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_B, toGLConstant(swizzle));
         swizzle_blue_ = swizzle;
     }
 
@@ -504,7 +450,7 @@ public:
     {
         if (swizzle_alpha_ == swizzle)
             return;
-        glTexParameteri(Target, GL_TEXTURE_SWIZZLE_A, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_A, toGLConstant(swizzle));
         swizzle_alpha_ = swizzle;
     }
 
@@ -517,7 +463,7 @@ public:
     {
         if (wrap_s_ == wrap)
             return;
-        glTexParameteri(Target, GL_TEXTURE_WRAP_S, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_S, toGLConstant(wrap));
         wrap_s_ = wrap;
     }
 
@@ -530,7 +476,7 @@ public:
     {
         if (wrap_t_ == wrap)
             return;
-        glTexParameteri(Target, GL_TEXTURE_WRAP_T, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_T, toGLConstant(wrap));
         wrap_t_ = wrap;
     }
 
@@ -543,7 +489,7 @@ public:
     {
         if (wrap_r_ == wrap)
             return;
-        glTexParameteri(Target, GL_TEXTURE_WRAP_R, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_R, toGLConstant(wrap));
         wrap_r_ = wrap;
     }
 
@@ -563,7 +509,7 @@ protected:
         GLint mipmap_level = 0)
     {
         glTexSubImage<Dim>(
-            Target,
+            toGLConstant(Target),
             mipmap_level,
             static_cast<GLint>(offset[Indices])...,
             static_cast<GLsizei>(Indices < image.size().size() ? image.size()[Indices] : 1)...,
@@ -601,8 +547,8 @@ private:
 };
 
 /// <summary>Base class for all regluar, non-multisampled textures.</summary>
-template <std::size_t Dim, BindingPoint TextureBindingPoint>
-class TextureBaseRegular : public TextureBaseTyped<Dim, TextureBindingPoint> {
+template <std::size_t Dim, TextureTarget Target>
+class TextureBaseRegular : public TextureBaseTyped<Dim, Target> {
 public:
     /// <summary>Creates an empty texture.</summary>
     TextureBaseRegular() = default;
@@ -654,7 +600,7 @@ public:
         this->bind();
         storage(std::make_index_sequence<Dim>(), image.size(), mipmap_levels, internal_format);
         this->subImage(std::make_index_sequence<Dim>(), image);
-        glGenerateMipmap(TextureBaseTyped<Dim, TextureBindingPoint>::Target);
+        glGenerateMipmap(toGLConstant(Target));
     }
 
 private:
@@ -692,7 +638,7 @@ private:
         PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         glTexStorage<Dim>(
-            TextureBaseTyped<Dim, TextureBindingPoint>::Target,
+            toGLConstant(Target),
             mipmap_levels.value_or(maxMipmapLevelsFor(size)),
             toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...);
@@ -701,8 +647,8 @@ private:
 };
 
 /// <summary>Base class for all multisampled textures.</summary>
-template <std::size_t Dim, BindingPoint TextureBindingPoint>
-class TextureBaseMultisample : public TextureBaseTyped<Dim, TextureBindingPoint> {
+template <std::size_t Dim, TextureTarget Target>
+class TextureBaseMultisample : public TextureBaseTyped<Dim, Target> {
 public:
     /// <summary>Creates an empty multisampled texture.</summary>
     TextureBaseMultisample() = default;
@@ -767,7 +713,7 @@ private:
         PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         glTexStorageMultisample<Dim>(
-            TextureBaseTyped<Dim, TextureBindingPoint>::Target,
+            toGLConstant(Target),
             samples,
             toGLConstant(internal_format),
             static_cast<GLsizei>(size[Indices])...,
@@ -778,49 +724,90 @@ private:
 
 }
 
-class Texture1D : public detail::TextureBaseRegular<1, BindingPoint::Texture1D> {
+class Texture1D : public detail::TextureBaseRegular<1, TextureTarget::Texture1D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class Texture1DArray : public detail::TextureBaseRegular<2, BindingPoint::Texture1DArray> {
+class Texture1DArray : public detail::TextureBaseRegular<2, TextureTarget::Texture1DArray> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class Texture2D : public detail::TextureBaseRegular<2, BindingPoint::Texture2D> {
+class Texture2D : public detail::TextureBaseRegular<2, TextureTarget::Texture2D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class Texture2DArray : public detail::TextureBaseRegular<3, BindingPoint::Texture2DArray> {
+class Texture2DArray : public detail::TextureBaseRegular<3, TextureTarget::Texture2DArray> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class Texture2DMultisample : public detail::TextureBaseMultisample<2, BindingPoint::Texture2DMultisample> {
+class Texture2DMultisample : public detail::TextureBaseMultisample<2, TextureTarget::Texture2DMultisample> {
 public:
     using TextureBaseMultisample::TextureBaseMultisample;
 };
 
-class Texture2DMultisampleArray : public detail::TextureBaseMultisample<3, BindingPoint::Texture2DMultisampleArray> {
+class Texture2DMultisampleArray : public detail::TextureBaseMultisample<3, TextureTarget::Texture2DMultisampleArray> {
 public:
     using TextureBaseMultisample::TextureBaseMultisample;
 };
 
-class Texture3D : public detail::TextureBaseRegular<3, BindingPoint::Texture3D> {
+class Texture3D : public detail::TextureBaseRegular<3, TextureTarget::Texture3D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class TextureCubeMap : public detail::TextureBaseRegular<2, BindingPoint::TextureCubeMap> {
+class TextureCubeMap : public detail::TextureBaseRegular<2, TextureTarget::TextureCubeMap> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
 
-class TextureRectangle : public detail::TextureBaseRegular<2, BindingPoint::TextureRectangle> {
+class TextureRectangle : public detail::TextureBaseRegular<2, TextureTarget::TextureRectangle> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
+
+inline GLint ObjectContext<ObjectType::Texture>::activeSlot()
+{
+    return active_slot_;
+}
+
+inline void ObjectContext<ObjectType::Texture>::setActiveSlot(GLint active_slot)
+{
+    if (active_slot_ == active_slot)
+        return;
+    glActiveTexture(GL_TEXTURE0 + active_slot);
+    active_slot_ = active_slot;
+}
+
+inline GLint ObjectContext<ObjectType::Texture>::bind(const TextureBase& texture)
+{
+    if (texture.active_slot_) {
+        setActiveSlot(*texture.active_slot_);
+        return *texture.active_slot_;
+    }
+    if (first_free_slot_ == active_textures_.end())
+        throw TextureError("Cannot bind texture, as all slots are in use.");
+    GLint slot = static_cast<GLint>(std::distance(active_textures_.begin(), first_free_slot_));
+    setActiveSlot(slot);
+    glBindTexture(toGLConstant(texture.target_), texture.handle());
+    *first_free_slot_ = texture.handle();
+    texture.active_slot_ = slot;
+    first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), GLuint(0));
+    return slot;
+}
+
+inline void ObjectContext<ObjectType::Texture>::release(const TextureBase& texture)
+{
+    if (!texture.active_slot_)
+        return;
+    auto texture_to_free = std::next(active_textures_.begin(), static_cast<std::size_t>(*texture.active_slot_));
+    *texture_to_free = 0;
+    texture.active_slot_ = std::nullopt;
+    if (texture_to_free < first_free_slot_)
+        first_free_slot_ = texture_to_free;
+}
 
 }

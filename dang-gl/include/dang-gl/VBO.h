@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Buffer.h"
 #include "GLConstants.h"
-#include "Object.h"
 
 namespace dang::gl
 {
@@ -22,6 +22,7 @@ enum class BufferUsageHint {
     COUNT
 };
 
+/// <summary>Maps the various buffer usage hints to their GL-Constants.</summary>
 template <>
 constexpr dutils::EnumArray<BufferUsageHint, GLenum> GLConstants<BufferUsageHint> = {
     GL_STREAM_DRAW,
@@ -40,62 +41,8 @@ class VBOBindError : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
-/// <summary>A custom binding class for VBOs, which supports locking.</summary>
-class VBOBinding : public ObjectBinding<> {
-public:
-    using ObjectBinding::ObjectBinding;
-
-    template <typename TInfo>
-    void bind(const ObjectBase& object)
-    {
-        if (lock_count_ > 0)
-            throw VBOBindError("The current VBO is locked and cannot be rebound.");
-        ObjectBinding::bind<TInfo>(object);
-    }
-
-    void lock();
-    void unlock();
-
-private:
-    int lock_count_ = 0;
-};
-
-/// <summary>Info struct to create, destroy and bind VBOs.</summary>
-struct VBOInfo : public ObjectInfo {
-    static GLuint create();
-    static void destroy(GLuint handle);
-    static void bind(GLuint handle);
-
-    static constexpr ObjectType ObjectType = ObjectType::Buffer;
-
-    using Binding = VBOBinding;
-    static constexpr BindingPoint BindingPoint = BindingPoint::ArrayBuffer;
-};
-
 template <typename T>
 class VBO;
-
-/// <summary>Automatically binds and locks a VBO, to prevent other VBOs from being bound.</summary>
-template <typename T>
-class VBOLock {
-public:
-    /// <summary>Binds and locks the given VBO.</summary>
-    VBOLock(VBO<T>& vbo)
-        : vbo_(vbo)
-    {
-        vbo.bind();
-        vbo.binding().lock();
-    }
-
-    /// <summary>Unlocks the binding, but leaves the VBO bound.</summary>
-    ~VBOLock()
-    {
-        vbo_.binding().unlock();
-    }
-
-private:
-    VBO<T>& vbo_;
-};
 
 /// <summary>Provides a random access container interface to a mapped VBO.</summary>
 template <typename T>
@@ -255,13 +202,13 @@ public:
 
 private:
     VBO<T>& vbo_;
-    VBOLock<T> lock_{ vbo_ };
+    // TODO: VBOLock<T> lock_{ vbo_ };
     T* data_;
 };
 
 /// <summary>A vertex buffer object for a given data struct.</summary>
 template <typename T>
-class VBO : public Object<VBOInfo> {
+class VBO : public BufferBase<BufferTarget::ArrayBuffer> {
 public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
