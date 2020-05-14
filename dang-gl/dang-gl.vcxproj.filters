@@ -13,168 +13,294 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\GLFW">
+      <UniqueIdentifier>{3f23eed7-840a-41f8-a40d-ab275e7fa765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{92ab2307-3cb0-4d02-8ea6-1b1483de1e32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Other">
+      <UniqueIdentifier>{ab4d38f9-9bd5-4313-b8bb-d11f248ba864}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\Camera">
+      <UniqueIdentifier>{abe30dcc-74a0-4932-83a2-3e22f4feb003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\Image">
+      <UniqueIdentifier>{6641c050-4802-44f1-9f93-cecbec8d3973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Maths">
+      <UniqueIdentifier>{feb6fb2d-20ad-4061-a774-2c172b2dacdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL">
+      <UniqueIdentifier>{c5c6e428-6801-4f3c-bdaf-8640847d8eb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\State">
+      <UniqueIdentifier>{d357b7d3-9cc7-4e53-ac7e-fada9b7c9e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects">
+      <UniqueIdentifier>{681381d8-bfd6-4ebf-994e-c5927020d33e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Program">
+      <UniqueIdentifier>{4f431750-2e75-4a3b-9cf3-f05d6bb1dd11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Buffer">
+      <UniqueIdentifier>{22ea92a2-8105-43c7-b438-b1fd0a98040b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Texture">
+      <UniqueIdentifier>{7ba5ab30-9171-4b50-81ff-c39f19933373}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\VertexArray">
+      <UniqueIdentifier>{bcca2870-f0ce-48ff-a6bf-376516d4fe4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Query">
+      <UniqueIdentifier>{7308320d-f2d8-4717-97f9-a42da66579fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\ProgramPipeline">
+      <UniqueIdentifier>{9cb3f3ad-a3d7-4ef5-8971-40782dbfb293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\TransformFeedback">
+      <UniqueIdentifier>{c3792fc9-7119-4d5a-9b78-3c71ca626c5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Sampler">
+      <UniqueIdentifier>{38230738-0c57-4a3c-8934-916c1417ac82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Renderbuffer">
+      <UniqueIdentifier>{33f28814-06a3-4674-ae99-753f107b8075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Framebuffer">
+      <UniqueIdentifier>{fba78c61-8784-496b-86d0-f34e6973dfe5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\General">
+      <UniqueIdentifier>{ba6f06a2-2003-49c7-b654-ad28954f9fbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{215e61b4-7acd-418e-a519-d71ccdb77cc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL">
+      <UniqueIdentifier>{32cea222-8d88-484d-8f31-41603108154d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\State">
+      <UniqueIdentifier>{128efdb9-bac4-46f1-afff-7264f38f1112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects">
+      <UniqueIdentifier>{f83310b2-4f0f-45d1-820e-adc8dfbad38c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GLFW">
+      <UniqueIdentifier>{405138fc-3d23-4914-a1a5-243671ea52e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\glad">
+      <UniqueIdentifier>{3bbe069e-54bc-407a-9e1a-340e025f7ff7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\glad">
+      <UniqueIdentifier>{bd3eeed3-0dcc-44b3-b262-e7784155c242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Camera">
+      <UniqueIdentifier>{be0fe5ab-0ff3-4079-b207-cc32330893e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Image">
+      <UniqueIdentifier>{29b10d76-0243-4816-bbe6-d3e60aad0768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Other">
+      <UniqueIdentifier>{cadec6b4-7713-4766-8ebb-0a2e6c064378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Buffer">
+      <UniqueIdentifier>{ce22f668-273e-43ae-a4af-18e8fe8fc5c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Framebuffer">
+      <UniqueIdentifier>{8f839213-16d7-4c92-99f7-4070d29d5dd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Renderbuffer">
+      <UniqueIdentifier>{449609da-d8c3-4a27-8706-80608cfc30c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Sampler">
+      <UniqueIdentifier>{c149edf1-ddeb-48c2-ab21-7222d325a6f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\TransformFeedback">
+      <UniqueIdentifier>{d86657ea-1650-4324-8bd1-18d7624fb1f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\ProgramPipeline">
+      <UniqueIdentifier>{869eb3da-e355-4be2-8d85-e8c1ccb1d627}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Query">
+      <UniqueIdentifier>{c7bee0f6-8520-4e1e-bba2-333f0db69af5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\VertexArray">
+      <UniqueIdentifier>{93dbaea8-628d-4563-b8ec-e1c2ca627df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Texture">
+      <UniqueIdentifier>{fce5136d-4f3a-409b-979d-ec44109aa698}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Program">
+      <UniqueIdentifier>{46cc17a6-1882-43a9-b049-fbdaff62b091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\ObjectBase">
+      <UniqueIdentifier>{50e53857-d379-443b-9a9f-bd90733b3dac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\ObjectBase">
+      <UniqueIdentifier>{23ff49cd-4e3f-47e6-89c4-bbb6056025c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GLFW.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Program.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ObjectBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VAO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Monitor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Renderable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\State.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\OpenGL\State</Filter>
     </ClCompile>
     <ClCompile Include="src\StateTypes.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\OpenGL\State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ObjectBase.cpp">
+      <Filter>Source Files\OpenGL\ObjectBase</Filter>
     </ClCompile>
     <ClCompile Include="src\ObjectContext.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\OpenGL\ObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GLFW.cpp">
+      <Filter>Source Files\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="src\glad.c">
+      <Filter>Source Files\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input.cpp">
+      <Filter>Source Files\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Monitor.cpp">
+      <Filter>Source Files\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>Source Files\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Source Files\Components\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderable.cpp">
+      <Filter>Source Files\Components\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Transform.cpp">
+      <Filter>Source Files\Components\Camera</Filter>
     </ClCompile>
     <ClCompile Include="src\PNGLoader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Components\Image</Filter>
     </ClCompile>
-    <ClCompile Include="src\RBO.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\pch.cpp">
+      <Filter>Source Files\Other</Filter>
     </ClCompile>
     <ClCompile Include="src\FBO.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Program.cpp">
+      <Filter>Source Files\OpenGL\Objects\Program</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RBO.cpp">
+      <Filter>Source Files\OpenGL\Objects\Renderbuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VAO.cpp">
+      <Filter>Source Files\OpenGL\Objects\VertexArray</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dang-gl\pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\glad\glad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\KHR\khrplatform.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\Window.h">
+      <Filter>Header Files\GLFW</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\GLFW.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Program.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\glad\glad.h">
+      <Filter>Header Files\glad</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\UniformWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\VBO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\VAO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Input.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\KHR\khrplatform.h">
+      <Filter>Header Files\glad</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Monitor.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Transform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Renderable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\State.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\StateTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\PixelInternalFormat.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\Input.h">
+      <Filter>Header Files\GLFW</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\PNGLoader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\PixelFormat.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\Object.h">
+      <Filter>Header Files\OpenGL\ObjectBase</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\PixelType.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\ObjectBase.h">
+      <Filter>Header Files\OpenGL\ObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectContext.h">
+      <Filter>Header Files\OpenGL\ObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectType.h">
+      <Filter>Header Files\OpenGL\ObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Camera.h">
+      <Filter>Header Files\Components\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Renderable.h">
+      <Filter>Header Files\Components\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\State.h">
+      <Filter>Header Files\OpenGL\State</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\StateTypes.h">
+      <Filter>Header Files\OpenGL\State</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Pixel.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Components\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\PixelFormat.h">
+      <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Image.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\MathConstants.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\PixelType.h">
+      <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\GLConstants.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\Transform.h">
+      <Filter>Header Files\Components\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\MathTypes.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\pch.h">
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\DataTypes.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\Program.h">
+      <Filter>Header Files\OpenGL\Objects\Program</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\UniformWrapper.h">
+      <Filter>Header Files\OpenGL\Objects\Program</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Buffer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\OpenGL\Objects\Buffer</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\RBO.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\dang-gl\VBO.h">
+      <Filter>Header Files\OpenGL\Objects\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Texture.h">
+      <Filter>Header Files\OpenGL\Objects\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\VAO.h">
+      <Filter>Header Files\OpenGL\Objects\VertexArray</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\FBO.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\RBO.h">
+      <Filter>Header Files\OpenGL\Objects\Renderbuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\DataTypes.h">
+      <Filter>Header Files\OpenGL\Objects\Program</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\MathConstants.h">
+      <Filter>Header Files\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\MathTypes.h">
+      <Filter>Header Files\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\PixelInternalFormat.h">
+      <Filter>Header Files\OpenGL\General</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\GLConstants.h">
+      <Filter>Header Files\OpenGL\General</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
