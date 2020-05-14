@@ -4,6 +4,7 @@
 #include "Buffer.h"
 #include "GLFW.h"
 #include "Program.h"
+#include "RBO.h"
 #include "Texture.h"
 #include "VAO.h"
 

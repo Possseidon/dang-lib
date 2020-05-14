@@ -257,6 +257,7 @@
     <ClInclude Include="include\dang-gl\PixelInternalFormat.h" />
     <ClInclude Include="include\dang-gl\PixelType.h" />
     <ClInclude Include="include\dang-gl\PNGLoader.h" />
+    <ClInclude Include="include\dang-gl\RBO.h" />
     <ClInclude Include="include\dang-gl\Texture.h" />
     <ClInclude Include="include\dang-gl\Image.h" />
     <ClInclude Include="include\dang-gl\Transform.h" />
@@ -277,6 +278,7 @@
     <ClCompile Include="src\PNGLoader.cpp" />
     <ClCompile Include="src\ObjectContext.cpp" />
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\RBO.cpp" />
     <ClCompile Include="src\Renderable.cpp" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Input.cpp" />
