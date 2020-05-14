@@ -2,6 +2,7 @@
 #include "Window.h"
 
 #include "Buffer.h"
+#include "FBO.h"
 #include "GLFW.h"
 #include "Program.h"
 #include "RBO.h"

@@ -242,6 +242,7 @@
   <ItemGroup>
     <ClInclude Include="include\dang-gl\Buffer.h" />
     <ClInclude Include="include\dang-gl\Camera.h" />
+    <ClInclude Include="include\dang-gl\FBO.h" />
     <ClInclude Include="include\dang-gl\GLConstants.h" />
     <ClInclude Include="include\dang-gl\MathConstants.h" />
     <ClInclude Include="include\dang-gl\DataTypes.h" />
@@ -275,6 +276,7 @@
     <ClInclude Include="include\dang-gl\StateTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\FBO.cpp" />
     <ClCompile Include="src\PNGLoader.cpp" />
     <ClCompile Include="src\ObjectContext.cpp" />
     <ClCompile Include="src\Camera.cpp" />
