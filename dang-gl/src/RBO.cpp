@@ -17,7 +17,7 @@ RBO::~RBO()
     context().reset(handle());
 }
 
-void RBO::bind()
+void RBO::bind() const
 {
     context().bind(handle());
 }
@@ -47,6 +47,7 @@ void RBO::regenerate(dmath::svec2 size, PixelInternalFormat format, GLsizei samp
 
 void RBO::storage(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
 {
+    bind();
     glRenderbufferStorageMultisample(
         GL_RENDERBUFFER,
         samples,

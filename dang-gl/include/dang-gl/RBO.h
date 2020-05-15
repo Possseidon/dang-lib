@@ -45,7 +45,7 @@ public:
     ~RBO();
 
     /// <summary>Bind the renderbuffer.</summary>
-    void bind();
+    void bind() const;
 
     /// <summary>Returns the width and height of the renderbuffer.</summary>
     dmath::svec2 size() const;
