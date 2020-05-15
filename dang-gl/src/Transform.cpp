@@ -32,7 +32,7 @@ const dquat& Transform::fullTransform()
     return *full_transform_;
 }
 
-std::shared_ptr<Transform> Transform::parent() const
+SharedTransform Transform::parent() const
 {
     return parent_;
 }
