@@ -9,7 +9,13 @@ RBO::RBO(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
     , format_(format)
     , samples_(samples)
 {
-    storage(size, format, samples);
+    bind();
+    glRenderbufferStorageMultisample(
+        GL_RENDERBUFFER,
+        samples,
+        toGLConstant(format),
+        static_cast<GLsizei>(size.x()),
+        static_cast<GLsizei>(size.y()));
 }
 
 RBO::~RBO()
@@ -35,25 +41,6 @@ PixelInternalFormat RBO::format() const
 GLsizei RBO::samples() const
 {
     return samples_;
-}
-
-void RBO::regenerate(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
-{
-    size_ = size;
-    format_ = format;
-    samples_ = samples;
-    storage(size, format, samples);
-}
-
-void RBO::storage(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
-{
-    bind();
-    glRenderbufferStorageMultisample(
-        GL_RENDERBUFFER,
-        samples,
-        toGLConstant(format),
-        static_cast<GLsizei>(size.x()),
-        static_cast<GLsizei>(size.y()));
 }
 
 }

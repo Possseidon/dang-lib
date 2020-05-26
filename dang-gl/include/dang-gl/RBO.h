@@ -40,7 +40,7 @@ private:
 class RBO : public Object<ObjectType::Renderbuffer> {
 public:
     /// <summary>Initializes the renderbuffer with the given size, format and optional multisampling-count.</summary>
-    explicit RBO(dmath::svec2 size = {}, PixelInternalFormat format = PixelInternalFormat::RGBA8, GLsizei samples = 0);
+    explicit RBO(dmath::svec2 size, PixelInternalFormat format = PixelInternalFormat::RGBA8, GLsizei samples = 0);
     /// <summary>Resets the bound renderbuffer of the context, in case of the renderbuffer still being bound.</summary>
     ~RBO();
 
@@ -54,13 +54,7 @@ public:
     /// <summary>Returns the sample count for multisampled renderbuffers or zero for non-multisampled ones.</summary>
     GLsizei samples() const;
 
-    /// <summary>Regenerates an existing renderbuffer with new size, format and optional multisampling-count.</summary>
-    void regenerate(dmath::svec2 size = {}, PixelInternalFormat format = PixelInternalFormat::RGBA8, GLsizei samples = 0);
-
 private:
-    /// <summary>Delegates to glRenderbufferStorageMultisample with the given parameters.</summary>
-    void storage(dmath::svec2 size, PixelInternalFormat format, GLsizei samples);
-
     dmath::svec2 size_;
     PixelInternalFormat format_;
     GLsizei samples_;
