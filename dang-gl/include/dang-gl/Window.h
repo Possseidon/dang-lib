@@ -429,7 +429,7 @@ public:
 
     /// <summary>Activates and updates the window, also triggering the onUpdate event.</summary>
     void update();
-    /// <summary>Activates and renders the window using the onRender event.</summary>
+    /// <summary>Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by the onRender event.</summary>
     void render();
     /// <summary>Polls window events and clears/updates the text input.</summary>
     void pollEvents();
