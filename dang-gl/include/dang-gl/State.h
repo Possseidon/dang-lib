@@ -348,6 +348,7 @@ public:
     detail::StateFunc<&glClearStencil, GLint> clear_stencil{ *this, 0 };
 
     detail::Constant<GLint, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS> max_combined_texture_image_units;
+    detail::Constant<GLint, GL_MAX_COLOR_ATTACHMENTS> max_color_attachments;
 
 private:
     /// <summary>If the property hasn't been backed up yet, it gets added to the top of the state backup stack.</summary>
