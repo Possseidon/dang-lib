@@ -236,12 +236,12 @@ public:
     /// <summary>Returns the current position of the window on the virtual screen.</summary>
     dmath::ivec2 pos() const;
     /// <summary>Moves the window to the given position on the virtual screen.</summary>
-    void move(dmath::ivec2 new_pos) const;
+    void move(dmath::ivec2 new_pos);
 
     /// <summary>Returns the size of the window.</summary>
     dmath::ivec2 size() const;
     /// <summary>Sets the window size to the given value.</summary>
-    void resize(dmath::ivec2 new_size) const;
+    void resize(dmath::ivec2 new_size);
 
     /// <summary>Returns the size of the framebuffer in pixels.</summary>
     dmath::ivec2 framebufferSize() const;
@@ -260,12 +260,12 @@ public:
     /// <summary>Puts the window in fullscreen mode on a specific monitor.</summary>
     void makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size = std::nullopt, std::optional<int> refresh_rate = std::nullopt);
     /// <summary>Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.</summary>
-    void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt, std::optional<dmath::ivec2> size = std::nullopt) const;
+    void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt, std::optional<dmath::ivec2> size = std::nullopt);
 
     /// <summary>Returns wether the user can resize the window.</summary>
     bool isResizable() const;
     /// <summary>Sets, wether the user should be able to freely resize the window to their needs.</summary>
-    void setResizable(bool resizable) const;
+    void setResizable(bool resizable);
 
     /// <summary>Returns the optional minimum width of the window.</summary>
     std::optional<int> minWidth() const;
@@ -283,7 +283,7 @@ public:
     void setMaxSize(std::optional<int> max_width, std::optional<int> max_height);
 
     /// <summary>Adjusts the OpenGL viewport to current size of the framebuffer.</summary>
-    void adjustViewport() const;
+    void adjustViewport();
     /// <summary>Returns, wether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
     bool autoAdjustViewport() const;
     /// <summary>Sets, wether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
@@ -304,43 +304,43 @@ public:
     /// <summary>Returns the opcacity of the window.</summary>
     float opacity() const;
     /// <summary>Sets the opactity of the window.</summary>
-    void setOpacity(float new_opacity) const;
+    void setOpacity(float new_opacity);
 
     /// <summary>Returns, wether the window is currently iconified/minimized.</summary>
     bool isIconified() const;
     /// <summary>Iconifies/minimizes the window.</summary>
-    void iconify() const;
+    void iconify();
     /// <summary>Returns, wether a fullscreen window should iconify/minimize on lost focus.</summary>
     bool autoIconify() const;
     /// <summary>Sets, wether a fullscreen window should iconify/minimize on lost focus.</summary>
-    void setAutoIconify(bool auto_iconify) const;
+    void setAutoIconify(bool auto_iconify);
 
     /// <summary>Returns, wether the window is maximized.</summary>
     bool isMaximized() const;
     /// <summary>Maximizes the window.</summary>
-    void maximize() const;
+    void maximize();
 
     /// <summary>Restores iconified or maximized windows.</summary>
-    void restore() const;
+    void restore();
 
     /// <summary>Returns, wether the window is visible.</summary>
     bool isVisible() const;
     /// <summary>Hides the window, making it invisible.</summary>
-    void hide() const;
+    void hide();
     /// <summary>Shows the window, making it visible again.</summary>
-    void show() const;
+    void show();
 
     /// <summary>Returns, wether the window is currently focused.</summary>
     bool isFocused() const;
     /// <summary>Force the window to focus.</summary>
-    void focus() const;
+    void focus();
     /// <summary>Returns, wether the window should obtain focus when shown.</summary>
     bool focusOnShow() const;
     /// <summary>Sets, wether the window should obtain focus when shown.</summary>
-    void setFocusOnShow(bool focus_on_show) const;
+    void setFocusOnShow(bool focus_on_show);
 
     /// <summary>Requests for attention, usually resulting in the window blinking in the taskbar.</summary>
-    void requestAttention() const;
+    void requestAttention();
 
     /// <summary>Returns, wether the mouse is currently hovering over the content area of the window without being obstructed.</summary>
     bool isHovered() const;
@@ -348,12 +348,12 @@ public:
     /// <summary>Returns, wether the window is decorated with a title bar.</summary>
     bool isDecorated() const;
     /// <summary>Decorates or undecorates the window with a title bar.</summary>
-    void setDecorated(bool decorated) const;
+    void setDecorated(bool decorated);
 
     /// <summary>Returns, wether the window will always stay on top.</summary>
     bool isFloating() const;
     /// <summary>Sets, wether the window should always stay on top.</summary>
-    void setFloating(bool floating) const;
+    void setFloating(bool floating);
 
     /// <summary>Returns, wether the window has a transparent framebuffer.</summary>
     bool transparentFramebuffer() const;
@@ -391,27 +391,27 @@ public:
     /// <remarks>If the cursor is disabled, the position is unbounded.</remarks>
     dmath::dvec2 cursorPos() const;
     /// <summary>Sets the cursor position to the given value, using the top left of the window as origin.</summary>
-    void setCursorPos(dmath::dvec2 cursor_pos) const;
+    void setCursorPos(dmath::dvec2 cursor_pos);
 
     /// <summary>Wether the cursor is normal, hidden or disabled.</summary>
     CursorMode cursorMode() const;
     /// <summary>Sets, wether the cursor should be normal, hidden or disabled.</summary>
-    void setCursorMode(CursorMode cursor_mode) const;
+    void setCursorMode(CursorMode cursor_mode);
 
     /// <summary>Returns, wether keys should stay pressed until isKeyDown is called on them.</summary>
     bool stickyKeys() const;
     /// <summary>Sets, wether keys should stay pressed until isKeyDown is called on them.</summary>
-    void setStickyKeys(bool sticky_keys) const;
+    void setStickyKeys(bool sticky_keys);
 
     /// <summary>Returns, wether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
     bool stickyButtons() const;
     /// <summary>Sets, wether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
-    void setStickyButtons(bool sticky_buttons) const;
+    void setStickyButtons(bool sticky_buttons);
 
     /// <summary>Returns, wether the state of caps- and scroll-lock should be included in key events.</summary>
     bool lockKeyModifiers() const;
     /// <summary>Sets, wether the state of caps- and scroll-lock should be included in key events.</summary>
-    void setLockKeyModifiers(bool lock_key_modifiers) const;
+    void setLockKeyModifiers(bool lock_key_modifiers);
 
     /// <summary>For a disabled cursor returns, wether the mouse motion should be captured unscaled and unaccelerated.</summary>
     bool rawMouseMotion() const;
@@ -445,7 +445,7 @@ public:
     float fps() const;
     /// <summary>Sets the V-Sync mode of the window to the given value.</summary>
     void setVSync(VSync vsync);
-    /// <summary>Returns, wether the adaptive V-Sync is supported.</summary>
+    /// <summary>Activates the window and returns, wether the context supports adaptive V-Sync.</summary>
     bool supportsAdaptiveVSync();
 
     /// <summary>Returns, wether the window should close.</summary>

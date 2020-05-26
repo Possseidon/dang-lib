@@ -125,7 +125,7 @@ dmath::ivec2 Window::pos() const
     return result;
 }
 
-void Window::move(dmath::ivec2 new_pos) const
+void Window::move(dmath::ivec2 new_pos)
 {
     glfwSetWindowPos(handle_, new_pos.x(), new_pos.y());
 }
@@ -137,7 +137,7 @@ dmath::ivec2 Window::size() const
     return result;
 }
 
-void Window::resize(dmath::ivec2 new_size) const
+void Window::resize(dmath::ivec2 new_size)
 {
     glfwSetWindowSize(handle_, new_size.x(), new_size.y());
 }
@@ -176,7 +176,7 @@ void Window::makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size, s
     }
 }
 
-void Window::restoreFullscreen(std::optional<dmath::ivec2> pos, std::optional<dmath::ivec2> size) const
+void Window::restoreFullscreen(std::optional<dmath::ivec2> pos, std::optional<dmath::ivec2> size)
 {
     dmath::ivec2 actual_pos = pos.value_or(fullscreen_restore_pos_);
     dmath::ivec2 actual_size = size.value_or(fullscreen_restore_size_);
@@ -188,7 +188,7 @@ bool Window::isResizable() const
     return glfwGetWindowAttrib(handle_, GLFW_RESIZABLE);
 }
 
-void Window::setResizable(bool resizable) const
+void Window::setResizable(bool resizable)
 {
     glfwSetWindowAttrib(handle_, GLFW_RESIZABLE, resizable);
 }
@@ -206,7 +206,7 @@ float Window::aspect() const
     return static_cast<float>(framebuffer_size.x()) / framebuffer_size.y();
 }
 
-void Window::adjustViewport() const
+void Window::adjustViewport()
 {
     dmath::ivec2 framebuffer_size = framebufferSize();
     glViewport(0, 0, framebuffer_size.x(), framebuffer_size.y());
@@ -304,7 +304,7 @@ float Window::opacity() const
     return glfwGetWindowOpacity(handle_);
 }
 
-void Window::setOpacity(float new_opacity) const
+void Window::setOpacity(float new_opacity)
 {
     glfwSetWindowOpacity(handle_, new_opacity);
 }
@@ -314,7 +314,7 @@ bool Window::isIconified() const
     return glfwGetWindowAttrib(handle_, GLFW_ICONIFIED);
 }
 
-void Window::iconify() const
+void Window::iconify()
 {
     glfwIconifyWindow(handle_);
 }
@@ -324,7 +324,7 @@ bool Window::autoIconify() const
     return glfwGetWindowAttrib(handle_, GLFW_AUTO_ICONIFY);
 }
 
-void Window::setAutoIconify(bool auto_iconify) const
+void Window::setAutoIconify(bool auto_iconify)
 {
     glfwSetWindowAttrib(handle_, GLFW_AUTO_ICONIFY, auto_iconify);
 }
@@ -334,12 +334,12 @@ bool Window::isMaximized() const
     return glfwGetWindowAttrib(handle_, GLFW_MAXIMIZED);
 }
 
-void Window::maximize() const
+void Window::maximize()
 {
     glfwMaximizeWindow(handle_);
 }
 
-void Window::restore() const
+void Window::restore()
 {
     glfwRestoreWindow(handle_);
 }
@@ -349,12 +349,12 @@ bool Window::isVisible() const
     return glfwGetWindowAttrib(handle_, GLFW_VISIBLE);
 }
 
-void Window::hide() const
+void Window::hide()
 {
     glfwHideWindow(handle_);
 }
 
-void Window::show() const
+void Window::show()
 {
     glfwShowWindow(handle_);
 }
@@ -364,7 +364,7 @@ bool Window::isFocused() const
     return glfwGetWindowAttrib(handle_, GLFW_FOCUSED);
 }
 
-void Window::focus() const
+void Window::focus()
 {
     glfwFocusWindow(handle_);
 }
@@ -374,12 +374,12 @@ bool Window::focusOnShow() const
     return glfwGetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW);
 }
 
-void Window::setFocusOnShow(bool focus_on_show) const
+void Window::setFocusOnShow(bool focus_on_show)
 {
     glfwSetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW, focus_on_show);
 }
 
-void Window::requestAttention() const
+void Window::requestAttention()
 {
     glfwRequestWindowAttention(handle_);
 }
@@ -394,7 +394,7 @@ bool Window::isDecorated() const
     return glfwGetWindowAttrib(handle_, GLFW_DECORATED);
 }
 
-void Window::setDecorated(bool decorated) const
+void Window::setDecorated(bool decorated)
 {
     glfwSetWindowAttrib(handle_, GLFW_DECORATED, decorated);
 }
@@ -404,7 +404,7 @@ bool Window::isFloating() const
     return glfwGetWindowAttrib(handle_, GLFW_FLOATING);
 }
 
-void Window::setFloating(bool floating) const
+void Window::setFloating(bool floating)
 {
     glfwSetWindowAttrib(handle_, GLFW_FLOATING, floating);
 }
@@ -484,7 +484,7 @@ dmath::dvec2 Window::cursorPos() const
     return result;
 }
 
-void Window::setCursorPos(dmath::dvec2 cursor_pos) const
+void Window::setCursorPos(dmath::dvec2 cursor_pos)
 {
     glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y());
 }
@@ -494,7 +494,7 @@ CursorMode Window::cursorMode() const
     return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR));
 }
 
-void Window::setCursorMode(CursorMode cursor_mode) const
+void Window::setCursorMode(CursorMode cursor_mode)
 {
     glfwSetInputMode(handle_, GLFW_CURSOR, static_cast<int>(cursor_mode));
 }
@@ -504,7 +504,7 @@ bool Window::stickyKeys() const
     return glfwGetInputMode(handle_, GLFW_STICKY_KEYS);
 }
 
-void Window::setStickyKeys(bool sticky_keys) const
+void Window::setStickyKeys(bool sticky_keys)
 {
     glfwSetInputMode(handle_, GLFW_STICKY_KEYS, sticky_keys);
 }
@@ -514,7 +514,7 @@ bool Window::stickyButtons() const
     return glfwGetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS);
 }
 
-void Window::setStickyButtons(bool sticky_buttons) const
+void Window::setStickyButtons(bool sticky_buttons)
 {
     glfwSetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS, sticky_buttons);
 }
@@ -524,7 +524,7 @@ bool Window::lockKeyModifiers() const
     return glfwGetInputMode(handle_, GLFW_LOCK_KEY_MODS);
 }
 
-void Window::setLockKeyModifiers(bool lock_key_modifiers) const
+void Window::setLockKeyModifiers(bool lock_key_modifiers)
 {
     glfwSetInputMode(handle_, GLFW_LOCK_KEY_MODS, lock_key_modifiers);
 }
