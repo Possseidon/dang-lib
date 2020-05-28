@@ -93,7 +93,7 @@ class Window;
 struct WindowInfo {
     GLFWwindow* createWindow() const;
 
-    dmath::ivec2 size;
+    dmath::ivec2 size = { 1280, 720 };
     int& width = size.x();
     int& height = size.y();
     std::string title;
