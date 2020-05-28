@@ -6,6 +6,7 @@
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"
 
+#include "ClearMask.h"
 #include "Input.h"
 #include "Monitor.h"
 #include "State.h"
@@ -224,8 +225,12 @@ public:
 
     /// <summary>Returns the handle of the GLFW window.</summary>
     GLFWwindow* handle() const;
+
     /// <summary>Provides access to the different states of the OpenGL context for this window.</summary>
     State& state();
+    /// <summary>Returns the context for a given GL-Object type.</summary>
+    template <ObjectType Type>
+    ObjectContext<Type>& objectContext();
 
     // TODO: C++20 use std::u8string
     /// <summary>Returns the title of the window.</summary>
@@ -281,18 +286,6 @@ public:
     void setMinSize(std::optional<int> min_width, std::optional<int> min_height);
     /// <summary>Sets the maximum size of the window to the given optional values.</summary>
     void setMaxSize(std::optional<int> max_width, std::optional<int> max_height);
-
-    /// <summary>Adjusts the OpenGL viewport to current size of the framebuffer.</summary>
-    void adjustViewport();
-    /// <summary>Returns, wether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
-    bool autoAdjustViewport() const;
-    /// <summary>Sets, wether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
-    void setAutoAdjustViewport(bool auto_adjust_viewport);
-
-    /// <summary>Returns, wether the window should call glFinish after SwapBuffers.</summary>
-    bool finishAfterSwap() const;
-    /// <summary>Sets, wether the window should call glFinish after SwapBuffers.</summary>
-    void setFinishAfterSwap(bool finish_after_swap);
 
     /// <summary>Returns the currently set optional width/height ratio to force the window into.</summary>
     std::optional<dmath::ivec2> aspectRatio() const;
@@ -377,6 +370,23 @@ public:
     /// <summary>Returns the robustness strategy, which the window was created with.</summary>
     ContextRobustness contextRobustness() const;
 
+    /// <summary>Returns the current clear mask, which is used at the beginning of a render call.</summary>
+    ClearMask clearMask() const;
+    /// <summary>Setst the clear mask, which is used at the beginning of a render call.</summary>
+    void setClearMask(ClearMask mask);
+
+    /// <summary>Returns, wether the window should call glFinish after SwapBuffers.</summary>
+    bool finishAfterSwap() const;
+    /// <summary>Sets, wether the window should call glFinish after SwapBuffers.</summary>
+    void setFinishAfterSwap(bool finish_after_swap);
+
+    /// <summary>Adjusts the OpenGL viewport to current size of the framebuffer.</summary>
+    void adjustViewport();
+    /// <summary>Returns, wether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
+    bool autoAdjustViewport() const;
+    /// <summary>Sets, wether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
+    void setAutoAdjustViewport(bool auto_adjust_viewport);
+
     // TODO: C++20 use std::u8string
     /// <summary>Returns a string of all typed characters since the last update.</summary>
     const std::string& textInput() const;
@@ -420,10 +430,6 @@ public:
     /// <summary>Returns, wether capturing raw mouse motion is supported by the system.</summary>
     static bool supportsRawMouseMotion();
 
-    /// <summary>Returns the context for a given GL-Object type.</summary>
-    template <ObjectType Type>
-    ObjectContext<Type>& objectContext();
-
     /// <summary>Activates the OpenGL context of the window.</summary>
     void activate();
 
@@ -439,6 +445,9 @@ public:
     /// <summary>Runs update-render-poll steps until the window should close.</summary>
     void run();
 
+    /// <summary>Returns, wether the window should close.</summary>
+    bool shouldClose() const;
+
     /// <summary>Returns the current delta time to the last call to update.</summary>
     float deltaTime() const;
     /// <summary>Returns the FPS, which is smoothed out to accommodate for both low and high framerates.</summary>
@@ -447,9 +456,6 @@ public:
     void setVSync(VSync vsync);
     /// <summary>Activates the window and returns, wether the context supports adaptive V-Sync.</summary>
     bool supportsAdaptiveVSync();
-
-    /// <summary>Returns, wether the window should close.</summary>
-    bool shouldClose() const;
 
     /// <summary>Called in the update method.</summary>
     WindowEvent onUpdate;
@@ -540,19 +546,30 @@ private:
     void updateSizeLimits() const;
 
     GLFWwindow* handle_ = nullptr;
+
+    // OpenGL State and Contexts
     State state_;
+    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
+
+    // Window-Properties
     std::string title_;
     dmath::ibounds2 size_limits_;
     dmath::ivec2 fullscreen_restore_pos_;
     dmath::ivec2 fullscreen_restore_size_;
     std::optional<dmath::ivec2> aspect_ratio_;
+
+    // Render-Properties
+    ClearMask clear_mask_ = ClearMask::ALL;
     bool auto_adjust_viewport_ = true;
     bool finish_after_swap_ = true;
+
+    // DeltaTime and FPS 
     std::uint64_t last_time_ = 0;
     float delta_time_ = 0;
     float fps_ = 0;
+
+    // Input
     std::string text_input_;
-    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
 };
 
 template <ObjectType Type>

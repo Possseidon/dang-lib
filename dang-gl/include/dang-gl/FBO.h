@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ClearMask.h"
 #include "Object.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
@@ -67,7 +68,7 @@ private:
 };
 
 /// <summary>The different error states, which a framebuffer can be in.</summary>
-enum class FramebufferStatus {
+enum class FramebufferStatus : GLenum {
     Undefined = GL_FRAMEBUFFER_UNDEFINED,
     Complete = GL_FRAMEBUFFER_COMPLETE,
     IncompleteAttachment = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
@@ -111,11 +112,11 @@ public:
     /// <summary>Returns the depth-stencil attachment point.</summary>
     AttachmentPoint depthStencilAttachment() const;
 
-    /// <summary>Binds the default framebuffer to the given target of the specified window.</summary>
-    static void bindDefault(Window& window, FramebufferTarget target = FramebufferTarget::Framebuffer);
-
     /// <summary>Binds the framebuffer to the given target, defaulting to both draw and read.</summary>
     void bind(FramebufferTarget target = FramebufferTarget::Framebuffer) const;
+
+    /// <summary>Binds the default framebuffer to the given target of the specified window.</summary>
+    static void bindDefault(Window& window, FramebufferTarget target = FramebufferTarget::Framebuffer);
     /// <summary>Binds the default framebuffer to the given target of the associated window.</summary>
     void bindDefault(FramebufferTarget target = FramebufferTarget::Framebuffer) const;
 
@@ -137,6 +138,14 @@ public:
     bool isComplete() const;
     /// <summary>Throws an exception with an appropriate message if the framebuffer is not complete.</summary>
     void checkComplete() const;
+
+    /// <summary>Binds the framebuffer and fills it with the current clear color, depth and stencil values.</summary>
+    void clear(ClearMask mask);
+
+    /// <summary>Binds the default framebuffer and fills it with the current clear color, depth and stencil values.</summary>
+    static void clearDefault(Window& window, ClearMask mask);
+    /// <summary>Binds the default framebuffer and fills it with the current clear color, depth and stencil values.</summary>
+    void clearDefault(ClearMask mask);
 
 private:
     /// <summary>Used to keep track of the smallest width and height.</summary>

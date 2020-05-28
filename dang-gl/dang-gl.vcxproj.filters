@@ -302,5 +302,8 @@
     <ClInclude Include="include\dang-gl\Transform.h">
       <Filter>Header Files\Maths</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-gl\ClearMask.h">
+      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

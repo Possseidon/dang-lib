@@ -240,6 +240,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\dang-gl\ClearMask.h" />
     <ClInclude Include="include\dang-gl\Buffer.h" />
     <ClInclude Include="include\dang-gl\Camera.h" />
     <ClInclude Include="include\dang-gl\FBO.h" />

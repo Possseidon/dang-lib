@@ -142,6 +142,19 @@ void Window::resize(dmath::ivec2 new_size)
     glfwSetWindowSize(handle_, new_size.x(), new_size.y());
 }
 
+dmath::ivec2 Window::framebufferSize() const
+{
+    dmath::ivec2 result;
+    glfwGetFramebufferSize(handle_, &result.x(), &result.y());
+    return result;
+}
+
+float Window::aspect() const
+{
+    dmath::ivec2 framebuffer_size = framebufferSize();
+    return static_cast<float>(framebuffer_size.x()) / framebuffer_size.y();
+}
+
 dmath::vec2 Window::contentScale() const
 {
     dmath::vec2 result;
@@ -191,47 +204,6 @@ bool Window::isResizable() const
 void Window::setResizable(bool resizable)
 {
     glfwSetWindowAttrib(handle_, GLFW_RESIZABLE, resizable);
-}
-
-dmath::ivec2 Window::framebufferSize() const
-{
-    dmath::ivec2 result;
-    glfwGetFramebufferSize(handle_, &result.x(), &result.y());
-    return result;
-}
-
-float Window::aspect() const
-{
-    dmath::ivec2 framebuffer_size = framebufferSize();
-    return static_cast<float>(framebuffer_size.x()) / framebuffer_size.y();
-}
-
-void Window::adjustViewport()
-{
-    dmath::ivec2 framebuffer_size = framebufferSize();
-    glViewport(0, 0, framebuffer_size.x(), framebuffer_size.y());
-}
-
-bool Window::autoAdjustViewport() const
-{
-    return auto_adjust_viewport_;
-}
-
-void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
-{
-    auto_adjust_viewport_ = auto_adjust_viewport;
-    if (auto_adjust_viewport)
-        adjustViewport();
-}
-
-bool Window::finishAfterSwap() const
-{
-    return finish_after_swap_;
-}
-
-void Window::setFinishAfterSwap(bool finish_after_swap)
-{
-    finish_after_swap_ = finish_after_swap;
 }
 
 std::optional<int> Window::minWidth() const
@@ -462,6 +434,45 @@ ContextRobustness Window::contextRobustness() const
     return static_cast<ContextRobustness>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_ROBUSTNESS));
 }
 
+ClearMask Window::clearMask() const
+{
+    return clear_mask_;
+}
+
+void Window::setClearMask(ClearMask mask)
+{
+
+    clear_mask_ = mask;
+}
+
+bool Window::finishAfterSwap() const
+{
+    return finish_after_swap_;
+}
+
+void Window::setFinishAfterSwap(bool finish_after_swap)
+{
+    finish_after_swap_ = finish_after_swap;
+}
+
+void Window::adjustViewport()
+{
+    dmath::ivec2 framebuffer_size = framebufferSize();
+    glViewport(0, 0, framebuffer_size.x(), framebuffer_size.y());
+}
+
+bool Window::autoAdjustViewport() const
+{
+    return auto_adjust_viewport_;
+}
+
+void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
+{
+    auto_adjust_viewport_ = auto_adjust_viewport;
+    if (auto_adjust_viewport)
+        adjustViewport();
+}
+
 const std::string& Window::textInput() const
 {
     return text_input_;
@@ -544,11 +555,6 @@ bool Window::supportsRawMouseMotion()
     return glfwRawMouseMotionSupported();
 }
 
-bool Window::shouldClose() const
-{
-    return glfwWindowShouldClose(handle_);
-}
-
 void Window::activate()
 {
     GLFW::Instance.setActiveWindow(this);
@@ -561,22 +567,10 @@ void Window::update()
     onUpdate(*this);
 }
 
-void Window::updateDeltaTime()
-{
-    uint64_t now = GLFW::Instance.timerValue();
-    delta_time_ = static_cast<float>(now - last_time_) / GLFW::Instance.timerFrequency();
-    last_time_ = now;
-
-    float new_fps = 1 / delta_time_;
-    float factor = std::exp(-4 * delta_time_);
-    fps_ = new_fps - factor * (new_fps - fps_);
-}
-
 void Window::render()
 {
     activate();
-    FBO::bindDefault(*this);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    FBO::clearDefault(*this, clear_mask_);
     onRender(*this);
     glfwSwapBuffers(handle_);
     if (finish_after_swap_)
@@ -602,6 +596,11 @@ void Window::run()
 {
     while (!shouldClose())
         step();
+}
+
+bool Window::shouldClose() const
+{
+    return glfwWindowShouldClose(handle_);
 }
 
 float Window::deltaTime() const
@@ -793,6 +792,17 @@ void Window::debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum 
             static_cast<GLDebugSeverity>(severity),
             std::string(message, message + length)
         });
+}
+
+void Window::updateDeltaTime()
+{
+    uint64_t now = GLFW::Instance.timerValue();
+    delta_time_ = static_cast<float>(now - last_time_) / GLFW::Instance.timerFrequency();
+    last_time_ = now;
+
+    float new_fps = 1 / delta_time_;
+    float factor = std::exp(-4 * delta_time_);
+    fps_ = new_fps - factor * (new_fps - fps_);
 }
 
 void Window::updateSizeLimits() const

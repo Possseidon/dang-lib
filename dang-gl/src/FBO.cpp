@@ -149,6 +149,24 @@ void FBO::checkComplete() const
     throw FramebufferError("The framebuffer is not complete for an unknown reason.");
 }
 
+void FBO::clear(ClearMask mask)
+{
+    bind(FramebufferTarget::DrawFramebuffer);
+    glClear(static_cast<GLbitfield>(mask));
+}
+
+void FBO::clearDefault(Window& window, ClearMask mask)
+{
+    bindDefault(window, FramebufferTarget::DrawFramebuffer);
+    glClear(static_cast<GLbitfield>(mask));
+}
+
+void FBO::clearDefault(ClearMask mask)
+{
+    bindDefault(FramebufferTarget::DrawFramebuffer);
+    glClear(static_cast<GLbitfield>(mask));
+}
+
 void FBO::updateSize(dmath::svec2 size)
 {
     if (!size_)
