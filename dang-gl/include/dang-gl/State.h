@@ -4,6 +4,9 @@
 
 #include "StateTypes.h"
 
+// TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I think?)
+//       Backup still needs to be polymorphic, as they get stored in a vector
+
 namespace dang::gl
 {
 
