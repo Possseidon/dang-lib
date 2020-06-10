@@ -285,8 +285,7 @@ struct Bounds {
     constexpr dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> corners() const
     {
         dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> result;
-        constexpr auto cornerArray = dutils::EnumValues<Corner<Dim>>;
-        for (auto corner : cornerArray)
+        for (auto corner : Corner<Dim>())
             result[corner] = low + Vector<T, Dim>(CornerVector<Dim>[corner]) * (high - low);
         return result;
     }

@@ -13,7 +13,7 @@ namespace dang::math
 // --- AxisVector
 
 template <std::size_t Dim>
-constexpr dutils::EnumArray<Axis<Dim>, ivec<Dim>> AxisVector{};
+constexpr auto AxisVector = nullptr;
 
 template <>
 constexpr dutils::EnumArray<Axis1, ivec1> AxisVector<1> = {
@@ -40,7 +40,7 @@ constexpr auto AxisVector3 = AxisVector<3>;
 // --- FacingVector
 
 template <std::size_t Dim>
-constexpr dutils::EnumArray<Facing<Dim>, ivec<Dim>> FacingVector{};
+constexpr auto FacingVector = nullptr;
 
 template <>
 constexpr dutils::EnumArray<Facing1, ivec1> FacingVector<1> = {
@@ -73,7 +73,7 @@ constexpr auto FacingVector3 = FacingVector<3>;
 // --- CornerVector
 
 template <std::size_t Dim>
-constexpr dutils::EnumArray<Corner<Dim>, ivec<Dim>> CornerVector{};
+constexpr auto CornerVector = nullptr;
 
 template <>
 constexpr dutils::EnumArray<Corner1, ivec1> CornerVector<1> = {
@@ -108,7 +108,7 @@ constexpr auto CornerVector3 = CornerVector<3>;
 // --- AxisFacing
 
 template <std::size_t Dim>
-constexpr dutils::EnumArray<Axis<Dim>, Facing<Dim>> AxisFacing{};
+constexpr auto AxisFacing = nullptr;
 
 template <>
 constexpr dutils::EnumArray<Axis1, Facing1> AxisFacing<1> = {
@@ -135,7 +135,7 @@ constexpr auto AxisFacing3 = AxisFacing<3>;
 // --- FacingFlipped
 
 template <std::size_t Dim>
-constexpr dutils::EnumArray<Facing<Dim>, Facing<Dim>> FacingFlipped{};
+constexpr auto FacingFlipped = nullptr;
 
 template <>
 constexpr dutils::EnumArray<Facing1, Facing1> FacingFlipped<1> = {

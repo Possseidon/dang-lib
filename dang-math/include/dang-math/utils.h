@@ -3,6 +3,7 @@
 #include <array>
 #include <functional>
 #include <optional>
+#include <type_traits>
 
 namespace dang::math
 {

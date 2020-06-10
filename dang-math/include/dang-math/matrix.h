@@ -70,7 +70,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     constexpr Matrix<T, ColCount, RowCount> subMatrix() const
     {
         Matrix<T, ColCount, RowCount> result;
-        for (auto [col, row] : sbounds2(svec2(ColCount, RowCount)))
+        for (const auto& [col, row] : sbounds2(svec2(ColCount, RowCount)))
             result(col, row) = (*this)(StartCol + col, StartRow + row);
         return result;
     }
@@ -79,7 +79,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
     constexpr void setSubMatrix(Matrix<T, ColCount, RowCount> matrix)
     {
-        for (auto [col, row] : sbounds2(svec2(ColCount, RowCount)))
+        for (const auto& [col, row] : sbounds2(svec2(ColCount, RowCount)))
             (*this)(StartCol + col, StartRow + row) = matrix(col, row);
     }
 
