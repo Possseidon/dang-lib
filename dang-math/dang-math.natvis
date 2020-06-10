@@ -7,7 +7,7 @@
     <DisplayString Condition="$T2 == 3">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}) of {"$T1"}</DisplayString>
     <DisplayString Condition="$T2 == 4">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}, {(*this)[3],g}) of {"$T1"}</DisplayString>
     <DisplayString Condition="$T2 &gt; 4">vec{$T2}({(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}, {(*this)[3],g}, ...) of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <CustomListItems Condition="$T2 &lt;= 4">
         <Item Name="x" Condition="$T2 &gt; 0">(*this)[0],g</Item>
         <Item Name="y" Condition="$T2 &gt; 1">(*this)[1],g</Item>
@@ -20,7 +20,7 @@
 
   <Type Name="dang::math::Matrix&lt;*,*,*&gt;">
     <DisplayString>mat{$T2}x{$T3} of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <ExpandedItem>_Elems</ExpandedItem>
       <Item Name="determinant" Optional="true">determinant()</Item>
       <Item Name="inverse" Optional="true">inverse()</Item>
@@ -30,7 +30,7 @@
 
   <Type Name="dang::math::detail::AxisSystemBase&lt;*,*,*&gt;" Inheritable="true">
     <DisplayString>AxisSystem{$T2}x{$T3} of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <Item Name="support">support</Item>
       <ExpandedItem>directions</ExpandedItem>
     </Expand>
@@ -38,7 +38,7 @@
 
   <Type Name="dang::math::detail::LineBase&lt;*,*&gt;" Inheritable="true">
     <DisplayString>Line{$T2} of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <Item Name="support">support</Item>
       <Item Name="direction">directions[0]</Item>
     </Expand>
@@ -46,7 +46,7 @@
 
   <Type Name="dang::math::detail::PlaneBase&lt;*,*&gt;" Inheritable="true">
     <DisplayString>Plane{$T2} of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <Item Name="support">support</Item>
       <Item Name="x-direction">directions[0]</Item>
       <Item Name="y-direction">directions[1]</Item>
@@ -55,7 +55,7 @@
 
   <Type Name="dang::math::detail::SpatBase&lt;*,*&gt;" Inheritable="true">
     <DisplayString>Spat{$T2} of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <Item Name="support">support</Item>
       <Item Name="x-direction">directions[0]</Item>
       <Item Name="y-direction">directions[1]</Item>
@@ -65,7 +65,7 @@
 
   <Type Name="dang::math::Quaternion&lt;*&gt;" Inheritable="true">
     <DisplayString>quat({(*this)[3],g}, [{(*this)[0],g}, {(*this)[1],g}, {(*this)[2],g}]) of {"$T1"}</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <CustomListItems>
         <Item Name="real">(*this)[3],g</Item>
         <Item Name="vector-x">(*this)[0],g</Item>
