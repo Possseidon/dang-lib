@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
+  <!-- enums.h -->
+
   <Type Name="dang::utils::EnumArray&lt;*,*&gt;">
     <DisplayString>{"$T2"}[{"$T1"}]</DisplayString>
-    <Expand>
+    <Expand HideRawView="true">
       <CustomListItems>
         <Variable Name="index" InitialValue="0"/>
         <Loop Condition="index &lt; sizeof(*this) / sizeof((*this)[0])">
@@ -13,6 +15,8 @@
       </CustomListItems>
     </Expand>
   </Type>
+
+  <!-- event.h -->
 
   <Type Name="dang::utils::Event&lt;*&gt;">
     <DisplayString>Event with {handlers_.size()} handler ({"$T1"})</DisplayString>
