@@ -51,7 +51,7 @@ GLFWwindow* WindowInfo::createWindow() const
     // Context
     glfwWindowHint(GLFW_CLIENT_API, static_cast<int>(client_api));
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, static_cast<int>(context.api));
-    auto [major, minor] = context.version;
+    const auto& [major, minor] = context.version;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
 

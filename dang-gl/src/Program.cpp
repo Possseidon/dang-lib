@@ -515,7 +515,7 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
         }
         else {
             if (next_line_) {
-                auto [next_line, next_compilation_unit] = *next_line_;
+                const auto& [next_line, next_compilation_unit] = *next_line_;
                 output_ << "#line " << next_line << " " << next_compilation_unit << "\n";
                 next_line_.reset();
             }
