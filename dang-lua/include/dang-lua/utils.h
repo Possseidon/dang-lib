@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <numeric>
 #include <optional>
@@ -13,6 +14,7 @@
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
+#include <variant>
 
 #include "lua.hpp"
 
