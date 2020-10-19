@@ -157,6 +157,7 @@ struct WindowInfo {
     } cocoa;
 
     struct X11 {
+        // Unlike most of GLFW, these are indeed ASCII encoded
         std::string class_name;
         std::string instance_name;
     } x11;
@@ -256,7 +257,7 @@ public:
     /// <summary>Returns the relative scale of the window, to accommodate for different monitor DPI settings.</summary>
     dmath::vec2 contentScale() const;
 
-    /// <summary>Returns, wether the window is currently in fullscreen mode.</summary>
+    /// <summary>Whether the window is currently in fullscreen mode.</summary>
     bool isFullscreen() const;
     /// <summary>If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise returns null.</summary>
     Monitor fullscreenMonitor() const;
@@ -267,9 +268,9 @@ public:
     /// <summary>Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.</summary>
     void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt, std::optional<dmath::ivec2> size = std::nullopt);
 
-    /// <summary>Returns wether the user can resize the window.</summary>
+    /// <summary>Whether the user can resize the window.</summary>
     bool isResizable() const;
-    /// <summary>Sets, wether the user should be able to freely resize the window to their needs.</summary>
+    /// <summary>Sets, whether the user should be able to freely resize the window to their needs.</summary>
     void setResizable(bool resizable);
 
     /// <summary>Returns the optional minimum width of the window.</summary>
@@ -299,16 +300,16 @@ public:
     /// <summary>Sets the opactity of the window.</summary>
     void setOpacity(float new_opacity);
 
-    /// <summary>Returns, wether the window is currently iconified/minimized.</summary>
+    /// <summary>Whether the window is currently iconified/minimized.</summary>
     bool isIconified() const;
     /// <summary>Iconifies/minimizes the window.</summary>
     void iconify();
-    /// <summary>Returns, wether a fullscreen window should iconify/minimize on lost focus.</summary>
+    /// <summary>Whether a fullscreen window should iconify/minimize on lost focus.</summary>
     bool autoIconify() const;
-    /// <summary>Sets, wether a fullscreen window should iconify/minimize on lost focus.</summary>
+    /// <summary>Sets, whether a fullscreen window should iconify/minimize on lost focus.</summary>
     void setAutoIconify(bool auto_iconify);
 
-    /// <summary>Returns, wether the window is maximized.</summary>
+    /// <summary>Whether the window is maximized.</summary>
     bool isMaximized() const;
     /// <summary>Maximizes the window.</summary>
     void maximize();
@@ -316,39 +317,39 @@ public:
     /// <summary>Restores iconified or maximized windows.</summary>
     void restore();
 
-    /// <summary>Returns, wether the window is visible.</summary>
+    /// <summary>Whether the window is visible.</summary>
     bool isVisible() const;
     /// <summary>Hides the window, making it invisible.</summary>
     void hide();
     /// <summary>Shows the window, making it visible again.</summary>
     void show();
 
-    /// <summary>Returns, wether the window is currently focused.</summary>
+    /// <summary>Whether the window is currently focused.</summary>
     bool isFocused() const;
     /// <summary>Force the window to focus.</summary>
     void focus();
-    /// <summary>Returns, wether the window should obtain focus when shown.</summary>
+    /// <summary>Whether the window should obtain focus when shown.</summary>
     bool focusOnShow() const;
-    /// <summary>Sets, wether the window should obtain focus when shown.</summary>
+    /// <summary>Sets, whether the window should obtain focus when shown.</summary>
     void setFocusOnShow(bool focus_on_show);
 
     /// <summary>Requests for attention, usually resulting in the window blinking in the taskbar.</summary>
     void requestAttention();
 
-    /// <summary>Returns, wether the mouse is currently hovering over the content area of the window without being obstructed.</summary>
+    /// <summary>Whether the mouse is currently hovering over the content area of the window without being obstructed.</summary>
     bool isHovered() const;
 
-    /// <summary>Returns, wether the window is decorated with a title bar.</summary>
+    /// <summary>Whether the window is decorated with a title bar.</summary>
     bool isDecorated() const;
     /// <summary>Decorates or undecorates the window with a title bar.</summary>
     void setDecorated(bool decorated);
 
-    /// <summary>Returns, wether the window will always stay on top.</summary>
+    /// <summary>Whether the window will always stay on top.</summary>
     bool isFloating() const;
-    /// <summary>Sets, wether the window should always stay on top.</summary>
+    /// <summary>Sets, whether the window should always stay on top.</summary>
     void setFloating(bool floating);
 
-    /// <summary>Returns, wether the window has a transparent framebuffer.</summary>
+    /// <summary>Whether the window has a transparent framebuffer.</summary>
     bool transparentFramebuffer() const;
 
     /// <summary>Returns the client API, with which the window was created.</summary>
@@ -357,15 +358,15 @@ public:
     ContextAPI contextAPI() const;
     /// <summary>Returns the OpenGL version, with which the window was created.</summary>
     GLVersionFull glVersion() const;
-    /// <summary>Returns, wether the window was created with OpenGL forward compatibility.</summary>
+    /// <summary>Whether the window was created with OpenGL forward compatibility.</summary>
     bool forwardCompatible() const;
-    /// <summary>Returns, wether the window was created with an OpenGL debug context.</summary>
+    /// <summary>Whether the window was created with an OpenGL debug context.</summary>
     bool debugContext() const;
-    /// <summary>Returns, wether the window was created with the core or compatibility profile.</summary>
+    /// <summary>Whether the window was created with the core or compatibility profile.</summary>
     GLProfile glProfile() const;
-    /// <summary>Returns, wether the OpenGL pipeline will be flushed before the active window changes.</summary>
+    /// <summary>Whether the OpenGL pipeline will be flushed before the active window changes.</summary>
     ContextReleaseBehavior contextReleaseBehavior() const;
-    /// <summary>Returns, wether the GLFW should trigger errors or cause undefined behavior instead.</summary>
+    /// <summary>Whether the GLFW should trigger errors or cause undefined behavior instead.</summary>
     bool contextNoError() const;
     /// <summary>Returns the robustness strategy, which the window was created with.</summary>
     ContextRobustness contextRobustness() const;
@@ -375,26 +376,26 @@ public:
     /// <summary>Setst the clear mask, which is used at the beginning of a render call.</summary>
     void setClearMask(ClearMask mask);
 
-    /// <summary>Returns, wether the window should call glFinish after SwapBuffers.</summary>
+    /// <summary>Whether the window should call glFinish after SwapBuffers.</summary>
     bool finishAfterSwap() const;
-    /// <summary>Sets, wether the window should call glFinish after SwapBuffers.</summary>
+    /// <summary>Sets, whether the window should call glFinish after SwapBuffers.</summary>
     void setFinishAfterSwap(bool finish_after_swap);
 
     /// <summary>Adjusts the OpenGL viewport to current size of the framebuffer.</summary>
     void adjustViewport();
-    /// <summary>Returns, wether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
+    /// <summary>Whether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
     bool autoAdjustViewport() const;
-    /// <summary>Sets, wether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
+    /// <summary>Sets, whether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
     // TODO: C++20 use std::u8string
     /// <summary>Returns a string of all typed characters since the last update.</summary>
     const std::string& textInput() const;
 
-    /// <summary>Returns, wether the given key is currently pressed down.</summary>
+    /// <summary>Whether the given key is currently pressed down.</summary>
     /// <remarks>If sticky keys is active, keys will stay pressed until this function is called on it.</remarks>
     bool isKeyDown(Key key) const;
-    /// <summary>Returns, wether the given mouse button is currently pressed down.</summary>
+    /// <summary>Whether the given mouse button is currently pressed down.</summary>
     /// <remarks>If sticky buttons is active, mouse buttons will stay pressed until this function is called on it.</remarks>
     bool isButtonDown(Button button) const;
     /// <summary>Returns the current position of the cursor, using the top left of the window as origin.</summary>
@@ -403,31 +404,31 @@ public:
     /// <summary>Sets the cursor position to the given value, using the top left of the window as origin.</summary>
     void setCursorPos(dmath::dvec2 cursor_pos);
 
-    /// <summary>Wether the cursor is normal, hidden or disabled.</summary>
+    /// <summary>Whether the cursor is normal, hidden or disabled.</summary>
     CursorMode cursorMode() const;
-    /// <summary>Sets, wether the cursor should be normal, hidden or disabled.</summary>
+    /// <summary>Sets, whether the cursor should be normal, hidden or disabled.</summary>
     void setCursorMode(CursorMode cursor_mode);
 
-    /// <summary>Returns, wether keys should stay pressed until isKeyDown is called on them.</summary>
+    /// <summary>Whether keys should stay pressed until isKeyDown is called on them.</summary>
     bool stickyKeys() const;
-    /// <summary>Sets, wether keys should stay pressed until isKeyDown is called on them.</summary>
+    /// <summary>Sets, whether keys should stay pressed until isKeyDown is called on them.</summary>
     void setStickyKeys(bool sticky_keys);
 
-    /// <summary>Returns, wether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
+    /// <summary>Whether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
     bool stickyButtons() const;
-    /// <summary>Sets, wether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
+    /// <summary>Sets, whether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
     void setStickyButtons(bool sticky_buttons);
 
-    /// <summary>Returns, wether the state of caps- and scroll-lock should be included in key events.</summary>
+    /// <summary>Whether the state of caps- and scroll-lock should be included in key events.</summary>
     bool lockKeyModifiers() const;
-    /// <summary>Sets, wether the state of caps- and scroll-lock should be included in key events.</summary>
+    /// <summary>Sets, whether the state of caps- and scroll-lock should be included in key events.</summary>
     void setLockKeyModifiers(bool lock_key_modifiers);
 
-    /// <summary>For a disabled cursor returns, wether the mouse motion should be captured unscaled and unaccelerated.</summary>
+    /// <summary>For a disabled cursor returns, whether the mouse motion should be captured unscaled and unaccelerated.</summary>
     bool rawMouseMotion() const;
-    /// <summary>For a disabled cursor sets, wether the mouse motion should be captured unscaled and unaccelerated.</summary>
+    /// <summary>For a disabled cursor sets, whether the mouse motion should be captured unscaled and unaccelerated.</summary>
     void setRawMouseMotion(bool raw_mouse_motion);
-    /// <summary>Returns, wether capturing raw mouse motion is supported by the system.</summary>
+    /// <summary>Whether capturing raw mouse motion is supported by the system.</summary>
     static bool supportsRawMouseMotion();
 
     /// <summary>Activates the OpenGL context of the window.</summary>
@@ -445,7 +446,7 @@ public:
     /// <summary>Runs update-render-poll steps until the window should close.</summary>
     void run();
 
-    /// <summary>Returns, wether the window should close.</summary>
+    /// <summary>Whether the window should close.</summary>
     bool shouldClose() const;
 
     /// <summary>Returns the current delta time to the last call to update.</summary>
@@ -454,7 +455,7 @@ public:
     float fps() const;
     /// <summary>Sets the V-Sync mode of the window to the given value.</summary>
     void setVSync(VSync vsync);
-    /// <summary>Activates the window and returns, wether the context supports adaptive V-Sync.</summary>
+    /// <summary>Activates the window and returns, whether the context supports adaptive V-Sync.</summary>
     bool supportsAdaptiveVSync();
 
     /// <summary>Called in the update method.</summary>

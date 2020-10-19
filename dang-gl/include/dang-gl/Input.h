@@ -3,7 +3,7 @@
 namespace dang::gl
 {
 
-/// <summary>Wether a mouse button has been pressed or released.</summary>
+/// <summary>Whether a mouse button has been pressed or released.</summary>
 enum class ButtonAction : int {
     Release = GLFW_RELEASE,
     Press = GLFW_PRESS,
@@ -28,7 +28,7 @@ enum class Button : int {
     COUNT
 };
 
-/// <summary>Wether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
+/// <summary>Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
 enum class KeyAction : int {
     Release = GLFW_RELEASE,
     Press = GLFW_PRESS,

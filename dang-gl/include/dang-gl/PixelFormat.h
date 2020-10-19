@@ -95,9 +95,9 @@ template <> struct PixelFormatInfo<PixelFormat::BGRA_INTEGER> {
     static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8UI;
 };
 
-template <> struct PixelFormatInfo<PixelFormat::STENCIL_INDEX> { /* TODO */ };
-template <> struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO */ };
-template <> struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO */ };
+template <> struct PixelFormatInfo<PixelFormat::STENCIL_INDEX> { /* TODO: PixelFormatInfo<PixelFormat::STENCIL_INDEX> */ };
+template <> struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO: PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> */ };
+template <> struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO: PixelFormatInfo<PixelFormat::DEPTH_STENCIL> */ };
 
 /// <summary>The GL-Constants for the pixel formats.</summary>
 template <>

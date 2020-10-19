@@ -22,7 +22,7 @@ public:
     /// <summary>The single GLFW singleton instance.</summary>
     static GLFW Instance;
 
-    /// <summary>Wether there is an active window/context.</summary>
+    /// <summary>Whether there is an active window/context.</summary>
     bool hasActiveWindow();
     /// <summary>Returns the active window/context.</summary>
     Window& activeWindow();

@@ -141,7 +141,7 @@ void GLFW::throwingErrorCallback(int error_code, const char* description)
 
 void GLFW::joystickCallback(int jid, int event)
 {
-    // TODO: Event
+    // TODO: Add event for GLFW::joystickCallback
     (void)jid;
     (void)event;
 }

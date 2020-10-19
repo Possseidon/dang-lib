@@ -17,7 +17,7 @@ class Renderable {
 public:
     virtual ~Renderable() = default;
 
-    /// <summary>Wether this object should be rendered or skipped.</summary>
+    /// <summary>Whether this object should be rendered or skipped.</summary>
     virtual bool isVisible() const;
     /// <summary>An optional transformation, describing where to render the object.</summary>
     virtual SharedTransform transform() const;

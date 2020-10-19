@@ -48,7 +48,7 @@ public:
 
     /// <summary>Converts the data into the specified format and returns a consecutive vector of pixels.</summary>
     /// <remarks>Use the size method to query the width and height of the returned data.</remarks>
-    /// <param name="flip">Wether to flip the top and bottom of the PNG.</param>
+    /// <param name="flip">Whether to flip the top and bottom of the PNG.</param>
     template <PixelFormat Format = PixelFormat::RGBA>
     std::vector<Pixel<Format>> read(bool flip = false);
 

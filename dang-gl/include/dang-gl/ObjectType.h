@@ -233,7 +233,7 @@ template <> constexpr auto& glBindObject<ObjectType::Texture> = glBindTexture;
 template <> constexpr auto& glBindObject<ObjectType::Renderbuffer> = glBindRenderbuffer;
 template <> constexpr auto& glBindObject<ObjectType::Framebuffer> = glBindFramebuffer;
 
-/// <summary>Returns, wether the given function does not exist and is still a nullptr.</summary>
+/// <summary>Whether the given function does not exist and is still a nullptr.</summary>
 template <typename T>
 constexpr bool canExecute(const T&)
 {

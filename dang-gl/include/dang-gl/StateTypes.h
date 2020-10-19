@@ -184,7 +184,7 @@ constexpr dutils::EnumArray<PolygonSide, GLenum> GLConstants<PolygonSide> = {
     GL_BACK
 };
 
-/// <summary>Specfies, wether polygons should render full faces, the outline or just corner points.</summary>
+/// <summary>Specfies, whether polygons should render full faces, the outline or just corner points.</summary>
 enum class PolygonMode {
     Point,
     Line,

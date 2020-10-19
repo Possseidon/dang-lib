@@ -123,9 +123,9 @@ public:
     /// <summary>Returns the forcibly common width and height of all attachments.</summary>
     std::optional<dmath::svec2> size();
 
-    /// <summary>Returns, wether the framebuffer has any attachment.</summary>
+    /// <summary>Whether the framebuffer has any attachment.</summary>
     bool anyAttachments() const;
-    /// <summary>Returns, wether the framebuffer has an attachment at the specified attachment point.</summary>
+    /// <summary>Whether the framebuffer has an attachment at the specified attachment point.</summary>
     bool isAttached(AttachmentPoint attachment_point) const;
     /// <summary>Attaches the given renderbuffer to the specified attachment point.</summary>
     void attach(const RBO& rbo, AttachmentPoint attachment_point);
@@ -134,7 +134,7 @@ public:
 
     /// <summary>Returns the current status of the framebuffer.</summary>
     FramebufferStatus status() const;
-    /// <summary>Returns, wether the current status of the framebuffer is "complete".</summary>
+    /// <summary>Whether the current status of the framebuffer is "complete".</summary>
     bool isComplete() const;
     /// <summary>Throws an exception with an appropriate message if the framebuffer is not complete.</summary>
     void checkComplete() const;

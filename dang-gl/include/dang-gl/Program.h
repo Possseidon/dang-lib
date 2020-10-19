@@ -177,7 +177,7 @@ public:
     /// <summary>Initializes a dummy shader uniform wrapper, which does not actually exist in the shader.</summary>
     ShaderUniform(Program& program, GLint count, std::string name);
 
-    /// <summary>Returns, wether this uniform actually exists in the shader or is merely a dummy.</summary>
+    /// <summary>Whether this uniform actually exists in the shader or is merely a dummy.</summary>
     bool exists() const;
 
     /// <summary>Forces the value using glUniform calls.</summary>
