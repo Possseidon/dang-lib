@@ -22,6 +22,7 @@ public:
     ProjectionProvider(float aspect);
     /// <summary>Automatically updates the aspect to match the given window.</summary>
     ProjectionProvider(Window& window);
+    virtual ~ProjectionProvider();
 
     /// <summary>Returns the current aspect ratio (width/height).</summary>
     float aspect() const;

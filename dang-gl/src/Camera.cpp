@@ -15,6 +15,10 @@ ProjectionProvider::ProjectionProvider(Window& window)
 {
 }
 
+ProjectionProvider::~ProjectionProvider()
+{
+}
+
 float ProjectionProvider::aspect() const
 {
     return aspect_;
