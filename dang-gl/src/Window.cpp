@@ -780,9 +780,9 @@ void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
     window.onResize(window);
 }
 
-void Window::debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void Window::debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param)
 {
-    Window& window = *static_cast<Window*>(const_cast<void*>(userParam));
+    Window& window = *static_cast<Window*>(const_cast<void*>(user_param));
     window.onGLDebugMessage(
         {
             window,

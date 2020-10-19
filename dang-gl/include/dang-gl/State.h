@@ -259,8 +259,8 @@ public:
             values_.resize(index + 1);
         else if (values_[index])
             return values_[index];
-        values_[index].emplace();
-        glGeti<T>(Name, index, &values_[index]);
+        auto& value = values_[index].emplace();
+        glGeti<T>(Name, index, &value);
         return values_[index];
     }
 

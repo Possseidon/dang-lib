@@ -539,7 +539,7 @@ private:
 
     // OpenGL callbacks
 
-    static void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+    static void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param);
 
     /// <summary>Updates the current delta time and FPS.</summary>
     void updateDeltaTime();

@@ -23,7 +23,7 @@ FBO::AttachmentPoint FBO::colorAttachment(std::size_t index) const
 {
     if (index >= color_attachments_.size())
         throw FramebufferError("Framebuffer color attachment index too high.");
-    return GL_COLOR_ATTACHMENT0 + GLenum(index);
+    return GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(index);
 }
 
 FBO::AttachmentPoint FBO::depthAttachment() const

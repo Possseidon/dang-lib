@@ -795,7 +795,7 @@ inline GLint ObjectContext<ObjectType::Texture>::bind(const TextureBase& texture
     ObjectWrapper<ObjectType::Texture>::bind(texture.target_, texture.handle());
     *first_free_slot_ = texture.handle();
     texture.active_slot_ = slot;
-    first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), GLuint(0));
+    first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), 0u);
     return slot;
 }
 

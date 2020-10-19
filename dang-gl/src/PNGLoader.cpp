@@ -81,7 +81,7 @@ void PNGLoader::warningCallback(png_structp png_ptr, png_const_charp message)
 
 void PNGLoader::readCallback(png_structp png_ptr, png_bytep bytes, png_size_t size)
 {
-    auto& stream = *reinterpret_cast<std::ifstream*>(png_get_io_ptr(png_ptr));
+    auto& stream = *static_cast<std::ifstream*>(png_get_io_ptr(png_ptr));
     if (!stream.read(reinterpret_cast<char*>(bytes), size))
         throw PNGError("Unexpected eof while reading PNG.");
 }
