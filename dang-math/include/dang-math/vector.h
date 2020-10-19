@@ -433,7 +433,7 @@ struct Vector : std::array<T, Dim> {
         return *this;
     }
 
-    /// <summary>Returns, wether all components satisfy a given predicate.</summary>
+    /// <summary>Whether all components satisfy a given predicate.</summary>
     template <typename TPredicate, typename... TOthers>
     constexpr bool all(TPredicate predicate, const TOthers&... others) const
     {
@@ -443,7 +443,7 @@ struct Vector : std::array<T, Dim> {
         return true;
     }
 
-    /// <summary>Returns, wether any component satisfies a given predicate.</summary>
+    /// <summary>Whether any component satisfies a given predicate.</summary>
     template <typename TPredicate, typename... TOthers>
     constexpr bool any(TPredicate predicate, const TOthers&... others) const
     {
@@ -453,7 +453,7 @@ struct Vector : std::array<T, Dim> {
         return false;
     }
 
-    /// <summary>Returns, wether none of the components satisfy a given predicate.</summary>
+    /// <summary>Whether none of the components satisfy a given predicate.</summary>
     template <typename TPredicate, typename... TOthers>
     constexpr bool none(TPredicate predicate, const TOthers&... others) const
     {

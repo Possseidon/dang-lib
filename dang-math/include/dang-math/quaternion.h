@@ -41,7 +41,7 @@ struct Quaternion : private Vector<T, 4> {
     /// <summary>Returns a quaternion from the given rotation, specified as rotation-axis and angle in radians.</summary>
     static constexpr Quaternion fromAxisRad(const Vector<T, 3>& normal, T radians)
     {
-        radians /= T(2);
+        radians /= 2;
         T sin_radians = std::sin(radians);
         return Quaternion(
             std::cos(radians),
@@ -307,7 +307,7 @@ struct Quaternion : private Vector<T, 4> {
         bool requires_normalization;
     };
 
-    /// <summary>Helper for slerp, which returns source and target factor and wether the result needs to be normalized.</summary>
+    /// <summary>Helper for slerp, which returns source and target factor and whether the result needs to be normalized.</summary>
     constexpr SlerpResult slerpHelper(Quaternion target, T factor)
     {
         // Following article was used as a base:
