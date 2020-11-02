@@ -88,9 +88,6 @@
     <Filter Include="Source Files\GLFW">
       <UniqueIdentifier>{405138fc-3d23-4914-a1a5-243671ea52e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\glad">
-      <UniqueIdentifier>{bd3eeed3-0dcc-44b3-b262-e7784155c242}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Components\Camera">
       <UniqueIdentifier>{be0fe5ab-0ff3-4079-b207-cc32330893e7}</UniqueIdentifier>
     </Filter>
@@ -152,9 +149,6 @@
     </ClCompile>
     <ClCompile Include="src\GLFW.cpp">
       <Filter>Source Files\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="src\glad.c">
-      <Filter>Source Files\glad</Filter>
     </ClCompile>
     <ClCompile Include="src\Input.cpp">
       <Filter>Source Files\GLFW</Filter>
