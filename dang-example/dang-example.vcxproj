@@ -259,7 +259,7 @@
     <Import Project="..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets" Condition="Exists('..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets')" />
     <Import Project="..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
     <Import Project="..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets" Condition="Exists('..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets')" />
-    <Import Project="..\packages\lua.5.4.0\build\native\Lua.targets" Condition="Exists('..\packages\lua.5.4.0\build\native\Lua.targets')" />
+    <Import Project="..\packages\lua.5.4.1\build\native\Lua.targets" Condition="Exists('..\packages\lua.5.4.1\build\native\Lua.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -270,6 +270,6 @@
     <Error Condition="!Exists('..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng-msvc-x86.1.6.33.8807\build\native\libpng-msvc-x86.targets'))" />
     <Error Condition="!Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
     <Error Condition="!Exists('..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x86.1.2.11.8900\build\native\zlib-msvc-x86.targets'))" />
-    <Error Condition="!Exists('..\packages\lua.5.4.0\build\native\Lua.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\lua.5.4.0\build\native\Lua.targets'))" />
+    <Error Condition="!Exists('..\packages\lua.5.4.1\build\native\Lua.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\lua.5.4.1\build\native\Lua.targets'))" />
   </Target>
 </Project>
