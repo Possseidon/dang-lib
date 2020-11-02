@@ -88,9 +88,6 @@
     <Filter Include="Source Files\GLFW">
       <UniqueIdentifier>{405138fc-3d23-4914-a1a5-243671ea52e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\glad">
-      <UniqueIdentifier>{3bbe069e-54bc-407a-9e1a-340e025f7ff7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\glad">
       <UniqueIdentifier>{bd3eeed3-0dcc-44b3-b262-e7784155c242}</UniqueIdentifier>
     </Filter>
@@ -197,7 +194,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dang-gl\Window.h">
@@ -205,12 +202,6 @@
     </ClInclude>
     <ClInclude Include="include\dang-gl\GLFW.h">
       <Filter>Header Files\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="include\glad\glad.h">
-      <Filter>Header Files\glad</Filter>
-    </ClInclude>
-    <ClInclude Include="include\KHR\khrplatform.h">
-      <Filter>Header Files\glad</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Monitor.h">
       <Filter>Header Files\GLFW</Filter>

@@ -3,17 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-math", "dang-math\dang-math.vcxproj", "{8CBA00FE-4CDD-4102-B487-0D84F4800F3B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B18CD2C9-105C-4479-9FA2-574F6634160C} = {B18CD2C9-105C-4479-9FA2-574F6634160C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-gl", "dang-gl\dang-gl.vcxproj", "{A08DC96A-227F-4E34-B855-B9A7620E1D01}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B18CD2C9-105C-4479-9FA2-574F6634160C} = {B18CD2C9-105C-4479-9FA2-574F6634160C}
-		{8CBA00FE-4CDD-4102-B487-0D84F4800F3B} = {8CBA00FE-4CDD-4102-B487-0D84F4800F3B}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-example", "dang-example\dang-example.vcxproj", "{06CF51C4-8859-4E0E-95ED-4FC405102FA1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A08DC96A-227F-4E34-B855-B9A7620E1D01} = {A08DC96A-227F-4E34-B855-B9A7620E1D01}
@@ -22,9 +11,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-example", "dang-exampl
 		{8CBA00FE-4CDD-4102-B487-0D84F4800F3B} = {8CBA00FE-4CDD-4102-B487-0D84F4800F3B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-utils", "dang-utils\dang-utils.vcxproj", "{B18CD2C9-105C-4479-9FA2-574F6634160C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-gl", "dang-gl\dang-gl.vcxproj", "{A08DC96A-227F-4E34-B855-B9A7620E1D01}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B18CD2C9-105C-4479-9FA2-574F6634160C} = {B18CD2C9-105C-4479-9FA2-574F6634160C}
+		{8CBA00FE-4CDD-4102-B487-0D84F4800F3B} = {8CBA00FE-4CDD-4102-B487-0D84F4800F3B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-lua", "dang-lua\dang-lua.vcxproj", "{64CE8AC2-0CD0-4F86-A529-96CB9940FED0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-math", "dang-math\dang-math.vcxproj", "{8CBA00FE-4CDD-4102-B487-0D84F4800F3B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B18CD2C9-105C-4479-9FA2-574F6634160C} = {B18CD2C9-105C-4479-9FA2-574F6634160C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dang-utils", "dang-utils\dang-utils.vcxproj", "{B18CD2C9-105C-4479-9FA2-574F6634160C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,10 @@
+{
+  "name": "dang-example",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "glad",
+    "glfw3",
+    "libpng",
+    "lua"
+  ]
+}
