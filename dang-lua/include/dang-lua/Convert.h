@@ -550,6 +550,7 @@ struct ConvertIntegral {
     static constexpr std::optional<int> PushCount = 1;
     static constexpr bool AllowNesting = true;
 
+    // TODO: C++20 replace with std::in_range <3
     /// <summary>Checks, whether the given Lua integer fits into the range of the C++ integral type.</summary>
     static constexpr bool checkRange([[maybe_unused]] lua_Integer value)
     {
