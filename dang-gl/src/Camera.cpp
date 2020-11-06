@@ -11,7 +11,7 @@ ProjectionProvider::ProjectionProvider(float aspect)
 
 ProjectionProvider::ProjectionProvider(Window& window)
     : aspect_(window.aspect())
-    , window_resize_({ window.onFramebufferResize, [&] { setAspect(window.aspect()); } })
+    , window_resize_(window.onFramebufferResize, [&] { setAspect(window.aspect()); })
 {
 }
 

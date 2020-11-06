@@ -200,7 +200,7 @@ struct GLDebugMessageInfo : WindowEventInfo {
     std::string message;
 };
 
-using WindowEvent = dutils::Event<Window&>;
+using WindowEvent = dutils::Event<Window>;
 using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
 using ScrollEvent = dutils::Event<ScrollInfo>;
 using DropPathsEvent = dutils::Event<DropPathsInfo>;

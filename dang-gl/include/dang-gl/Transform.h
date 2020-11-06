@@ -58,7 +58,7 @@ private:
     dquat own_transform_;
     std::optional<dquat> full_transform_;
     SharedTransform parent_;
-    std::optional<Event::Subscription> parent_change_;
+    Event::Subscription parent_change_;
 };
 
 }

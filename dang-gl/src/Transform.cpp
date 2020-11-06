@@ -58,10 +58,10 @@ void Transform::forceParent(const SharedTransform& parent)
             full_transform_.reset();
             onChange(*this);
         };
-        parent_change_.emplace(parent->onChange.subscribe(parent_change));
+        parent_change_ = parent->onChange.subscribe(parent_change);
     }
     else {
-        parent_change_ = std::nullopt;
+        parent_change_.remove();
     }
     full_transform_.reset();
     onParentChange(*this);
