@@ -5,6 +5,7 @@
 #include "DataTypes.h"
 #include "GLConstants.h"
 #include "Object.h"
+#include "ObjectBase.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
 #include "Texture.h"
@@ -276,7 +277,7 @@ private:
     void postLinkCleanup();
 
     /// <summary>Throws ShaderCompilationError if the shader could not compile or writes to std::cerr, in case of success but an existing info log.</summary>
-    void checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type);
+    void checkShaderStatusAndInfoLog(ObjectBase::Handle shader_handle, ShaderType type);
     /// <summary>Throws ShaderLinkError if the program could not link or writes to std::cerr, in case of success but an existing info log.</summary>
     void checkLinkStatusAndInfoLog();
 
@@ -287,7 +288,7 @@ private:
     /// <summary>Sets the order of attributes, which should be the order of the Data structs, used in the VBO.</summary>
     void setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order);
 
-    std::vector<GLuint> shader_handles_;
+    std::vector<ObjectBase::Handle> shader_handles_;
     std::map<std::string, std::string> includes_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;

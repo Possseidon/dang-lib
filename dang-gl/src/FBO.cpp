@@ -43,7 +43,7 @@ FBO::AttachmentPoint FBO::depthStencilAttachment() const
 
 void FBO::bindDefault(Window& window, FramebufferTarget target)
 {
-    window.objectContext<ObjectType::Framebuffer>().bind(target, 0);
+    window.objectContext<ObjectType::Framebuffer>().bind(target, ObjectBase::InvalidHandle);
 }
 
 void FBO::bind(FramebufferTarget target) const
@@ -53,7 +53,7 @@ void FBO::bind(FramebufferTarget target) const
 
 void FBO::bindDefault(FramebufferTarget target) const
 {
-    context().bind(target, 0);
+    context().bind(target, ObjectBase::InvalidHandle);
 }
 
 std::optional<dmath::svec2> FBO::size()
@@ -104,7 +104,7 @@ void FBO::detach(AttachmentPoint attachment_point)
 {
     auto target = FramebufferTarget::DrawFramebuffer;
     bind(target);
-    glFramebufferTexture(toGLConstant(target), attachment_point, 0, 0);
+    glFramebufferTexture(toGLConstant(target), attachment_point, ObjectBase::InvalidHandle, 0);
     updateAttachmentPoint(attachment_point, false);
     if (!anyAttachments())
         size_ = std::nullopt;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "ObjectBase.h"
 #include "ObjectType.h"
 #include "PixelInternalFormat.h"
 
@@ -14,7 +15,7 @@ public:
     using ObjectContextBase::ObjectContextBase;
 
     /// <summary>Binds the given renderbuffer handle, unless it is bound already.</summary>
-    void bind(GLuint handle)
+    void bind(ObjectBase::Handle handle)
     {
         if (bound_renderbuffer_ == handle)
             return;
@@ -23,16 +24,16 @@ public:
     }
 
     /// <summary>Resets the bound renderbuffer, if the given handle is currently bound.</summary>
-    void reset(GLuint handle)
+    void reset(ObjectBase::Handle handle)
     {
         if (bound_renderbuffer_ != handle)
             return;
-        ObjectWrapper<ObjectType::Renderbuffer>::bind(RenderbufferTarget::Renderbuffer, 0);
-        bound_renderbuffer_ = 0;
+        ObjectWrapper<ObjectType::Renderbuffer>::bind(RenderbufferTarget::Renderbuffer, ObjectBase::InvalidHandle);
+        bound_renderbuffer_ = ObjectBase::InvalidHandle;
     }
 
 private:
-    GLuint bound_renderbuffer_;
+    ObjectBase::Handle bound_renderbuffer_;
 };
 
 /// <summary>A renderbuffer object containing image data, specifially used together with framebuffer objects.</summary>

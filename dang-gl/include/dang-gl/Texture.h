@@ -4,6 +4,7 @@
 
 #include "Image.h"
 #include "Object.h"
+#include "ObjectBase.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
 #include "PixelFormat.h"
@@ -60,8 +61,8 @@ public:
 
 private:
     GLint active_slot_;
-    std::vector<GLuint> active_textures_ = std::vector<GLuint>(window().state().max_combined_texture_image_units);
-    std::vector<GLuint>::iterator first_free_slot_ = active_textures_.begin();
+    std::vector<ObjectBase::Handle> active_textures_ = std::vector<ObjectBase::Handle>(window().state().max_combined_texture_image_units);
+    std::vector<ObjectBase::Handle>::iterator first_free_slot_ = active_textures_.begin();
 };
 
 /// <summary>Serves as a base class for all texture classes.</summary>
@@ -804,9 +805,9 @@ inline void ObjectContext<ObjectType::Texture>::release(const TextureBase& textu
     if (!texture.active_slot_)
         return;
     setActiveSlot(*texture.active_slot_);
-    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, 0);
+    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, ObjectBase::InvalidHandle);
     auto texture_to_free = std::next(active_textures_.begin(), static_cast<std::size_t>(*texture.active_slot_));
-    *texture_to_free = 0;
+    *texture_to_free = ObjectBase::InvalidHandle;
     texture.active_slot_ = std::nullopt;
     if (texture_to_free < first_free_slot_)
         first_free_slot_ = texture_to_free;

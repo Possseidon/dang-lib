@@ -2,6 +2,7 @@
 
 #include "ClearMask.h"
 #include "Object.h"
+#include "ObjectBase.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
 #include "RBO.h"
@@ -22,7 +23,7 @@ public:
     using ObjectContextBase::ObjectContextBase;
 
     /// <summary>Binds the given buffer handle to the specified target, if it isn't bound already.</summary>
-    void bind(FramebufferTarget target, GLuint handle)
+    void bind(FramebufferTarget target, ObjectBase::Handle handle)
     {
         switch (target) {
         case FramebufferTarget::Framebuffer:
@@ -50,21 +51,21 @@ public:
     }
 
     /// <summary>Resets the bound buffer of the specified target, if the given handle is currently bound to it.</summary>
-    void reset(GLuint handle)
+    void reset(ObjectBase::Handle handle)
     {
         if (bound_draw_buffer_ == handle) {
-            ObjectWrapper<ObjectType::Framebuffer>::bind(FramebufferTarget::DrawFramebuffer, 0);
-            bound_draw_buffer_ = 0;
+            ObjectWrapper<ObjectType::Framebuffer>::bind(FramebufferTarget::DrawFramebuffer, ObjectBase::InvalidHandle);
+            bound_draw_buffer_ = ObjectBase::InvalidHandle;
         }
         if (bound_read_buffer_ == handle) {
-            ObjectWrapper<ObjectType::Framebuffer>::bind(FramebufferTarget::ReadFramebuffer, 0);
-            bound_read_buffer_ = 0;
+            ObjectWrapper<ObjectType::Framebuffer>::bind(FramebufferTarget::ReadFramebuffer, ObjectBase::InvalidHandle);
+            bound_read_buffer_ = ObjectBase::InvalidHandle;
         }
     }
 
 private:
-    GLuint bound_draw_buffer_;
-    GLuint bound_read_buffer_;
+    ObjectBase::Handle bound_draw_buffer_;
+    ObjectBase::Handle bound_read_buffer_;
 };
 
 /// <summary>The different error states, which a framebuffer can be in.</summary>

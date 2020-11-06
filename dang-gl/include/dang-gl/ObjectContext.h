@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ObjectBase.h"
 #include "ObjectType.h"
 
 namespace dang::gl
@@ -29,7 +30,7 @@ public:
     using ObjectContextBase::ObjectContextBase;
 
     /// <summary>Binds the GL-Object with the given handle, unless it is already bound.</summary>
-    void bind(GLuint handle)
+    void bind(ObjectBase::Handle handle)
     {
         if (bound_object_ == handle)
             return;
@@ -38,16 +39,16 @@ public:
     }
 
     /// <summary>Resets the bound GL-Object, if the given handle is currently bound.</summary>
-    void reset(GLuint handle)
+    void reset(ObjectBase::Handle handle)
     {
         if (bound_object_ != handle)
             return;
-        ObjectWrapper<Type>::bind(0);
-        bound_object_ = 0;
+        ObjectWrapper<Type>::bind(ObjectBase::InvalidHandle);
+        bound_object_ = ObjectBase::InvalidHandle;
     }
 
 private:
-    GLuint bound_object_ = 0;
+    ObjectBase::Handle bound_object_ = ObjectBase::InvalidHandle;
 };
 
 /// <summary>The different context classes, which should be specialized for the various types.</summary>

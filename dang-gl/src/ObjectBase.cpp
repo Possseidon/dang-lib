@@ -4,27 +4,44 @@
 namespace dang::gl
 {
 
-ObjectBase::ObjectBase(ObjectBase&& other) noexcept
-    : handle_(other.handle_)
-    , window_(other.window_)
-{
-    other.handle_ = 0;
-}
-
-GLuint ObjectBase::handle() const
+ObjectBase::Handle ObjectBase::handle() const noexcept
 {
     return handle_;
 }
 
-Window& ObjectBase::window() const
+Window& ObjectBase::window() const noexcept
 {
-    return window_;
+    return *window_;
 }
 
-ObjectBase::ObjectBase(GLuint handle, Window& window)
-    : handle_(handle)
-    , window_(window)
+ObjectBase::operator bool() const noexcept
 {
+    return handle_ != InvalidHandle;
+}
+
+ObjectBase::ObjectBase(Handle handle, Window& window) noexcept
+    : handle_(handle)
+    , window_(&window)
+{
+}
+
+ObjectBase::ObjectBase(ObjectBase&& other) noexcept
+    : ObjectBase()
+{
+    swap(other);
+}
+
+ObjectBase& ObjectBase::operator=(ObjectBase&& other) noexcept
+{
+    swap(other);
+    return *this;
+}
+
+void ObjectBase::swap(ObjectBase& other) noexcept
+{
+    using std::swap;
+    swap(handle_, other.handle_);
+    swap(window_, other.window_);
 }
 
 }

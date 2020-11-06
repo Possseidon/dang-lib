@@ -27,7 +27,7 @@ std::string Program::replaceInfoLogShaderNames(std::string info_log) const
     return info_log;
 }
 
-void Program::checkShaderStatusAndInfoLog(GLuint shader_handle, ShaderType type)
+void Program::checkShaderStatusAndInfoLog(ObjectBase::Handle shader_handle, ShaderType type)
 {
     GLint status;
     glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
@@ -159,7 +159,7 @@ void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
-    GLuint shader_handle = glCreateShader(toGLConstant(type));
+    ObjectBase::Handle shader_handle = glCreateShader(toGLConstant(type));
     shader_handles_.push_back(shader_handle);
 
     std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();
@@ -193,7 +193,7 @@ void Program::link(const AttributeNames& attribute_order, const InstancedAttribu
 
 void Program::postLinkCleanup()
 {
-    for (GLuint shader_handle : shader_handles_) {
+    for (auto shader_handle : shader_handles_) {
         glDetachShader(handle(), shader_handle);
         glDeleteShader(shader_handle);
     }

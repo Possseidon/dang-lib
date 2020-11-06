@@ -3,6 +3,7 @@
 #include "dang-utils/enum.h"
 
 #include "Object.h"
+#include "ObjectBase.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
 
@@ -19,7 +20,7 @@ public:
     using ObjectContextBase::ObjectContextBase;
 
     /// <summary>Binds the given buffer handle to the specified target, if it isn't bound already.</summary>
-    void bind(BufferTarget target, GLuint handle)
+    void bind(BufferTarget target, ObjectBase::Handle handle)
     {
         if (bound_buffers_[target] == handle)
             return;
@@ -28,16 +29,16 @@ public:
     }
 
     /// <summary>Resets the bound buffer of the specified target, if the given handle is currently bound to it.</summary>
-    void reset(BufferTarget target, GLuint handle)
+    void reset(BufferTarget target, ObjectBase::Handle handle)
     {
         if (bound_buffers_[target] != handle)
             return;
-        ObjectWrapper<ObjectType::Buffer>::bind(target, 0);
-        bound_buffers_[target] = 0;
+        ObjectWrapper<ObjectType::Buffer>::bind(target, ObjectBase::InvalidHandle);
+        bound_buffers_[target] = ObjectBase::InvalidHandle;
     }
 
 private:
-    dutils::EnumArray<BufferTarget, GLuint> bound_buffers_{};
+    dutils::EnumArray<BufferTarget, ObjectBase::Handle> bound_buffers_{};
 };
 
 /// <summary>An OpenGL buffer for a template specified target.</summary>

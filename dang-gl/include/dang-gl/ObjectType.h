@@ -3,6 +3,7 @@
 #include "dang-utils/enum.h"
 
 #include "GLConstants.h"
+#include "ObjectBase.h"
 
 namespace dang::gl
 {
@@ -246,10 +247,10 @@ constexpr bool canExecute(const T&)
 template <ObjectType Type>
 struct ObjectWrapper {
     /// <summary>Creates a new OpenGL object and returns its handle.</summary>
-    static GLuint create()
+    static ObjectBase::Handle create()
     {
         if constexpr (detail::canExecute(detail::glGenObjects<Type>)) {
-            GLuint handle = 0;
+            ObjectBase::Handle handle = ObjectBase::InvalidHandle;
             detail::glGenObjects<Type>(1, &handle);
             return handle;
         }
@@ -262,7 +263,7 @@ struct ObjectWrapper {
     }
 
     /// <summary>Destroys an OpenGL object with the given handle.</summary>
-    static void destroy(GLuint handle)
+    static void destroy(ObjectBase::Handle handle)
     {
         if constexpr (detail::canExecute(detail::glDeleteObjects<Type>)) {
             detail::glDeleteObjects<Type>(1, &handle);
@@ -277,13 +278,13 @@ struct ObjectWrapper {
 
     /// <summary>Binds the given OpenGL object to the given binding target.</summary>
     template <typename Target = ObjectTarget<Type>>
-    static void bind(Target target, GLuint handle)
+    static void bind(Target target, ObjectBase::Handle handle)
     {
         detail::glBindObject<Type>(toGLConstant(target), handle);
     }
 
     /// <summary>Binds the given OpenGL object.</summary>
-    static void bind(GLuint handle)
+    static void bind(ObjectBase::Handle handle)
     {
         detail::glBindObject<Type>(handle);
     }
