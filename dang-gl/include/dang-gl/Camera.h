@@ -150,15 +150,17 @@ private:
     dutils::EnumArray<CameraTransformType, std::reference_wrapper<ShaderUniform<mat2x4>>> transform_uniforms_;
 };
 
-/// <summary>A camera, which is capable of drawing objects, deriving the Renderable base class.</summary>
+/// <summary>A camera, which is capable of drawing renderables.</summary>
 class Camera {
 public:
     /// <summary>Creates a new camera with the given projection provider.</summary>
     explicit Camera(SharedProjectionProvider projection_provider);
+
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
     static Camera perspective(float aspect, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
     static Camera perspective(Window& window, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
+
     /// <summary>Creates a new orthogonal camera with the given parameters.</summary>
     static Camera ortho(float aspect, bounds3 clip = OrthoProjection::DefaultClip);
     /// <summary>Creates a new orthogonal camera with the given parameters.</summary>
@@ -172,21 +174,69 @@ public:
     /// <summary>Allows the given program to use custom uniform names instead of the default ones.</summary>
     void setCustomUniforms(Program& program, const CameraUniformNames& names);
 
-    /// <summary>Adds a new object to the list of renderables.</summary>
-    void addRenderable(SharedRenderable renderable);
-    /// <summary>Removes an existing object from the list of renderables.</summary>
-    void removeRenderable(const SharedRenderable& renderable);
-    /// <summary>Removes all renderables.</summary>
-    void clearRenderables();
-
-    /// <summary>Draws all renderables, automatically updating the previously supplied uniforms.</summary>
-    void render();
+    /// <summary>Draws the given range of renderables, automatically updating the previously supplied uniforms.</summary>
+    template <typename TRenderableIter>
+    void render(TRenderableIter first, TRenderableIter last) const;
+    /// <summary>Draws the given collection of renderables, automatically updating the previously supplied uniforms.</summary>
+    template <typename TRenderables>
+    void render(const TRenderables& renderables) const;
 
 private:
     SharedProjectionProvider projection_provider_;
     SharedTransform transform_ = Transform::create();
-    std::vector<SharedRenderable> renderables_;
-    std::vector<CameraUniforms> uniforms_;
+    mutable std::vector<CameraUniforms> uniforms_;
 };
+
+template <typename TRenderableIter>
+inline void Camera::render(TRenderableIter first, TRenderableIter last) const
+{
+    auto force_all = [](const auto& uniforms, const auto& value) {
+        for (auto& uniform : uniforms)
+            uniform->force(value);
+    };
+
+    const auto& view_transform = transform_->fullTransform().inverseFast();
+
+    for (const auto& uniforms : uniforms_) {
+        uniforms.updateProjectionMatrix(projection_provider_->matrix());
+        uniforms.updateTransform(CameraTransformType::View, view_transform);
+    }
+
+    for (auto iter = first; iter != last; ++iter) {
+        const auto& renderable = *iter;
+
+        if (!renderable->isVisible())
+            continue;
+
+        auto program_matches = [&](const CameraUniforms& uniforms) {
+            return &uniforms.program() == &renderable->program();
+        };
+
+        auto uniforms = std::find_if(uniforms_.begin(), uniforms_.end(), program_matches);
+        if (uniforms == uniforms_.end()) {
+            uniforms_.emplace_back(renderable->program());
+            uniforms = std::prev(uniforms_.end());
+        }
+
+        if (const auto& model_transform = renderable->transform()) {
+            uniforms->updateTransform(CameraTransformType::Model, model_transform->fullTransform());
+            uniforms->updateTransform(CameraTransformType::ModelView, view_transform * model_transform->fullTransform());
+        }
+        else {
+            uniforms->updateTransform(CameraTransformType::Model, dquat());
+            uniforms->updateTransform(CameraTransformType::ModelView, view_transform);
+        }
+
+        renderable->draw();
+    }
+}
+
+template <typename TRenderables>
+void Camera::render(const TRenderables& renderables) const
+{
+    using std::begin;
+    using std::end;
+    render(begin(renderables), end(renderables));
+}
 
 }
