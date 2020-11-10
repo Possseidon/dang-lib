@@ -72,7 +72,7 @@ GLFWwindow* WindowInfo::createWindow() const
     glfwWindowHintString(GLFW_X11_CLASS_NAME, x11.class_name.c_str());
     glfwWindowHintString(GLFW_X11_INSTANCE_NAME, x11.instance_name.c_str());
 
-    return glfwCreateWindow(width, height, title.c_str(), monitor, share ? share->handle() : nullptr);
+    return glfwCreateWindow(size.x(), size.y(), title.c_str(), monitor, share ? share->handle() : nullptr);
 }
 
 Window::Window(const WindowInfo& info)
