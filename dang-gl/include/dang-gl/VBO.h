@@ -38,7 +38,7 @@ constexpr dutils::EnumArray<BufferUsageHint, GLenum> GLConstants<BufferUsageHint
 
 /// <summary>Thrown, when a VBO is locked (e.g. it is mapped) and cannot be rebound.</summary>
 class VBOBindError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 template <typename T>

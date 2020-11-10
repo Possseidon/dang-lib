@@ -11,7 +11,7 @@ class Window;
 
 /// <summary>Any error caused by GLFW.</summary>
 class GLFWError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 /// <summary>A singleton, managing the global GLFW state.</summary>

@@ -53,7 +53,7 @@ const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames
 /// <summary>Base class for shader errors with an info log.</summary>
 class ShaderError : public std::runtime_error {
 public:
-    ShaderError(const std::string& info_log) : std::runtime_error(info_log) {}
+    ShaderError(const std::string& info_log) : runtime_error(info_log) {}
 };
 
 /// <summary>Thrown, when a shader has compilation errors.</summary>
@@ -89,20 +89,20 @@ public:
 /// <summary>Thrown, when the requested type or count of a uniform does not match with the shader source code.</summary>
 class ShaderUniformError : public std::runtime_error {
 public:
-    using std::runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 /// <summary>Thrown, when the specified shader attributes do not match the shader source, possibly because they got optimized away.</summary>
 class ShaderAttributeError : public std::runtime_error {
 public:
-    using std::runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 /// <summary>Thrown, when a shader file cannot be found at the given path.</summary>
 class ShaderFileNotFound : public std::runtime_error {
 public:
     ShaderFileNotFound(const fs::path& path)
-        : std::runtime_error("Shader file not found: " + path.string())
+        : runtime_error("Shader file not found: " + path.string())
     {
     }
 };

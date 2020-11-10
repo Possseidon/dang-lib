@@ -13,7 +13,7 @@ namespace dang::gl
 
 /// <summary>An error caused by an invalid FBO operation.</summary>
 class FramebufferError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 /// <summary>Specializes the context class for framebuffer objects.</summary>
