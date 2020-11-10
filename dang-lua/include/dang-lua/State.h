@@ -1353,6 +1353,42 @@ using IsMovedStackIndexResult = std::conjunction<IsStackIndexResult<std::remove_
 
 // --- State ---
 
+/// <summary>Wraps the template supplied function into a Lua function in an almost cost-free way.</summary>
+template <auto Func>
+inline constexpr int wrap(lua_State* state)
+{
+    using Info = detail::SignatureInfo<decltype(Func)>;
+
+    State lua(state);
+    auto old_top = lua.size();
+    auto&& args = Info::convertArguments(lua);
+
+    // convertArguments potentially calls maxFuncArg, which updates the internal size
+    if (old_top != lua.size()) {
+        // It should only increase
+        assert(lua.size() > old_top);
+        // Fill the rest with nil
+        lua.ensurePushable(lua.size() - old_top);
+        lua_settop(state, lua.size());
+    }
+
+    // Actually call the wrapped function object
+    if constexpr (std::is_void_v<Info::Return>) {
+        std::apply(Func, std::move(args));
+        return 0;
+    }
+    else {
+        return lua.push(std::apply(Func, std::move(args))).size();
+    }
+}
+
+/// <summary>Returns a luaL_Reg with the wrapped template supplied function and given name.</summary>
+template <auto Func>
+inline constexpr luaL_Reg reg(const char* name)
+{
+    return { name, wrap<Func> };
+}
+
 /// <summary>Wraps a Lua state or thread.</summary>
 class State {
 public:
@@ -2592,42 +2628,6 @@ public:
     {
         if (top_ < index)
             top_ = index;
-    }
-
-    /// <summary>Wraps the template supplied function into a Lua function in an almost cost-free way.</summary>
-    template <auto Func>
-    static constexpr int wrap(lua_State* state)
-    {
-        using Info = detail::SignatureInfo<decltype(Func)>;
-
-        State lua(state);
-        auto old_top = lua.size();
-        auto&& args = Info::convertArguments(lua);
-
-        // convertArguments potentially calls maxFuncArg, which updates the internal size
-        if (old_top != lua.size()) {
-            // It should only increase
-            assert(lua.size() > old_top);
-            // Fill the rest with nil
-            lua.ensurePushable(lua.size() - old_top);
-            lua_settop(state, lua.size());
-        }
-
-        // Actually call the wrapped function object
-        if constexpr (std::is_void_v<Info::Return>) {
-            std::apply(Func, std::move(args));
-            return 0;
-        }
-        else {
-            return lua.push(std::apply(Func, std::move(args))).size();
-        }
-    }
-
-    /// <summary>Returns a luaL_Reg with the wrapped template supplied function and given name.</summary>
-    template <auto Func>
-    static constexpr luaL_Reg reg(const char* name)
-    {
-        return { name, wrap<Func> };
     }
 
     // --- Reference ---
