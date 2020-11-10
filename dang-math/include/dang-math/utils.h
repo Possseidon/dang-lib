@@ -4,6 +4,7 @@
 #include <functional>
 #include <optional>
 #include <type_traits>
+#include <iostream>
 
 namespace dang::math
 {

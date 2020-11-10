@@ -463,6 +463,24 @@ struct Vector : std::array<T, Dim> {
         return true;
     }
 
+    /// <summary>Returns a string representing the vector in the form [x, y, z].</summary>
+    std::string format() const
+    {
+        return (std::stringstream() << *this).str();
+    }
+
+    /// <summary>Appends a string representation of the vector in the form [x, y, z] to the stream.</summary>
+    friend std::ostream& operator<<(std::ostream& stream, const Vector& vector)
+    {
+        stream << '[';
+        if constexpr (Dim > 0) {
+            stream << vector[0];
+            for (std::size_t i = 1; i < Dim; i++)
+                stream << ", " << vector[i];
+        }
+        return stream << ']';
+    }
+
     // --- Vector<T, 1> ---  
 
     /// <summary>The x-component of the vector.</summary>
