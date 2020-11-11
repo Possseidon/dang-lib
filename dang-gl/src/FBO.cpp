@@ -16,7 +16,7 @@ FBO::AttachmentPoint::AttachmentPoint(GLenum attachment)
 
 FBO::~FBO()
 {
-    context().reset(handle());
+    objectContext().reset(handle());
 }
 
 FBO::AttachmentPoint FBO::colorAttachment(std::size_t index) const
@@ -41,19 +41,19 @@ FBO::AttachmentPoint FBO::depthStencilAttachment() const
     return GL_DEPTH_STENCIL_ATTACHMENT;
 }
 
-void FBO::bindDefault(Window& window, FramebufferTarget target)
+void FBO::bindDefault(Context& context, FramebufferTarget target)
 {
-    window.objectContext<ObjectType::Framebuffer>().bind(target, ObjectBase::InvalidHandle);
+    context.contextFor<ObjectType::Framebuffer>().bind(target, {});
 }
 
 void FBO::bind(FramebufferTarget target) const
 {
-    context().bind(target, handle());
+    objectContext().bind(target, handle());
 }
 
 void FBO::bindDefault(FramebufferTarget target) const
 {
-    context().bind(target, ObjectBase::InvalidHandle);
+    objectContext().bind(target, {});
 }
 
 std::optional<dmath::svec2> FBO::size()
@@ -95,7 +95,7 @@ void FBO::attach(const RBO& rbo, AttachmentPoint attachment_point)
         toGLConstant(fbo_target),
         attachment_point,
         toGLConstant(rbo_target),
-        rbo.handle());
+        rbo.handle().unwrap());
     updateSize(rbo.size());
     updateAttachmentPoint(attachment_point, true);
 }
@@ -104,7 +104,7 @@ void FBO::detach(AttachmentPoint attachment_point)
 {
     auto target = FramebufferTarget::DrawFramebuffer;
     bind(target);
-    glFramebufferTexture(toGLConstant(target), attachment_point, ObjectBase::InvalidHandle, 0);
+    glFramebufferTexture(toGLConstant(target), attachment_point, Handle{}.unwrap(), 0);
     updateAttachmentPoint(attachment_point, false);
     if (!anyAttachments())
         size_ = std::nullopt;
@@ -155,9 +155,9 @@ void FBO::clear(ClearMask mask)
     glClear(static_cast<GLbitfield>(mask));
 }
 
-void FBO::clearDefault(Window& window, ClearMask mask)
+void FBO::clearDefault(Context& context, ClearMask mask)
 {
-    bindDefault(window, FramebufferTarget::DrawFramebuffer);
+    bindDefault(context, FramebufferTarget::DrawFramebuffer);
     glClear(static_cast<GLbitfield>(mask));
 }
 

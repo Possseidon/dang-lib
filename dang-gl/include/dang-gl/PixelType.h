@@ -1,5 +1,9 @@
 #pragma once
 
+#include "dang-utils/enum.h"
+
+#include "GLConstants.h"
+
 namespace dang::gl
 {
 

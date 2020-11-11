@@ -5,6 +5,8 @@
 #include "dang-utils/event.h"
 
 #include "Pixel.h"
+#include "PixelFormat.h"
+#include "PixelType.h"
 
 namespace dang::gl
 {

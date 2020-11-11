@@ -5,16 +5,14 @@
 #include "DataTypes.h"
 #include "GLConstants.h"
 #include "Object.h"
-#include "ObjectBase.h"
 #include "ObjectContext.h"
 #include "ObjectType.h"
+#include "ProgramContext.h"
 #include "Texture.h"
 #include "UniformWrapper.h"
 
 namespace dang::gl
 {
-
-enum class DataType;
 
 /// <summary>The different possible shader stages with vertex and fragment being the most common.</summary>
 enum class ShaderType {
@@ -197,7 +195,7 @@ public:
     template <typename = std::enable_if_t<std::is_same_v<T, GLint>>>
     ShaderUniform& operator=(const TextureBase& texture)
     {
-        set(texture.bind());
+        set(static_cast<GLint>(texture.bind()));
         return *this;
     }
 
@@ -212,12 +210,6 @@ struct AttributeOrder {
     std::vector<std::reference_wrapper<ShaderAttribute>> attributes;
     GLsizei stride = 0;
     GLsizei divisor = 0;
-};
-
-/// <summary>Specialization for GL-Programs using the default bindable context.</summary>
-template <>
-class ObjectContext<ObjectType::Program> : public ObjectContextBindable<ObjectType::Program> {
-    using ObjectContextBindable::ObjectContextBindable;
 };
 
 /// <summary>A GL-Program, built up of various shader stages which get linked together.</summary>
@@ -277,7 +269,7 @@ private:
     void postLinkCleanup();
 
     /// <summary>Throws ShaderCompilationError if the shader could not compile or writes to std::cerr, in case of success but an existing info log.</summary>
-    void checkShaderStatusAndInfoLog(ObjectBase::Handle shader_handle, ShaderType type);
+    void checkShaderStatusAndInfoLog(Handle shader_handle, ShaderType type);
     /// <summary>Throws ShaderLinkError if the program could not link or writes to std::cerr, in case of success but an existing info log.</summary>
     void checkLinkStatusAndInfoLog();
 
@@ -288,7 +280,7 @@ private:
     /// <summary>Sets the order of attributes, which should be the order of the Data structs, used in the VBO.</summary>
     void setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order);
 
-    std::vector<ObjectBase::Handle> shader_handles_;
+    std::vector<Handle> shader_handles_;
     std::map<std::string, std::string> includes_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;

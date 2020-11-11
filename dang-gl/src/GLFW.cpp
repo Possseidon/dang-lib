@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GLFW.h"
 
+#include "Context.h"
 #include "Window.h"
 
 namespace dang::gl
@@ -10,11 +11,12 @@ GLFW GLFW::Instance;
 
 void GLFW::setActiveWindow(Window* window)
 {
-    if (window == active_window_)
+    if (active_window_ == window)
         return;
 
     active_window_ = window;
     glfwMakeContextCurrent(window ? window->handle() : nullptr);
+    Context::current = &window->context();
 
     if (!glad_initialized_ && window)
         initializeGlad();

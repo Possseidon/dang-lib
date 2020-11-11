@@ -1,7 +1,5 @@
 #pragma once
 
-#include "dang-utils/enum.h"
-
 #include "Pixel.h"
 #include "PixelFormat.h"
 #include "PixelType.h"

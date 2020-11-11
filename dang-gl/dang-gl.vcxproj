@@ -242,6 +242,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\dang-gl\BufferContext.h" />
+    <ClInclude Include="include\dang-gl\FramebufferContext.h" />
+    <ClInclude Include="include\dang-gl\Context.h" />
+    <ClInclude Include="include\dang-gl\ObjectHandle.h" />
     <ClInclude Include="include\dang-gl\ClearMask.h" />
     <ClInclude Include="include\dang-gl\Buffer.h" />
     <ClInclude Include="include\dang-gl\Camera.h" />
@@ -252,7 +256,6 @@
     <ClInclude Include="include\dang-gl\GLFW.h" />
     <ClInclude Include="include\dang-gl\Input.h" />
     <ClInclude Include="include\dang-gl\Object.h" />
-    <ClInclude Include="include\dang-gl\ObjectBase.h" />
     <ClInclude Include="include\dang-gl\ObjectContext.h" />
     <ClInclude Include="include\dang-gl\ObjectType.h" />
     <ClInclude Include="include\dang-gl\pch.h" />
@@ -275,8 +278,14 @@
     <ClInclude Include="include\dang-gl\Renderable.h" />
     <ClInclude Include="include\dang-gl\State.h" />
     <ClInclude Include="include\dang-gl\StateTypes.h" />
+    <ClInclude Include="include\dang-gl\ObjectWrapper.h" />
+    <ClInclude Include="include\dang-gl\ProgramContext.h" />
+    <ClInclude Include="include\dang-gl\RenderbufferContext.h" />
+    <ClInclude Include="include\dang-gl\TextureContext.h" />
+    <ClInclude Include="include\dang-gl\VertexArrayContext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Context.cpp" />
     <ClCompile Include="src\FBO.cpp" />
     <ClCompile Include="src\PNGLoader.cpp" />
     <ClCompile Include="src\ObjectContext.cpp" />
@@ -285,7 +294,6 @@
     <ClCompile Include="src\Renderable.cpp" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Input.cpp" />
-    <ClCompile Include="src\ObjectBase.cpp" />
     <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\GLFW.cpp" />
     <ClCompile Include="src\pch.cpp">

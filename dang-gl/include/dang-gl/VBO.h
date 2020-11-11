@@ -2,6 +2,7 @@
 
 #include "Buffer.h"
 #include "GLConstants.h"
+#include "ObjectType.h"
 
 namespace dang::gl
 {

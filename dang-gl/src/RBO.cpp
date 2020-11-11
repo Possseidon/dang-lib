@@ -20,12 +20,12 @@ RBO::RBO(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
 
 RBO::~RBO()
 {
-    context().reset(handle());
+    objectContext().reset(handle());
 }
 
 void RBO::bind() const
 {
-    context().bind(handle());
+    objectContext().bind(handle());
 }
 
 dmath::svec2 RBO::size() const

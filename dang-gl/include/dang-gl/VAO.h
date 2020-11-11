@@ -4,8 +4,11 @@
 
 #include "GLConstants.h"
 #include "Object.h"
+#include "ObjectContext.h"
+#include "ObjectType.h"
 #include "Program.h"
 #include "VBO.h"
+#include "VertexArrayContext.h"
 
 namespace dang::gl
 {
@@ -43,12 +46,6 @@ constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
     GL_TRIANGLES_ADJACENCY,
     GL_TRIANGLE_STRIP_ADJACENCY,
     GL_PATCHES
-};
-
-/// <summary>Specialization for VertexArrays using the default bindable context.</summary>
-template <>
-class ObjectContext<ObjectType::VertexArray> : public ObjectContextBindable<ObjectType::VertexArray> {
-    using ObjectContextBindable::ObjectContextBindable;
 };
 
 /// <summary>A base class for all vertex array objects, which is not templated yet.</summary>

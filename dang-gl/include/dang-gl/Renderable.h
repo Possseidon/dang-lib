@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Program.h"
 #include "Transform.h"
 
 namespace dang::gl
 {
+
+class Program;
 
 class Renderable;
 

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Program.h"
 
-#include "DataTypes.h"
-
 namespace dang::gl
 {
 
@@ -27,16 +25,16 @@ std::string Program::replaceInfoLogShaderNames(std::string info_log) const
     return info_log;
 }
 
-void Program::checkShaderStatusAndInfoLog(ObjectBase::Handle shader_handle, ShaderType type)
+void Program::checkShaderStatusAndInfoLog(Handle shader_handle, ShaderType type)
 {
     GLint status;
-    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+    glGetShaderiv(shader_handle.unwrap(), GL_COMPILE_STATUS, &status);
 
     GLint info_log_length;
-    glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &info_log_length);
+    glGetShaderiv(shader_handle.unwrap(), GL_INFO_LOG_LENGTH, &info_log_length);
     if (info_log_length > 0) {
         std::string info_log(static_cast<std::size_t>(info_log_length) - 1, '\0');
-        glGetShaderInfoLog(shader_handle, info_log_length, nullptr, &info_log[0]);
+        glGetShaderInfoLog(shader_handle.unwrap(), info_log_length, nullptr, &info_log[0]);
 
         info_log = replaceInfoLogShaderNames(info_log);
 
@@ -52,13 +50,13 @@ void Program::checkShaderStatusAndInfoLog(ObjectBase::Handle shader_handle, Shad
 void Program::checkLinkStatusAndInfoLog()
 {
     GLint status;
-    glGetProgramiv(handle(), GL_LINK_STATUS, &status);
+    glGetProgramiv(handle().unwrap(), GL_LINK_STATUS, &status);
 
     GLint info_log_length;
-    glGetProgramiv(handle(), GL_INFO_LOG_LENGTH, &info_log_length);
+    glGetProgramiv(handle().unwrap(), GL_INFO_LOG_LENGTH, &info_log_length);
     if (info_log_length > 0) {
         std::string info_log(static_cast<std::size_t>(info_log_length) - 1, '\0');
-        glGetProgramInfoLog(handle(), info_log_length, nullptr, &info_log[0]);
+        glGetProgramInfoLog(handle().unwrap(), info_log_length, nullptr, &info_log[0]);
 
         if (status)
             std::cerr << info_log;
@@ -72,18 +70,18 @@ void Program::checkLinkStatusAndInfoLog()
 void Program::loadAttributeLocations()
 {
     GLint active_attributes;
-    glGetProgramiv(handle(), GL_ACTIVE_ATTRIBUTES, &active_attributes);
+    glGetProgramiv(handle().unwrap(), GL_ACTIVE_ATTRIBUTES, &active_attributes);
     if (active_attributes == 0)
         return;
 
     GLint max_length;
-    glGetProgramiv(handle(), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+    glGetProgramiv(handle().unwrap(), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
     for (GLint i = 0; i < active_attributes; i++) {
         std::string name(static_cast<std::size_t>(max_length) - 1, '\0');
         GLsizei actual_length;
         GLint data_size;
         GLenum data_type;
-        glGetActiveAttrib(handle(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
+        glGetActiveAttrib(handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
         name.resize(static_cast<std::size_t>(actual_length));
         attributes_.emplace(name, ShaderAttribute(*this, data_size, static_cast<DataType>(data_type), name));
     }
@@ -92,18 +90,18 @@ void Program::loadAttributeLocations()
 void Program::loadUniformLocations()
 {
     GLint active_uniforms;
-    glGetProgramiv(handle(), GL_ACTIVE_UNIFORMS, &active_uniforms);
+    glGetProgramiv(handle().unwrap(), GL_ACTIVE_UNIFORMS, &active_uniforms);
     if (active_uniforms == 0)
         return;
 
     GLint max_length;
-    glGetProgramiv(handle(), GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+    glGetProgramiv(handle().unwrap(), GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
     for (GLint i = 0; i < active_uniforms; i++) {
         std::string name(static_cast<std::size_t>(max_length) - 1, '\0');
         GLsizei actual_length;
         GLint data_size;
         GLenum data_type;
-        glGetActiveUniform(handle(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
+        glGetActiveUniform(handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
         name.resize(static_cast<std::size_t>(actual_length));
 
         uniforms_.emplace(name, ShaderUniformBase::create(*this, data_size, static_cast<DataType>(data_type), name));
@@ -159,16 +157,16 @@ void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
-    ObjectBase::Handle shader_handle = glCreateShader(toGLConstant(type));
+    Handle shader_handle{ glCreateShader(toGLConstant(type)) };
     shader_handles_.push_back(shader_handle);
 
     std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();
     const GLchar* full_code = preprocessed.c_str();
 
-    glShaderSource(shader_handle, 1, &full_code, nullptr);
-    glCompileShader(shader_handle);
+    glShaderSource(shader_handle.unwrap(), 1, &full_code, nullptr);
+    glCompileShader(shader_handle.unwrap());
     checkShaderStatusAndInfoLog(shader_handle, type);
-    glAttachShader(handle(), shader_handle);
+    glAttachShader(handle().unwrap(), shader_handle.unwrap());
 }
 
 void Program::addShaderFromFile(ShaderType type, const fs::path& path)
@@ -183,7 +181,7 @@ void Program::addShaderFromFile(ShaderType type, const fs::path& path)
 
 void Program::link(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order)
 {
-    glLinkProgram(handle());
+    glLinkProgram(handle().unwrap());
     checkLinkStatusAndInfoLog();
     postLinkCleanup();
     loadAttributeLocations();
@@ -194,8 +192,8 @@ void Program::link(const AttributeNames& attribute_order, const InstancedAttribu
 void Program::postLinkCleanup()
 {
     for (auto shader_handle : shader_handles_) {
-        glDetachShader(handle(), shader_handle);
-        glDeleteShader(shader_handle);
+        glDetachShader(handle().unwrap(), shader_handle.unwrap());
+        glDeleteShader(shader_handle.unwrap());
     }
     shader_handles_.clear();
     includes_.clear();
@@ -256,7 +254,7 @@ GLint ShaderVariable::location() const
 }
 
 ShaderUniformBase::ShaderUniformBase(Program& program, GLint count, DataType type, std::string name)
-    : ShaderVariable(program, count, type, name, glGetUniformLocation(program.handle(), name.c_str()))
+    : ShaderVariable(program, count, type, name, glGetUniformLocation(program.handle().unwrap(), name.c_str()))
 {
 }
 
@@ -421,7 +419,7 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(Program& program, G
 }
 
 ShaderAttribute::ShaderAttribute(Program& program, GLint count, DataType type, std::string name)
-    : ShaderVariable(program, count, type, name, glGetAttribLocation(program.handle(), name.c_str()))
+    : ShaderVariable(program, count, type, name, glGetAttribLocation(program.handle().unwrap(), name.c_str()))
 {
 }
 

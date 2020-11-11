@@ -1,13 +1,8 @@
 #include "pch.h"
 #include "Window.h"
 
-#include "Buffer.h"
 #include "FBO.h"
 #include "GLFW.h"
-#include "Program.h"
-#include "RBO.h"
-#include "Texture.h"
-#include "VAO.h"
 
 namespace dang::gl
 {
@@ -79,9 +74,10 @@ Window::Window(const WindowInfo& info)
     : handle_(info.createWindow())
     , title_(info.title)
 {
+    activate();
+    context_.initialize();
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();
-    initializeContexts(dutils::makeEnumSequence<ObjectType>());
     last_time_ = GLFW::Instance.timerValue();
 }
 
@@ -100,9 +96,14 @@ GLFWwindow* Window::handle() const
     return handle_;
 }
 
-State& Window::state()
+const Context& Window::context() const
 {
-    return state_;
+    return context_;
+}
+
+Context& Window::context()
+{
+    return context_;
 }
 
 const std::string& Window::title() const
@@ -570,7 +571,7 @@ void Window::update()
 void Window::render()
 {
     activate();
-    FBO::clearDefault(*this, clear_mask_);
+    FBO::clearDefault(context_, clear_mask_);
     onRender(*this);
     glfwSwapBuffers(handle_);
     if (finish_after_swap_)
@@ -624,13 +625,6 @@ bool Window::supportsAdaptiveVSync()
     activate();
     return glfwExtensionSupported("WGL_EXT_swap_control_tear") || glfwExtensionSupported("GLX_EXT_swap_control_tear");
 }
-
-template <ObjectType... Types>
-void Window::initializeContexts(dutils::EnumSequence<ObjectType, Types...>)
-{
-    activate();
-    ((object_contexts_[Types] = std::make_unique<ObjectContext<Types>>(*this)), ...);
-};
 
 void Window::registerCallbacks()
 {
@@ -805,7 +799,7 @@ void Window::updateDeltaTime()
     fps_ = new_fps - factor * (new_fps - fps_);
 }
 
-void Window::updateSizeLimits() const
+void Window::updateSizeLimits()
 {
     glfwSetWindowSizeLimits(handle_,
         size_limits_.low.x(), size_limits_.low.y(),

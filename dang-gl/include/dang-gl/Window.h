@@ -3,15 +3,12 @@
 #include "dang-math/vector.h"
 #include "dang-math/bounds.h"
 
-#include "dang-utils/enum.h"
 #include "dang-utils/event.h"
 
 #include "ClearMask.h"
+#include "Context.h"
 #include "Input.h"
 #include "Monitor.h"
-#include "State.h"
-#include "ObjectContext.h"
-#include "ObjectType.h"
 
 namespace dang::gl
 {
@@ -225,11 +222,10 @@ public:
     /// <summary>Returns the handle of the GLFW window.</summary>
     GLFWwindow* handle() const;
 
-    /// <summary>Provides access to the different states of the OpenGL context for this window.</summary>
-    State& state();
-    /// <summary>Returns the context for a given GL-Object type.</summary>
-    template <ObjectType Type>
-    ObjectContext<Type>& objectContext();
+    /// <summary>Returns the OpenGL context of this window.</summary>
+    const Context& context() const;
+    /// <summary>Returns the OpenGL context of this window.</summary>
+    Context& context();
 
     // TODO: C++20 use std::u8string
     /// <summary>Returns the title of the window.</summary>
@@ -508,10 +504,6 @@ public:
     GLDebugMessageEvent onGLDebugMessage;
 
 private:
-    /// <summary>Initializes the contexts for the different GL-Object types.</summary>
-    template <ObjectType... Types>
-    void initializeContexts(dutils::EnumSequence<ObjectType, Types...>);
-
     /// <summary>Registers all GLFW callbacks.</summary>
     void registerCallbacks();
 
@@ -542,13 +534,11 @@ private:
     /// <summary>Updates the current delta time and FPS.</summary>
     void updateDeltaTime();
     /// <summary>Updates the window size limitations to the stored values.</summary>
-    void updateSizeLimits() const;
+    void updateSizeLimits();
 
     GLFWwindow* handle_ = nullptr;
 
-    // OpenGL State and Contexts
-    State state_;
-    dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
+    Context context_;
 
     // Window-Properties
     std::string title_;
@@ -570,11 +560,5 @@ private:
     // Input
     std::string text_input_;
 };
-
-template <ObjectType Type>
-inline ObjectContext<Type>& Window::objectContext()
-{
-    return static_cast<ObjectContext<Type>&>(*object_contexts_[Type]);
-}
 
 }

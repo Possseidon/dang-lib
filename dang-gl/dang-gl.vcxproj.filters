@@ -22,9 +22,6 @@
     <Filter Include="Header Files\Other">
       <UniqueIdentifier>{ab4d38f9-9bd5-4313-b8bb-d11f248ba864}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Components\Camera">
-      <UniqueIdentifier>{abe30dcc-74a0-4932-83a2-3e22f4feb003}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Components\Image">
       <UniqueIdentifier>{6641c050-4802-44f1-9f93-cecbec8d3973}</UniqueIdentifier>
     </Filter>
@@ -33,9 +30,6 @@
     </Filter>
     <Filter Include="Header Files\OpenGL">
       <UniqueIdentifier>{c5c6e428-6801-4f3c-bdaf-8640847d8eb1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\OpenGL\State">
-      <UniqueIdentifier>{d357b7d3-9cc7-4e53-ac7e-fada9b7c9e61}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\OpenGL\Objects">
       <UniqueIdentifier>{681381d8-bfd6-4ebf-994e-c5927020d33e}</UniqueIdentifier>
@@ -79,17 +73,11 @@
     <Filter Include="Source Files\OpenGL">
       <UniqueIdentifier>{32cea222-8d88-484d-8f31-41603108154d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\OpenGL\State">
-      <UniqueIdentifier>{128efdb9-bac4-46f1-afff-7264f38f1112}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\OpenGL\Objects">
       <UniqueIdentifier>{f83310b2-4f0f-45d1-820e-adc8dfbad38c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\GLFW">
       <UniqueIdentifier>{405138fc-3d23-4914-a1a5-243671ea52e5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Components\Camera">
-      <UniqueIdentifier>{be0fe5ab-0ff3-4079-b207-cc32330893e7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Components\Image">
       <UniqueIdentifier>{29b10d76-0243-4816-bbe6-d3e60aad0768}</UniqueIdentifier>
@@ -127,25 +115,34 @@
     <Filter Include="Source Files\OpenGL\Objects\Program">
       <UniqueIdentifier>{46cc17a6-1882-43a9-b049-fbdaff62b091}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\OpenGL\ObjectBase">
-      <UniqueIdentifier>{50e53857-d379-443b-9a9f-bd90733b3dac}</UniqueIdentifier>
+    <Filter Include="Header Files\Components\Rendering">
+      <UniqueIdentifier>{abe30dcc-74a0-4932-83a2-3e22f4feb003}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\OpenGL\ObjectBase">
+    <Filter Include="Source Files\Components\Rendering">
+      <UniqueIdentifier>{be0fe5ab-0ff3-4079-b207-cc32330893e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Context">
+      <UniqueIdentifier>{d357b7d3-9cc7-4e53-ac7e-fada9b7c9e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OpenGL\Objects\Base">
+      <UniqueIdentifier>{b1dc783c-a4d0-44df-8558-072c644b5d8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Objects\Base">
       <UniqueIdentifier>{23ff49cd-4e3f-47e6-89c4-bbb6056025c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OpenGL\Context">
+      <UniqueIdentifier>{128efdb9-bac4-46f1-afff-7264f38f1112}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\State.cpp">
-      <Filter>Source Files\OpenGL\State</Filter>
+      <Filter>Source Files\OpenGL\Context</Filter>
     </ClCompile>
     <ClCompile Include="src\StateTypes.cpp">
-      <Filter>Source Files\OpenGL\State</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ObjectBase.cpp">
-      <Filter>Source Files\OpenGL\ObjectBase</Filter>
+      <Filter>Source Files\OpenGL\Context</Filter>
     </ClCompile>
     <ClCompile Include="src\ObjectContext.cpp">
-      <Filter>Source Files\OpenGL\ObjectBase</Filter>
+      <Filter>Source Files\OpenGL\Objects\Base</Filter>
     </ClCompile>
     <ClCompile Include="src\GLFW.cpp">
       <Filter>Source Files\GLFW</Filter>
@@ -160,13 +157,13 @@
       <Filter>Source Files\GLFW</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files\Components\Camera</Filter>
+      <Filter>Source Files\Components\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderable.cpp">
-      <Filter>Source Files\Components\Camera</Filter>
+      <Filter>Source Files\Components\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\Transform.cpp">
-      <Filter>Source Files\Components\Camera</Filter>
+      <Filter>Source Files\Components\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="src\PNGLoader.cpp">
       <Filter>Source Files\Components\Image</Filter>
@@ -185,6 +182,9 @@
     </ClCompile>
     <ClCompile Include="src\VAO.cpp">
       <Filter>Source Files\OpenGL\Objects\VertexArray</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Context.cpp">
+      <Filter>Source Files\OpenGL\Context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,29 +206,17 @@
     <ClInclude Include="include\dang-gl\PNGLoader.h">
       <Filter>Header Files\Components\Image</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\Object.h">
-      <Filter>Header Files\OpenGL\ObjectBase</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectBase.h">
-      <Filter>Header Files\OpenGL\ObjectBase</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectContext.h">
-      <Filter>Header Files\OpenGL\ObjectBase</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dang-gl\ObjectType.h">
-      <Filter>Header Files\OpenGL\ObjectBase</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\Camera.h">
-      <Filter>Header Files\Components\Camera</Filter>
+      <Filter>Header Files\Components\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Renderable.h">
-      <Filter>Header Files\Components\Camera</Filter>
+      <Filter>Header Files\Components\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\State.h">
-      <Filter>Header Files\OpenGL\State</Filter>
+      <Filter>Header Files\OpenGL\Context</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\StateTypes.h">
-      <Filter>Header Files\OpenGL\State</Filter>
+      <Filter>Header Files\OpenGL\Context</Filter>
     </ClInclude>
     <ClInclude Include="include\dang-gl\Pixel.h">
       <Filter>Header Files\Components\Image</Filter>
@@ -263,9 +251,6 @@
     <ClInclude Include="include\dang-gl\VAO.h">
       <Filter>Header Files\OpenGL\Objects\VertexArray</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\FBO.h">
-      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\RBO.h">
       <Filter>Header Files\OpenGL\Objects\Renderbuffer</Filter>
     </ClInclude>
@@ -289,6 +274,45 @@
     </ClInclude>
     <ClInclude Include="include\dang-gl\ClearMask.h">
       <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Context.h">
+      <Filter>Header Files\OpenGL\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectHandle.h">
+      <Filter>Header Files\OpenGL\Objects\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\Object.h">
+      <Filter>Header Files\OpenGL\Objects\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectContext.h">
+      <Filter>Header Files\OpenGL\Objects\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectType.h">
+      <Filter>Header Files\OpenGL\Objects\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ObjectWrapper.h">
+      <Filter>Header Files\OpenGL\Objects\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\FBO.h">
+      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\BufferContext.h">
+      <Filter>Header Files\OpenGL\Objects\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\FramebufferContext.h">
+      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\ProgramContext.h">
+      <Filter>Header Files\OpenGL\Objects\Program</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\RenderbufferContext.h">
+      <Filter>Header Files\OpenGL\Objects\Renderbuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\TextureContext.h">
+      <Filter>Header Files\OpenGL\Objects\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\VertexArrayContext.h">
+      <Filter>Header Files\OpenGL\Objects\VertexArray</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

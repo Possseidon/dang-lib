@@ -1,10 +1,11 @@
 #pragma once
 
-#include "DataTypes.h"
+#include "dang-utils/enum.h"
+
+#include "MathTypes.h"
 #include "Program.h"
-#include "Renderable.h"
-#include "Transform.h"
 #include "Window.h"
+#include "Transform.h"
 
 namespace dang::gl
 {

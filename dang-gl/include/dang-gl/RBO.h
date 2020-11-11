@@ -1,40 +1,12 @@
 #pragma once
 
 #include "Object.h"
-#include "ObjectBase.h"
 #include "ObjectType.h"
 #include "PixelInternalFormat.h"
+#include "RenderbufferContext.h"
 
 namespace dang::gl
 {
-
-/// <summary>Specializes the context class for renderbuffer objects.</summary>
-template <>
-class ObjectContext<ObjectType::Renderbuffer> : public ObjectContextBase {
-public:
-    using ObjectContextBase::ObjectContextBase;
-
-    /// <summary>Binds the given renderbuffer handle, unless it is bound already.</summary>
-    void bind(ObjectBase::Handle handle)
-    {
-        if (bound_renderbuffer_ == handle)
-            return;
-        ObjectWrapper<ObjectType::Renderbuffer>::bind(RenderbufferTarget::Renderbuffer, handle);
-        bound_renderbuffer_ = handle;
-    }
-
-    /// <summary>Resets the bound renderbuffer, if the given handle is currently bound.</summary>
-    void reset(ObjectBase::Handle handle)
-    {
-        if (bound_renderbuffer_ != handle)
-            return;
-        ObjectWrapper<ObjectType::Renderbuffer>::bind(RenderbufferTarget::Renderbuffer, ObjectBase::InvalidHandle);
-        bound_renderbuffer_ = ObjectBase::InvalidHandle;
-    }
-
-private:
-    ObjectBase::Handle bound_renderbuffer_;
-};
 
 /// <summary>A renderbuffer object containing image data, specifially used together with framebuffer objects.</summary>
 /// <remarks>Natively supports multisampling.</remarks>

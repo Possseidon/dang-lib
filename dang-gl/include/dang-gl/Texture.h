@@ -4,12 +4,14 @@
 
 #include "Image.h"
 #include "Object.h"
-#include "ObjectBase.h"
 #include "ObjectContext.h"
+#include "ObjectHandle.h"
 #include "ObjectType.h"
+#include "ObjectWrapper.h"
 #include "PixelFormat.h"
 #include "PixelInternalFormat.h"
 #include "PixelType.h"
+#include "TextureContext.h"
 
 namespace dang::gl
 {
@@ -32,39 +34,6 @@ Quote Khronos.org:
 
 */
 
-/// <summary>An error related to textures.</summary>
-class TextureError : public std::runtime_error {
-    using runtime_error::runtime_error;
-};
-
-class TextureBase;
-
-// This current implementation is easy to use, but only allows a texture to be bound to a single slot
-// Possibly consider modification, to allow a texture to be bound for multiple slots, as the spec does technically allows this
-// -> This greatly complicates everything and might not be worth the cost (both run-time and possibly ease-of-use)
-
-/// <summary>Specializes the context class for texture objects.</summary>
-template <>
-class ObjectContext<ObjectType::Texture> : public ObjectContextBase {
-public:
-    using ObjectContextBase::ObjectContextBase;
-
-    /// <summary>Returns the currently active texture slot.</summary>
-    GLint activeSlot();
-    /// <summary>Sets the currently active texture slot.</summary>
-    void setActiveSlot(GLint slot);
-
-    /// <summary>Binds the texture to the first free slot and returns it or throws a TextureError, if all slots are occupied.</summary>
-    GLint bind(const TextureBase& texture);
-    /// <summary>If the texture is currently bound to a slot, makes that slot free for another texture to use.</summary>
-    void release(const TextureBase& texture);
-
-private:
-    GLint active_slot_;
-    std::vector<ObjectBase::Handle> active_textures_ = std::vector<ObjectBase::Handle>(window().state().max_combined_texture_image_units);
-    std::vector<ObjectBase::Handle>::iterator first_free_slot_ = active_textures_.begin();
-};
-
 /// <summary>Serves as a base class for all texture classes.</summary>
 class TextureBase : public Object<ObjectType::Texture> {
 public:
@@ -73,19 +42,22 @@ public:
     /// <summary>Resets the bound texture of the context, in case of the texture still being bound.</summary>
     ~TextureBase()
     {
-        this->context().release(*this);
+        release();
     }
 
     /// <summary>Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.</summary>
-    GLint bind() const
+    std::size_t bind() const
     {
-        return this->context().bind(*this);
+        auto slot = this->objectContext().bind(target_, handle(), active_slot_);
+        active_slot_ = slot;
+        return slot;
     }
 
     /// <summary>If the texture is currently bound to a slot, makes that slot free for another texture to use.</summary>
     void release() const
     {
-        this->context().release(*this);
+        this->objectContext().release(target_, active_slot_);
+        active_slot_ = {};
     }
 
 protected:
@@ -98,7 +70,7 @@ protected:
 
 private:
     TextureTarget target_;
-    mutable std::optional<GLint> active_slot_;
+    mutable std::optional<std::size_t> active_slot_;
 };
 
 enum class TextureDepthStencilMode {
@@ -769,48 +741,5 @@ class TextureRectangle : public detail::TextureBaseRegular<2, TextureTarget::Tex
 public:
     using TextureBaseRegular::TextureBaseRegular;
 };
-
-inline GLint ObjectContext<ObjectType::Texture>::activeSlot()
-{
-    return active_slot_;
-}
-
-inline void ObjectContext<ObjectType::Texture>::setActiveSlot(GLint active_slot)
-{
-    if (active_slot_ == active_slot)
-        return;
-    glActiveTexture(GL_TEXTURE0 + active_slot);
-    active_slot_ = active_slot;
-}
-
-inline GLint ObjectContext<ObjectType::Texture>::bind(const TextureBase& texture)
-{
-    if (texture.active_slot_) {
-        setActiveSlot(*texture.active_slot_);
-        return *texture.active_slot_;
-    }
-    if (first_free_slot_ == active_textures_.end())
-        throw TextureError("Cannot bind texture, as all slots are in use.");
-    GLint slot = static_cast<GLint>(std::distance(active_textures_.begin(), first_free_slot_));
-    setActiveSlot(slot);
-    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, texture.handle());
-    *first_free_slot_ = texture.handle();
-    texture.active_slot_ = slot;
-    first_free_slot_ = std::find(std::next(first_free_slot_), active_textures_.end(), 0u);
-    return slot;
-}
-
-inline void ObjectContext<ObjectType::Texture>::release(const TextureBase& texture)
-{
-    if (!texture.active_slot_)
-        return;
-    setActiveSlot(*texture.active_slot_);
-    ObjectWrapper<ObjectType::Texture>::bind(texture.target_, ObjectBase::InvalidHandle);
-    auto texture_to_free = std::next(active_textures_.begin(), static_cast<std::size_t>(*texture.active_slot_));
-    *texture_to_free = ObjectBase::InvalidHandle;
-    texture.active_slot_ = std::nullopt;
-    if (texture_to_free < first_free_slot_)
-        first_free_slot_ = texture_to_free;
-}
 
 }

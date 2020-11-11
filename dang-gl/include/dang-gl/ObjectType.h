@@ -3,7 +3,6 @@
 #include "dang-utils/enum.h"
 
 #include "GLConstants.h"
-#include "ObjectBase.h"
 
 namespace dang::gl
 {
@@ -242,52 +241,5 @@ constexpr bool canExecute(const T&)
 }
 
 }
-
-/// <summary>Wraps OpenGL object creation, destruction and binding with a consistent interface.</summary>
-template <ObjectType Type>
-struct ObjectWrapper {
-    /// <summary>Creates a new OpenGL object and returns its handle.</summary>
-    static ObjectBase::Handle create()
-    {
-        if constexpr (detail::canExecute(detail::glGenObjects<Type>)) {
-            ObjectBase::Handle handle = ObjectBase::InvalidHandle;
-            detail::glGenObjects<Type>(1, &handle);
-            return handle;
-        }
-        else if constexpr (detail::canExecute(detail::glCreateObject<Type>)) {
-            return detail::glCreateObject<Type>();
-        }
-        else {
-            static_assert(false, "No function to create this GL-Object type.");
-        }
-    }
-
-    /// <summary>Destroys an OpenGL object with the given handle.</summary>
-    static void destroy(ObjectBase::Handle handle)
-    {
-        if constexpr (detail::canExecute(detail::glDeleteObjects<Type>)) {
-            detail::glDeleteObjects<Type>(1, &handle);
-        }
-        else if constexpr (detail::canExecute(detail::glDeleteObject<Type>)) {
-            return detail::glDeleteObject<Type>(handle);
-        }
-        else {
-            static_assert(false, "No function to destroy this GL-Object type.");
-        }
-    }
-
-    /// <summary>Binds the given OpenGL object to the given binding target.</summary>
-    template <typename Target = ObjectTarget<Type>>
-    static void bind(Target target, ObjectBase::Handle handle)
-    {
-        detail::glBindObject<Type>(toGLConstant(target), handle);
-    }
-
-    /// <summary>Binds the given OpenGL object.</summary>
-    static void bind(ObjectBase::Handle handle)
-    {
-        detail::glBindObject<Type>(handle);
-    }
-};
 
 }
