@@ -16,7 +16,8 @@ FBO::AttachmentPoint::AttachmentPoint(GLenum attachment)
 
 FBO::~FBO()
 {
-    objectContext().reset(handle());
+    if (*this)
+        objectContext().reset(handle());
 }
 
 FBO::AttachmentPoint FBO::colorAttachment(std::size_t index) const

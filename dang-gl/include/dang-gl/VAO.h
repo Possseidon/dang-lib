@@ -53,6 +53,7 @@ class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
 public:
     /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
+    ~VAOBase();
 
     /// <summary>The GL-Program associated with the VAO.</summary>
     Program& program() const;

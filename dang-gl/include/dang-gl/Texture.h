@@ -42,7 +42,8 @@ public:
     /// <summary>Resets the bound texture of the context, in case of the texture still being bound.</summary>
     ~TextureBase()
     {
-        release();
+        if (*this)
+            release();
     }
 
     /// <summary>Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.</summary>

@@ -20,7 +20,8 @@ RBO::RBO(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
 
 RBO::~RBO()
 {
-    objectContext().reset(handle());
+    if (*this)
+        objectContext().reset(handle());
 }
 
 void RBO::bind() const

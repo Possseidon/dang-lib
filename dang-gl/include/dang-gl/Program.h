@@ -228,6 +228,7 @@ public:
     using InstancedAttributeNames = std::vector<InstancedAttributes>;
 
     Program() = default;
+    ~Program();
     Program(Program&&) = delete;
 
     /// <summary>Adds an include with the given name and code, which is used by the custom shader pre-processor.</summary>

@@ -10,6 +10,12 @@ VAOBase::VAOBase(Program& program, BeginMode mode)
 {
 }
 
+VAOBase::~VAOBase()
+{
+    if (*this)
+        objectContext().reset(handle());
+}
+
 Program& VAOBase::program() const
 {
     return program_;

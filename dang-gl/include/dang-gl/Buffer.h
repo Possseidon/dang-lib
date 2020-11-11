@@ -21,7 +21,8 @@ public:
     /// <summary>Resets the bound buffer of the context, in case of the buffer still being bound.</summary>
     ~BufferBase()
     {
-        objectContext().reset(Target, handle());
+        if (*this)
+            objectContext().reset(Target, handle());
     }
 
     /// <summary>Binds the buffer to the correct target.</summary>

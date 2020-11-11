@@ -135,6 +135,12 @@ void Program::setAttributeOrder(const AttributeNames& attribute_order, const Ins
             throw ShaderAttributeError("Shader-Attribute not specified in order: " + name);
 }
 
+Program::~Program()
+{
+    if (*this)
+        objectContext().reset(handle());
+}
+
 void Program::addInclude(const std::string& name, std::string code)
 {
     includes_.emplace(name, std::move(code));
