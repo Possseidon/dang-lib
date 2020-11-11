@@ -25,6 +25,9 @@ using uvec = dang::math::Vector<GLuint, Dim>;
 template <std::size_t Dim>
 using bvec = dang::math::Vector<GLboolean, Dim>;
 
+template <std::size_t Dim>
+using svec = dang::math::Vector<GLsizei, Dim>;
+
 using vec1 = vec<1>;
 using vec2 = vec<2>;
 using vec3 = vec<3>;
@@ -50,6 +53,11 @@ using bvec2 = bvec<2>;
 using bvec3 = bvec<3>;
 using bvec4 = bvec<4>;
 
+using svec1 = svec<1>;
+using svec2 = svec<2>;
+using svec3 = svec<3>;
+using svec4 = svec<4>;
+
 template <std::size_t Dim>
 using bounds = dang::math::Bounds<GLfloat, Dim>;
 
@@ -61,6 +69,9 @@ using ibounds = dang::math::Bounds<GLint, Dim>;
 
 template <std::size_t Dim>
 using ubounds = dang::math::Bounds<GLuint, Dim>;
+
+template <std::size_t Dim>
+using sbounds = dang::math::Bounds<GLsizei, Dim>;
 
 using bounds1 = bounds<1>;
 using bounds2 = bounds<2>;
@@ -77,6 +88,10 @@ using ibounds3 = ibounds<3>;
 using ubounds1 = ubounds<1>;
 using ubounds2 = ubounds<2>;
 using ubounds3 = ubounds<3>;
+
+using sbounds1 = sbounds<1>;
+using sbounds2 = sbounds<2>;
+using sbounds3 = sbounds<3>;
 
 DMATH_MATRIX_DEFINE(mat, GLfloat)
 DMATH_MATRIX_DEFINE(dmat, GLdouble)

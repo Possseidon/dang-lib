@@ -1,7 +1,7 @@
 #pragma once
 
-/// <summary>Wraps the bitfield passed to glClear.</summary>
-enum class ClearMask : GLbitfield {
+/// <summary>Wraps the bitfield representing the three buffers of framebuffer objects.</summary>
+enum class BufferMask : GLbitfield {
     NONE = 0,
     Color = GL_COLOR_BUFFER_BIT,
     Depth = GL_DEPTH_BUFFER_BIT,

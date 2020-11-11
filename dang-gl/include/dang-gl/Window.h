@@ -5,7 +5,7 @@
 
 #include "dang-utils/event.h"
 
-#include "ClearMask.h"
+#include "BufferMask.h"
 #include "Context.h"
 #include "Input.h"
 #include "Monitor.h"
@@ -366,9 +366,9 @@ public:
     ContextRobustness contextRobustness() const;
 
     /// <summary>Returns the current clear mask, which is used at the beginning of a render call.</summary>
-    ClearMask clearMask() const;
+    BufferMask clearMask() const;
     /// <summary>Setst the clear mask, which is used at the beginning of a render call.</summary>
-    void setClearMask(ClearMask mask);
+    void setClearMask(BufferMask mask);
 
     /// <summary>Whether the window should call glFinish after SwapBuffers.</summary>
     bool finishAfterSwap() const;
@@ -548,7 +548,7 @@ private:
     std::optional<dmath::ivec2> aspect_ratio_;
 
     // Render-Properties
-    ClearMask clear_mask_ = ClearMask::ALL;
+    BufferMask clear_mask_ = BufferMask::ALL;
     bool auto_adjust_viewport_ = true;
     bool finish_after_swap_ = true;
 

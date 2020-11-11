@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ClearMask.h"
+#include "BufferMask.h"
 #include "FramebufferContext.h"
+#include "MathTypes.h"
 #include "Object.h"
 #include "ObjectContext.h"
 #include "ObjectHandle.h"
@@ -28,6 +29,21 @@ enum class FramebufferStatus : GLenum {
     Unsupported = GL_FRAMEBUFFER_UNSUPPORTED,
     IncompleteMultisample = GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
     IncompleteLayerTargets = GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
+};
+
+/// <summary>The filtering method to use for framebuffer blitting.</summary>
+/// <remarks>The linear filtering method only works for the color buffer.</remarks>
+enum class BlitFilter {
+    Nearest,
+    Linear,
+
+    COUNT
+};
+
+template <>
+constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {
+    GL_NEAREST,
+    GL_LINEAR
 };
 
 /// <summary>A framebuffer object, which represents the destination (or source) of OpenGL render operations.</summary>
@@ -70,7 +86,7 @@ public:
     void bindDefault(FramebufferTarget target = FramebufferTarget::Framebuffer) const;
 
     /// <summary>Returns the forcibly common width and height of all attachments.</summary>
-    std::optional<dmath::svec2> size();
+    std::optional<svec2> size();
 
     /// <summary>Whether the framebuffer has any attachment.</summary>
     bool anyAttachments() const;
@@ -89,20 +105,34 @@ public:
     void checkComplete() const;
 
     /// <summary>Binds the framebuffer and fills it with the current clear color, depth and stencil values.</summary>
-    void clear(ClearMask mask);
+    void clear(BufferMask mask = BufferMask::ALL);
 
     /// <summary>Binds the default framebuffer and fills it with the current clear color, depth and stencil values.</summary>
-    static void clearDefault(Context& context, ClearMask mask);
+    static void clearDefault(Context& context, BufferMask mask = BufferMask::ALL);
     /// <summary>Binds the default framebuffer and fills it with the current clear color, depth and stencil values.</summary>
-    void clearDefault(ClearMask mask);
+    void clearDefault(BufferMask mask = BufferMask::ALL);
+
+    void blitFrom(const FBO& other, BufferMask mask = BufferMask::ALL, BlitFilter filter = BlitFilter::Nearest);
+    void blitFromDefault(BufferMask mask = BufferMask::ALL, BlitFilter filter = BlitFilter::Nearest);
+    void blitToDefault(BufferMask mask = BufferMask::ALL, BlitFilter filter = BlitFilter::Nearest) const;
 
 private:
     /// <summary>Used to keep track of the smallest width and height.</summary>
-    void updateSize(dmath::svec2 size);
+    void updateSize(svec2 size);
     /// <summary>Updates the given attachment point to being active or not.</summary>
     void updateAttachmentPoint(AttachmentPoint attachment_point, bool active);
 
-    std::optional<dmath::svec2> size_;
+    /// <summary>Helper to blit pixels from one framebuffer to another.</summary>
+    static void blit(
+        ObjectContext<ObjectType::Framebuffer>& context,
+        Handle read_framebuffer,
+        Handle draw_framebuffer,
+        const ibounds2& src_rect,
+        const ibounds2& dst_rect,
+        BufferMask mask,
+        BlitFilter filter);
+
+    std::optional<svec2> size_;
     std::vector<bool> color_attachments_ = std::vector<bool>(context()->max_color_attachments);
     bool depth_attachment_ = false;
     bool stencil_attachment_ = false;

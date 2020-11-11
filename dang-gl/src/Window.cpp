@@ -435,14 +435,13 @@ ContextRobustness Window::contextRobustness() const
     return static_cast<ContextRobustness>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_ROBUSTNESS));
 }
 
-ClearMask Window::clearMask() const
+BufferMask Window::clearMask() const
 {
     return clear_mask_;
 }
 
-void Window::setClearMask(ClearMask mask)
+void Window::setClearMask(BufferMask mask)
 {
-
     clear_mask_ = mask;
 }
 

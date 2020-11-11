@@ -57,7 +57,7 @@ void FBO::bindDefault(FramebufferTarget target) const
     objectContext().bind(target, {});
 }
 
-std::optional<dmath::svec2> FBO::size()
+std::optional<svec2> FBO::size()
 {
     return size_;
 }
@@ -82,7 +82,7 @@ bool FBO::isAttached(AttachmentPoint attachment_point) const
     case GL_DEPTH_STENCIL_ATTACHMENT:
         return depth_stencil_attachment_;
     default:
-        return color_attachments_[attachment - GL_COLOR_ATTACHMENT0];
+        return color_attachments_[std::size_t{ attachment - GL_COLOR_ATTACHMENT0 }];
     }
 }
 
@@ -150,25 +150,50 @@ void FBO::checkComplete() const
     throw FramebufferError("The framebuffer is not complete for an unknown reason.");
 }
 
-void FBO::clear(ClearMask mask)
+void FBO::clear(BufferMask mask)
 {
     bind(FramebufferTarget::DrawFramebuffer);
     glClear(static_cast<GLbitfield>(mask));
 }
 
-void FBO::clearDefault(Context& context, ClearMask mask)
+void FBO::clearDefault(Context& context, BufferMask mask)
 {
     bindDefault(context, FramebufferTarget::DrawFramebuffer);
     glClear(static_cast<GLbitfield>(mask));
 }
 
-void FBO::clearDefault(ClearMask mask)
+void FBO::clearDefault(BufferMask mask)
 {
     bindDefault(FramebufferTarget::DrawFramebuffer);
     glClear(static_cast<GLbitfield>(mask));
 }
 
-void FBO::updateSize(dmath::svec2 size)
+void FBO::blitFrom(const FBO& other, BufferMask mask, BlitFilter filter)
+{
+    if (!size_ || !other.size_)
+        return;
+    ibounds2 src_rect(ivec2{ *size_ });
+    ibounds2 dst_rect(ivec2{ *other.size_ });
+    blit(objectContext(), other.handle(), handle(), src_rect, dst_rect, mask, filter);
+}
+
+void FBO::blitFromDefault(BufferMask mask, BlitFilter filter)
+{
+    if (!size_)
+        return;
+    ibounds2 rect(ivec2{ *size_ });
+    blit(objectContext(), {}, handle(), rect, rect, mask, filter);
+}
+
+void FBO::blitToDefault(BufferMask mask, BlitFilter filter) const
+{
+    if (!size_)
+        return;
+    ibounds2 rect(ivec2{ *size_ });
+    blit(objectContext(), handle(), {}, rect, rect, mask, filter);
+}
+
+void FBO::updateSize(svec2 size)
 {
     if (!size_)
         size_ = size;
@@ -190,8 +215,34 @@ void FBO::updateAttachmentPoint(AttachmentPoint attachment_point, bool active)
         depth_stencil_attachment_ = active;
         break;
     default:
-        color_attachments_[attachment - GL_COLOR_ATTACHMENT0] = active;
+        color_attachments_[std::size_t{ attachment - GL_COLOR_ATTACHMENT0 }] = active;
     }
+}
+
+void FBO::blit(
+    ObjectContext<ObjectType::Framebuffer>& context,
+    Handle read_framebuffer,
+    Handle draw_framebuffer,
+    const ibounds2& src_rect,
+    const ibounds2& dst_rect,
+    BufferMask mask,
+    BlitFilter filter)
+{
+    context.bind(FramebufferTarget::ReadFramebuffer, read_framebuffer);
+    context.bind(FramebufferTarget::DrawFramebuffer, draw_framebuffer);
+    const auto& src_size = src_rect.size();
+    const auto& dst_size = dst_rect.size();
+    glBlitFramebuffer(
+        src_rect.low.x(),
+        src_rect.low.y(),
+        src_size.x(),
+        src_size.y(),
+        dst_rect.low.x(),
+        dst_rect.low.y(),
+        dst_size.x(),
+        dst_size.y(),
+        static_cast<GLbitfield>(mask),
+        toGLConstant(filter));
 }
 
 }

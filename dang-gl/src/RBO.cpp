@@ -4,18 +4,18 @@
 namespace dang::gl
 {
 
-RBO::RBO(dmath::svec2 size, PixelInternalFormat format, GLsizei samples)
+RBO::RBO(svec2 size, GLsizei samples, PixelInternalFormat format)
     : size_(size)
-    , format_(format)
     , samples_(samples)
+    , format_(format)
 {
     bind();
     glRenderbufferStorageMultisample(
         GL_RENDERBUFFER,
         samples,
         toGLConstant(format),
-        static_cast<GLsizei>(size.x()),
-        static_cast<GLsizei>(size.y()));
+        size.x(),
+        size.y());
 }
 
 RBO::~RBO()
@@ -24,12 +24,32 @@ RBO::~RBO()
         objectContext().reset(handle());
 }
 
+RBO RBO::color(svec2 size, GLsizei samples)
+{
+    return RBO(size, samples, PixelInternalFormat::RGBA8);
+}
+
+RBO RBO::depth(svec2 size, GLsizei samples)
+{
+    return RBO(size, samples, PixelInternalFormat::DEPTH_COMPONENT);
+}
+
+RBO RBO::depthStencil(svec2 size, GLsizei samples)
+{
+    return RBO(size, samples, PixelInternalFormat::DEPTH_STENCIL);
+}
+
+RBO RBO::stencil(svec2 size, GLsizei samples)
+{
+    return RBO(size, samples, PixelInternalFormat::STENCIL_INDEX8);
+}
+
 void RBO::bind() const
 {
     objectContext().bind(handle());
 }
 
-dmath::svec2 RBO::size() const
+svec2 RBO::size() const
 {
     return size_;
 }

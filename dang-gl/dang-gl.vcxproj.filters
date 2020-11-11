@@ -272,9 +272,6 @@
     <ClInclude Include="include\dang-gl\Transform.h">
       <Filter>Header Files\Maths</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-gl\ClearMask.h">
-      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
-    </ClInclude>
     <ClInclude Include="include\dang-gl\Context.h">
       <Filter>Header Files\OpenGL\Context</Filter>
     </ClInclude>
@@ -313,6 +310,9 @@
     </ClInclude>
     <ClInclude Include="include\dang-gl\VertexArrayContext.h">
       <Filter>Header Files\OpenGL\Objects\VertexArray</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dang-gl\BufferMask.h">
+      <Filter>Header Files\OpenGL\Objects\Framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

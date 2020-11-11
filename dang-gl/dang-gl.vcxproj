@@ -246,7 +246,7 @@
     <ClInclude Include="include\dang-gl\FramebufferContext.h" />
     <ClInclude Include="include\dang-gl\Context.h" />
     <ClInclude Include="include\dang-gl\ObjectHandle.h" />
-    <ClInclude Include="include\dang-gl\ClearMask.h" />
+    <ClInclude Include="include\dang-gl\BufferMask.h" />
     <ClInclude Include="include\dang-gl\Buffer.h" />
     <ClInclude Include="include\dang-gl\Camera.h" />
     <ClInclude Include="include\dang-gl\FBO.h" />
