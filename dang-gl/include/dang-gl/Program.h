@@ -229,7 +229,11 @@ public:
 
     Program() = default;
     ~Program();
+
+    Program(const Program&) = delete;
     Program(Program&&) = delete;
+    Program& operator=(const Program&) = delete;
+    Program& operator=(Program&&) = delete;
 
     /// <summary>Adds an include with the given name and code, which is used by the custom shader pre-processor.</summary>
     void addInclude(const std::string& name, std::string code);
