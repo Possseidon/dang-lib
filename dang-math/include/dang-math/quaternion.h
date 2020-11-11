@@ -66,7 +66,7 @@ struct Quaternion : private Vector<T, 4> {
         return result;
     }
 
-    /// <summary>Returns a quaternion with all euler angles in degrees applied in the given order.</summary>        
+    /// <summary>Returns a quaternion with all euler angles in degrees applied in the given order.</summary>
     template <std::size_t AngleCount>
     static constexpr Quaternion fromEuler(const Vector<T, AngleCount>& degrees, const std::array<Axis3, AngleCount>& order)
     {
@@ -313,8 +313,8 @@ struct Quaternion : private Vector<T, 4> {
         // Following article was used as a base:
         // https://en.wikipedia.org/wiki/Slerp#Source_code
 
-        // If the dot product is negative, slerp won't take the shorter path. 
-        // Note that target and -target are equivalent when the negation is applied to all four components. 
+        // If the dot product is negative, slerp won't take the shorter path.
+        // Note that target and -target are equivalent when the negation is applied to all four components.
         // Fix by negating the resulting target factor.
         T dot_result = dot(target);
         T target_sign = T(1);
@@ -404,7 +404,7 @@ struct DualQuaternion {
         return DualQuaternion(Quaternion<T>::fromEulerRad<AngleCount>(radians, order));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in the given order.</summary>        
+    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in the given order.</summary>
     template <std::size_t AngleCount>
     static constexpr DualQuaternion fromEuler(const Vector<T, AngleCount>& degrees, const std::array<Axis3, AngleCount>& order)
     {

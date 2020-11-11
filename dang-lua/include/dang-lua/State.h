@@ -2379,7 +2379,7 @@ public:
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             Type type = static_cast<Type>(lua_geti(state_, table.index(), lua_Integer{ key }));
-            // remove nothing, add value 
+            // remove nothing, add value
             // -0, +1
             notifyPush();
             return std::tuple{ type, top().asResult() };
@@ -2388,7 +2388,7 @@ public:
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             Type type = static_cast<Type>(lua_getfield(state_, table.index(), key));
-            // remove nothing, add value 
+            // remove nothing, add value
             // -0, +1
             notifyPush();
             return std::tuple{ type, top().asResult() };
@@ -2399,7 +2399,7 @@ public:
         else {
             push(std::forward<TKey>(key));
             Type type = static_cast<Type>(lua_gettable(state_, table.index()));
-            // remove key, add value 
+            // remove key, add value
             // -1, +1
             // notifyPush(0);
             return { type, top().asResult() };
@@ -2458,7 +2458,7 @@ public:
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             Type type = static_cast<Type>(lua_rawgeti(state_, table.index(), lua_Integer{ key }));
-            // remove nothing, add value 
+            // remove nothing, add value
             // -0, +1
             notifyPush();
             return std::tuple{ type, top().asResult() };
@@ -2474,7 +2474,7 @@ public:
         else {
             push(std::forward<TKey>(key));
             Type type = static_cast<Type>(lua_rawgettable(state_, table.index()));
-            // remove key, add value 
+            // remove key, add value
             // -1, +1
             // notifyPush(0);
             return { type, top().asResult() };
@@ -3097,7 +3097,7 @@ inline auto operator%(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
     return detail::stateOf(lhs, rhs).arith<ArithOp::Mod>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
-// Would be ambiguous with binary xor 
+// Would be ambiguous with binary xor
 /*
 template <typename TLeft, typename TRight>
 inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
@@ -3133,7 +3133,7 @@ inline auto operator|(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
     return detail::stateOf(lhs, rhs).arith<ArithOp::BinaryOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
-// Would be ambiguous with pow 
+// Would be ambiguous with pow
 /*
 template <typename TLeft, typename TRight>
 inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>

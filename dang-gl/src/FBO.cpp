@@ -124,7 +124,7 @@ bool FBO::isComplete() const
 
 void FBO::checkComplete() const
 {
-    // Error messages excerpted from: 
+    // Error messages excerpted from:
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glCheckFramebufferStatus.xhtml
     switch (status()) {
     case FramebufferStatus::Complete:

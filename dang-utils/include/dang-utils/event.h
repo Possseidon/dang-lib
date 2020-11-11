@@ -34,7 +34,7 @@ auto bind_n(TArgs&&... args)
 
 }
 
-/// <summary>                                                              
+/// <summary>
 /// <para>Represents an event, for which handlers can be registered:</para>
 /// <para> - By simply appending/prepending a handler, which cannot be undone.</para>
 /// <para> - By subscribing, which is automatically undone, when the subscription goes out of scope.</para>

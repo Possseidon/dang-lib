@@ -1,5 +1,5 @@
 #pragma once
-               
+
 #include "ObjectContext.h"
 #include "ObjectHandle.h"
 #include "ObjectType.h"

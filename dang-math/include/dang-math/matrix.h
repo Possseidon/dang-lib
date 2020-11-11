@@ -181,8 +181,8 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             return cofactorMatrix().transpose();
     }
 
-    /// <summary>Returns the inverse of the matrix.</summary>   
-    /// <remarks> 
+    /// <summary>Returns the inverse of the matrix.</summary>
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Dim &lt;= 4: Cramer's rule</para>
     /// <para>Dim > 4: Blockwise inversion (recursive)</para>
@@ -269,7 +269,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
@@ -302,7 +302,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
@@ -328,7 +328,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
@@ -361,7 +361,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
@@ -387,7 +387,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves the matrix, when seen as a linear equation.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
@@ -424,7 +424,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves the matrix, when seen as a linear equation.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
@@ -462,7 +462,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves the matrix, when seen as a linear equation in combination with the given vector.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
@@ -499,7 +499,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Solves the matrix, when seen as a linear equation in combination with the given vector.</summary>
-    /// <remarks> 
+    /// <remarks>
     /// <para>Algorithms used:</para>
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>

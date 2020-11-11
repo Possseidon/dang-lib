@@ -16,10 +16,10 @@ private:
 
 #define META_IMPL(name) \
 dang::utils::BaseClassRef name::metaclass_v() const { return dang::utils::ClassOf<name>; } \
-dang::utils::ClassRef<name> name::metaclass() const { return static_cast<dang::utils::ClassRef<name>>(metaclass_v()); } 
+dang::utils::ClassRef<name> name::metaclass() const { return static_cast<dang::utils::ClassRef<name>>(metaclass_v()); }
 
 #define META_IMPL_ABSTRACT(name) \
-dang::utils::ClassRef<name> name::metaclass() const { return static_cast<dang::utils::ClassRef<name>>(metaclass_v()); } 
+dang::utils::ClassRef<name> name::metaclass() const { return static_cast<dang::utils::ClassRef<name>>(metaclass_v()); }
 
 namespace dang::utils
 {

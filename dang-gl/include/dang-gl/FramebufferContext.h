@@ -1,5 +1,5 @@
 #pragma once
-                
+
 #include "ObjectContext.h"
 #include "ObjectHandle.h"
 #include "ObjectType.h"
@@ -7,7 +7,7 @@
 
 namespace dang::gl
 {
-       
+
 /// <summary>Specializes the context class for framebuffer objects.</summary>
 template <>
 class ObjectContext<ObjectType::Framebuffer> : public ObjectContextBase {

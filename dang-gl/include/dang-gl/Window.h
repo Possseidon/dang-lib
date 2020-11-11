@@ -552,7 +552,7 @@ private:
     bool auto_adjust_viewport_ = true;
     bool finish_after_swap_ = true;
 
-    // DeltaTime and FPS 
+    // DeltaTime and FPS
     std::uint64_t last_time_ = 0;
     float delta_time_ = 0;
     float fps_ = 0;

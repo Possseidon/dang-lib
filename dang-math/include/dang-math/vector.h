@@ -481,7 +481,7 @@ struct Vector : std::array<T, Dim> {
         return stream << ']';
     }
 
-    // --- Vector<T, 1> ---  
+    // --- Vector<T, 1> ---
 
     /// <summary>The x-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
