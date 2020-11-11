@@ -20,6 +20,12 @@ FBO::~FBO()
         objectContext().reset(handle());
 }
 
+void FBO::setLabel(std::optional<std::string> label)
+{
+    bind();
+    Object::setLabel(std::move(label));
+}
+
 FBO::AttachmentPoint FBO::colorAttachment(std::size_t index) const
 {
     if (index >= color_attachments_.size())

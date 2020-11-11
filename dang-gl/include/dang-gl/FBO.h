@@ -68,6 +68,9 @@ public:
     /// <summary>Resets the bound framebuffer of the context, in case of the framebuffer still being bound.</summary>
     ~FBO();
 
+    /// <summary>Sets an optional label for the object, which is used in by OpenGL generated debug messages.</summary>
+    void setLabel(std::optional<std::string> label);
+
     /// <summary>Returns a color attachment point with the given index.</summary>
     AttachmentPoint colorAttachment(std::size_t index) const;
     /// <summary>Returns the depth attachment point.</summary>
