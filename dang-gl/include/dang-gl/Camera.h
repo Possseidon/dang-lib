@@ -2,9 +2,9 @@
 
 #include "dang-utils/enum.h"
 
+#include "Context.h"
 #include "MathTypes.h"
 #include "Program.h"
-#include "Window.h"
 #include "Transform.h"
 
 namespace dang::gl
@@ -21,14 +21,14 @@ class ProjectionProvider {
 public:
     /// <summary>Initializes the projection provider with the given aspect.</summary>
     ProjectionProvider(float aspect);
-    /// <summary>Automatically updates the aspect to match the given window.</summary>
-    ProjectionProvider(Window& window);
+    /// <summary>Automatically updates the aspect to match the given context.</summary>
+    ProjectionProvider(Context& context);
     virtual ~ProjectionProvider();
 
     /// <summary>Returns the current aspect ratio (width/height).</summary>
     float aspect() const;
     /// <summary>Sets the aspect ratio (width/height) to the given value.</summary>
-    /// <remarks>This value will only be overwritten on the next window resize, if a window was provided.</remarks>
+    /// <remarks>This value will only be overwritten on the next context resize, if a context was provided.</remarks>
     void setAspect(float aspect);
 
     /// <summary>Returns the projection matrix, which is lazily evaulated.</summary>
@@ -42,7 +42,7 @@ protected:
 
 private:
     float aspect_;
-    WindowEvent::Subscription window_resize_;
+    Context::Event::Subscription context_resize_;
     std::optional<mat4> matrix_;
 };
 
@@ -55,7 +55,7 @@ public:
     /// <summary>Initializes the perspective projection with the given field of view and near/far clip.</summary>
     PerspectiveProjection(float aspect, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
     /// <summary>Initializes the perspective projection with the given field of view and near/far clip.</summary>
-    PerspectiveProjection(Window& window, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
+    PerspectiveProjection(Context& context, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
 
     /// <summary>Returns the current field of view.</summary>
     float fieldOfView() const;
@@ -91,7 +91,7 @@ public:
     /// <summary>Initializes the orthogonal projection with the given clipping bounds.</summary>
     OrthoProjection(float aspect, bounds3 clip = DefaultClip);
     /// <summary>Initializes the orthogonal projection with the given clipping bounds.</summary>
-    OrthoProjection(Window& window, bounds3 clip = DefaultClip);
+    OrthoProjection(Context& context, bounds3 clip = DefaultClip);
 
     /// <summary>Returns the current clipping bounds.</summary>
     const bounds3& clip() const;
@@ -160,12 +160,12 @@ public:
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
     static Camera perspective(float aspect, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
-    static Camera perspective(Window& window, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
+    static Camera perspective(Context& context, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
 
     /// <summary>Creates a new orthogonal camera with the given parameters.</summary>
     static Camera ortho(float aspect, bounds3 clip = OrthoProjection::DefaultClip);
     /// <summary>Creates a new orthogonal camera with the given parameters.</summary>
-    static Camera ortho(Window& window, bounds3 clip = OrthoProjection::DefaultClip);
+    static Camera ortho(Context& context, bounds3 clip = OrthoProjection::DefaultClip);
 
     /// <summary>Returns the projection provider of the camera.</summary>
     const SharedProjectionProvider& projectionProvider() const;

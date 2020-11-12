@@ -12,7 +12,9 @@
 namespace dang::gl
 {
 
-void Context::initialize()
+Context::Context(svec2 size)
+    : state_(size)
+    , size_(size)
 {
     createContexts(dutils::makeEnumSequence<ObjectType>());
 }

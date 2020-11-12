@@ -74,8 +74,6 @@ Window::Window(const WindowInfo& info)
     : handle_(info.createWindow())
     , title_(info.title)
 {
-    activate();
-    context_.initialize();
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();
     last_time_ = GLFW::Instance.timerValue();
@@ -459,6 +457,7 @@ void Window::adjustViewport()
 {
     dmath::ivec2 framebuffer_size = framebufferSize();
     glViewport(0, 0, framebuffer_size.x(), framebuffer_size.y());
+    context_.resize(framebuffer_size);
 }
 
 bool Window::autoAdjustViewport() const

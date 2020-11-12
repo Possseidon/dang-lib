@@ -9,9 +9,9 @@ ProjectionProvider::ProjectionProvider(float aspect)
 {
 }
 
-ProjectionProvider::ProjectionProvider(Window& window)
-    : aspect_(window.aspect())
-    , window_resize_(window.onFramebufferResize, [&] { setAspect(window.aspect()); })
+ProjectionProvider::ProjectionProvider(Context& context)
+    : aspect_(context.aspect())
+    , context_resize_(context.onResize, [&] { setAspect(context.aspect()); })
 {
 }
 
@@ -51,8 +51,8 @@ PerspectiveProjection::PerspectiveProjection(float aspect, float field_of_view, 
 {
 }
 
-PerspectiveProjection::PerspectiveProjection(Window& window, float field_of_view, bounds1 clip)
-    : ProjectionProvider(window)
+PerspectiveProjection::PerspectiveProjection(Context& context, float field_of_view, bounds1 clip)
+    : ProjectionProvider(context)
     , field_of_view_(field_of_view)
     , clip_(clip)
 {
@@ -129,8 +129,8 @@ OrthoProjection::OrthoProjection(float aspect, bounds3 clip)
 {
 }
 
-OrthoProjection::OrthoProjection(Window& window, bounds3 clip)
-    : ProjectionProvider(window)
+OrthoProjection::OrthoProjection(Context& context, bounds3 clip)
+    : ProjectionProvider(context)
     , clip_(clip)
 {
 }
@@ -202,9 +202,9 @@ Camera Camera::perspective(float aspect, float field_of_view, bounds1 clip)
     return Camera(std::make_shared<PerspectiveProjection>(aspect, field_of_view, clip));
 }
 
-Camera Camera::perspective(Window& window, float field_of_view, bounds1 clip)
+Camera Camera::perspective(Context& context, float field_of_view, bounds1 clip)
 {
-    return Camera(std::make_shared<PerspectiveProjection>(window, field_of_view, clip));
+    return Camera(std::make_shared<PerspectiveProjection>(context, field_of_view, clip));
 }
 
 Camera Camera::ortho(float aspect, bounds3 clip)
@@ -212,9 +212,9 @@ Camera Camera::ortho(float aspect, bounds3 clip)
     return Camera(std::make_shared<OrthoProjection>(aspect, clip));
 }
 
-Camera Camera::ortho(Window& window, bounds3 clip)
+Camera Camera::ortho(Context& context, bounds3 clip)
 {
-    return Camera(std::make_shared<OrthoProjection>(window, clip));
+    return Camera(std::make_shared<OrthoProjection>(context, clip));
 }
 
 const SharedProjectionProvider& Camera::projectionProvider() const

@@ -538,7 +538,7 @@ private:
 
     GLFWwindow* handle_ = nullptr;
 
-    Context context_;
+    Context context_{ (activate(), size()) };
 
     // Window-Properties
     std::string title_;

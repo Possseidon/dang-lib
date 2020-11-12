@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-utils/enum.h"
+#include "dang-utils/event.h"
 
 #include "ObjectContext.h"
 #include "ObjectType.h"
@@ -11,9 +12,11 @@ namespace dang::gl
 
 class Context {
 public:
+    using Event = dutils::Event<Context>;
+
     inline static Context* current = nullptr;
 
-    void initialize();
+    Context(svec2 size);
 
     State& state()
     {
@@ -47,6 +50,26 @@ public:
         return static_cast<const ObjectContext<Type>&>(*object_contexts_[Type]);
     }
 
+    svec2 size() const
+    {
+        return size_;
+    }
+
+    float aspect() const
+    {
+        return static_cast<float>(size_.x()) / size_.y();
+    }
+
+    void resize(svec2 size)
+    {
+        if (size_ == size)
+            return;
+        size_ = size;
+        onResize(*this);
+    }
+
+    Event onResize;
+
 private:
     /// <summary>Initializes the contexts for the different GL-Object types.</summary>
     template <ObjectType... Types>
@@ -54,6 +77,7 @@ private:
 
     State state_;
     dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
+    svec2 size_;
 };
 
 }

@@ -2,6 +2,7 @@
 
 #include "dang-math/vector.h"
 
+#include "MathTypes.h"
 #include "StateTypes.h"
 
 // TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I think?)
@@ -253,7 +254,7 @@ template <typename T, GLenum Name>
 class IndexedConstant {
 public:
     /// <summary>Queries the given index, but caches all indices.</summary>
-    const T& operator [](std::size_t index) const
+    const T& operator[](std::size_t index) const
     {
         if (index >= values_.size())
             values_.resize(index + 1);
@@ -297,6 +298,11 @@ private:
 
 public:
     friend class detail::StatePropertyBase;
+
+    State(svec2 size)
+        : scissor{ *this, Scissor{ ibounds2{ size } } }
+    {
+    }
 
     /// <summary>Allows for temporary modifications, which get reverted by the matching pop call.</summary>
     void push();
@@ -342,7 +348,7 @@ public:
     detail::StateFunc<&glPolygonOffset, PolygonOffset> polygon_offset{ *this, { 0.0f, 0.0f } };
     detail::StateFunc<&glPrimitiveRestartIndex, GLuint> primitive_restart_index{ *this, 0 };
     detail::StateFunc<&glSampleCoverage, SampleCoverage> sample_coverage_value{ *this, { 1.0f, GL_FALSE } };
-    detail::StateFunc<&glScissor, Scissor> scissor{ *this, { { 0, 0 } } }; // TODO: Set to window size
+    detail::StateFunc<&glScissor, Scissor> scissor; // defaults to framebuffer size, set in constructor
     detail::StateFunc<&glStencilFunc, StencilFunc> stencil_func{ *this, { CompareFunc::Always, 0, GLuint(-1) } };
     detail::StateFunc<&glStencilOp, StencilOp> stencil_op{ *this, { StencilAction::Keep, StencilAction::Keep, StencilAction::Keep } };
 
