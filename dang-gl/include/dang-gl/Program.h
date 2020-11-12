@@ -111,10 +111,10 @@ class Program;
 class ShaderVariable {
 public:
     /// <summary>Initializes a shader variable wrapper with the given introspection information.</summary>
-    ShaderVariable(Program& program, GLint count, DataType type, std::string name, GLint location);
+    ShaderVariable(const Program& program, GLint count, DataType type, std::string name, GLint location);
 
-    /// <summary>The associated program.</summary>
-    Program& program() const;
+    /// <summary>Binds the associated program.</summary>
+    void bindProgram() const;
 
     /// <summary>The length of arrays, 1 for the usual non-array types.</summary>
     GLint count() const;
@@ -128,7 +128,8 @@ public:
     GLint location() const;
 
 private:
-    Program& program_;
+    ObjectContext<ObjectType::Program>* context_;
+    ObjectHandle<ObjectType::Program> program_;
     GLint count_;
     DataType type_;
     std::string name_;
@@ -141,7 +142,7 @@ public:
     friend class Program;
 
     /// <summary>Initializes a shader attribute wrapper with the given introspection information.</summary>
-    ShaderAttribute(Program& program, GLint count, DataType type, std::string name);
+    ShaderAttribute(const Program& program, GLint count, DataType type, std::string name);
 
     /// <summary>The byte-offset of the variable, set by the program.</summary>
     GLsizei offset() const;
@@ -154,7 +155,7 @@ private:
 class ShaderUniformBase : public ShaderVariable {
 public:
     /// <summary>Initializes a shader uniform wrapper with the given introspection information.</summary>
-    ShaderUniformBase(Program& program, GLint count, DataType type, std::string name);
+    ShaderUniformBase(const Program& program, GLint count, DataType type, std::string name);
     /// <summary>Virtual destructor for polymorphism.</summary>
     virtual ~ShaderUniformBase() {}
 
@@ -164,7 +165,7 @@ public:
     ShaderUniformBase& operator=(ShaderUniformBase&&) = delete;
 
     /// <summary>Creates a shader uniform wrapper depending on the given data type.</summary>
-    static std::unique_ptr<ShaderUniformBase> create(Program& program, GLint count, DataType type, std::string name);
+    static std::unique_ptr<ShaderUniformBase> create(const Program& program, GLint count, DataType type, std::string name);
 };
 
 /// <summary>A wrapper for uniform variables of the template specified type.</summary>
@@ -172,9 +173,9 @@ template <typename T>
 class ShaderUniform : public ShaderUniformBase {
 public:
     /// <summary>Initializes a shader uniform wrapper with the given introspection information.</summary>
-    ShaderUniform(Program& program, GLint count, DataType type, std::string name);
+    ShaderUniform(const Program& program, GLint count, DataType type, std::string name);
     /// <summary>Initializes a dummy shader uniform wrapper, which does not actually exist in the shader.</summary>
-    ShaderUniform(Program& program, GLint count, std::string name);
+    ShaderUniform(const Program& program, GLint count, std::string name);
 
     /// <summary>Whether this uniform actually exists in the shader or is merely a dummy.</summary>
     bool exists() const;
@@ -228,12 +229,12 @@ public:
     using InstancedAttributeNames = std::vector<InstancedAttributes>;
 
     Program() = default;
-    ~Program();
+    ~Program() = default;
 
     Program(const Program&) = delete;
-    Program(Program&&) = delete;
+    Program(Program&&) = default;
     Program& operator=(const Program&) = delete;
-    Program& operator=(Program&&) = delete;
+    Program& operator=(Program&&) = default;
 
     /// <summary>Adds an include with the given name and code, which is used by the custom shader pre-processor.</summary>
     void addInclude(const std::string& name, std::string code);
@@ -312,7 +313,7 @@ private:
 };
 
 template<typename T>
-inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, DataType type, std::string name)
+inline ShaderUniform<T>::ShaderUniform(const Program& program, GLint count, DataType type, std::string name)
     : ShaderUniformBase(program, count, type, name)
     , values_(count)
 {
@@ -321,7 +322,7 @@ inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, DataType t
 }
 
 template<typename T>
-inline ShaderUniform<T>::ShaderUniform(Program& program, GLint count, std::string name)
+inline ShaderUniform<T>::ShaderUniform(const Program& program, GLint count, std::string name)
     : ShaderUniformBase(program, count, DataType::None, std::move(name))
     , values_(count)
 {
@@ -337,7 +338,7 @@ template<typename T>
 inline void ShaderUniform<T>::force(const T& value, GLint index)
 {
     if (exists()) {
-        program().bind();
+        bindProgram();
         UniformWrapper<T>::set(location() + index, value);
     }
     values_[index] = value;

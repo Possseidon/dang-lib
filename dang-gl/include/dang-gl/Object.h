@@ -15,40 +15,14 @@ public:
     using Handle = ObjectHandle<Type>;
     using Wrapper = ObjectWrapper<Type>;
 
-    Object()
-        : context_(Context::current)
-        , handle_(Wrapper::create())
-    {
-        assert(context_);
-    }
-
-    Object(const Object&) = delete;
-
-    Object(Object&& other) noexcept
-        : handle_(std::exchange(other.handle_, {}))
-        , context_(std::exchange(other.context_, nullptr))
-        , label_(std::move(other.label_))
-    {
-    }
-
-    Object& operator=(const Object&) = delete;
-
-    Object& operator=(Object&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
-        destroy();
-        handle_ = std::exchange(other.handle_, {});
-        context_ = std::exchange(other.context_, nullptr);
-        label_ = std::move(other.label_);
-        return *this;
-    }
-
     /// <summary>Destroys the GL-Object.</summary>
     ~Object()
     {
         destroy();
     }
+
+    Object(const Object&) = delete;
+    Object& operator=(const Object&) = delete;
 
     void destroy()
     {
@@ -57,18 +31,6 @@ public:
         Wrapper::destroy(handle_);
         handle_ = {};
         context_ = nullptr;
-    }
-
-    /// <summary>Whether the object is valid.</summary>
-    explicit operator bool() const noexcept
-    {
-        return bool{ handle_ };
-    }
-
-    /// <summary>Returns the handle of the GL-Object or InvalidHandle for default constructed objects.</summary>
-    Handle handle() const noexcept
-    {
-        return handle_;
     }
 
     /// <summary>For valid objects, returns the associated GL-Context in form of a window.</summary>
@@ -81,6 +43,18 @@ public:
     auto& objectContext() const
     {
         return context_->contextFor<Type>();
+    }
+
+    /// <summary>Returns the handle of the GL-Object or InvalidHandle for default constructed objects.</summary>
+    Handle handle() const noexcept
+    {
+        return handle_;
+    }
+
+    /// <summary>Whether the object is valid.</summary>
+    explicit operator bool() const noexcept
+    {
+        return bool{ handle_ };
     }
 
     void swap(Object& other) noexcept
@@ -112,6 +86,32 @@ public:
         return label_;
     }
 
+protected:
+    Object()
+        : context_(Context::current)
+        , handle_(Wrapper::create())
+    {
+        assert(context_);
+    }
+
+    Object(Object&& other) noexcept
+        : context_(std::move(other.context_))
+        , handle_(std::exchange(other.handle_, {}))
+        , label_(std::move(other.label_))
+    {
+    }
+
+    Object& operator=(Object&& other) noexcept
+    {
+        if (this == &other)
+            return *this;
+        destroy();
+        context_ = std::move(other.context_);
+        handle_ = std::exchange(other.handle_, {});
+        label_ = std::move(other.label_);
+        return *this;
+    }
+
 private:
     Context* context_ = nullptr;
     Handle handle_;
@@ -122,19 +122,27 @@ private:
 template <ObjectType Type>
 class ObjectBindable : public Object<Type> {
 public:
-    using Object<Type>::Object;
-
     /// <summary>Resets the bound object in the context if the object is still bound.</summary>
     ~ObjectBindable()
     {
-        this->objectContext().reset(this->handle());
+        if (*this)
+            this->objectContext().reset(this->handle());
     }
+
+    ObjectBindable(const ObjectBindable&) = delete;
+    ObjectBindable& operator=(const ObjectBindable&) = delete;
 
     /// <summary>Binds the object.</summary>
     void bind() const
     {
         this->objectContext().bind(this->handle());
     }
+
+protected:
+    ObjectBindable() = default;
+
+    ObjectBindable(ObjectBindable&&) = default;
+    ObjectBindable& operator=(ObjectBindable&&) = default;
 };
 
 }

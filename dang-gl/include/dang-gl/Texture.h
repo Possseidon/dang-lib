@@ -37,14 +37,15 @@ Quote Khronos.org:
 /// <summary>Serves as a base class for all texture classes.</summary>
 class TextureBase : public Object<ObjectType::Texture> {
 public:
-    friend ObjectContext<ObjectType::Texture>;
-
     /// <summary>Resets the bound texture of the context, in case of the texture still being bound.</summary>
     ~TextureBase()
     {
         if (*this)
             release();
     }
+
+    TextureBase(const TextureBase&) = delete;
+    TextureBase& operator=(const TextureBase&) = delete;
 
     /// <summary>Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.</summary>
     std::size_t bind() const
@@ -68,6 +69,9 @@ protected:
         , target_(target)
     {
     }
+
+    TextureBase(TextureBase&&) = default;
+    TextureBase& operator=(TextureBase&&) = default;
 
 private:
     TextureTarget target_;
@@ -216,11 +220,10 @@ public:
     template <PixelFormat Format>
     static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<Format>::Internal;
 
-    /// <summary>Simply calls the base constructor with the templated texture target.</summary>
-    TextureBaseTyped()
-        : TextureBase(Target)
-    {
-    }
+    ~TextureBaseTyped() = default;
+
+    TextureBaseTyped(const TextureBaseTyped&) = delete;
+    TextureBaseTyped& operator=(const TextureBaseTyped&) = delete;
 
     /// <summary>Returns the size of the image along each axis.</summary>
     dmath::svec<Dim> size() const
@@ -468,6 +471,15 @@ public:
     }
 
 protected:
+    /// <summary>Simply calls the base constructor with the templated texture target.</summary>
+    TextureBaseTyped()
+        : TextureBase(Target)
+    {
+    }
+
+    TextureBaseTyped(TextureBaseTyped&&) = default;
+    TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
+
     /// <summary>Sets the internal size to the given value.</summary>
     void setSize(dmath::svec<Dim> size)
     {
@@ -551,6 +563,11 @@ public:
         generate(image, mipmap_levels, internal_format);
     }
 
+    ~TextureBaseRegular() = default;
+
+    TextureBaseRegular(const TextureBaseRegular&) = delete;
+    TextureBaseRegular& operator=(const TextureBaseRegular&) = delete;
+
     /// <summary>Generates storage for the specified size with optional mipmap level count and internal format.</summary>
     /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
     void generate(
@@ -576,6 +593,10 @@ public:
         this->subImage(std::make_index_sequence<Dim>(), image);
         glGenerateMipmap(toGLConstant(Target));
     }
+
+protected:
+    TextureBaseRegular(TextureBaseRegular&&) = default;
+    TextureBaseRegular& operator=(TextureBaseRegular&&) = default;
 
 private:
     /// <summary>Returns the biggest component of a given vector.</summary>
@@ -651,6 +672,11 @@ public:
         generate(image, samples, fixed_sample_locations, internal_format);
     }
 
+    ~TextureBaseMultisample() = default;
+
+    TextureBaseMultisample(const TextureBaseMultisample&) = delete;
+    TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
+
     /// <summary>Generates storage for the specified size, samples and optional internal format.</summary>
     void generate(
         dmath::svec<Dim> size,
@@ -675,6 +701,10 @@ public:
         storageMultisample(std::make_index_sequence<Dim>(), image.size(), samples, fixed_sample_locations, internal_format);
         this->texSubImage(std::make_index_sequence<Dim>(), image);
     }
+
+protected:
+    TextureBaseMultisample(TextureBaseMultisample&&) = default;
+    TextureBaseMultisample& operator=(TextureBaseMultisample&&) = default;
 
 private:
     /// <summary>Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.</summary>
@@ -701,46 +731,91 @@ private:
 class Texture1D : public detail::TextureBaseRegular<1, TextureTarget::Texture1D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    Texture1D(const Texture1D&) = delete;
+    Texture1D(Texture1D&&) = default;
+    Texture1D& operator=(const Texture1D&) = delete;
+    Texture1D& operator=(Texture1D&&) = default;
 };
 
 class Texture1DArray : public detail::TextureBaseRegular<2, TextureTarget::Texture1DArray> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    Texture1DArray(const Texture1DArray&) = delete;
+    Texture1DArray(Texture1DArray&&) = default;
+    Texture1DArray& operator=(const Texture1DArray&) = delete;
+    Texture1DArray& operator=(Texture1DArray&&) = default;
 };
 
 class Texture2D : public detail::TextureBaseRegular<2, TextureTarget::Texture2D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    Texture2D(const Texture2D&) = delete;
+    Texture2D(Texture2D&&) = default;
+    Texture2D& operator=(const Texture2D&) = delete;
+    Texture2D& operator=(Texture2D&&) = default;
 };
 
 class Texture2DArray : public detail::TextureBaseRegular<3, TextureTarget::Texture2DArray> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    Texture2DArray(const Texture2DArray&) = delete;
+    Texture2DArray(Texture2DArray&&) = default;
+    Texture2DArray& operator=(const Texture2DArray&) = delete;
+    Texture2DArray& operator=(Texture2DArray&&) = default;
 };
 
 class Texture2DMultisample : public detail::TextureBaseMultisample<2, TextureTarget::Texture2DMultisample> {
 public:
     using TextureBaseMultisample::TextureBaseMultisample;
+
+    Texture2DMultisample(const Texture2DMultisample&) = delete;
+    Texture2DMultisample(Texture2DMultisample&&) = default;
+    Texture2DMultisample& operator=(const Texture2DMultisample&) = delete;
+    Texture2DMultisample& operator=(Texture2DMultisample&&) = default;
 };
 
 class Texture2DMultisampleArray : public detail::TextureBaseMultisample<3, TextureTarget::Texture2DMultisampleArray> {
 public:
     using TextureBaseMultisample::TextureBaseMultisample;
+
+    Texture2DMultisampleArray(const Texture2DMultisampleArray&) = delete;
+    Texture2DMultisampleArray(Texture2DMultisampleArray&&) = default;
+    Texture2DMultisampleArray& operator=(const Texture2DMultisampleArray&) = delete;
+    Texture2DMultisampleArray& operator=(Texture2DMultisampleArray&&) = default;
 };
 
 class Texture3D : public detail::TextureBaseRegular<3, TextureTarget::Texture3D> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    Texture3D(const Texture3D&) = delete;
+    Texture3D(Texture3D&&) = default;
+    Texture3D& operator=(const Texture3D&) = delete;
+    Texture3D& operator=(Texture3D&&) = default;
 };
 
 class TextureCubeMap : public detail::TextureBaseRegular<2, TextureTarget::TextureCubeMap> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    TextureCubeMap(const TextureCubeMap&) = delete;
+    TextureCubeMap(TextureCubeMap&&) = default;
+    TextureCubeMap& operator=(const TextureCubeMap&) = delete;
+    TextureCubeMap& operator=(TextureCubeMap&&) = default;
 };
 
 class TextureRectangle : public detail::TextureBaseRegular<2, TextureTarget::TextureRectangle> {
 public:
     using TextureBaseRegular::TextureBaseRegular;
+
+    TextureRectangle(const TextureRectangle&) = delete;
+    TextureRectangle(TextureRectangle&&) = default;
+    TextureRectangle& operator=(const TextureRectangle&) = delete;
+    TextureRectangle& operator=(TextureRectangle&&) = default;
 };
 
 }

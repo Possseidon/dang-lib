@@ -11,25 +11,21 @@ namespace dang::gl
 
 /// <summary>A renderbuffer object containing image data, specifially used together with framebuffer objects.</summary>
 /// <remarks>Natively supports multisampling.</remarks>
-class RBO : public Object<ObjectType::Renderbuffer> {
+class RBO : public ObjectBindable<ObjectType::Renderbuffer> {
 public:
     /// <summary>Initializes the renderbuffer with the given size, format and optional multisampling-count.</summary>
     explicit RBO(svec2 size, GLsizei samples, PixelInternalFormat format);
-    /// <summary>Resets the bound renderbuffer of the context, in case of the renderbuffer still being bound.</summary>
-    ~RBO();
-
-    static RBO color(svec2 size, GLsizei samples = 0);
-    static RBO depth(svec2 size, GLsizei samples = 0);
-    static RBO depthStencil(svec2 size, GLsizei samples = 0);
-    static RBO stencil(svec2 size, GLsizei samples = 0);
+    ~RBO() = default;
 
     RBO(const RBO&) = delete;
     RBO(RBO&&) = default;
     RBO& operator=(const RBO&) = delete;
     RBO& operator=(RBO&&) = default;
-
-    /// <summary>Bind the renderbuffer.</summary>
-    void bind() const;
+            
+    static RBO color(svec2 size, GLsizei samples = 0);
+    static RBO depth(svec2 size, GLsizei samples = 0);
+    static RBO depthStencil(svec2 size, GLsizei samples = 0);
+    static RBO stencil(svec2 size, GLsizei samples = 0);
 
     /// <summary>Returns the width and height of the renderbuffer.</summary>
     svec2 size() const;

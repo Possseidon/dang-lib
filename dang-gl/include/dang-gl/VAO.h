@@ -51,9 +51,10 @@ constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
 /// <summary>A base class for all vertex array objects, which is not templated yet.</summary>
 class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
 public:
-    /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
-    VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
-    ~VAOBase();
+    ~VAOBase() = default;
+
+    VAOBase(const VAOBase&) = delete;
+    VAOBase& operator=(const VAOBase&) = delete;
 
     /// <summary>The GL-Program associated with the VAO.</summary>
     Program& program() const;
@@ -64,8 +65,15 @@ public:
     /// <remarks>Different render modes require very different data layouts, often making it impossible to use the same data with different modes.</remarks>
     void setMode(BeginMode mode);
 
+protected:
+    /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
+    VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
+
+    VAOBase(VAOBase&&) = default;
+    VAOBase& operator=(VAOBase&&) = default;
+
 private:
-    Program& program_;
+    Program* program_;
     BeginMode mode_;
 };
 
@@ -77,12 +85,19 @@ public:
     /// <remarks>Various debug assertings check, that the GL-Program and VBOs match.</remarks>
     VAO(Program& program, VBO<TData>& data_vbo, VBO<TInstanceData>&... instance_vbo, BeginMode mode = BeginMode::Triangles)
         : VAOBase(program, mode)
-        , data_vbo_(data_vbo)
-        , instance_vbos_(instance_vbo...)
+        , data_vbo_(&data_vbo)
+        , instance_vbos_(&instance_vbo...)
     {
         assert(program.instancedAttributeOrder().size() == sizeof...(TInstanceData));
         enableAttributes(std::index_sequence_for<TInstanceData...>());
     }
+
+    ~VAO() = default;
+
+    VAO(const VAO&) = delete;
+    VAO(VAO&&) = default;
+    VAO& operator=(const VAO&) = delete;
+    VAO& operator=(VAO&&) = default;
 
     /// <summary>Returns the instance count, which should match for all instance VBOs, checked by a debug assertion.</summary>
     GLsizei instanceCount() const
@@ -96,9 +111,9 @@ public:
         bind();
         program().bind();
         if constexpr (sizeof...(TInstanceData) == 0)
-            glDrawArrays(toGLConstant(mode()), 0, data_vbo_.count());
+            glDrawArrays(toGLConstant(mode()), 0, data_vbo_->count());
         else
-            glDrawArraysInstanced(toGLConstant(mode()), 0, data_vbo_.count(), instanceCount());
+            glDrawArraysInstanced(toGLConstant(mode()), 0, data_vbo_->count(), instanceCount());
     }
 
 private:
@@ -106,7 +121,7 @@ private:
     template <std::size_t VBOIndex>
     GLsizei instanceCountOf() const
     {
-        return std::get<VBOIndex>(instance_vbos_).count() * program().instancedAttributeOrder()[VBOIndex].divisor;
+        return std::get<VBOIndex>(instance_vbos_)->count() * program().instancedAttributeOrder()[VBOIndex].divisor;
     }
 
     /// <summary>Helper function for instance counting, which takes an index list of one less than the actual instance VBO count.</summary>
@@ -123,8 +138,8 @@ private:
     void enableAttributes(std::index_sequence<Indices...>)
     {
         bind();
-        enableAttributes(data_vbo_, program().attributeOrder());
-        (enableAttributes(std::get<Indices>(instance_vbos_), program().instancedAttributeOrder()[Indices]), ...);
+        enableAttributes(*data_vbo_, program().attributeOrder());
+        (enableAttributes(*std::get<Indices>(instance_vbos_), program().instancedAttributeOrder()[Indices]), ...);
     }
 
     /// <summary>Enables attributes for the given VBO with the given attribute order.</summary>
@@ -177,8 +192,8 @@ private:
         }
     }
 
-    VBO<TData>& data_vbo_;
-    std::tuple<VBO<TInstanceData>&...> instance_vbos_;
+    VBO<TData>* data_vbo_;
+    std::tuple<VBO<TInstanceData>*...> instance_vbos_;
 };
 
 }

@@ -18,12 +18,6 @@ RBO::RBO(svec2 size, GLsizei samples, PixelInternalFormat format)
         size.y());
 }
 
-RBO::~RBO()
-{
-    if (*this)
-        objectContext().reset(handle());
-}
-
 RBO RBO::color(svec2 size, GLsizei samples)
 {
     return RBO(size, samples, PixelInternalFormat::RGBA8);
@@ -42,11 +36,6 @@ RBO RBO::depthStencil(svec2 size, GLsizei samples)
 RBO RBO::stencil(svec2 size, GLsizei samples)
 {
     return RBO(size, samples, PixelInternalFormat::STENCIL_INDEX8);
-}
-
-void RBO::bind() const
-{
-    objectContext().bind(handle());
 }
 
 svec2 RBO::size() const

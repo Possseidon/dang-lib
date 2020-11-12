@@ -135,12 +135,6 @@ void Program::setAttributeOrder(const AttributeNames& attribute_order, const Ins
             throw ShaderAttributeError("Shader-Attribute not specified in order: " + name);
 }
 
-Program::~Program()
-{
-    if (*this)
-        objectContext().reset(handle());
-}
-
 void Program::addInclude(const std::string& name, std::string code)
 {
     includes_.emplace(name, std::move(code));
@@ -220,8 +214,9 @@ ShaderUniformSampler& Program::uniformSampler(const std::string& name, GLint cou
     return uniform<GLint>(name, count);
 }
 
-ShaderVariable::ShaderVariable(Program& program, GLint count, DataType type, std::string name, GLint location)
-    : program_(program)
+ShaderVariable::ShaderVariable(const Program& program, GLint count, DataType type, std::string name, GLint location)
+    : context_(&program.objectContext())
+    , program_(program.handle())
     , count_(count)
     , type_(type)
     , name_(std::move(name))
@@ -229,9 +224,9 @@ ShaderVariable::ShaderVariable(Program& program, GLint count, DataType type, std
 {
 }
 
-Program& ShaderVariable::program() const
+void ShaderVariable::bindProgram() const
 {
-    return program_;
+    context_->bind(program_);
 }
 
 GLint ShaderVariable::count() const
@@ -259,12 +254,12 @@ GLint ShaderVariable::location() const
     return location_;
 }
 
-ShaderUniformBase::ShaderUniformBase(Program& program, GLint count, DataType type, std::string name)
+ShaderUniformBase::ShaderUniformBase(const Program& program, GLint count, DataType type, std::string name)
     : ShaderVariable(program, count, type, name, glGetUniformLocation(program.handle().unwrap(), name.c_str()))
 {
 }
 
-std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(Program& program, GLint count, DataType type, std::string name)
+std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& program, GLint count, DataType type, std::string name)
 {
     switch (type) {
     case DataType::Float:
@@ -424,7 +419,7 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(Program& program, G
     return std::make_unique<ShaderUniformBase>(program, count, type, name);
 }
 
-ShaderAttribute::ShaderAttribute(Program& program, GLint count, DataType type, std::string name)
+ShaderAttribute::ShaderAttribute(const Program& program, GLint count, DataType type, std::string name)
     : ShaderVariable(program, count, type, name, glGetAttribLocation(program.handle().unwrap(), name.c_str()))
 {
 }

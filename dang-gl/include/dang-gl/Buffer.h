@@ -16,8 +16,6 @@ namespace dang::gl
 template <BufferTarget Target>
 class BufferBase : public Object<ObjectType::Buffer> {
 public:
-    using Object::Object;
-
     /// <summary>Resets the bound buffer of the context, in case of the buffer still being bound.</summary>
     ~BufferBase()
     {
@@ -25,11 +23,20 @@ public:
             objectContext().reset(Target, handle());
     }
 
+    BufferBase(const BufferBase&) = delete;
+    BufferBase& operator=(const BufferBase&) = delete;
+
     /// <summary>Binds the buffer to the correct target.</summary>
     void bind() const
     {
         objectContext().bind(Target, handle());
     }
+
+protected:
+    BufferBase() = default;
+
+    BufferBase(BufferBase&&) = default;
+    BufferBase& operator=(BufferBase&&) = default;
 };
 
 }

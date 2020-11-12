@@ -63,10 +63,14 @@ public:
         GLenum attachment_;
     };
 
-    using Object::Object;
-
+    FBO() = default;
     /// <summary>Resets the bound framebuffer of the context, in case of the framebuffer still being bound.</summary>
     ~FBO();
+
+    FBO(const FBO&) = delete;
+    FBO(FBO&&) = default;
+    FBO& operator=(const FBO&) = delete;
+    FBO& operator=(FBO&&) = default;
 
     /// <summary>Sets an optional label for the object, which is used in by OpenGL generated debug messages.</summary>
     void setLabel(std::optional<std::string> label);

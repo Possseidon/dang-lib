@@ -213,6 +213,14 @@ class VBO : public BufferBase<BufferTarget::ArrayBuffer> {
 public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
+    VBO() = default;
+    ~VBO() = default;
+
+    VBO(const VBO&) = delete;
+    VBO(VBO&&) = default;
+    VBO& operator=(const VBO&) = delete;
+    VBO& operator=(VBO&&) = default;
+
     /// <summary>Returns the element count of the buffer.</summary>
     GLsizei count() const
     {
