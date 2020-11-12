@@ -187,16 +187,18 @@ void FBO::blitFromDefault(BufferMask mask, BlitFilter filter)
 {
     if (!size_)
         return;
-    ibounds2 rect(ivec2{ *size_ });
-    blit(objectContext(), {}, handle(), rect, rect, mask, filter);
+    ibounds2 src_rect(context().size());
+    ibounds2 dst_rect(ivec2{ *size_ });
+    blit(objectContext(), {}, handle(), src_rect, dst_rect, mask, filter);
 }
 
 void FBO::blitToDefault(BufferMask mask, BlitFilter filter) const
 {
     if (!size_)
         return;
-    ibounds2 rect(ivec2{ *size_ });
-    blit(objectContext(), handle(), {}, rect, rect, mask, filter);
+    ibounds2 src_rect(ivec2{ *size_ });
+    ibounds2 dst_rect(context().size());
+    blit(objectContext(), handle(), {}, src_rect, dst_rect, mask, filter);
 }
 
 void FBO::updateSize(svec2 size)
