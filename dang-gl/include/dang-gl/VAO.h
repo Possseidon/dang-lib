@@ -10,8 +10,7 @@
 #include "VBO.h"
 #include "VertexArrayContext.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>A list of all supported modes on how to draw vertex data.</summary>
 enum class BeginMode {
@@ -33,20 +32,18 @@ enum class BeginMode {
 
 /// <summary>Maps the different begin modes to their GL-Constants.</summary>
 template <>
-constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
-    GL_POINTS,
-    GL_LINES,
-    GL_LINE_LOOP,
-    GL_LINE_STRIP,
-    GL_TRIANGLES,
-    GL_TRIANGLE_STRIP,
-    GL_TRIANGLE_FAN,
-    GL_LINES_ADJACENCY,
-    GL_LINE_STRIP_ADJACENCY,
-    GL_TRIANGLES_ADJACENCY,
-    GL_TRIANGLE_STRIP_ADJACENCY,
-    GL_PATCHES
-};
+constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {GL_POINTS,
+                                                                         GL_LINES,
+                                                                         GL_LINE_LOOP,
+                                                                         GL_LINE_STRIP,
+                                                                         GL_TRIANGLES,
+                                                                         GL_TRIANGLE_STRIP,
+                                                                         GL_TRIANGLE_FAN,
+                                                                         GL_LINES_ADJACENCY,
+                                                                         GL_LINE_STRIP_ADJACENCY,
+                                                                         GL_TRIANGLES_ADJACENCY,
+                                                                         GL_TRIANGLE_STRIP_ADJACENCY,
+                                                                         GL_PATCHES};
 
 /// <summary>A base class for all vertex array objects, which is not templated yet.</summary>
 class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
@@ -83,7 +80,10 @@ class VAO : public VAOBase {
 public:
     /// <summary>Creates a new VAO and binds it to the given GL-Program, VBO and potential additional VBOs for instancing.</summary>
     /// <remarks>Various debug assertings check, that the GL-Program and VBOs match.</remarks>
-    VAO(Program& program, VBO<TData>& data_vbo, VBO<TInstanceData>&... instance_vbo, BeginMode mode = BeginMode::Triangles)
+    VAO(Program& program,
+        VBO<TData>& data_vbo,
+        VBO<TInstanceData>&... instance_vbo,
+        BeginMode mode = BeginMode::Triangles)
         : VAOBase(program, mode)
         , data_vbo_(&data_vbo)
         , instance_vbos_(&instance_vbo...)
@@ -196,4 +196,4 @@ private:
     std::tuple<VBO<TInstanceData>*...> instance_vbos_;
 };
 
-}
+} // namespace dang::gl

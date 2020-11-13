@@ -8,13 +8,11 @@
 // TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I think?)
 //       Backup still needs to be polymorphic, as they get stored in a vector
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class State;
 
-namespace detail
-{
+namespace detail {
 
 template <typename T>
 class StateProperty;
@@ -46,8 +44,7 @@ public:
         : StatePropertyBase(state)
         , default_value_(default_value)
         , value_(default_value)
-    {
-    }
+    {}
 
     /// <summary>Ensure the correct destructors are called, as the class is polymorphic.</summary>
     virtual ~StateProperty() = default;
@@ -61,40 +58,22 @@ public:
     StateProperty& operator=(const T& value);
 
     /// <summary>Allows for implicit conversion to the cached value.</summary>
-    operator const T& () const
-    {
-        return value_;
-    }
+    operator const T&() const { return value_; }
 
     /// <summary>Returns the cached value.</summary>
-    const T& operator*() const
-    {
-        return value_;
-    }
+    const T& operator*() const { return value_; }
 
     /// <summary>Returns the cached value.</summary>
-    const T* operator->() const
-    {
-        return &value_;
-    }
+    const T* operator->() const { return &value_; }
 
     /// <summary>Returns the cached value.</summary>
-    const T& value() const
-    {
-        return value_;
-    }
+    const T& value() const { return value_; }
 
     /// <summary>Returns the default value.</summary>
-    const T& defaultValue() const
-    {
-        return default_value_;
-    }
+    const T& defaultValue() const { return default_value_; }
 
     /// <summary>Resets the state to its default value.</summary>
-    void reset()
-    {
-        *this = default_value_;
-    }
+    void reset() { *this = default_value_; }
 
 protected:
     /// <summary>Virtual </summary>
@@ -170,10 +149,7 @@ public:
 
 protected:
     /// <summary>Calls the template specified function with the current vector components.</summary>
-    void update() override
-    {
-        std::apply(*Func, **this);
-    }
+    void update() override { std::apply(*Func, **this); }
 };
 
 /// <summary>A polymorphic base class for state backups.</summary>
@@ -193,14 +169,10 @@ public:
     StateBackup(StateProperty<T>& property)
         : property_(property)
         , old_value_(property)
-    {
-    }
+    {}
 
     /// <summary>Automatically resets the state to it old value.</summary>
-    ~StateBackup() override
-    {
-        property_ = old_value_;
-    }
+    ~StateBackup() override { property_ = old_value_; }
 
 private:
     StateProperty<T>& property_;
@@ -210,11 +182,16 @@ private:
 template <typename T>
 constexpr auto glGet = nullptr;
 
-template <> constexpr auto& glGet<GLboolean> = glGetBooleanv;
-template <> constexpr auto& glGet<GLdouble> = glGetDoublev;
-template <> constexpr auto& glGet<GLfloat> = glGetFloatv;
-template <> constexpr auto& glGet<GLint> = glGetIntegerv;
-template <> constexpr auto& glGet<GLint64> = glGetInteger64v;
+template <>
+constexpr auto& glGet<GLboolean> = glGetBooleanv;
+template <>
+constexpr auto& glGet<GLdouble> = glGetDoublev;
+template <>
+constexpr auto& glGet<GLfloat> = glGetFloatv;
+template <>
+constexpr auto& glGet<GLint> = glGetIntegerv;
+template <>
+constexpr auto& glGet<GLint64> = glGetInteger64v;
 
 /// <summary>A constant, which is queried on first use, but cached for further accesses.</summary>
 template <typename T, GLenum Name>
@@ -231,10 +208,7 @@ public:
     }
 
     /// <summary>Allows for implicit conversion to the value type.</summary>
-    operator const T& () const
-    {
-        return value();
-    }
+    operator const T&() const { return value(); }
 
 private:
     mutable std::optional<T> value_;
@@ -243,11 +217,16 @@ private:
 template <typename T>
 constexpr auto glGeti = nullptr;
 
-template <> constexpr auto& glGeti<GLboolean> = glGetBooleani_v;
-template <> constexpr auto& glGeti<GLdouble> = glGetDoublei_v;
-template <> constexpr auto& glGeti<GLfloat> = glGetFloati_v;
-template <> constexpr auto& glGeti<GLint> = glGetIntegeri_v;
-template <> constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
+template <>
+constexpr auto& glGeti<GLboolean> = glGetBooleani_v;
+template <>
+constexpr auto& glGeti<GLdouble> = glGetDoublei_v;
+template <>
+constexpr auto& glGeti<GLfloat> = glGetFloati_v;
+template <>
+constexpr auto& glGeti<GLint> = glGetIntegeri_v;
+template <>
+constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
 
 /// <summary>A list of constants, which is queried on first use, but cached for further accesses.</summary>
 template <typename T, GLenum Name>
@@ -271,7 +250,7 @@ private:
 
 // TODO: Add size for IndexedConstant and create a separate class, which can query the size from another state.
 
-}
+} // namespace detail
 
 /// <summary>A scope based state modification, which automatically reverts to the old state, when it goes out of scope.</summary>
 class ScopedState {
@@ -300,9 +279,8 @@ public:
     friend class detail::StatePropertyBase;
 
     State(svec2 size)
-        : scissor{ *this, Scissor{ ibounds2{ size } } }
-    {
-    }
+        : scissor{*this, Scissor{ibounds2{size}}}
+    {}
 
     /// <summary>Allows for temporary modifications, which get reverted by the matching pop call.</summary>
     void push();
@@ -312,49 +290,51 @@ public:
     /// <summary>Uses an RAII wrapper, to ensure pop is called at the end of the scope, even in case of exceptions.</summary>
     ScopedState scoped();
 
-    detail::StateFlag<GL_BLEND> blend{ *this };
-    detail::StateFlag<GL_COLOR_LOGIC_OP> color_logic_op{ *this };
-    detail::StateFlag<GL_CULL_FACE> cull_face{ *this };
-    detail::StateFlag<GL_DEBUG_OUTPUT> debug_output{ *this };
-    detail::StateFlag<GL_DEBUG_OUTPUT_SYNCHRONOUS> debug_output_synchronous{ *this };
-    detail::StateFlag<GL_DEPTH_CLAMP> depth_clamp{ *this };
-    detail::StateFlag<GL_DEPTH_TEST> depth_test{ *this };
-    detail::StateFlag<GL_DITHER> dither{ *this, true };
-    detail::StateFlag<GL_FRAMEBUFFER_SRGB> framebuffer_srgb{ *this };
-    detail::StateFlag<GL_LINE_SMOOTH> line_smooth{ *this };
-    detail::StateFlag<GL_MULTISAMPLE> multisample{ *this };
-    detail::StateFlag<GL_POLYGON_SMOOTH> polygon_smooth{ *this };
-    detail::StateFlag<GL_POLYGON_OFFSET_FILL> polygon_offset_fill{ *this };
-    detail::StateFlag<GL_POLYGON_OFFSET_LINE> polygon_offset_line{ *this };
-    detail::StateFlag<GL_POLYGON_OFFSET_POINT> polygon_offset_point{ *this };
-    detail::StateFlag<GL_PROGRAM_POINT_SIZE> program_point_size{ *this };
-    detail::StateFlag<GL_PRIMITIVE_RESTART> primitive_restart{ *this };
-    detail::StateFlag<GL_SAMPLE_ALPHA_TO_COVERAGE> sample_alpha_to_coverage{ *this };
-    detail::StateFlag<GL_SAMPLE_ALPHA_TO_ONE> sample_alpha_to_one{ *this };
-    detail::StateFlag<GL_SAMPLE_COVERAGE> sample_coverage{ *this };
-    detail::StateFlag<GL_SAMPLE_MASK> sample_mask{ *this };
-    detail::StateFlag<GL_SCISSOR_TEST> scissor_test{ *this };
-    detail::StateFlag<GL_STENCIL_TEST> stencil_test{ *this };
-    detail::StateFlag<GL_TEXTURE_CUBE_MAP_SEAMLESS> texture_cube_map_seamless{ *this };
+    detail::StateFlag<GL_BLEND> blend{*this};
+    detail::StateFlag<GL_COLOR_LOGIC_OP> color_logic_op{*this};
+    detail::StateFlag<GL_CULL_FACE> cull_face{*this};
+    detail::StateFlag<GL_DEBUG_OUTPUT> debug_output{*this};
+    detail::StateFlag<GL_DEBUG_OUTPUT_SYNCHRONOUS> debug_output_synchronous{*this};
+    detail::StateFlag<GL_DEPTH_CLAMP> depth_clamp{*this};
+    detail::StateFlag<GL_DEPTH_TEST> depth_test{*this};
+    detail::StateFlag<GL_DITHER> dither{*this, true};
+    detail::StateFlag<GL_FRAMEBUFFER_SRGB> framebuffer_srgb{*this};
+    detail::StateFlag<GL_LINE_SMOOTH> line_smooth{*this};
+    detail::StateFlag<GL_MULTISAMPLE> multisample{*this};
+    detail::StateFlag<GL_POLYGON_SMOOTH> polygon_smooth{*this};
+    detail::StateFlag<GL_POLYGON_OFFSET_FILL> polygon_offset_fill{*this};
+    detail::StateFlag<GL_POLYGON_OFFSET_LINE> polygon_offset_line{*this};
+    detail::StateFlag<GL_POLYGON_OFFSET_POINT> polygon_offset_point{*this};
+    detail::StateFlag<GL_PROGRAM_POINT_SIZE> program_point_size{*this};
+    detail::StateFlag<GL_PRIMITIVE_RESTART> primitive_restart{*this};
+    detail::StateFlag<GL_SAMPLE_ALPHA_TO_COVERAGE> sample_alpha_to_coverage{*this};
+    detail::StateFlag<GL_SAMPLE_ALPHA_TO_ONE> sample_alpha_to_one{*this};
+    detail::StateFlag<GL_SAMPLE_COVERAGE> sample_coverage{*this};
+    detail::StateFlag<GL_SAMPLE_MASK> sample_mask{*this};
+    detail::StateFlag<GL_SCISSOR_TEST> scissor_test{*this};
+    detail::StateFlag<GL_STENCIL_TEST> stencil_test{*this};
+    detail::StateFlag<GL_TEXTURE_CUBE_MAP_SEAMLESS> texture_cube_map_seamless{*this};
 
     // TODO: GL_CLIP_DISTANCEi
 
-    detail::StateFunc<&glBlendFunc, BlendFactor> blend_func{ *this, { BlendFactorSrc::One, BlendFactorDst::Zero} };
-    detail::StateFunc<&glCullFace, CullFaceMode> cull_face_mode{ *this, CullFaceMode::Back };
-    detail::StateFunc<&glLineWidth, GLfloat> line_width{ *this, 1.0f };
-    detail::StateFunc<&glLogicOp, LogicOp> logic_op{ *this, LogicOp::Copy };
-    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Front>> polygon_mode_front{ *this, { PolygonMode::Fill } };
-    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Back>> polygon_mode_back{ *this, { PolygonMode::Fill } };
-    detail::StateFunc<&glPolygonOffset, PolygonOffset> polygon_offset{ *this, { 0.0f, 0.0f } };
-    detail::StateFunc<&glPrimitiveRestartIndex, GLuint> primitive_restart_index{ *this, 0 };
-    detail::StateFunc<&glSampleCoverage, SampleCoverage> sample_coverage_value{ *this, { 1.0f, GL_FALSE } };
+    detail::StateFunc<&glBlendFunc, BlendFactor> blend_func{*this, {BlendFactorSrc::One, BlendFactorDst::Zero}};
+    detail::StateFunc<&glCullFace, CullFaceMode> cull_face_mode{*this, CullFaceMode::Back};
+    detail::StateFunc<&glLineWidth, GLfloat> line_width{*this, 1.0f};
+    detail::StateFunc<&glLogicOp, LogicOp> logic_op{*this, LogicOp::Copy};
+    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Front>> polygon_mode_front{*this,
+                                                                                              {PolygonMode::Fill}};
+    detail::StateFunc<&glPolygonMode, PolygonSideMode<PolygonSide::Back>> polygon_mode_back{*this, {PolygonMode::Fill}};
+    detail::StateFunc<&glPolygonOffset, PolygonOffset> polygon_offset{*this, {0.0f, 0.0f}};
+    detail::StateFunc<&glPrimitiveRestartIndex, GLuint> primitive_restart_index{*this, 0};
+    detail::StateFunc<&glSampleCoverage, SampleCoverage> sample_coverage_value{*this, {1.0f, GL_FALSE}};
     detail::StateFunc<&glScissor, Scissor> scissor; // defaults to framebuffer size, set in constructor
-    detail::StateFunc<&glStencilFunc, StencilFunc> stencil_func{ *this, { CompareFunc::Always, 0, GLuint(-1) } };
-    detail::StateFunc<&glStencilOp, StencilOp> stencil_op{ *this, { StencilAction::Keep, StencilAction::Keep, StencilAction::Keep } };
+    detail::StateFunc<&glStencilFunc, StencilFunc> stencil_func{*this, {CompareFunc::Always, 0, GLuint(-1)}};
+    detail::StateFunc<&glStencilOp, StencilOp> stencil_op{
+        *this, {StencilAction::Keep, StencilAction::Keep, StencilAction::Keep}};
 
-    detail::StateVector<&glClearColor, GLfloat, 4> clear_color{ *this, { 0.0f, 0.0f, 0.0f, 0.0f } };
-    detail::StateFunc<&glClearDepth, GLfloat> clear_depth{ *this, 0.0f };
-    detail::StateFunc<&glClearStencil, GLint> clear_stencil{ *this, 0 };
+    detail::StateVector<&glClearColor, GLfloat, 4> clear_color{*this, {0.0f, 0.0f, 0.0f, 0.0f}};
+    detail::StateFunc<&glClearDepth, GLfloat> clear_depth{*this, 0.0f};
+    detail::StateFunc<&glClearStencil, GLint> clear_stencil{*this, 0};
 
     detail::Constant<GLint, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS> max_combined_texture_image_units;
     detail::Constant<GLint, GL_MAX_COLOR_ATTACHMENTS> max_color_attachments;
@@ -367,13 +347,13 @@ private:
     std::stack<detail::StateBackupSet> state_backup_;
 };
 
-template<typename T>
+template <typename T>
 inline void detail::StatePropertyBase::backupValue(StateProperty<T>& property)
 {
     state_.backupValue(property);
 }
 
-template<typename T>
+template <typename T>
 inline detail::StateProperty<T>& detail::StateProperty<T>::operator=(const T& value)
 {
     if (value_ != value) {
@@ -384,11 +364,9 @@ inline detail::StateProperty<T>& detail::StateProperty<T>::operator=(const T& va
     return *this;
 }
 
-inline detail::StateBackupBase::~StateBackupBase()
-{
-}
+inline detail::StateBackupBase::~StateBackupBase() {}
 
-template<typename T>
+template <typename T>
 inline void State::backupValue(detail::StateProperty<T>& property)
 {
     if (state_backup_.empty())
@@ -401,4 +379,4 @@ inline void State::backupValue(detail::StateProperty<T>& property)
     change_set.emplace(property.index_, std::make_unique<detail::StateBackup<T>>(property));
 }
 
-}
+} // namespace dang::gl

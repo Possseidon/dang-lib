@@ -7,8 +7,7 @@
 #include "ObjectType.h"
 #include "State.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class Context {
 public:
@@ -18,25 +17,13 @@ public:
 
     Context(svec2 size);
 
-    State& state()
-    {
-        return state_;
-    }
+    State& state() { return state_; }
 
-    const State& state() const
-    {
-        return state_;
-    }
+    const State& state() const { return state_; }
 
-    State* operator->()
-    {
-        return &state_;
-    }
+    State* operator->() { return &state_; }
 
-    const State* operator->() const
-    {
-        return &state_;
-    }
+    const State* operator->() const { return &state_; }
 
     template <ObjectType Type>
     auto& contextFor()
@@ -50,15 +37,9 @@ public:
         return static_cast<const ObjectContext<Type>&>(*object_contexts_[Type]);
     }
 
-    svec2 size() const
-    {
-        return size_;
-    }
+    svec2 size() const { return size_; }
 
-    float aspect() const
-    {
-        return static_cast<float>(size_.x()) / size_.y();
-    }
+    float aspect() const { return static_cast<float>(size_.x()) / size_.y(); }
 
     void resize(svec2 size)
     {
@@ -80,4 +61,4 @@ private:
     svec2 size_;
 };
 
-}
+} // namespace dang::gl

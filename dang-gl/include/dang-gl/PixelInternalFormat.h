@@ -4,8 +4,7 @@
 
 #include "GLConstants.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Formats, for how OpenGL stores its pixel data.</summary>
 enum class PixelInternalFormat {
@@ -199,7 +198,6 @@ constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelIntern
     GL_STENCIL_INDEX1,
     GL_STENCIL_INDEX4,
     GL_STENCIL_INDEX8,
-    GL_STENCIL_INDEX16
-};
+    GL_STENCIL_INDEX16};
 
-}
+} // namespace dang::gl

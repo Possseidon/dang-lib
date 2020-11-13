@@ -8,8 +8,7 @@
 #include "PixelFormat.h"
 #include "PixelType.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Thrown by the PNGLoader if libpng reports any error.</summary>
 class PNGError : public std::runtime_error {
@@ -154,15 +153,12 @@ inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
 template <PixelFormat Format>
 inline void PNGLoader::handleGrayRGB()
 {
-    auto is_gray = [&]() -> bool {
-        return color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA;
-    };
+    auto is_gray = [&]() -> bool { return color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA; };
 
-    if constexpr (
-        Format == PixelFormat::RGB || Format == PixelFormat::BGR ||
-        Format == PixelFormat::RGBA || Format == PixelFormat::BGRA ||
-        Format == PixelFormat::RGB_INTEGER || Format == PixelFormat::BGR_INTEGER ||
-        Format == PixelFormat::RGBA_INTEGER || Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (Format == PixelFormat::RGB || Format == PixelFormat::BGR || Format == PixelFormat::RGBA ||
+                  Format == PixelFormat::BGRA || Format == PixelFormat::RGB_INTEGER ||
+                  Format == PixelFormat::BGR_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
+                  Format == PixelFormat::BGRA_INTEGER) {
         if (is_gray()) {
             png_set_gray_to_rgb(png_ptr_);
             color_type_ |= PNG_COLOR_MASK_COLOR;
@@ -187,13 +183,11 @@ inline void PNGLoader::handleGrayRGB()
 template <PixelFormat Format>
 inline void PNGLoader::handleAlpha()
 {
-    auto has_alpha = [&]() -> bool {
-        return color_type_ & PNG_COLOR_MASK_ALPHA;
-    };
+    auto has_alpha = [&]() -> bool { return color_type_ & PNG_COLOR_MASK_ALPHA; };
 
-    if constexpr (
-        Format == PixelFormat::RG || Format == PixelFormat::RGBA || Format == PixelFormat::BGRA ||
-        Format == PixelFormat::RG_INTEGER || Format == PixelFormat::RGBA_INTEGER || Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (Format == PixelFormat::RG || Format == PixelFormat::RGBA || Format == PixelFormat::BGRA ||
+                  Format == PixelFormat::RG_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
+                  Format == PixelFormat::BGRA_INTEGER) {
         if (!has_alpha()) {
             png_set_add_alpha(png_ptr_, 0xFF, PNG_FILLER_AFTER);
             color_type_ |= PNG_COLOR_MASK_ALPHA;
@@ -210,14 +204,11 @@ inline void PNGLoader::handleAlpha()
 template <PixelFormat Format>
 inline void PNGLoader::handleBGR()
 {
-    if constexpr (
-        Format == PixelFormat::BGR ||
-        Format == PixelFormat::BGRA ||
-        Format == PixelFormat::BGR_INTEGER ||
-        Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (Format == PixelFormat::BGR || Format == PixelFormat::BGRA || Format == PixelFormat::BGR_INTEGER ||
+                  Format == PixelFormat::BGRA_INTEGER) {
         assert(color_type_ == PNG_COLOR_TYPE_RGB || color_type_ == PNG_COLOR_TYPE_RGBA);
         png_set_bgr(png_ptr_);
     }
 }
 
-}
+} // namespace dang::gl

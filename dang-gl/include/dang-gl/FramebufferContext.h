@@ -5,8 +5,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Specializes the context class for framebuffer objects.</summary>
 template <>
@@ -63,4 +62,4 @@ private:
     Handle bound_read_buffer_;
 };
 
-}
+} // namespace dang::gl

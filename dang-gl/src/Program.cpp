@@ -1,22 +1,20 @@
 #include "pch.h"
+
 #include "Program.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 std::string Program::replaceInfoLogShaderNames(std::string info_log) const
 {
-    std::vector<std::string> names{ "main" };
+    std::vector<std::string> names{"main"};
     for (const auto& [name, code] : includes_)
         names.push_back(name);
 
     for (std::size_t i = 0; i < names.size(); i++) {
-        const std::array line_regexes{
-            // NVIDIA: 1(23)
-            std::regex("\\b" + std::to_string(i) + "\\((\\d+)\\)\\b"),
-            // Intel: 1:23
-            std::regex("\\b" + std::to_string(i) + ":(\\d+)\\b")
-        };
+        const std::array line_regexes{// NVIDIA: 1(23)
+                                      std::regex("\\b" + std::to_string(i) + "\\((\\d+)\\)\\b"),
+                                      // Intel: 1:23
+                                      std::regex("\\b" + std::to_string(i) + ":(\\d+)\\b")};
 
         for (const auto& line_regex : line_regexes)
             info_log = std::regex_replace(info_log, line_regex, names[i] + "($1)");
@@ -81,7 +79,8 @@ void Program::loadAttributeLocations()
         GLsizei actual_length;
         GLint data_size;
         GLenum data_type;
-        glGetActiveAttrib(handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
+        glGetActiveAttrib(
+            handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
         name.resize(static_cast<std::size_t>(actual_length));
         attributes_.emplace(name, ShaderAttribute(*this, data_size, static_cast<DataType>(data_type), name));
     }
@@ -101,14 +100,16 @@ void Program::loadUniformLocations()
         GLsizei actual_length;
         GLint data_size;
         GLenum data_type;
-        glGetActiveUniform(handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
+        glGetActiveUniform(
+            handle().unwrap(), static_cast<GLuint>(i), max_length, &actual_length, &data_size, &data_type, &name[0]);
         name.resize(static_cast<std::size_t>(actual_length));
 
         uniforms_.emplace(name, ShaderUniformBase::create(*this, data_size, static_cast<DataType>(data_type), name));
     }
 }
 
-void Program::setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order)
+void Program::setAttributeOrder(const AttributeNames& attribute_order,
+                                const InstancedAttributeNames& instanced_attribute_order)
 {
     auto add_attribute = [&](const auto& name, AttributeOrder& order) {
         auto pos = attributes_.find(name);
@@ -135,15 +136,9 @@ void Program::setAttributeOrder(const AttributeNames& attribute_order, const Ins
             throw ShaderAttributeError("Shader-Attribute not specified in order: " + name);
 }
 
-void Program::addInclude(const std::string& name, std::string code)
-{
-    includes_.emplace(name, std::move(code));
-}
+void Program::addInclude(const std::string& name, std::string code) { includes_.emplace(name, std::move(code)); }
 
-void Program::addIncludeFromFile(const fs::path& path)
-{
-    addIncludeFromFile(path, path.filename().string());
-}
+void Program::addIncludeFromFile(const fs::path& path) { addIncludeFromFile(path, path.filename().string()); }
 
 void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 {
@@ -157,7 +152,7 @@ void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
-    Handle shader_handle{ glCreateShader(toGLConstant(type)) };
+    Handle shader_handle{glCreateShader(toGLConstant(type))};
     shader_handles_.push_back(shader_handle);
 
     std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();
@@ -199,15 +194,9 @@ void Program::postLinkCleanup()
     includes_.clear();
 }
 
-const AttributeOrder& Program::attributeOrder() const
-{
-    return attribute_order_;
-}
+const AttributeOrder& Program::attributeOrder() const { return attribute_order_; }
 
-const std::vector<AttributeOrder>& Program::instancedAttributeOrder() const
-{
-    return instanced_attribute_order_;
-}
+const std::vector<AttributeOrder>& Program::instancedAttributeOrder() const { return instanced_attribute_order_; }
 
 ShaderUniformSampler& Program::uniformSampler(const std::string& name, GLint count)
 {
@@ -221,45 +210,28 @@ ShaderVariable::ShaderVariable(const Program& program, GLint count, DataType typ
     , type_(type)
     , name_(std::move(name))
     , location_(location)
-{
-}
+{}
 
-void ShaderVariable::bindProgram() const
-{
-    context_->bind(program_);
-}
+void ShaderVariable::bindProgram() const { context_->bind(program_); }
 
-GLint ShaderVariable::count() const
-{
-    return count_;
-}
+GLint ShaderVariable::count() const { return count_; }
 
-GLsizei ShaderVariable::size() const
-{
-    return count_ * getDataTypeSize(type_);
-}
+GLsizei ShaderVariable::size() const { return count_ * getDataTypeSize(type_); }
 
-DataType ShaderVariable::type() const
-{
-    return type_;
-}
+DataType ShaderVariable::type() const { return type_; }
 
-const std::string& ShaderVariable::name() const
-{
-    return name_;
-}
+const std::string& ShaderVariable::name() const { return name_; }
 
-GLint ShaderVariable::location() const
-{
-    return location_;
-}
+GLint ShaderVariable::location() const { return location_; }
 
 ShaderUniformBase::ShaderUniformBase(const Program& program, GLint count, DataType type, std::string name)
     : ShaderVariable(program, count, type, name, glGetUniformLocation(program.handle().unwrap(), name.c_str()))
-{
-}
+{}
 
-std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& program, GLint count, DataType type, std::string name)
+std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& program,
+                                                             GLint count,
+                                                             DataType type,
+                                                             std::string name)
 {
     switch (type) {
     case DataType::Float:
@@ -421,13 +393,9 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& prog
 
 ShaderAttribute::ShaderAttribute(const Program& program, GLint count, DataType type, std::string name)
     : ShaderVariable(program, count, type, name, glGetAttribLocation(program.handle().unwrap(), name.c_str()))
-{
-}
+{}
 
-GLsizei ShaderAttribute::offset() const
-{
-    return offset_;
-}
+GLsizei ShaderAttribute::offset() const { return offset_; }
 
 ShaderPreprocessor::ShaderPreprocessor(const Program& program, const std::string& code)
     : program_(program)
@@ -435,10 +403,7 @@ ShaderPreprocessor::ShaderPreprocessor(const Program& program, const std::string
     process(code, 0);
 }
 
-std::string ShaderPreprocessor::result() const
-{
-    return output_.str();
-}
+std::string ShaderPreprocessor::result() const { return output_.str(); }
 
 void ShaderPreprocessor::process(const std::string& code, std::size_t compilation_unit)
 {
@@ -496,7 +461,7 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
             std::string name = match[1];
 
             if (included_.find(name) != included_.end()) {
-                next_line_ = { line_index + 1, compilation_unit };
+                next_line_ = {line_index + 1, compilation_unit};
                 continue;
             }
             included_.insert(name);
@@ -508,9 +473,9 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
             }
 
             std::size_t include_compilation_unit = std::distance(program_.includes_.begin(), pos) + 1;
-            next_line_ = { 1, include_compilation_unit };
+            next_line_ = {1, include_compilation_unit};
             process(pos->second, include_compilation_unit);
-            next_line_ = { line_index + 1, compilation_unit };
+            next_line_ = {line_index + 1, compilation_unit};
         }
         else {
             if (next_line_) {
@@ -528,4 +493,4 @@ void ShaderPreprocessor::process(const std::string& code, std::size_t compilatio
     }
 }
 
-}
+} // namespace dang::gl

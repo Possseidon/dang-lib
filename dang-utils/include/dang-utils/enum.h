@@ -6,8 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace dang::utils
-{
+namespace dang::utils {
 
 /// <summary>Simply gives COUNT of the enum template parameter.</summary>
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
@@ -43,15 +42,9 @@ public:
         return Base::operator[](static_cast<typename Base::size_type>(pos));
     }
 
-    constexpr TValue& at(TEnum pos)
-    {
-        return Base::at(static_cast<typename Base::size_type>(pos));
-    }
+    constexpr TValue& at(TEnum pos) { return Base::at(static_cast<typename Base::size_type>(pos)); }
 
-    constexpr const TValue& at(TEnum pos) const
-    {
-        return Base::at(static_cast<typename Base::size_type>(pos));
-    }
+    constexpr const TValue& at(TEnum pos) const { return Base::at(static_cast<typename Base::size_type>(pos)); }
 };
 
 /// <summary>An iterator, allowing iteration over all set bits in a flags-enum with NONE and ALL specified.</summary>
@@ -85,20 +78,11 @@ public:
         return result;
     }
 
-    constexpr bool operator==(EnumSetIterator<T> other)
-    {
-        return set_ == other->set_;
-    }
+    constexpr bool operator==(EnumSetIterator<T> other) { return set_ == other->set_; }
 
-    constexpr bool operator!=(EnumSetIterator<T> other)
-    {
-        return set_ != other.set_;
-    }
+    constexpr bool operator!=(EnumSetIterator<T> other) { return set_ != other.set_; }
 
-    constexpr T operator*()
-    {
-        return static_cast<T>(value_);
-    }
+    constexpr T operator*() { return static_cast<T>(value_); }
 
 private:
     std::underlying_type_t<T> set_{};
@@ -112,7 +96,10 @@ struct EnumSequence {
 };
 
 /// <summary>Helper function to create an enum sequences from a given integer sequence.</summary>
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT, std::underlying_type_t<T>... Indices>
+template <typename T,
+          typename = std::enable_if_t<std::is_enum_v<T>>,
+          T = T::COUNT,
+          std::underlying_type_t<T>... Indices>
 constexpr auto makeEnumSequence(std::integer_sequence<std::underlying_type_t<T>, Indices...>)
 {
     return EnumSequence<T, static_cast<T>(Indices)...>();
@@ -122,13 +109,13 @@ constexpr auto makeEnumSequence(std::integer_sequence<std::underlying_type_t<T>,
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::COUNT>
 constexpr auto makeEnumSequence()
 {
-    return makeEnumSequence<T>(std::make_integer_sequence<std::underlying_type_t<T>, static_cast<std::underlying_type_t<T>>(T::COUNT)>());
+    return makeEnumSequence<T>(
+        std::make_integer_sequence<std::underlying_type_t<T>, static_cast<std::underlying_type_t<T>>(T::COUNT)>());
 }
 
-}
+} // namespace dang::utils
 
-namespace std
-{
+namespace std {
 
 // Allow enum iteration in range based for loops
 // for (auto value : MyEnum())
@@ -159,7 +146,7 @@ constexpr auto end(T)
     return dutils::EnumSetIterator<T>();
 }
 
-}
+} // namespace std
 
 // Enable enum-set bitwise operations
 

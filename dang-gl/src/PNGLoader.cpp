@@ -1,14 +1,13 @@
 #include "pch.h"
+
 #include "PNGLoader.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 PNGLoader::PNGLoader()
 try
     : png_ptr_(initCheck(png_create_read_struct(PNG_LIBPNG_VER_STRING, this, errorCallback, warningCallback)))
-    , info_ptr_(initCheck(png_create_info_struct(png_ptr_)))
-{
+    , info_ptr_(initCheck(png_create_info_struct(png_ptr_))) {
 }
 catch (...) {
     cleanup();
@@ -21,10 +20,7 @@ PNGLoader::PNGLoader(std::istream& stream)
     init(stream);
 }
 
-PNGLoader::~PNGLoader()
-{
-    cleanup();
-}
+PNGLoader::~PNGLoader() { cleanup(); }
 
 void PNGLoader::init(std::istream& stream)
 {
@@ -42,10 +38,7 @@ void PNGLoader::init(std::istream& stream)
     png_set_interlace_handling(png_ptr_);
 }
 
-dmath::svec2 PNGLoader::size() const
-{
-    return size_;
-}
+dmath::svec2 PNGLoader::size() const { return size_; }
 
 void PNGLoader::handleBitDepth()
 {
@@ -68,15 +61,12 @@ void PNGLoader::handleBitDepth()
     }
 }
 
-void PNGLoader::errorCallback(png_structp, png_const_charp message)
-{
-    throw PNGError(message);
-}
+void PNGLoader::errorCallback(png_structp, png_const_charp message) { throw PNGError(message); }
 
 void PNGLoader::warningCallback(png_structp png_ptr, png_const_charp message)
 {
     auto& png_image = *static_cast<PNGLoader*>(png_get_error_ptr(png_ptr));
-    png_image.onWarning({ png_image, message });
+    png_image.onWarning({png_image, message});
 }
 
 void PNGLoader::readCallback(png_structp png_ptr, png_bytep bytes, png_size_t size)
@@ -86,9 +76,6 @@ void PNGLoader::readCallback(png_structp png_ptr, png_bytep bytes, png_size_t si
         throw PNGError("Unexpected eof while reading PNG.");
 }
 
-void PNGLoader::cleanup()
-{
-    png_destroy_read_struct(&png_ptr_, &info_ptr_, nullptr);
-}
+void PNGLoader::cleanup() { png_destroy_read_struct(&png_ptr_, &info_ptr_, nullptr); }
 
-}
+} // namespace dang::gl

@@ -13,8 +13,7 @@
 #include "PixelType.h"
 #include "TextureContext.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /*
 
@@ -67,8 +66,7 @@ protected:
     explicit TextureBase(TextureTarget target)
         : Object()
         , target_(target)
-    {
-    }
+    {}
 
     TextureBase(TextureBase&&) = default;
     TextureBase& operator=(TextureBase&&) = default;
@@ -86,10 +84,8 @@ enum class TextureDepthStencilMode {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
-    GL_DEPTH_COMPONENT,
-    GL_STENCIL_INDEX
-};
+constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {GL_DEPTH_COMPONENT,
+                                                                                                     GL_STENCIL_INDEX};
 
 enum class TextureMagFilter {
     Nearest,
@@ -99,10 +95,7 @@ enum class TextureMagFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {
-    GL_NEAREST,
-    GL_LINEAR
-};
+constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
 
 enum class TextureMinFilter {
     Nearest,
@@ -116,14 +109,12 @@ enum class TextureMinFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {
-    GL_NEAREST,
-    GL_LINEAR,
-    GL_NEAREST_MIPMAP_NEAREST,
-    GL_LINEAR_MIPMAP_NEAREST,
-    GL_NEAREST_MIPMAP_LINEAR,
-    GL_LINEAR_MIPMAP_LINEAR
-};
+constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
+                                                                                       GL_LINEAR,
+                                                                                       GL_NEAREST_MIPMAP_NEAREST,
+                                                                                       GL_LINEAR_MIPMAP_NEAREST,
+                                                                                       GL_NEAREST_MIPMAP_LINEAR,
+                                                                                       GL_LINEAR_MIPMAP_LINEAR};
 
 enum class TextureCompareFunc {
     Never,
@@ -140,15 +131,7 @@ enum class TextureCompareFunc {
 
 template <>
 constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
-    GL_NEVER,
-    GL_LESS,
-    GL_EQUAL,
-    GL_LEQUAL,
-    GL_GREATER,
-    GL_NOTEQUAL,
-    GL_GEQUAL,
-    GL_ALWAYS
-};
+    GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS};
 
 enum class TextureSwizzle {
     Red,
@@ -163,13 +146,7 @@ enum class TextureSwizzle {
 
 template <>
 constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
-    GL_RED,
-    GL_GREEN,
-    GL_BLUE,
-    GL_ALPHA,
-    GL_ZERO,
-    GL_ONE
-};
+    GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
 
 enum class TextureWrap {
     Repeat,
@@ -183,35 +160,37 @@ enum class TextureWrap {
 
 template <>
 constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
-    GL_REPEAT,
-    GL_CLAMP_TO_BORDER,
-    GL_CLAMP_TO_EDGE,
-    GL_MIRRORED_REPEAT,
-    GL_MIRROR_CLAMP_TO_EDGE
-};
+    GL_REPEAT, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_TO_EDGE};
 
-namespace detail
-{
+namespace detail {
 
 template <std::size_t Dim>
 constexpr auto glTexStorage = nullptr;
 
-template <> constexpr auto& glTexStorage<1> = glTexStorage1D;
-template <> constexpr auto& glTexStorage<2> = glTexStorage2D;
-template <> constexpr auto& glTexStorage<3> = glTexStorage3D;
+template <>
+constexpr auto& glTexStorage<1> = glTexStorage1D;
+template <>
+constexpr auto& glTexStorage<2> = glTexStorage2D;
+template <>
+constexpr auto& glTexStorage<3> = glTexStorage3D;
 
 template <std::size_t Dim>
 constexpr auto glTexStorageMultisample = nullptr;
 
-template <> constexpr auto& glTexStorageMultisample<2> = glTexStorage2DMultisample;
-template <> constexpr auto& glTexStorageMultisample<3> = glTexStorage3DMultisample;
+template <>
+constexpr auto& glTexStorageMultisample<2> = glTexStorage2DMultisample;
+template <>
+constexpr auto& glTexStorageMultisample<3> = glTexStorage3DMultisample;
 
 template <std::size_t Dim>
 constexpr auto glTexSubImage = nullptr;
 
-template <> constexpr auto& glTexSubImage<1> = glTexSubImage1D;
-template <> constexpr auto& glTexSubImage<2> = glTexSubImage2D;
-template <> constexpr auto& glTexSubImage<3> = glTexSubImage3D;
+template <>
+constexpr auto& glTexSubImage<1> = glTexSubImage1D;
+template <>
+constexpr auto& glTexSubImage<2> = glTexSubImage2D;
+template <>
+constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 
 /// <summary>A base for all textures with template parameters for the dimension and texture target.</summary>
 template <std::size_t Dim, TextureTarget Target>
@@ -226,17 +205,11 @@ public:
     TextureBaseTyped& operator=(const TextureBaseTyped&) = delete;
 
     /// <summary>Returns the size of the image along each axis.</summary>
-    dmath::svec<Dim> size() const
-    {
-        return size_;
-    }
+    dmath::svec<Dim> size() const { return size_; }
 
     /// <summary>Modifies a part of the stored texture at the optional given offset and mipmap level.</summary>
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type>
-    void modify(
-        const Image<ImageDim, Format, Type>& image,
-        dmath::svec<Dim> offset = {},
-        GLint mipmap_level = 0)
+    void modify(const Image<ImageDim, Format, Type>& image, dmath::svec<Dim> offset = {}, GLint mipmap_level = 0)
     {
         this->bind();
         subImage(std::make_index_sequence<Dim>(), image, offset, mipmap_level);
@@ -249,10 +222,7 @@ public:
         glGenerateMipmap(toGLConstant(Target));
     }
 
-    const vec4& borderColor() const
-    {
-        return border_color_;
-    }
+    const vec4& borderColor() const { return border_color_; }
 
     void setBorderColor(const vec4& color)
     {
@@ -262,10 +232,7 @@ public:
         border_color_ = color;
     }
 
-    TextureDepthStencilMode depthStencilMode() const
-    {
-        return depth_stencil_mode_;
-    }
+    TextureDepthStencilMode depthStencilMode() const { return depth_stencil_mode_; }
 
     void setDepthStencilMode(TextureDepthStencilMode mode)
     {
@@ -275,10 +242,7 @@ public:
         depth_stencil_mode_ = mode;
     }
 
-    TextureCompareFunc compareFunc() const
-    {
-        return compare_func_;
-    }
+    TextureCompareFunc compareFunc() const { return compare_func_; }
 
     void setCompareFunc(TextureCompareFunc func)
     {
@@ -288,10 +252,7 @@ public:
         compare_func_ = func;
     }
 
-    GLfloat minLevelOfDetail() const
-    {
-        return min_level_of_detail_;
-    }
+    GLfloat minLevelOfDetail() const { return min_level_of_detail_; }
 
     void setMinLevelOfDetail(GLfloat level)
     {
@@ -301,10 +262,7 @@ public:
         min_level_of_detail_ = level;
     }
 
-    GLfloat maxLevelOfDetail() const
-    {
-        return max_level_of_detail_;
-    }
+    GLfloat maxLevelOfDetail() const { return max_level_of_detail_; }
 
     void setMaxLevelOfDetail(GLfloat level)
     {
@@ -314,10 +272,7 @@ public:
         max_level_of_detail_ = level;
     }
 
-    GLfloat levelOfDetailBias() const
-    {
-        return level_of_detail_bias_;
-    }
+    GLfloat levelOfDetailBias() const { return level_of_detail_bias_; }
 
     void setLevelOfDetailBias(GLfloat bias)
     {
@@ -327,10 +282,7 @@ public:
         level_of_detail_bias_ = bias;
     }
 
-    TextureMagFilter magFilter() const
-    {
-        return mag_filter_;
-    }
+    TextureMagFilter magFilter() const { return mag_filter_; }
 
     void setMagFilter(TextureMagFilter mag_filter)
     {
@@ -340,10 +292,7 @@ public:
         mag_filter_ = mag_filter;
     }
 
-    TextureMinFilter minFilter() const
-    {
-        return min_filter_;
-    }
+    TextureMinFilter minFilter() const { return min_filter_; }
 
     void setMinFilter(TextureMinFilter min_filter)
     {
@@ -353,10 +302,7 @@ public:
         min_filter_ = min_filter;
     }
 
-    GLint baseLevel() const
-    {
-        return base_level_;
-    }
+    GLint baseLevel() const { return base_level_; }
 
     void setBaseLevel(GLint base_level)
     {
@@ -366,10 +312,7 @@ public:
         base_level_ = base_level;
     }
 
-    GLint maxLevel() const
-    {
-        return max_level_;
-    }
+    GLint maxLevel() const { return max_level_; }
 
     void setMaxLevel(GLint max_level)
     {
@@ -379,10 +322,7 @@ public:
         max_level_ = max_level;
     }
 
-    TextureSwizzle swizzleRed() const
-    {
-        return swizzle_red_;
-    }
+    TextureSwizzle swizzleRed() const { return swizzle_red_; }
 
     void setSwizzleRed(TextureSwizzle swizzle)
     {
@@ -392,10 +332,7 @@ public:
         swizzle_red_ = swizzle;
     }
 
-    TextureSwizzle swizzleGreen() const
-    {
-        return swizzle_green_;
-    }
+    TextureSwizzle swizzleGreen() const { return swizzle_green_; }
 
     void setSwizzleGreen(TextureSwizzle swizzle)
     {
@@ -405,10 +342,7 @@ public:
         swizzle_green_ = swizzle;
     }
 
-    TextureSwizzle swizzleBlue() const
-    {
-        return swizzle_blue_;
-    }
+    TextureSwizzle swizzleBlue() const { return swizzle_blue_; }
 
     void setSwizzleBlue(TextureSwizzle swizzle)
     {
@@ -418,10 +352,7 @@ public:
         swizzle_blue_ = swizzle;
     }
 
-    TextureSwizzle swizzleAlpha() const
-    {
-        return swizzle_alpha_;
-    }
+    TextureSwizzle swizzleAlpha() const { return swizzle_alpha_; }
 
     void setSwizzleAlpha(TextureSwizzle swizzle)
     {
@@ -431,10 +362,7 @@ public:
         swizzle_alpha_ = swizzle;
     }
 
-    TextureWrap wrapS() const
-    {
-        return wrap_s_;
-    }
+    TextureWrap wrapS() const { return wrap_s_; }
 
     void setWrapS(TextureWrap wrap)
     {
@@ -444,10 +372,7 @@ public:
         wrap_s_ = wrap;
     }
 
-    TextureWrap wrapT() const
-    {
-        return wrap_t_;
-    }
+    TextureWrap wrapT() const { return wrap_t_; }
 
     void setWrapT(TextureWrap wrap)
     {
@@ -457,10 +382,7 @@ public:
         wrap_t_ = wrap;
     }
 
-    TextureWrap wrapR() const
-    {
-        return wrap_r_;
-    }
+    TextureWrap wrapR() const { return wrap_r_; }
 
     void setWrapR(TextureWrap wrap)
     {
@@ -474,34 +396,28 @@ protected:
     /// <summary>Simply calls the base constructor with the templated texture target.</summary>
     TextureBaseTyped()
         : TextureBase(Target)
-    {
-    }
+    {}
 
     TextureBaseTyped(TextureBaseTyped&&) = default;
     TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
 
     /// <summary>Sets the internal size to the given value.</summary>
-    void setSize(dmath::svec<Dim> size)
-    {
-        size_ = size;
-    }
+    void setSize(dmath::svec<Dim> size) { size_ = size; }
 
     /// <summary>Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.</summary>
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type, std::size_t... Indices>
-    void subImage(
-        std::index_sequence<Indices...>,
-        const Image<ImageDim, Format, Type>& image,
-        dmath::svec<Dim> offset = {},
-        GLint mipmap_level = 0)
+    void subImage(std::index_sequence<Indices...>,
+                  const Image<ImageDim, Format, Type>& image,
+                  dmath::svec<Dim> offset = {},
+                  GLint mipmap_level = 0)
     {
-        glTexSubImage<Dim>(
-            toGLConstant(Target),
-            mipmap_level,
-            static_cast<GLint>(offset[Indices])...,
-            static_cast<GLsizei>(Indices < image.size().size() ? image.size()[Indices] : 1)...,
-            toGLConstant(Format),
-            toGLConstant(Type),
-            image.data());
+        glTexSubImage<Dim>(toGLConstant(Target),
+                           mipmap_level,
+                           static_cast<GLint>(offset[Indices])...,
+                           static_cast<GLsizei>(Indices < image.size().size() ? image.size()[Indices] : 1)...,
+                           toGLConstant(Format),
+                           toGLConstant(Type),
+                           image.data());
     }
 
 private:
@@ -541,10 +457,9 @@ public:
 
     /// <summary>Initializes a new texture with the given size, optional mipmap level count and internal format.</summary>
     /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
-    explicit TextureBaseRegular(
-        dmath::svec<Dim> size,
-        std::optional<GLsizei> mipmap_levels = std::nullopt,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    explicit TextureBaseRegular(dmath::svec<Dim> size,
+                                std::optional<GLsizei> mipmap_levels = std::nullopt,
+                                PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
         : TextureBaseRegular()
     {
         generate(size, mipmap_levels, internal_format);
@@ -554,10 +469,9 @@ public:
     /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
     /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
     template <PixelFormat Format, PixelType Type>
-    explicit TextureBaseRegular(
-        const Image<Dim, Format, Type>& image,
-        std::optional<GLsizei> mipmap_levels = std::nullopt,
-        PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+    explicit TextureBaseRegular(const Image<Dim, Format, Type>& image,
+                                std::optional<GLsizei> mipmap_levels = std::nullopt,
+                                PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
         : TextureBaseRegular()
     {
         generate(image, mipmap_levels, internal_format);
@@ -570,10 +484,9 @@ public:
 
     /// <summary>Generates storage for the specified size with optional mipmap level count and internal format.</summary>
     /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
-    void generate(
-        dmath::svec<Dim> size,
-        std::optional<GLsizei> mipmap_levels = std::nullopt,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    void generate(dmath::svec<Dim> size,
+                  std::optional<GLsizei> mipmap_levels = std::nullopt,
+                  PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         this->bind();
         storage(std::make_index_sequence<Dim>(), size, mipmap_levels, internal_format);
@@ -583,10 +496,9 @@ public:
     /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
     /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
     template <PixelFormat Format, PixelType Type>
-    void generate(
-        const Image<Dim, Format, Type>& image,
-        std::optional<GLsizei> mipmap_levels = std::nullopt,
-        PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+    void generate(const Image<Dim, Format, Type>& image,
+                  std::optional<GLsizei> mipmap_levels = std::nullopt,
+                  PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
     {
         this->bind();
         storage(std::make_index_sequence<Dim>(), image.size(), mipmap_levels, internal_format);
@@ -626,17 +538,15 @@ private:
 
     /// <summary>Calls glTexStorage with the provided parameters and index sequence of the textures dimension.</summary>
     template <std::size_t... Indices>
-    void storage(
-        std::index_sequence<Indices...>,
-        dmath::svec<Dim> size,
-        std::optional<GLsizei> mipmap_levels = std::nullopt,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    void storage(std::index_sequence<Indices...>,
+                 dmath::svec<Dim> size,
+                 std::optional<GLsizei> mipmap_levels = std::nullopt,
+                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        glTexStorage<Dim>(
-            toGLConstant(Target),
-            mipmap_levels.value_or(maxMipmapLevelsFor(size)),
-            toGLConstant(internal_format),
-            static_cast<GLsizei>(size[Indices])...);
+        glTexStorage<Dim>(toGLConstant(Target),
+                          mipmap_levels.value_or(maxMipmapLevelsFor(size)),
+                          toGLConstant(internal_format),
+                          static_cast<GLsizei>(size[Indices])...);
         this->setSize(size);
     }
 };
@@ -649,11 +559,10 @@ public:
     TextureBaseMultisample() = default;
 
     /// <summary>Initializes a new multisampled texture with the given size, sample count and optional internal format.</summary>
-    TextureBaseMultisample(
-        dmath::svec<Dim> size,
-        GLsizei samples,
-        bool fixed_sample_locations = true,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    TextureBaseMultisample(dmath::svec<Dim> size,
+                           GLsizei samples,
+                           bool fixed_sample_locations = true,
+                           PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
         : TextureBaseMultisample()
     {
         generate(size, samples, internal_format);
@@ -662,11 +571,10 @@ public:
     /// <summary>Initializes a new multisampled texture with the given image data, sample count and optional internal format.</summary>
     /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
     template <PixelFormat Format, PixelType Type>
-    explicit TextureBaseMultisample(
-        const Image<Dim, Format, Type>& image,
-        GLsizei samples,
-        bool fixed_sample_locations = true,
-        PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+    explicit TextureBaseMultisample(const Image<Dim, Format, Type>& image,
+                                    GLsizei samples,
+                                    bool fixed_sample_locations = true,
+                                    PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
         : TextureBaseMultisample()
     {
         generate(image, samples, fixed_sample_locations, internal_format);
@@ -678,11 +586,10 @@ public:
     TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
 
     /// <summary>Generates storage for the specified size, samples and optional internal format.</summary>
-    void generate(
-        dmath::svec<Dim> size,
-        GLsizei samples,
-        bool fixed_sample_locations = true,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    void generate(dmath::svec<Dim> size,
+                  GLsizei samples,
+                  bool fixed_sample_locations = true,
+                  PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         this->bind();
         storageMultisample(std::make_index_sequence<Dim>(), size, samples, fixed_sample_locations, internal_format);
@@ -691,14 +598,14 @@ public:
     /// <summary>Generates texture storage and fills it with the provided image.</summary>
     /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
     template <PixelFormat Format, PixelType Type>
-    void generate(
-        const Image<Dim, Format, Type>& image,
-        GLint samples,
-        bool fixed_sample_locations = true,
-        PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+    void generate(const Image<Dim, Format, Type>& image,
+                  GLint samples,
+                  bool fixed_sample_locations = true,
+                  PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
     {
         this->bind();
-        storageMultisample(std::make_index_sequence<Dim>(), image.size(), samples, fixed_sample_locations, internal_format);
+        storageMultisample(
+            std::make_index_sequence<Dim>(), image.size(), samples, fixed_sample_locations, internal_format);
         this->texSubImage(std::make_index_sequence<Dim>(), image);
     }
 
@@ -709,24 +616,22 @@ protected:
 private:
     /// <summary>Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.</summary>
     template <std::size_t... Indices>
-    void storageMultisample(
-        std::index_sequence<Indices...>,
-        dmath::svec<Dim> size,
-        GLsizei samples,
-        bool fixed_sample_locations = true,
-        PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
+    void storageMultisample(std::index_sequence<Indices...>,
+                            dmath::svec<Dim> size,
+                            GLsizei samples,
+                            bool fixed_sample_locations = true,
+                            PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        glTexStorageMultisample<Dim>(
-            toGLConstant(Target),
-            samples,
-            toGLConstant(internal_format),
-            static_cast<GLsizei>(size[Indices])...,
-            static_cast<GLboolean>(fixed_sample_locations));
+        glTexStorageMultisample<Dim>(toGLConstant(Target),
+                                     samples,
+                                     toGLConstant(internal_format),
+                                     static_cast<GLsizei>(size[Indices])...,
+                                     static_cast<GLboolean>(fixed_sample_locations));
         this->setSize(size);
     }
 };
 
-}
+} // namespace detail
 
 class Texture1D : public detail::TextureBaseRegular<1, TextureTarget::Texture1D> {
 public:
@@ -818,4 +723,4 @@ public:
     TextureRectangle& operator=(TextureRectangle&&) = default;
 };
 
-}
+} // namespace dang::gl

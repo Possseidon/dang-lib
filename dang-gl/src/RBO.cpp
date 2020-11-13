@@ -1,8 +1,8 @@
 #include "pch.h"
+
 #include "RBO.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 RBO::RBO(svec2 size, GLsizei samples, PixelInternalFormat format)
     : size_(size)
@@ -10,47 +10,21 @@ RBO::RBO(svec2 size, GLsizei samples, PixelInternalFormat format)
     , format_(format)
 {
     bind();
-    glRenderbufferStorageMultisample(
-        GL_RENDERBUFFER,
-        samples,
-        toGLConstant(format),
-        size.x(),
-        size.y());
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, toGLConstant(format), size.x(), size.y());
 }
 
-RBO RBO::color(svec2 size, GLsizei samples)
-{
-    return RBO(size, samples, PixelInternalFormat::RGBA8);
-}
+RBO RBO::color(svec2 size, GLsizei samples) { return RBO(size, samples, PixelInternalFormat::RGBA8); }
 
-RBO RBO::depth(svec2 size, GLsizei samples)
-{
-    return RBO(size, samples, PixelInternalFormat::DEPTH_COMPONENT);
-}
+RBO RBO::depth(svec2 size, GLsizei samples) { return RBO(size, samples, PixelInternalFormat::DEPTH_COMPONENT); }
 
-RBO RBO::depthStencil(svec2 size, GLsizei samples)
-{
-    return RBO(size, samples, PixelInternalFormat::DEPTH_STENCIL);
-}
+RBO RBO::depthStencil(svec2 size, GLsizei samples) { return RBO(size, samples, PixelInternalFormat::DEPTH_STENCIL); }
 
-RBO RBO::stencil(svec2 size, GLsizei samples)
-{
-    return RBO(size, samples, PixelInternalFormat::STENCIL_INDEX8);
-}
+RBO RBO::stencil(svec2 size, GLsizei samples) { return RBO(size, samples, PixelInternalFormat::STENCIL_INDEX8); }
 
-svec2 RBO::size() const
-{
-    return size_;
-}
+svec2 RBO::size() const { return size_; }
 
-PixelInternalFormat RBO::format() const
-{
-    return format_;
-}
+PixelInternalFormat RBO::format() const { return format_; }
 
-GLsizei RBO::samples() const
-{
-    return samples_;
-}
+GLsizei RBO::samples() const { return samples_; }
 
-}
+} // namespace dang::gl

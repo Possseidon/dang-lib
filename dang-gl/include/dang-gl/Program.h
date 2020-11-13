@@ -11,8 +11,7 @@
 #include "Texture.h"
 #include "UniformWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>The different possible shader stages with vertex and fragment being the most common.</summary>
 enum class ShaderType {
@@ -28,30 +27,27 @@ enum class ShaderType {
 
 /// <summary>A mapping to the GL-Constants for each shader stage.</summary>
 template <>
-constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {
-    GL_VERTEX_SHADER,
-    GL_FRAGMENT_SHADER,
-    GL_GEOMETRY_SHADER,
-    GL_TESS_CONTROL_SHADER,
-    GL_TESS_EVALUATION_SHADER,
-    GL_COMPUTE_SHADER
-};
+constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {GL_VERTEX_SHADER,
+                                                                           GL_FRAGMENT_SHADER,
+                                                                           GL_GEOMETRY_SHADER,
+                                                                           GL_TESS_CONTROL_SHADER,
+                                                                           GL_TESS_EVALUATION_SHADER,
+                                                                           GL_COMPUTE_SHADER};
 
 /// <summary>Human-readable names for each sahder stage.</summary>
-const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames
-{
-    "Vertex-Shader",
-    "Fragment-Shader",
-    "Geometry-Shader",
-    "Tesselation-Control-Shader",
-    "Tesselation-Evaluation-Shader",
-    "Compute-Shader"
-};
+const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames{"Vertex-Shader",
+                                                                 "Fragment-Shader",
+                                                                 "Geometry-Shader",
+                                                                 "Tesselation-Control-Shader",
+                                                                 "Tesselation-Evaluation-Shader",
+                                                                 "Compute-Shader"};
 
 /// <summary>Base class for shader errors with an info log.</summary>
 class ShaderError : public std::runtime_error {
 public:
-    ShaderError(const std::string& info_log) : runtime_error(info_log) {}
+    ShaderError(const std::string& info_log)
+        : runtime_error(info_log)
+    {}
 };
 
 /// <summary>Thrown, when a shader has compilation errors.</summary>
@@ -61,14 +57,10 @@ public:
     ShaderCompilationError(ShaderType type, const std::string& info_log)
         : ShaderError(ShaderTypeNames[type] + "\n" + info_log)
         , type_(type)
-    {
-    }
+    {}
 
     /// <summary>The associated shader type.</summary>
-    ShaderType type() const
-    {
-        return type_;
-    }
+    ShaderType type() const { return type_; }
 
 private:
     ShaderType type_;
@@ -80,8 +72,7 @@ public:
     /// <summary>Creates an error message using the info log with a header.</summary>
     ShaderLinkError(const std::string& info_log)
         : ShaderError("Shader-Linking\n" + info_log)
-    {
-    }
+    {}
 };
 
 /// <summary>Thrown, when the requested type or count of a uniform does not match with the shader source code.</summary>
@@ -101,8 +92,7 @@ class ShaderFileNotFound : public std::runtime_error {
 public:
     ShaderFileNotFound(const fs::path& path)
         : runtime_error("Shader file not found: " + path.string())
-    {
-    }
+    {}
 };
 
 class Program;
@@ -165,7 +155,10 @@ public:
     ShaderUniformBase& operator=(ShaderUniformBase&&) = delete;
 
     /// <summary>Creates a shader uniform wrapper depending on the given data type.</summary>
-    static std::unique_ptr<ShaderUniformBase> create(const Program& program, GLint count, DataType type, std::string name);
+    static std::unique_ptr<ShaderUniformBase> create(const Program& program,
+                                                     GLint count,
+                                                     DataType type,
+                                                     std::string name);
 };
 
 /// <summary>A wrapper for uniform variables of the template specified type.</summary>
@@ -250,7 +243,8 @@ public:
 
     /// <summary>Links all previously added shader stages together, cleans them up.</summary>
     /// <param name="attribute_order">The order of the attributes of the Data struct, used in the VBO.</param>
-    void link(const AttributeNames& attribute_order = {}, const InstancedAttributeNames& instanced_attribute_order = {});
+    void link(const AttributeNames& attribute_order = {},
+              const InstancedAttributeNames& instanced_attribute_order = {});
 
     /// <summary>Should return the attributes in the same order as they show up in the Data struct, used in the VBO.</summary>
     const AttributeOrder& attributeOrder() const;
@@ -284,7 +278,8 @@ private:
     /// <summary>Queries all uniforms after the program has been linked successfully.</summary>
     void loadUniformLocations();
     /// <summary>Sets the order of attributes, which should be the order of the Data structs, used in the VBO.</summary>
-    void setAttributeOrder(const AttributeNames& attribute_order, const InstancedAttributeNames& instanced_attribute_order);
+    void setAttributeOrder(const AttributeNames& attribute_order,
+                           const InstancedAttributeNames& instanced_attribute_order);
 
     std::vector<Handle> shader_handles_;
     std::map<std::string, std::string> includes_;
@@ -312,7 +307,7 @@ private:
     std::optional<std::tuple<std::size_t, std::size_t>> next_line_;
 };
 
-template<typename T>
+template <typename T>
 inline ShaderUniform<T>::ShaderUniform(const Program& program, GLint count, DataType type, std::string name)
     : ShaderUniformBase(program, count, type, name)
     , values_(count)
@@ -321,20 +316,19 @@ inline ShaderUniform<T>::ShaderUniform(const Program& program, GLint count, Data
         values_[index] = UniformWrapper<T>::get(program.handle(), location() + index);
 }
 
-template<typename T>
+template <typename T>
 inline ShaderUniform<T>::ShaderUniform(const Program& program, GLint count, std::string name)
     : ShaderUniformBase(program, count, DataType::None, std::move(name))
     , values_(count)
-{
-}
+{}
 
-template<typename T>
+template <typename T>
 inline bool ShaderUniform<T>::exists() const
 {
     return location() != -1;
 }
 
-template<typename T>
+template <typename T>
 inline void ShaderUniform<T>::force(const T& value, GLint index)
 {
     if (exists()) {
@@ -344,7 +338,7 @@ inline void ShaderUniform<T>::force(const T& value, GLint index)
     values_[index] = value;
 }
 
-template<typename T>
+template <typename T>
 inline void ShaderUniform<T>::set(const T& value, GLint index)
 {
     if (value == values_[index])
@@ -352,26 +346,26 @@ inline void ShaderUniform<T>::set(const T& value, GLint index)
     force(value);
 }
 
-template<typename T>
+template <typename T>
 inline T ShaderUniform<T>::get(GLint index) const
 {
     return values_[index];
 }
 
-template<typename T>
+template <typename T>
 inline ShaderUniform<T>& ShaderUniform<T>::operator=(const T& value)
 {
     set(value);
     return *this;
 }
 
-template<typename T>
+template <typename T>
 inline ShaderUniform<T>::operator T() const
 {
     return get();
 }
 
-template<typename T>
+template <typename T>
 inline ShaderUniform<T>& Program::uniform(const std::string& name, GLint count)
 {
     auto pos = uniforms_.find(name);
@@ -393,4 +387,4 @@ inline ShaderUniform<T>& Program::uniform(const std::string& name, GLint count)
     throw ShaderUniformError("Shader-Uniform type does not match.");
 }
 
-}
+} // namespace dang::gl

@@ -1,28 +1,21 @@
 #include "pch.h"
+
 #include "Camera.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 ProjectionProvider::ProjectionProvider(float aspect)
     : aspect_(aspect)
-{
-}
+{}
 
 ProjectionProvider::ProjectionProvider(Context& context)
     : aspect_(context.aspect())
     , context_resize_(context.onResize, [&] { setAspect(context.aspect()); })
-{
-}
+{}
 
-ProjectionProvider::~ProjectionProvider()
-{
-}
+ProjectionProvider::~ProjectionProvider() {}
 
-float ProjectionProvider::aspect() const
-{
-    return aspect_;
-}
+float ProjectionProvider::aspect() const { return aspect_; }
 
 void ProjectionProvider::setAspect(float aspect)
 {
@@ -39,29 +32,21 @@ const mat4& ProjectionProvider::matrix()
     return *matrix_;
 }
 
-void ProjectionProvider::invalidateMatrix()
-{
-    matrix_ = std::nullopt;
-}
+void ProjectionProvider::invalidateMatrix() { matrix_ = std::nullopt; }
 
 PerspectiveProjection::PerspectiveProjection(float aspect, float field_of_view, bounds1 clip)
     : ProjectionProvider(aspect)
     , field_of_view_(field_of_view)
     , clip_(clip)
-{
-}
+{}
 
 PerspectiveProjection::PerspectiveProjection(Context& context, float field_of_view, bounds1 clip)
     : ProjectionProvider(context)
     , field_of_view_(field_of_view)
     , clip_(clip)
-{
-}
+{}
 
-float PerspectiveProjection::fieldOfView() const
-{
-    return field_of_view_;
-}
+float PerspectiveProjection::fieldOfView() const { return field_of_view_; }
 
 void PerspectiveProjection::setFieldOfView(float field_of_view)
 {
@@ -71,10 +56,7 @@ void PerspectiveProjection::setFieldOfView(float field_of_view)
     invalidateMatrix();
 }
 
-bounds1 PerspectiveProjection::clip() const
-{
-    return clip_;
-}
+bounds1 PerspectiveProjection::clip() const { return clip_; }
 
 void PerspectiveProjection::setClip(bounds1 clip)
 {
@@ -84,10 +66,7 @@ void PerspectiveProjection::setClip(bounds1 clip)
     invalidateMatrix();
 }
 
-float PerspectiveProjection::nearClip() const
-{
-    return clip_.lowValue();
-}
+float PerspectiveProjection::nearClip() const { return clip_.lowValue(); }
 
 void PerspectiveProjection::setNearClip(float near_clip)
 {
@@ -97,10 +76,7 @@ void PerspectiveProjection::setNearClip(float near_clip)
     invalidateMatrix();
 }
 
-float PerspectiveProjection::farClip() const
-{
-    return clip_.highValue();
-}
+float PerspectiveProjection::farClip() const { return clip_.highValue(); }
 
 void PerspectiveProjection::setFarClip(float far_clip)
 {
@@ -126,19 +102,14 @@ mat4 PerspectiveProjection::calculateMatrix()
 OrthoProjection::OrthoProjection(float aspect, bounds3 clip)
     : ProjectionProvider(aspect)
     , clip_(clip)
-{
-}
+{}
 
 OrthoProjection::OrthoProjection(Context& context, bounds3 clip)
     : ProjectionProvider(context)
     , clip_(clip)
-{
-}
+{}
 
-const bounds3& OrthoProjection::clip() const
-{
-    return clip_;
-}
+const bounds3& OrthoProjection::clip() const { return clip_; }
 
 void OrthoProjection::setClip(const bounds3& clip)
 {
@@ -166,17 +137,12 @@ mat4 OrthoProjection::calculateMatrix()
 CameraUniforms::CameraUniforms(Program& program, const CameraUniformNames& names)
     : program_(program)
     , projection_uniform_(program.uniform<mat4>(names.ProjectionMatrix))
-    , transform_uniforms_{
-        program.uniform<mat2x4>(names.ModelTransform),
-        program.uniform<mat2x4>(names.ViewTransform),
-        program.uniform<mat2x4>(names.ModelViewTransform) }
-{
-}
+    , transform_uniforms_{program.uniform<mat2x4>(names.ModelTransform),
+                          program.uniform<mat2x4>(names.ViewTransform),
+                          program.uniform<mat2x4>(names.ModelViewTransform)}
+{}
 
-Program& CameraUniforms::program() const
-{
-    return program_;
-}
+Program& CameraUniforms::program() const { return program_; }
 
 void CameraUniforms::updateProjectionMatrix(const mat4& projection_matrix) const
 {
@@ -194,8 +160,7 @@ void CameraUniforms::updateTransform(CameraTransformType type, const dquat& tran
 
 Camera::Camera(SharedProjectionProvider view_matrix_provider)
     : projection_provider_(std::move(view_matrix_provider))
-{
-}
+{}
 
 Camera Camera::perspective(float aspect, float field_of_view, bounds1 clip)
 {
@@ -207,31 +172,20 @@ Camera Camera::perspective(Context& context, float field_of_view, bounds1 clip)
     return Camera(std::make_shared<PerspectiveProjection>(context, field_of_view, clip));
 }
 
-Camera Camera::ortho(float aspect, bounds3 clip)
-{
-    return Camera(std::make_shared<OrthoProjection>(aspect, clip));
-}
+Camera Camera::ortho(float aspect, bounds3 clip) { return Camera(std::make_shared<OrthoProjection>(aspect, clip)); }
 
 Camera Camera::ortho(Context& context, bounds3 clip)
 {
     return Camera(std::make_shared<OrthoProjection>(context, clip));
 }
 
-const SharedProjectionProvider& Camera::projectionProvider() const
-{
-    return projection_provider_;
-}
+const SharedProjectionProvider& Camera::projectionProvider() const { return projection_provider_; }
 
-const SharedTransform& Camera::transform() const
-{
-    return transform_;
-}
+const SharedTransform& Camera::transform() const { return transform_; }
 
 void Camera::setCustomUniforms(Program& program, const CameraUniformNames& names)
 {
-    auto program_matches = [&](const CameraUniforms& uniforms) {
-        return &uniforms.program() != &program;
-    };
+    auto program_matches = [&](const CameraUniforms& uniforms) { return &uniforms.program() != &program; };
 
     auto uniforms = std::find_if(uniforms_.begin(), uniforms_.end(), program_matches);
     if (uniforms == uniforms_.end())
@@ -240,4 +194,4 @@ void Camera::setCustomUniforms(Program& program, const CameraUniformNames& names
         *uniforms = CameraUniforms(program, names);
 }
 
-}
+} // namespace dang::gl

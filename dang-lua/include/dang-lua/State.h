@@ -5,8 +5,7 @@
 #include "Convert.h"
 #include "Types.h"
 
-namespace dang::lua
-{
+namespace dang::lua {
 
 // Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and it doesn't hurt)
 class State;
@@ -38,8 +37,7 @@ public:
 
     Reference(const Reference& other)
         : Reference((other.push(), other.state_))
-    {
-    }
+    {}
 
     Reference(Reference&& other) noexcept
         : Reference()
@@ -60,24 +58,17 @@ public:
         swap(ref_, other.ref_);
     }
 
-    friend void swap(Reference& lhs, Reference& rhs) noexcept
-    {
-        lhs.swap(rhs);
-    }
+    friend void swap(Reference& lhs, Reference& rhs) noexcept { lhs.swap(rhs); }
 
 private:
     /// <summary>Turns the top of the stack into a reference, popping the value in the process.</summary>
     explicit Reference(lua_State* state)
         : state_(state)
         , ref_(luaL_ref(state, LUA_REGISTRYINDEX))
-    {
-    }
+    {}
 
     /// <summary>Pushes the referenced value on the stack.</summary>
-    void push() const
-    {
-        lua_rawgeti(state_, LUA_REGISTRYINDEX, ref_);
-    }
+    void push() const { lua_rawgeti(state_, LUA_REGISTRYINDEX, ref_); }
 
     lua_State* state_ = nullptr;
     int ref_ = LUA_NOREF;
@@ -89,8 +80,7 @@ private:
 using SharedReference = std::shared_ptr<Reference>;
 using WeakReference = std::weak_ptr<Reference>;
 
-namespace detail
-{
+namespace detail {
 
 // --- Signature Information ---
 
@@ -108,7 +98,8 @@ protected:
     template <std::size_t... Indices>
     static constexpr int indexOffset(std::index_sequence<Indices...>)
     {
-        static_assert((Convert<std::tuple_element_t<Indices, Arguments>>::PushCount && ...), "Only the last function argument can be variadic.");
+        static_assert((Convert<std::tuple_element_t<Indices, Arguments>>::PushCount && ...),
+                      "Only the last function argument can be variadic.");
         return (1 + ... + *Convert<std::tuple_element_t<Indices, Arguments>>::PushCount);
     }
 };
@@ -119,7 +110,7 @@ template <typename TFunc>
 struct SignatureInfo;
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
+struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
     /// <summary>Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.</summary>
     static std::tuple<TArgs...> convertArguments(State& state)
     {
@@ -133,45 +124,45 @@ private:
     template <std::size_t... Indices>
     static std::tuple<TArgs...> convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
     {
-        return { Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))... };
+        return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
     }
 };
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(*)(TArgs...) noexcept> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet (*)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TArgs...)> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet(TArgs...)> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TArgs...) noexcept> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&)(TArgs...)> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet (&)(TArgs...)> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&)(TArgs...) noexcept> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet (&)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&&)(TArgs...)> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet(&&)(TArgs...)> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&&)(TArgs...) noexcept> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<TRet(&&)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<std::function<TRet(TArgs...)>> : SignatureInfo<TRet(*)(TArgs...)> {};
+struct SignatureInfo<std::function<TRet(TArgs...)>> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TClass, typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TClass::*)(TArgs...)> : SignatureInfo<TRet(*)(TClass&, TArgs...)> {};
+struct SignatureInfo<TRet (TClass::*)(TArgs...)> : SignatureInfo<TRet (*)(TClass&, TArgs...)> {};
 
 template <typename TClass, typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TClass::*)(TArgs...) const> : SignatureInfo<TRet(TClass::*)(TArgs...)> {};
+struct SignatureInfo<TRet (TClass::*)(TArgs...) const> : SignatureInfo<TRet (TClass::*)(TArgs...)> {};
 
 template <typename TClass, typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TClass::*)(TArgs...) noexcept> : SignatureInfo<TRet(TClass::*)(TArgs...)> {};
+struct SignatureInfo<TRet (TClass::*)(TArgs...) noexcept> : SignatureInfo<TRet (TClass::*)(TArgs...)> {};
 
 template <typename TClass, typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(TClass::*)(TArgs...) const noexcept> : SignatureInfo<TRet(TClass::*)(TArgs...)> {};
+struct SignatureInfo<TRet (TClass::*)(TArgs...) const noexcept> : SignatureInfo<TRet (TClass::*)(TArgs...)> {};
 
 // --- Index Iterator ---
 
@@ -190,103 +181,45 @@ public:
 
     explicit IndexIterator(TIndex index)
         : index_(index)
-    {
-    }
+    {}
 
-    TIndex* operator->()
-    {
-        return &index_;
-    }
+    TIndex* operator->() { return &index_; }
 
-    const TIndex* operator->() const
-    {
-        return &index_;
-    }
+    const TIndex* operator->() const { return &index_; }
 
-    TIndex& operator*()
-    {
-        return index_;
-    }
+    TIndex& operator*() { return index_; }
 
-    const TIndex& operator*() const
-    {
-        return index_;
-    }
+    const TIndex& operator*() const { return index_; }
 
-    friend bool operator==(IndexIterator lhs, IndexIterator rhs)
-    {
-        return lhs->index() == rhs->index();
-    }
+    friend bool operator==(IndexIterator lhs, IndexIterator rhs) { return lhs->index() == rhs->index(); }
 
-    friend bool operator!=(IndexIterator lhs, IndexIterator rhs)
-    {
-        return lhs->index() != rhs->index();
-    }
+    friend bool operator!=(IndexIterator lhs, IndexIterator rhs) { return lhs->index() != rhs->index(); }
 
-    friend bool operator<(IndexIterator lhs, IndexIterator rhs)
-    {
-        return (lhs - rhs) < 0;
-    }
+    friend bool operator<(IndexIterator lhs, IndexIterator rhs) { return (lhs - rhs) < 0; }
 
-    friend bool operator<=(IndexIterator lhs, IndexIterator rhs)
-    {
-        return (lhs - rhs) <= 0;
-    }
+    friend bool operator<=(IndexIterator lhs, IndexIterator rhs) { return (lhs - rhs) <= 0; }
 
-    friend bool operator>(IndexIterator lhs, IndexIterator rhs)
-    {
-        return (lhs - rhs) > 0;
-    }
+    friend bool operator>(IndexIterator lhs, IndexIterator rhs) { return (lhs - rhs) > 0; }
 
-    friend bool operator>=(IndexIterator lhs, IndexIterator rhs)
-    {
-        return (lhs - rhs) >= 0;
-    }
+    friend bool operator>=(IndexIterator lhs, IndexIterator rhs) { return (lhs - rhs) >= 0; }
 
-    IndexIterator& operator++()
-    {
-        return *this += 1;
-    }
+    IndexIterator& operator++() { return *this += 1; }
 
-    IndexIterator operator++(int)
-    {
-        return std::exchange(*this, *this + 1);
-    }
+    IndexIterator operator++(int) { return std::exchange(*this, *this + 1); }
 
-    IndexIterator& operator--()
-    {
-        return *this -= 1;
-    }
+    IndexIterator& operator--() { return *this -= 1; }
 
-    IndexIterator operator--(int)
-    {
-        return std::exchange(*this, *this - 1);
-    }
+    IndexIterator operator--(int) { return std::exchange(*this, *this - 1); }
 
-    IndexIterator operator+(int offset)
-    {
-        return IndexIterator(index_.offset(offset));
-    }
+    IndexIterator operator+(int offset) { return IndexIterator(index_.offset(offset)); }
 
-    IndexIterator& operator+=(int offset)
-    {
-        return *this = *this + offset;
-    }
+    IndexIterator& operator+=(int offset) { return *this = *this + offset; }
 
-    IndexIterator operator-(int offset)
-    {
-        return IndexIterator(index_.offset(-offset));
-    }
+    IndexIterator operator-(int offset) { return IndexIterator(index_.offset(-offset)); }
 
-    IndexIterator& operator-=(int offset)
-    {
-        return *this = *this - offset;
-    }
+    IndexIterator& operator-=(int offset) { return *this = *this - offset; }
 
-    friend int operator-(IndexIterator lhs, IndexIterator rhs)
-    {
-        return rhs->diff(*lhs);
-    }
+    friend int operator-(IndexIterator lhs, IndexIterator rhs) { return rhs->diff(*lhs); }
 
 private:
     TIndex index_;
@@ -302,10 +235,7 @@ template <typename TState>
 class IndexImplBase {
 public:
     /// <summary>Returns the associated Lua state.</summary>
-    TState& state() const
-    {
-        return *state_;
-    }
+    TState& state() const { return *state_; }
 
 protected:
     /// <summary>Default constructible for the sake of simplifying the iterator wrapper.</summary>
@@ -314,8 +244,7 @@ protected:
     /// <summary>Associates the given Lua state with the index.</summary>
     explicit IndexImplBase(TState& state)
         : state_(&state)
-    {
-    }
+    {}
 
     /// <summary>Applies an offset to the given index.</summary>
     /// <remarks>Note: Stack indices grow positive, while upvalues grow negative.</remarks>
@@ -356,187 +285,100 @@ public:
     // --- Index ---
 
     /// <summary>The stored index.</summary>
-    int index() const
-    {
-        return index_;
-    }
+    int index() const { return index_; }
 
     /// <summary>Same as index().</summary>
     /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
-    int first() const
-    {
-        return index();
-    }
+    int first() const { return index(); }
 
     /// <summary>Same as index().</summary>
     /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
-    int last() const
-    {
-        return index();
-    }
+    int last() const { return index(); }
 
     /// <summary>Returns 1.</summary>
     /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
-    constexpr int size() const
-    {
-        return 1;
-    }
+    constexpr int size() const { return 1; }
 
     /// <summary>Returns another index, which is offset by a given amount.</summary>
     /// <remarks>See: applyOffset</remarks>
-    auto offset(int offset) const
-    {
-        return TIndex(DirectInit{}, this->state(), this->applyOffset(index_, offset));
-    }
+    auto offset(int offset) const { return TIndex(DirectInit{}, this->state(), this->applyOffset(index_, offset)); }
 
     /// <summary>Returns the difference to another index.</summary>
     /// <remarks>See: indexDiff</remarks>
-    int diff(TIndex other) const
-    {
-        return this->indexDiff(index_, other.index_);
-    }
+    int diff(TIndex other) const { return this->indexDiff(index_, other.index_); }
 
     // --- Index Properties ---
 
     /// <summary>Whether the index is a position on the Lua stack.</summary>
-    bool isStack() const
-    {
-        return this->state().isStack(index());
-    }
+    bool isStack() const { return this->state().isStack(index()); }
 
     /// <summary>Whether the index is a pseudo index (upvalue or registry).</summary>
-    bool isPseudo() const
-    {
-        return this->state().isPseudo(index());
-    }
+    bool isPseudo() const { return this->state().isPseudo(index()); }
 
     /// <summary>Whether the index is an upvalue.</summary>
-    bool isUpvalue() const
-    {
-        return this->state().isUpvalue(index());
-    }
+    bool isUpvalue() const { return this->state().isUpvalue(index()); }
 
     /// <summary>Whether the index is the index for the registry table.</summary>
-    bool isRegistry() const
-    {
-        return this->state().isRegistry(index());
-    }
+    bool isRegistry() const { return this->state().isRegistry(index()); }
 
     /// <summary>Wether the index (plus an optional offset) is at the bottom of the stack.</summary>
-    bool isBottom(int offset = 0) const
-    {
-        return this->state().isIndexBottom(index(), offset);
-    }
+    bool isBottom(int offset = 0) const { return this->state().isIndexBottom(index(), offset); }
 
     /// <summary>Wether the index (plus an optional offset) is at the top of the stack.</summary>
-    bool isTop(int offset = 0) const
-    {
-        return this->state().isIndexTop(index(), offset);
-    }
+    bool isTop(int offset = 0) const { return this->state().isIndexTop(index(), offset); }
 
     /// <summary>Returns the (zero-based) offset from the bottom of the stack.</summary>
-    int offsetFromBottom() const
-    {
-        return this->state().indexOffsetFromBottom(index());
-    }
+    int offsetFromBottom() const { return this->state().indexOffsetFromBottom(index()); }
 
     /// <summary>Returns the (zero-based) offset from the top of the stack.</summary>
-    int offsetFromTop() const
-    {
-        return this->state().indexOffsetFromTop(index());
-    }
+    int offsetFromTop() const { return this->state().indexOffsetFromTop(index()); }
 
     // --- Stack Queries ---
 
     /// <summary>Returns the type of the element.</summary>
-    Type type() const
-    {
-        return this->state().type(index());
-    }
+    Type type() const { return this->state().type(index()); }
 
     /// <summary>Returns the name of the element's type.</summary>
-    std::string_view typeName() const
-    {
-        return this->state().typeName(index());
-    }
+    std::string_view typeName() const { return this->state().typeName(index()); }
 
     /// <summary>Whether the index is not valid.</summary>
-    bool isNone() const
-    {
-        return this->state().isNone(index());
-    }
+    bool isNone() const { return this->state().isNone(index()); }
 
     /// <summary>Whether the element is nil.</summary>
-    bool isNil() const
-    {
-        return this->state().isNil(index());
-    }
+    bool isNil() const { return this->state().isNil(index()); }
 
     /// <summary>Whether the index is not valid or the element is nil.</summary>
-    bool isNoneOrNil() const
-    {
-        return this->state().isNoneOrNil(index());
-    }
+    bool isNoneOrNil() const { return this->state().isNoneOrNil(index()); }
 
     /// <summary>Whether the element is a boolean.</summary>
-    bool isBoolean() const
-    {
-        return this->state().isBoolean(index());
-    }
+    bool isBoolean() const { return this->state().isBoolean(index()); }
 
     /// <summary>Whether the element is light userdata.</summary>
-    bool isLightUserdata() const
-    {
-        return this->state().isLightUserdata(index());
-    }
+    bool isLightUserdata() const { return this->state().isLightUserdata(index()); }
 
     /// <summary>Whether the element is a number or a string convertible to a number.</summary>
-    bool isNumber() const
-    {
-        return this->state().isNumber(index());
-    }
+    bool isNumber() const { return this->state().isNumber(index()); }
 
     /// <summary>Whether the element is an integer or a string convertible to an integer.</summary>
-    bool isInteger() const
-    {
-        return this->state().isInteger(index());
-    }
+    bool isInteger() const { return this->state().isInteger(index()); }
 
     /// <summary>Whether the element is a string or a number (which is always convertible to a string).</summary>
-    bool isString() const
-    {
-        return this->state().isString(index());
-    }
+    bool isString() const { return this->state().isString(index()); }
 
     /// <summary>Whether the element is a table.</summary>
-    bool isTable() const
-    {
-        return this->state().isTable(index());
-    }
+    bool isTable() const { return this->state().isTable(index()); }
 
     /// <summary>Whether the element is a function (either C or Lua).</summary>
-    bool isFunction() const
-    {
-        return this->state().isFunction(index());
-    }
+    bool isFunction() const { return this->state().isFunction(index()); }
 
     /// <summary>Whether the element is a C function.</summary>
-    bool isCFunction() const
-    {
-        return this->state().isCFunction(index());
-    }
+    bool isCFunction() const { return this->state().isCFunction(index()); }
 
     /// <summary>Whether the element is full or light userdata.</summary>
-    bool isUserdata() const
-    {
-        return this->state().isUserdata(index());
-    }
+    bool isUserdata() const { return this->state().isUserdata(index()); }
 
     /// <summary>Whether the element is a thread.</summary>
-    bool isThread() const
-    {
-        return this->state().isThread(index());
-    }
+    bool isThread() const { return this->state().isThread(index()); }
 
     // --- Conversion ---
 
@@ -557,10 +399,7 @@ public:
     }
 
     /// <summary>Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".</summary>
-    explicit operator bool()
-    {
-        return check<bool>();
-    }
+    explicit operator bool() { return check<bool>(); }
 
     // --- Calling ---
 
@@ -647,23 +486,14 @@ public:
 
     /// <summary>Pushes the length of the element on the stack.</summary>
     /// <remarks>This can invoke the __len meta-method and therefore doesn't necessarily return an integer.</remarks>
-    auto pushLength() const
-    {
-        return this->state().pushLength(index());
-    }
+    auto pushLength() const { return this->state().pushLength(index()); }
 
     /// <summary>Returns the length of the element.</summary>
     /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return an integer.</remarks>
-    auto length() const
-    {
-        return this->state().length(index());
-    }
+    auto length() const { return this->state().length(index()); }
 
     /// <summary>Returns the raw length of the value, which does not invoke meta-method.</summary>
-    auto rawLength() const
-    {
-        return this->state().rawLength(index());
-    }
+    auto rawLength() const { return this->state().rawLength(index()); }
 
     // --- Table Access ---
 
@@ -722,24 +552,15 @@ public:
     // --- Formatting ---
 
     /// <summary>Converts the element to a string in a reasonable format using luaL_tolstring.</summary>
-    std::string format() const
-    {
-        return this->state().format(index());
-    }
+    std::string format() const { return this->state().format(index()); }
 
     /// <summary>Prints the element to the stream using the format function.</summary>
-    friend std::ostream& operator<<(std::ostream& stream, const IndexImpl& index)
-    {
-        return stream << index.format();
-    }
+    friend std::ostream& operator<<(std::ostream& stream, const IndexImpl& index) { return stream << index.format(); }
 
     // --- Reference ---
 
     /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
-    auto ref()
-    {
-        return this->state().ref(*this);
-    }
+    auto ref() { return this->state().ref(*this); }
 
 private:
     int index_ = 0;
@@ -763,16 +584,10 @@ public:
     }
 
     /// <summary>Returns the first index of the range.</summary>
-    int first() const
-    {
-        return first_;
-    }
+    int first() const { return first_; }
 
     /// <summary>Returns the size of the range.</summary>
-    constexpr int size() const
-    {
-        return Count;
-    }
+    constexpr int size() const { return Count; }
 
 private:
     int first_ = 0;
@@ -796,16 +611,10 @@ public:
     }
 
     /// <summary>Returns the first index of the range.</summary>
-    int first() const
-    {
-        return first_;
-    }
+    int first() const { return first_; }
 
     /// <summary>Returns the size of the range.</summary>
-    int size() const
-    {
-        return count_;
-    }
+    int size() const { return count_; }
 
 private:
     int first_ = 0;
@@ -821,10 +630,7 @@ public:
     using std::conditional_t<Size != -1, IndicesImpl<TState, Size>, IndexRangeImpl<TState>>::conditional_t;
 
     /// <summary>Returns the last index of the range.</summary>
-    int last() const
-    {
-        return this->applyOffset(this->first(), this->size() - 1);
-    }
+    int last() const { return this->applyOffset(this->first(), this->size() - 1); }
 
     /// <summary>Returns a single index at the given zero-based (!) offset.</summary>
     auto operator[](int offset) const
@@ -833,30 +639,18 @@ public:
     }
 
     /// <summary>Returns an iterator to the first element.</summary>
-    auto begin()
-    {
-        return IndexIterator<TIndex>((*this)[0]);
-    }
+    auto begin() { return IndexIterator<TIndex>((*this)[0]); }
 
     /// <summary>Returns an iterator to one after the last element.</summary>
-    auto end()
-    {
-        return IndexIterator<TIndex>((*this)[this->size()]);
-    }
+    auto end() { return IndexIterator<TIndex>((*this)[this->size()]); }
 
     // --- Index Properties ---
 
     /// <summary>Whether the range starts at the bottom of the stack.</summary>
-    bool isBottom(int offset = 0) const
-    {
-        return this->state().isIndexBottom(this->first(), offset);
-    }
+    bool isBottom(int offset = 0) const { return this->state().isIndexBottom(this->first(), offset); }
 
     /// <summary>Whether the range ends at the top of the stack.</summary>
-    bool isTop(int offset = 0) const
-    {
-        return this->state().isIndexTop(this->last(), offset);
-    }
+    bool isTop(int offset = 0) const { return this->state().isIndexTop(this->last(), offset); }
 
     // --- Formatting ---
 
@@ -876,10 +670,7 @@ public:
 // --- Index Wrappers ---
 
 /// <summary>Results can be consumed by other operations if they are also rvalues.</summary>
-enum class StackIndexType {
-    Reference,
-    Result
-};
+enum class StackIndexType { Reference, Result };
 
 /// <summary>Wraps any index on the Lua stack.</summary>
 template <typename TState, StackIndexType Type>
@@ -889,16 +680,14 @@ public:
 
     /// <summary>Takes any stack index.</summary>
     StackIndex(TState& state, int index)
-        : IndexImpl<TState, StackIndex<TState, StackIndexType::Reference>>(DirectInit{}, state, state.absStackIndex(index))
+        : IndexImpl<TState, StackIndex<TState, StackIndexType::Reference>>(
+              DirectInit{}, state, state.absStackIndex(index))
     {
         assert(index > LUA_REGISTRYINDEX);
     }
 
     /// <summary>Returns a result index, for which rvalues can be consumed by some functions.</summary>
-    auto asResult()
-    {
-        return StackIndex<TState, StackIndexType::Result>(DirectInit{}, this->state(), this->index());
-    }
+    auto asResult() { return StackIndex<TState, StackIndexType::Result>(DirectInit{}, this->state(), this->index()); }
 
     /// <summary>Pops the value if it lies at the top of the stack.</summary>
     void popIfTop()
@@ -920,7 +709,7 @@ public:
     /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
     /// <remarks>Also supports LUA_MULTRET.</remarks>
     template <int Results = 0, typename... TArgs>
-    auto call(TArgs&&... args)&&
+    auto call(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().call<Results>(std::move(*this), std::forward<TArgs>(args)...);
@@ -937,7 +726,7 @@ public:
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
     template <typename... TArgs>
-    auto callReturning(int results, TArgs&&... args)&&
+    auto callReturning(int results, TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().callReturning(results, std::move(*this), std::forward<TArgs>(args)...);
@@ -954,7 +743,7 @@ public:
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.</summary>
     template <typename... TArgs>
-    auto operator()(TArgs&&... args)&&
+    auto operator()(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().callMultRet(std::move(*this), std::forward<TArgs>(args)...);
@@ -971,7 +760,7 @@ public:
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
     template <int Results = 0, typename... TArgs>
-    auto pcall(TArgs&&... args)&&
+    auto pcall(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().pcall<Results>(std::move(*this), std::forward<TArgs>(args)...);
@@ -988,7 +777,7 @@ public:
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
     template <typename... TArgs>
-    auto pcallReturning(int results, TArgs&&... args)&&
+    auto pcallReturning(int results, TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().pcallReturning(results, std::move(*this), std::forward<TArgs>(args)...);
@@ -1005,7 +794,7 @@ public:
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
     template <typename... TArgs>
-    auto pcallMultRet(TArgs&&... args)&&
+    auto pcallMultRet(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().pcallMultRet(std::move(*this), std::forward<TArgs>(args)...);
@@ -1024,7 +813,7 @@ public:
 
     /// <summary>Performs integer division with another value. (// in Lua)</summary>
     template <typename T>
-    auto idiv(T&& other)&&
+    auto idiv(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().arith<ArithOp::IDiv>(std::move(*this), std::forward<T>(other));
@@ -1041,7 +830,7 @@ public:
 
     /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
     template <typename T>
-    auto pow(T&& other)&&
+    auto pow(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().arith<ArithOp::Pow>(std::move(*this), std::forward<T>(other));
@@ -1058,7 +847,7 @@ public:
 
     /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
     template <typename T>
-    auto bxor(T&& other)&&
+    auto bxor(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().arith<ArithOp::BinaryXOr>(std::move(*this), std::forward<T>(other));
@@ -1068,14 +857,11 @@ public:
 
     /// <summary>Returns the length of the element using luaL_len.</summary>
     /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.</remarks>
-    auto length() const&
-    {
-        return this->state().length(this->index());
-    }
+    auto length() const& { return this->state().length(this->index()); }
 
     /// <summary>Returns the length of the element using luaL_len.</summary>
     /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.</remarks>
-    auto length()&&
+    auto length() &&
     {
         auto result = this->state().length(this->index());
         if constexpr (Type == StackIndexType::Result)
@@ -1084,13 +870,10 @@ public:
     }
 
     /// <summary>Returns the raw length of the value, which does not invoke meta-methods.</summary>
-    auto rawLength() const&
-    {
-        return this->state().rawLength(this->index());
-    }
+    auto rawLength() const& { return this->state().rawLength(this->index()); }
 
     /// <summary>Returns the raw length of the value, which does not invoke meta-methods.</summary>
-    auto rawLength()&&
+    auto rawLength() &&
     {
         auto result = this->state().rawLength(this->index());
         if constexpr (Type == StackIndexType::Result)
@@ -1111,7 +894,7 @@ public:
     /// <summary>Sets a key of the element like a table to the given value.</summary>
     /// <remarks>Can invoke the __newindex meta-method.</remarks>
     template <typename TKey, typename TValue>
-    void setTable(TKey&& key, TValue&& value)&&
+    void setTable(TKey&& key, TValue&& value) &&
     {
         this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
         // lua_settable doesn't actually pop the table, only the key and value
@@ -1128,7 +911,7 @@ public:
 
     /// <summary>Similar to setTable, but does not invoke meta-methods.</summary>
     template <typename TKey, typename TValue>
-    void rawSetTable(TKey&& key, TValue&& value)&&
+    void rawSetTable(TKey&& key, TValue&& value) &&
     {
         this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
         // lua_rawsettable doesn't actually pop the table, only the key and value
@@ -1139,13 +922,10 @@ public:
     // --- Reference ---
 
     /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
-    auto ref()&
-    {
-        return this->state().ref(*this);
-    }
+    auto ref() & { return this->state().ref(*this); }
 
     /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
-    auto ref()&&
+    auto ref() &&
     {
         if constexpr (Type == StackIndexType::Result)
             return this->state().ref(std::move(*this));
@@ -1174,8 +954,7 @@ public:
     /// <summary>Implicitly assumes the registry index.</summary>
     RegistryIndex(TState& state)
         : IndexImpl<TState, RegistryIndex<TState>>(DirectInit{}, state, LUA_REGISTRYINDEX)
-    {
-    }
+    {}
 };
 
 /// <summary>Wraps an upvalue index.</summary>
@@ -1202,7 +981,8 @@ public:
 
     /// <summary>Takes any stack index to start the range at.</summary>
     StackIndices(TState& state, int first)
-        : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, Count>(DirectInit{}, state, state.absStackIndex(first))
+        : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, Count>(
+              DirectInit{}, state, state.absStackIndex(first))
     {
         assert(first > LUA_REGISTRYINDEX);
     }
@@ -1250,7 +1030,8 @@ public:
 
     /// <summary>Takes any stack index to start the range at.</summary>
     StackIndexRange(TState& state, int first, int count)
-        : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, -1>(DirectInit{}, state, state.absStackIndex(first), count)
+        : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, -1>(
+              DirectInit{}, state, state.absStackIndex(first), count)
     {
         assert(first > LUA_REGISTRYINDEX);
     }
@@ -1258,7 +1039,8 @@ public:
     /// <summary>Returns result indices, for which rvalues can be consumed by some functions.</summary>
     auto asResults()
     {
-        return StackIndexRange<TState, StackIndexType::Result>(DirectInit{}, this->state(), this->first(), this->size());
+        return StackIndexRange<TState, StackIndexType::Result>(
+            DirectInit{}, this->state(), this->first(), this->size());
     }
 
     // --- Formatting ---
@@ -1288,7 +1070,7 @@ public:
     }
 };
 
-}
+} // namespace detail
 
 using StackIndex = detail::StackIndex<State, detail::StackIndexType::Reference>;
 using ConstStackIndex = detail::StackIndex<const State, detail::StackIndexType::Reference>;
@@ -1302,14 +1084,20 @@ using ConstRegistryIndex = detail::RegistryIndex<const State>;
 using UpvalueIndex = detail::UpvalueIndex<State>;
 using ConstUpvalueIndex = detail::UpvalueIndex<const State>;
 
-template <int Size> using StackIndices = detail::StackIndices<State, Size, detail::StackIndexType::Reference>;
-template <int Size> using ConstStackIndices = detail::StackIndices<const State, Size, detail::StackIndexType::Reference>;
+template <int Size>
+using StackIndices = detail::StackIndices<State, Size, detail::StackIndexType::Reference>;
+template <int Size>
+using ConstStackIndices = detail::StackIndices<const State, Size, detail::StackIndexType::Reference>;
 
-template <int Size> using StackIndicesResult = detail::StackIndices<State, Size, detail::StackIndexType::Result>;
-template <int Size> using ConstStackIndicesResult = detail::StackIndices<const State, Size, detail::StackIndexType::Result>;
+template <int Size>
+using StackIndicesResult = detail::StackIndices<State, Size, detail::StackIndexType::Result>;
+template <int Size>
+using ConstStackIndicesResult = detail::StackIndices<const State, Size, detail::StackIndexType::Result>;
 
-template <int Size> using UpvalueIndices = detail::UpvalueIndices<State, Size>;
-template <int Size> using ConstUpvalueIndices = detail::UpvalueIndices<const State, Size>;
+template <int Size>
+using UpvalueIndices = detail::UpvalueIndices<State, Size>;
+template <int Size>
+using ConstUpvalueIndices = detail::UpvalueIndices<const State, Size>;
 
 using StackIndexRange = detail::StackIndexRange<State, detail::StackIndexType::Reference>;
 using ConstStackIndexRange = detail::StackIndexRange<const State, detail::StackIndexType::Reference>;
@@ -1323,33 +1111,42 @@ using ConstUpvalueIndexRange = detail::UpvalueIndexRange<const State>;
 template <typename T>
 struct IsIndex : std::false_type {};
 
-template <typename TState, detail::StackIndexType Type> struct IsIndex<detail::StackIndex<TState, Type>> : std::true_type {};
-template <typename TState> struct IsIndex<detail::RegistryIndex<TState>> : std::true_type {};
-template <typename TState> struct IsIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+template <typename TState, detail::StackIndexType Type>
+struct IsIndex<detail::StackIndex<TState, Type>> : std::true_type {};
+template <typename TState>
+struct IsIndex<detail::RegistryIndex<TState>> : std::true_type {};
+template <typename TState>
+struct IsIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
 template <typename T>
 struct IsStackIndex : std::false_type {};
 
-template <typename TState, detail::StackIndexType Type> struct IsStackIndex<detail::StackIndex<TState, Type>> : std::true_type {};
+template <typename TState, detail::StackIndexType Type>
+struct IsStackIndex<detail::StackIndex<TState, Type>> : std::true_type {};
 
 template <typename T>
 struct IsStackIndexResult : std::false_type {};
 
-template <typename TState> struct IsStackIndexResult<detail::StackIndex<TState, detail::StackIndexType::Result>> : std::true_type {};
+template <typename TState>
+struct IsStackIndexResult<detail::StackIndex<TState, detail::StackIndexType::Result>> : std::true_type {};
 
 template <typename T>
 struct IsPseudoIndex : std::false_type {};
 
-template <typename TState> struct IsPseudoIndex<detail::RegistryIndex<TState>> : std::true_type {};
-template <typename TState> struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+template <typename TState>
+struct IsPseudoIndex<detail::RegistryIndex<TState>> : std::true_type {};
+template <typename TState>
+struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
 template <typename T>
 struct IsUpvalueIndex : std::false_type {};
 
-template <typename TState> struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+template <typename TState>
+struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
 template <typename T>
-using IsMovedStackIndexResult = std::conjunction<IsStackIndexResult<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
+using IsMovedStackIndexResult =
+    std::conjunction<IsStackIndexResult<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
 
 // --- State ---
 
@@ -1386,7 +1183,7 @@ inline constexpr int wrap(lua_State* state)
 template <auto Func>
 inline constexpr luaL_Reg reg(const char* name)
 {
-    return { name, wrap<Func> };
+    return {name, wrap<Func>};
 }
 
 /// <summary>Wraps a Lua state or thread.</summary>
@@ -1398,8 +1195,7 @@ public:
     /// <summary>Mainly used to construct from a C function parameter.</summary>
     State(lua_State* state)
         : state_(state)
-    {
-    }
+    {}
 
     State(const State&) = delete;
     State(State&&) = default;
@@ -1409,24 +1205,15 @@ public:
     // --- State Conversion ---
 
     /// <summary>Returns the wrapped Lua state.</summary>
-    lua_State* state() const
-    {
-        return state_;
-    }
+    lua_State* state() const { return state_; }
 
     /// <summary>Returns the wrapped Lua state.</summary>
-    operator lua_State* () const
-    {
-        return state_;
-    }
+    operator lua_State*() const { return state_; }
 
     // --- State Properties ---
 
     /// <summary>Returns the version number of this Lua state.</summary>
-    auto version() const
-    {
-        return lua_version(state_);
-    }
+    auto version() const { return lua_version(state_); }
 
     /// <summary>Checks whether the code making the call and the Lua library being called are using the same version of Lua and the same numeric types.</summary>
     void checkVersion() const
@@ -1436,29 +1223,17 @@ public:
     }
 
     /// <summary>Returns the current status of the thread.</summary>
-    auto status() const
-    {
-        return static_cast<Status>(lua_status(state_));
-    }
+    auto status() const { return static_cast<Status>(lua_status(state_)); }
 
     /// <summary>Whether the thread can yield.</summary>
-    bool isYieldable() const
-    {
-        return lua_isyieldable(state_);
-    }
+    bool isYieldable() const { return lua_isyieldable(state_); }
 
     /// <summary>Replaces the panic function with the given function, returning the old one.</summary>
-    auto replacePanicFunction(lua_CFunction panic_function)
-    {
-        return lua_atpanic(state_, panic_function);
-    }
+    auto replacePanicFunction(lua_CFunction panic_function) { return lua_atpanic(state_, panic_function); }
 
     // TODO: Somehow make this more typesafe.
     /// <summary>Returns a reference to a pointer that can be used freely.</summary>
-    void*& extraspace()
-    {
-        return *static_cast<void**>(lua_getextraspace(state_));
-    }
+    void*& extraspace() { return *static_cast<void**>(lua_getextraspace(state_)); }
 
     // --- Allocator ---
 
@@ -1467,58 +1242,34 @@ public:
     {
         void* userdata;
         auto allocator = lua_getallocf(state_, &userdata);
-        return std::tuple{ allocator, userdata };
+        return std::tuple{allocator, userdata};
     }
 
     /// <summary>Sets a new allocation function and an optionally associated userdata pointer.</summary>
-    void setAllocator(lua_Alloc allocator, void* userdata = nullptr)
-    {
-        lua_setallocf(state_, allocator, userdata);
-    }
+    void setAllocator(lua_Alloc allocator, void* userdata = nullptr) { lua_setallocf(state_, allocator, userdata); }
 
     // --- Garbage Collector ---
 
     /// <summary>Performs a full garbage-collection cycle.</summary>
-    void gcCollect()
-    {
-        gc(GCOption::Collect);
-    }
+    void gcCollect() { gc(GCOption::Collect); }
 
     /// <summary>Stops the garbage collector.</summary>
-    void gcStop()
-    {
-        gc(GCOption::Stop);
-    }
+    void gcStop() { gc(GCOption::Stop); }
 
     /// <summary>Restarts the garbage collector.</summary>
-    void gcRestart()
-    {
-        gc(GCOption::Restart);
-    }
+    void gcRestart() { gc(GCOption::Restart); }
 
     /// <summary>Returns the current amount of memory (in Kbytes) in use by Lua.</summary>
-    int gcCount() const
-    {
-        return gc(GCOption::Count);
-    }
+    int gcCount() const { return gc(GCOption::Count); }
 
     /// <summary>Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.</summary>
-    int gcCountBytes() const
-    {
-        return gc(GCOption::CountBytes);
-    }
+    int gcCountBytes() const { return gc(GCOption::CountBytes); }
 
     /// <summary>Performs an incremental step of garbage collection, corresponding to the allocation of stepsize Kbytes.</summary>
-    void gcStep(int stepsize)
-    {
-        gc(GCOption::Step, stepsize);
-    }
+    void gcStep(int stepsize) { gc(GCOption::Step, stepsize); }
 
     /// <summary>Whether the collector is running (i.e., not stopped).</summary>
-    bool gcIsRunning() const
-    {
-        return gc(GCOption::IsRunning);
-    }
+    bool gcIsRunning() const { return gc(GCOption::IsRunning); }
 
     /// <summary>Changes the collector to incremental mode with the given parameters and returns the previous mode.</summary>
     auto gcIncremental(int pause, int stepmul, int stepsize)
@@ -1535,40 +1286,22 @@ public:
     // --- Index Wrapping ---
 
     /// <summary>Returns a wrapper to a stack index.</summary>
-    StackIndex stackIndex(int index)
-    {
-        return { *this, index };
-    }
+    StackIndex stackIndex(int index) { return {*this, index}; }
 
     /// <summary>Returns a wrapper to a stack index.</summary>
-    ConstStackIndex stackIndex(int index) const
-    {
-        return { *this, index };
-    }
+    ConstStackIndex stackIndex(int index) const { return {*this, index}; }
 
     /// <summary>Returns a wrapper to the registry pseudo index.</summary>
-    RegistryIndex registry()
-    {
-        return { *this };
-    }
+    RegistryIndex registry() { return {*this}; }
 
     /// <summary>Returns a wrapper to the registry pseudo index.</summary>
-    ConstRegistryIndex registry() const
-    {
-        return { *this };
-    }
+    ConstRegistryIndex registry() const { return {*this}; }
 
     /// <summary>Converts a 1-based index into an upvalue index and returns a wrapper to it.</summary>
-    UpvalueIndex upvalue(int index)
-    {
-        return { *this, index };
-    }
+    UpvalueIndex upvalue(int index) { return {*this, index}; }
 
     /// <summary>Converts a 1-based index into an upvalue index and returns a wrapper to it.</summary>
-    ConstUpvalueIndex upvalue(int index) const
-    {
-        return { *this, index };
-    }
+    ConstUpvalueIndex upvalue(int index) const { return {*this, index}; }
 
     // --- Indices Wrapping ---
 
@@ -1576,69 +1309,51 @@ public:
     template <int Count>
     StackIndices<Count> stackIndices(int first)
     {
-        return { *this, first };
+        return {*this, first};
     }
 
     /// <summary>Returns a wrapper to a compile-time fixed range of stack indices.</summary>
     template <int Count>
     ConstStackIndices<Count> stackIndices(int first) const
     {
-        return { *this, first };
+        return {*this, first};
     }
 
     /// <summary>Returns a wrapper to a compile-time fixed range of upvalues.</summary>
     template <int Count>
     UpvalueIndices<Count> upvalueIndices(int first)
     {
-        return { *this, first };
+        return {*this, first};
     }
 
     /// <summary>Returns a wrapper to a compile-time fixed range of upvalues.</summary>
     template <int Count>
     ConstUpvalueIndices<Count> upvalueIndices(int first) const
     {
-        return { *this, first };
+        return {*this, first};
     }
 
     // --- Index Range Wrapping ---
 
     /// <summary>Returns a wrapper to a range of stack indices.</summary>
-    StackIndexRange stackIndexRange(int first, int count)
-    {
-        return { *this, first, count };
-    }
+    StackIndexRange stackIndexRange(int first, int count) { return {*this, first, count}; }
 
     /// <summary>Returns a wrapper to a range of stack indices.</summary>
-    ConstStackIndexRange stackIndexRange(int first, int count) const
-    {
-        return { *this, first, count };
-    }
+    ConstStackIndexRange stackIndexRange(int first, int count) const { return {*this, first, count}; }
 
     /// <summary>Returns a wrapper to a range of upvalues.</summary>
-    UpvalueIndexRange upvalueIndexRange(int first, int count)
-    {
-        return { *this, first, count };
-    }
+    UpvalueIndexRange upvalueIndexRange(int first, int count) { return {*this, first, count}; }
 
     /// <summary>Returns a wrapper to a range of upvalues.</summary>
-    ConstUpvalueIndexRange upvalueIndexRange(int first, int count) const
-    {
-        return { *this, first, count };
-    }
+    ConstUpvalueIndexRange upvalueIndexRange(int first, int count) const { return {*this, first, count}; }
 
     // --- Top and Bottom Wrapping ---
 
     /// <summary>Returns a wrapper to the first stack index.</summary>
-    auto bottom()
-    {
-        return stackIndex(1);
-    }
+    auto bottom() { return stackIndex(1); }
 
     /// <summary>Returns a wrapper to the first stack index.</summary>
-    auto bottom() const
-    {
-        return stackIndex(1);
-    }
+    auto bottom() const { return stackIndex(1); }
 
     /// <summary>Returns a wrapper to a compile-time fixed size range of the first stack indices.</summary>
     template <int Count>
@@ -1655,28 +1370,16 @@ public:
     }
 
     /// <summary>Returns a wrapper to a range of the first stack indices.</summary>
-    auto bottom(int count)
-    {
-        return stackIndexRange(1, count);
-    }
+    auto bottom(int count) { return stackIndexRange(1, count); }
 
     /// <summary>Returns a wrapper to a range of the first stack indices.</summary>
-    auto bottom(int count) const
-    {
-        return stackIndexRange(1, count);
-    }
+    auto bottom(int count) const { return stackIndexRange(1, count); }
 
     /// <summary>Returns a wrapper to the last stack index.</summary>
-    auto top()
-    {
-        return stackIndex(size());
-    }
+    auto top() { return stackIndex(size()); }
 
     /// <summary>Returns a wrapper to the last stack index.</summary>
-    auto top() const
-    {
-        return stackIndex(size());
-    }
+    auto top() const { return stackIndex(size()); }
 
     /// <summary>Returns a wrapper to a compile-time fixed size range of the last stack indices.</summary>
     template <int Count>
@@ -1693,42 +1396,24 @@ public:
     }
 
     /// <summary>Returns a wrapper to a range of the last stack indices.</summary>
-    auto top(int count)
-    {
-        return stackIndexRange(size() - count + 1, count);
-    }
+    auto top(int count) { return stackIndexRange(size() - count + 1, count); }
 
     /// <summary>Returns a wrapper to a range of the last stack indices.</summary>
-    auto top(int count) const
-    {
-        return stackIndexRange(size() - count + 1, count);
-    }
+    auto top(int count) const { return stackIndexRange(size() - count + 1, count); }
 
     // --- Index Properties ---
 
     /// <summary>Whether the given index is a stack index.</summary>
-    static constexpr bool isStack(int index)
-    {
-        return index > LUA_REGISTRYINDEX;
-    }
+    static constexpr bool isStack(int index) { return index > LUA_REGISTRYINDEX; }
 
     /// <summary>Whether the given index is a pseudo index.</summary>
-    static constexpr bool isPseudo(int index)
-    {
-        return index <= LUA_REGISTRYINDEX;
-    }
+    static constexpr bool isPseudo(int index) { return index <= LUA_REGISTRYINDEX; }
 
     /// <summary>Whether the given index is an upvalue index.</summary>
-    static constexpr bool isUpvalue(int index)
-    {
-        return index < LUA_REGISTRYINDEX;
-    }
+    static constexpr bool isUpvalue(int index) { return index < LUA_REGISTRYINDEX; }
 
     /// <summary>Whether the given index is the registry index.</summary>
-    static constexpr bool isRegistry(int index)
-    {
-        return index == LUA_REGISTRYINDEX;
-    }
+    static constexpr bool isRegistry(int index) { return index == LUA_REGISTRYINDEX; }
 
     /// <summary>Whether the given index is the first stack index or "offset" above it.</summary>
     bool isIndexBottom(int index, int offset = 0) const
@@ -1745,48 +1430,27 @@ public:
     }
 
     /// <summary>Returns how many positions the given stack index is above the first index.</summary>
-    int indexOffsetFromBottom(int index) const
-    {
-        return index - 1;
-    }
+    int indexOffsetFromBottom(int index) const { return index - 1; }
 
     /// <summary>Returns how many positions the given stack index is below the last index.</summary>
-    int indexOffsetFromTop(int index) const
-    {
-        return size() - index;
-    }
+    int indexOffsetFromTop(int index) const { return size() - index; }
 
     /// <summary>Turns negative stack indices into positive ones, leaving pseudo indices as is.</summary>
-    int absIndex(int index) const
-    {
-        return index > LUA_REGISTRYINDEX && index < 0 ? size() + index + 1 : index;
-    }
+    int absIndex(int index) const { return index > LUA_REGISTRYINDEX && index < 0 ? size() + index + 1 : index; }
 
     /// <summary>Turns negative stack indices into positive ones, but does not working with pseudo indices.</summary>
-    int absStackIndex(int index) const
-    {
-        return index < 0 ? size() + index + 1 : index;
-    }
+    int absStackIndex(int index) const { return index < 0 ? size() + index + 1 : index; }
 
     // --- Stack Queries ---
 
     /// <summary>The (cached) size of the stack, which is also the top index, as indices start at 1.</summary>
-    int size() const
-    {
-        return top_;
-    }
+    int size() const { return top_; }
 
     /// <summary>Returns the type of the element at the given index.</summary>
-    Type type(int index) const
-    {
-        return static_cast<Type>(lua_type(state_, index));
-    }
+    Type type(int index) const { return static_cast<Type>(lua_type(state_, index)); }
 
     /// <summary>Returns the type name of the element at the given index.</summary>
-    std::string_view typeName(int index) const
-    {
-        return luaL_typename(state_, index);
-    }
+    std::string_view typeName(int index) const { return luaL_typename(state_, index); }
 
     /// <summary>Whether the index is not valid.</summary>
     bool isNone(int index) const
@@ -1903,10 +1567,7 @@ public:
     // --- Stack Maintenance ---
 
     /// <summary>Asserts, whether the given positive index is currently acceptable without checking the stack.</summary>
-    void assertAcceptable([[maybe_unused]] int index) const
-    {
-        assert(index >= 1 && index - size() <= pushable_);
-    }
+    void assertAcceptable([[maybe_unused]] int index) const { assert(index >= 1 && index - size() <= pushable_); }
 
     /// <summary>Ensures, that the given positive index is going to be acceptable and returns false if it can't.</summary>
     bool checkAcceptable(int index) const
@@ -1923,16 +1584,10 @@ public:
     }
 
     /// <summary>Asserts, whether it is possible to push a given number of elements without checking the stack.</summary>
-    void assertPushable([[maybe_unused]] int count = 1) const
-    {
-        assert(count <= pushable_);
-    }
+    void assertPushable([[maybe_unused]] int count = 1) const { assert(count <= pushable_); }
 
     /// <summary>Asserts, whether it is possible to call an auxiliary function with the current stack.</summary>
-    void assertPushableAuxiliary() const
-    {
-        assertPushable(auxiliary_required_pushable);
-    }
+    void assertPushableAuxiliary() const { assertPushable(auxiliary_required_pushable); }
 
     /// <summary>Trys to ensure, that it is possible to push a given number of values, returning false if it can't.</summary>
     bool checkPushable(int count = 1) const
@@ -1946,10 +1601,7 @@ public:
     }
 
     /// <summary>Trys to ensures, that an auxiliary library function can be called, retunring false if it can't.</summary>
-    bool checkPushableAuxiliary() const
-    {
-        return checkPushable(auxiliary_required_pushable);
-    }
+    bool checkPushableAuxiliary() const { return checkPushable(auxiliary_required_pushable); }
 
     /// <summary>Ensures, that it is possible to push a given number of values, raising a Lua error if it can't.</summary>
     void ensurePushable(int count = 1, const char* error_message = nullptr) const
@@ -1961,10 +1613,7 @@ public:
     }
 
     /// <summary>Ensures, that an auxiliary library function can be called, returning false if it can't.</summary>
-    void ensurePushableAuxiliary() const
-    {
-        ensurePushable(auxiliary_required_pushable);
-    }
+    void ensurePushableAuxiliary() const { ensurePushable(auxiliary_required_pushable); }
 
     // --- Push and Pop ---
 
@@ -2021,10 +1670,7 @@ public:
     }
 
     /// <summary>Pushes nil on the stack.</summary>
-    auto pushNil()
-    {
-        return push(nullptr);
-    }
+    auto pushNil() { return push(nullptr); }
 
     /// <summary>Pushes a newly created table with optional hints for the size of its array and record parts.</summary>
     auto pushTable(int array_hint = 0, int record_hint = 0)
@@ -2039,7 +1685,7 @@ public:
     {
         State thread = lua_newthread(state_);
         notifyPush();
-        return std::tuple{ top().asResult(), std::move(thread) };
+        return std::tuple{top().asResult(), std::move(thread)};
     }
 
     /// <summary>Pushes an in-place constructed object with the given parameters.</summary>
@@ -2088,11 +1734,9 @@ public:
     template <typename TFunc, typename... TUpvalues>
     auto pushFunction(TFunc&& func, TUpvalues&&... upvalues)
     {
-        std::function wrapped_func{ std::forward<TFunc>(func) };
+        std::function wrapped_func{std::forward<TFunc>(func)};
         return pushFunction(
-            wrappedFunction<decltype(wrapped_func)>,
-            std::move(wrapped_func),
-            std::forward<TUpvalues>(upvalues)...);
+            wrappedFunction<decltype(wrapped_func)>, std::move(wrapped_func), std::forward<TUpvalues>(upvalues)...);
     }
 
     /// <summary>Same as push, recommended to use for temporaries in expressions.</summary>
@@ -2187,14 +1831,14 @@ public:
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, Results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? lua_gettop(state_) - first_result_index : 1;
             notifyPush(results - 1 - arg_count);
-            return std::tuple{ status, top(results).asResults() };
+            return std::tuple{status, top(results).asResults()};
         }
         else {
             assertPushable(Results - 1 - arg_count);
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, Results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? Results : 1;
             notifyPush(results - 1 - arg_count);
-            return std::tuple{ status, top(results).asResults() };
+            return std::tuple{status, top(results).asResults()};
         }
     }
 
@@ -2219,7 +1863,7 @@ public:
         if (status != Status::Ok)
             results = 1;
         notifyPush(results - 1 - arg_count);
-        return std::tuple{ status, top(results).asResults() };
+        return std::tuple{status, top(results).asResults()};
     }
 
     // --- Compiling ---
@@ -2231,7 +1875,7 @@ public:
         assertPushableAuxiliary();
         int status = luaL_loadbufferx(state_, buffer, size, name, loadModeNames[static_cast<std::size_t>(mode)]);
         notifyPush();
-        return std::tuple{ static_cast<Status>(status), top().asResult() };
+        return std::tuple{static_cast<Status>(status), top().asResult()};
     }
 
     /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
@@ -2261,7 +1905,8 @@ public:
     {
         assert(operation == ArithOp::UnaryMinus || operation == ArithOp::BinaryNot);
         auto pushed_operand = push(std::forward<T>(operand));
-        static_assert(std::is_same_v<decltype(pushed_operand), StackIndex>, "Unary operations require exactly one operand.");
+        static_assert(std::is_same_v<decltype(pushed_operand), StackIndex>,
+                      "Unary operations require exactly one operand.");
         lua_arith(state_, static_cast<int>(operation));
         return top().asResult();
     }
@@ -2273,7 +1918,8 @@ public:
     {
         assert(operation != ArithOp::UnaryMinus && operation != ArithOp::BinaryNot);
         auto pushed_operands = push(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
-        static_assert(std::is_same_v<decltype(pushed_operands), StackIndices<2>>, "Binary operations require exactly two operands.");
+        static_assert(std::is_same_v<decltype(pushed_operands), StackIndices<2>>,
+                      "Binary operations require exactly two operands.");
         lua_arith(state_, static_cast<int>(operation));
         notifyPush(-1);
         return top().asResult();
@@ -2285,8 +1931,10 @@ public:
     {
         constexpr bool unary_op = Operation == ArithOp::UnaryMinus || Operation == ArithOp::BinaryNot;
         auto pushed_args = push(std::forward<TArgs>(args)...);
-        constexpr bool unary_arg = Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 1;
-        constexpr bool binary_args = Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 2;
+        constexpr bool unary_arg =
+            Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 1;
+        constexpr bool binary_args =
+            Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 2;
         static_assert(unary_op && unary_arg || binary_args, "Argument count does not match the operation type.");
         lua_arith(state_, static_cast<int>(Operation));
         if constexpr (binary_args)
@@ -2362,10 +2010,7 @@ public:
     }
 
     /// <summary>Returns the raw length of the value, which does not invoke meta-method.</summary>
-    auto rawLength(int index) const
-    {
-        return lua_rawlen(state_, index);
-    }
+    auto rawLength(int index) const { return lua_rawlen(state_, index); }
 
     // --- Table Access ---
 
@@ -2378,11 +2023,11 @@ public:
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
-            Type type = static_cast<Type>(lua_geti(state_, table.index(), lua_Integer{ key }));
+            Type type = static_cast<Type>(lua_geti(state_, table.index(), lua_Integer{key}));
             // remove nothing, add value
             // -0, +1
             notifyPush();
-            return std::tuple{ type, top().asResult() };
+            return std::tuple{type, top().asResult()};
         }
         else if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
             assertPushable();
@@ -2391,7 +2036,7 @@ public:
             // remove nothing, add value
             // -0, +1
             notifyPush();
-            return std::tuple{ type, top().asResult() };
+            return std::tuple{type, top().asResult()};
         }
         else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
             return getTable(table, key.c_str());
@@ -2402,7 +2047,7 @@ public:
             // remove key, add value
             // -1, +1
             // notifyPush(0);
-            return { type, top().asResult() };
+            return {type, top().asResult()};
         }
     }
 
@@ -2425,7 +2070,7 @@ public:
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
-            lua_seti(state_, table.index(), lua_Integer{ key });
+            lua_seti(state_, table.index(), lua_Integer{key});
             // remove value, push nothing
             // -1, +0
             notifyPush(-1);
@@ -2457,11 +2102,11 @@ public:
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
-            Type type = static_cast<Type>(lua_rawgeti(state_, table.index(), lua_Integer{ key }));
+            Type type = static_cast<Type>(lua_rawgeti(state_, table.index(), lua_Integer{key}));
             // remove nothing, add value
             // -0, +1
             notifyPush();
-            return std::tuple{ type, top().asResult() };
+            return std::tuple{type, top().asResult()};
         }
         else if constexpr (std::is_pointer_v<TKey>) {
             assertPushable();
@@ -2469,7 +2114,7 @@ public:
             // remove nothing, add value
             // -0, +1
             notifyPush();
-            return std::tuple{ type, top().asResult() };
+            return std::tuple{type, top().asResult()};
         }
         else {
             push(std::forward<TKey>(key));
@@ -2477,7 +2122,7 @@ public:
             // remove key, add value
             // -1, +1
             // notifyPush(0);
-            return { type, top().asResult() };
+            return {type, top().asResult()};
         }
     }
 
@@ -2498,7 +2143,7 @@ public:
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
-            lua_rawseti(state_, table.index(), lua_Integer{ key });
+            lua_rawseti(state_, table.index(), lua_Integer{key});
             // remove value, push nothing
             // -1, +0
             notifyPush(-1);
@@ -2799,24 +2444,17 @@ public:
     }
 
     /// <summary>Closes the Lua state if it is not already closed.</summary>
-    ~OwnedState()
-    {
-        close();
-    }
+    ~OwnedState() { close(); }
 
     OwnedState(const OwnedState&) = delete;
 
     OwnedState(OwnedState&& other) noexcept
         : State(std::exchange(other.state_, nullptr))
-    {
-    }
+    {}
 
     OwnedState& operator=(const OwnedState&) = delete;
 
-    OwnedState& operator=(OwnedState&& other) noexcept
-    {
-        swap(other);
-    }
+    OwnedState& operator=(OwnedState&& other) noexcept { swap(other); }
 
     void swap(OwnedState& other) noexcept
     {
@@ -2824,16 +2462,10 @@ public:
         swap(state_, other.state_);
     }
 
-    friend void swap(OwnedState& lhs, OwnedState& rhs) noexcept
-    {
-        lhs.swap(rhs);
-    }
+    friend void swap(OwnedState& lhs, OwnedState& rhs) noexcept { lhs.swap(rhs); }
 
     /// <summary>Whether the state as been closed manually.</summary>
-    bool closed()
-    {
-        return state_ == nullptr;
-    }
+    bool closed() { return state_ == nullptr; }
 
     /// <summary>Closes the Lua state manually, can be called multiple times.</summary>
     void close()
@@ -2852,8 +2484,7 @@ public:
     ScopedStack(State& state)
         : state_(state)
         , initially_pushed_(state.top_)
-    {
-    }
+    {}
 
     /// <summary>Resets the top to the initial one, effectively popping all leftover elements.</summary>
     ~ScopedStack()
@@ -2886,39 +2517,24 @@ struct Convert<State&> {
     static constexpr std::optional<int> PushCount = 0;
     static constexpr bool AllowNesting = true;
 
-    static bool isExact(State&, int)
-    {
-        return true;
-    }
+    static bool isExact(State&, int) { return true; }
 
-    static constexpr bool isValid(State&, int)
-    {
-        return true;
-    }
+    static constexpr bool isValid(State&, int) { return true; }
 
-    static State& check(State& state, int)
-    {
-        return state;
-    }
+    static State& check(State& state, int) { return state; }
 };
 
 using Arg = dlua::StackIndex;
-template <std::size_t Size> using Args = StackIndices<Size>;
+template <std::size_t Size>
+using Args = StackIndices<Size>;
 using VarArgs = StackIndexRange;
 
-namespace detail
-{
+namespace detail {
 
 struct ConvertIndexBase {
-    static constexpr bool isExact(lua_State*, int)
-    {
-        return true;
-    }
+    static constexpr bool isExact(lua_State*, int) { return true; }
 
-    static constexpr bool isValid(lua_State*, int)
-    {
-        return true;
-    }
+    static constexpr bool isValid(lua_State*, int) { return true; }
 };
 
 struct ConvertIndex : ConvertIndexBase {
@@ -3013,20 +2629,29 @@ struct ConvertStackIndexRange : ConvertIndexRange {
     }
 };
 
-}
+} // namespace detail
 
-template <typename TState, typename TIndex> struct Convert<detail::IndexImpl<TState, TIndex>> : detail::ConvertIndex {};
-template <typename TState, detail::StackIndexType Type> struct Convert<detail::StackIndex<TState, Type>> : detail::ConvertStackIndex {};
-template <typename TState> struct Convert<detail::RegistryIndex<TState>> : detail::ConvertIndex {};
-template <typename TState> struct Convert<detail::UpvalueIndex<TState>> : detail::ConvertIndex {};
+template <typename TState, typename TIndex>
+struct Convert<detail::IndexImpl<TState, TIndex>> : detail::ConvertIndex {};
+template <typename TState, detail::StackIndexType Type>
+struct Convert<detail::StackIndex<TState, Type>> : detail::ConvertStackIndex {};
+template <typename TState>
+struct Convert<detail::RegistryIndex<TState>> : detail::ConvertIndex {};
+template <typename TState>
+struct Convert<detail::UpvalueIndex<TState>> : detail::ConvertIndex {};
 
-template <typename TState, typename TIndex, int Count> struct Convert<detail::MultiIndexImpl<TState, TIndex, Count>> : detail::ConvertIndices<Count> {};
+template <typename TState, typename TIndex, int Count>
+struct Convert<detail::MultiIndexImpl<TState, TIndex, Count>> : detail::ConvertIndices<Count> {};
 
-template <typename TState, int Count, detail::StackIndexType Type> struct Convert<detail::StackIndices<TState, Count, Type>> : detail::ConvertStackIndices<Count> {};
-template <typename TState, int Count> struct Convert<detail::UpvalueIndices<TState, Count>> : detail::ConvertIndices<Count> {};
+template <typename TState, int Count, detail::StackIndexType Type>
+struct Convert<detail::StackIndices<TState, Count, Type>> : detail::ConvertStackIndices<Count> {};
+template <typename TState, int Count>
+struct Convert<detail::UpvalueIndices<TState, Count>> : detail::ConvertIndices<Count> {};
 
-template <typename TState, detail::StackIndexType Type> struct Convert<detail::StackIndexRange<TState, Type>> : detail::ConvertStackIndexRange {};
-template <typename TState> struct Convert<detail::UpvalueIndexRange<TState>> : detail::ConvertIndexRange {};
+template <typename TState, detail::StackIndexType Type>
+struct Convert<detail::StackIndexRange<TState, Type>> : detail::ConvertStackIndexRange {};
+template <typename TState>
+struct Convert<detail::UpvalueIndexRange<TState>> : detail::ConvertIndexRange {};
 
 // --- Utility ---
 
@@ -3050,8 +2675,7 @@ struct ValueTo {
     }
 };
 
-namespace detail
-{
+namespace detail {
 
 /// <summary>Requires either of the two arguments to be an index and returns the associated state.</summary>
 template <typename TLeft, typename TRight>
@@ -3071,7 +2695,7 @@ using AnyIndex = std::disjunction<IsIndex<std::decay_t<TArgs>>...>;
 template <typename... TArgs>
 using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, dlua::StackIndexResult>;
 
-}
+} // namespace detail
 
 template <typename TLeft, typename TRight>
 inline auto operator+(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
@@ -3143,7 +2767,9 @@ inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
 */
 
 template <typename TLeft, typename TRight>
-inline auto operator<<(TLeft&& lhs, TRight&& rhs) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value && !std::is_same_v<std::decay_t<TLeft>, std::ostream>, StackIndexResult>
+inline auto operator<<(TLeft&& lhs, TRight&& rhs)
+    -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value && !std::is_same_v<std::decay_t<TLeft>, std::ostream>,
+                        StackIndexResult>
 {
     return detail::stateOf(lhs, rhs).arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
@@ -3169,37 +2795,43 @@ inline auto operator~(T&& operand) -> detail::EnableIfAnyIndex<T>
 template <typename TLeft, typename TRight>
 inline auto operator==(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return detail::stateOf(left, right).compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return detail::stateOf(left, right)
+        .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator!=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return !detail::stateOf(left, right).compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return !detail::stateOf(left, right)
+                .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator<(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return detail::stateOf(left, right).compare(CompareOp::LessThan, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return detail::stateOf(left, right)
+        .compare(CompareOp::LessThan, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator<=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return detail::stateOf(left, right).compare(CompareOp::LessEqual, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return detail::stateOf(left, right)
+        .compare(CompareOp::LessEqual, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator>(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return detail::stateOf(left, right).compare(CompareOp::LessThan, std::forward<TRight>(right), std::forward<TLeft>(left));
+    return detail::stateOf(left, right)
+        .compare(CompareOp::LessThan, std::forward<TRight>(right), std::forward<TLeft>(left));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator>=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
 {
-    return detail::stateOf(left, right).compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
+    return detail::stateOf(left, right)
+        .compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
 }
 
 /*
@@ -3214,4 +2846,4 @@ extern const auto State_formatDebug = &dlua::State::formatDebug;
 #endif
 */
 
-}
+} // namespace dang::lua

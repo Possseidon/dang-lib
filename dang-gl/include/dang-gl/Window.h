@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dang-math/vector.h"
 #include "dang-math/bounds.h"
+#include "dang-math/vector.h"
 
 #include "dang-utils/event.h"
 
@@ -10,17 +10,12 @@
 #include "Input.h"
 #include "Monitor.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 using GLVersion = std::tuple<int, int>;
 using GLVersionFull = std::tuple<int, int, int>;
 
-enum class ClientAPI {
-    None = GLFW_NO_API,
-    OpenGL = GLFW_OPENGL_API,
-    OpenGLES = GLFW_OPENGL_ES_API
-};
+enum class ClientAPI { None = GLFW_NO_API, OpenGL = GLFW_OPENGL_API, OpenGLES = GLFW_OPENGL_ES_API };
 
 enum class ContextAPI {
     Native = GLFW_NATIVE_CONTEXT_API,
@@ -46,17 +41,9 @@ enum class GLProfile {
     Compatibility = GLFW_OPENGL_COMPAT_PROFILE
 };
 
-enum class VSync {
-    Disabled = 0,
-    Enabled = 1,
-    Adaptive = -1
-};
+enum class VSync { Disabled = 0, Enabled = 1, Adaptive = -1 };
 
-enum class CursorMode {
-    Normal = GLFW_CURSOR_NORMAL,
-    Hidden = GLFW_CURSOR_HIDDEN,
-    Disabled = GLFW_CURSOR_DISABLED
-};
+enum class CursorMode { Normal = GLFW_CURSOR_NORMAL, Hidden = GLFW_CURSOR_HIDDEN, Disabled = GLFW_CURSOR_DISABLED };
 
 enum class GLDebugSource {
     API = GL_DEBUG_SOURCE_API,
@@ -91,7 +78,7 @@ class Window;
 struct WindowInfo {
     GLFWwindow* createWindow() const;
 
-    dmath::ivec2 size = { 1280, 720 };
+    dmath::ivec2 size = {1280, 720};
     std::string title;
 
     Window* share = nullptr;
@@ -134,7 +121,7 @@ struct WindowInfo {
 
     struct Context {
         ContextAPI api = ContextAPI::Native;
-        GLVersion version = { 1, 0 };
+        GLVersion version = {1, 0};
 
         ContextRobustness robustness = ContextRobustness::None;
         ContextReleaseBehavior release_behavior = ContextReleaseBehavior::Any;
@@ -256,11 +243,15 @@ public:
     /// <summary>If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise returns null.</summary>
     Monitor fullscreenMonitor() const;
     /// <summary>Puts the window in fullscreen mode with optional supplied resolution and refresh rate.</summary>
-    void makeFullscreen(std::optional<dmath::ivec2> size = std::nullopt, std::optional<int> refresh_rate = std::nullopt);
+    void makeFullscreen(std::optional<dmath::ivec2> size = std::nullopt,
+                        std::optional<int> refresh_rate = std::nullopt);
     /// <summary>Puts the window in fullscreen mode on a specific monitor.</summary>
-    void makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size = std::nullopt, std::optional<int> refresh_rate = std::nullopt);
+    void makeFullscreen(Monitor monitor,
+                        std::optional<dmath::ivec2> size = std::nullopt,
+                        std::optional<int> refresh_rate = std::nullopt);
     /// <summary>Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.</summary>
-    void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt, std::optional<dmath::ivec2> size = std::nullopt);
+    void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt,
+                           std::optional<dmath::ivec2> size = std::nullopt);
 
     /// <summary>Whether the user can resize the window.</summary>
     bool isResizable() const;
@@ -276,7 +267,10 @@ public:
     /// <summary>Returns the optional maximum height of the window.</summary>
     std::optional<int> maxHeight() const;
     /// <summary>Sets all size limits of the window to the given optional values.</summary>
-    void setSizeLimits(std::optional<int> min_width, std::optional<int> min_height, std::optional<int> max_width, std::optional<int> max_height);
+    void setSizeLimits(std::optional<int> min_width,
+                       std::optional<int> min_height,
+                       std::optional<int> max_width,
+                       std::optional<int> max_height);
     /// <summary>Sets the minimum size of the window to the given optional values.</summary>
     void setMinSize(std::optional<int> min_width, std::optional<int> min_height);
     /// <summary>Sets the maximum size of the window to the given optional values.</summary>
@@ -529,7 +523,13 @@ private:
 
     // OpenGL callbacks
 
-    static void APIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param);
+    static void APIENTRY debugMessageCallback(GLenum source,
+                                              GLenum type,
+                                              GLuint id,
+                                              GLenum severity,
+                                              GLsizei length,
+                                              const GLchar* message,
+                                              const void* user_param);
 
     /// <summary>Updates the current delta time and FPS.</summary>
     void updateDeltaTime();
@@ -538,7 +538,7 @@ private:
 
     GLFWwindow* handle_ = nullptr;
 
-    Context context_{ (activate(), size()) };
+    Context context_{(activate(), size())};
 
     // Window-Properties
     std::string title_;
@@ -561,4 +561,4 @@ private:
     std::string text_input_;
 };
 
-}
+} // namespace dang::gl

@@ -1,7 +1,6 @@
 #pragma once
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Wraps the bitfield representing the three buffers of framebuffer objects.</summary>
 enum class BufferMask : GLbitfield {
@@ -12,4 +11,4 @@ enum class BufferMask : GLbitfield {
     ALL = Color | Depth | Stencil
 };
 
-}
+} // namespace dang::gl

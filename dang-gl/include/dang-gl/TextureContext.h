@@ -5,8 +5,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>An error related to textures.</summary>
 class TextureError : public std::runtime_error {
@@ -43,10 +42,7 @@ private:
     std::vector<Handle>::iterator first_free_slot_ = active_textures_.begin();
 };
 
-inline std::size_t ObjectContext<ObjectType::Texture>::activeSlot()
-{
-    return active_slot_;
-}
+inline std::size_t ObjectContext<ObjectType::Texture>::activeSlot() { return active_slot_; }
 
 inline void ObjectContext<ObjectType::Texture>::setActiveSlot(std::size_t active_slot)
 {
@@ -56,7 +52,9 @@ inline void ObjectContext<ObjectType::Texture>::setActiveSlot(std::size_t active
     active_slot_ = active_slot;
 }
 
-inline std::size_t ObjectContext<ObjectType::Texture>::bind(TextureTarget target, Handle handle, std::optional<std::size_t> active_slot)
+inline std::size_t ObjectContext<ObjectType::Texture>::bind(TextureTarget target,
+                                                            Handle handle,
+                                                            std::optional<std::size_t> active_slot)
 {
     if (active_slot) {
         setActiveSlot(*active_slot);
@@ -84,4 +82,4 @@ inline void ObjectContext<ObjectType::Texture>::release(TextureTarget target, st
         first_free_slot_ = texture_to_free;
 }
 
-}
+} // namespace dang::gl

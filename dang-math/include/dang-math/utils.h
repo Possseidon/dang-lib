@@ -2,12 +2,11 @@
 
 #include <array>
 #include <functional>
+#include <iostream>
 #include <optional>
 #include <type_traits>
-#include <iostream>
 
-namespace dang::math
-{
+namespace dang::math {
 
 /// <summary>The value of Pi.</summary>
 constexpr double pi = 3.14159265358979323846;
@@ -26,6 +25,6 @@ constexpr T degToRad(T value)
     return value * static_cast<T>(pi) / static_cast<T>(180);
 }
 
-}
+} // namespace dang::math
 
 namespace dmath = dang::math;

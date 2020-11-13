@@ -7,8 +7,7 @@
 #include "Program.h"
 #include "Transform.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class ProjectionProvider;
 
@@ -50,7 +49,7 @@ private:
 class PerspectiveProjection : public ProjectionProvider {
 public:
     static constexpr float DefaultFieldOfView = 90.0f;
-    static constexpr bounds1 DefaultClip = { 0.1f, 100.0f };
+    static constexpr bounds1 DefaultClip = {0.1f, 100.0f};
 
     /// <summary>Initializes the perspective projection with the given field of view and near/far clip.</summary>
     PerspectiveProjection(float aspect, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
@@ -86,7 +85,7 @@ private:
 /// <summary>An orthogonal projection provider with simple 3D clipping bounds, defaulting to [-1, 1] on all axes, while the actual clipping planes also have the aspect applied.</summary>
 class OrthoProjection : public ProjectionProvider {
 public:
-    static constexpr bounds3 DefaultClip = { -1.0f, 1.0f };
+    static constexpr bounds3 DefaultClip = {-1.0f, 1.0f};
 
     /// <summary>Initializes the orthogonal projection with the given clipping bounds.</summary>
     OrthoProjection(float aspect, bounds3 clip = DefaultClip);
@@ -107,12 +106,7 @@ private:
 
 /// <summary>The different cached transform (quaternion, not matrix) types of a camera, namely model, view and a combined model-view.</summary>
 /// <remarks>The projection uses a matrix and is therefore handled separately.</remarks>
-enum class CameraTransformType {
-    Model,
-    View,
-    ModelView,
-    COUNT
-};
+enum class CameraTransformType { Model, View, ModelView, COUNT };
 
 /// <summary>A simple struct for all the different uniform names, which a camera can write to.</summary>
 struct CameraUniformNames {
@@ -125,11 +119,7 @@ struct CameraUniformNames {
 /// <summary>The default names for all camera related uniforms.</summary>
 // TODO: C++20 use named initializers { .name = value }
 inline const CameraUniformNames DefaultCameraUniformNames = {
-    "projection_matrix",
-    "model_transform",
-    "view_transform",
-    "modelview_transform"
-};
+    "projection_matrix", "model_transform", "view_transform", "modelview_transform"};
 
 /// <summary>Contains references to camera related uniforms of a single GL-Program.</summary>
 class CameraUniforms {
@@ -158,9 +148,13 @@ public:
     explicit Camera(SharedProjectionProvider projection_provider);
 
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
-    static Camera perspective(float aspect, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
+    static Camera perspective(float aspect,
+                              float field_of_view = PerspectiveProjection::DefaultFieldOfView,
+                              bounds1 clip = PerspectiveProjection::DefaultClip);
     /// <summary>Creates a new perspective camera with the given parameters.</summary>
-    static Camera perspective(Context& context, float field_of_view = PerspectiveProjection::DefaultFieldOfView, bounds1 clip = PerspectiveProjection::DefaultClip);
+    static Camera perspective(Context& context,
+                              float field_of_view = PerspectiveProjection::DefaultFieldOfView,
+                              bounds1 clip = PerspectiveProjection::DefaultClip);
 
     /// <summary>Creates a new orthogonal camera with the given parameters.</summary>
     static Camera ortho(float aspect, bounds3 clip = OrthoProjection::DefaultClip);
@@ -221,7 +215,8 @@ inline void Camera::render(TRenderableIter first, TRenderableIter last) const
 
         if (const auto& model_transform = renderable->transform()) {
             uniforms->updateTransform(CameraTransformType::Model, model_transform->fullTransform());
-            uniforms->updateTransform(CameraTransformType::ModelView, view_transform * model_transform->fullTransform());
+            uniforms->updateTransform(CameraTransformType::ModelView,
+                                      view_transform * model_transform->fullTransform());
         }
         else {
             uniforms->updateTransform(CameraTransformType::Model, dquat());
@@ -240,4 +235,4 @@ void Camera::render(const TRenderables& renderables) const
     render(begin(renderables), end(renderables));
 }
 
-}
+} // namespace dang::gl

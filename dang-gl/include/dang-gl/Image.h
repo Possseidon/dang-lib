@@ -1,12 +1,11 @@
 #pragma once
 
+#include "PNGLoader.h"
 #include "Pixel.h"
 #include "PixelFormat.h"
 #include "PixelType.h"
-#include "PNGLoader.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Stores pixels data for an n-dimensional image in a template specified type.</summary>
 template <std::size_t Dim, PixelFormat Format = PixelFormat::RGBA, PixelType Type = PixelType::UNSIGNED_BYTE>
@@ -21,23 +20,20 @@ public:
     explicit Image(dmath::svec<Dim> size)
         : size_(size)
         , data_(size)
-    {
-    }
+    {}
 
     /// <summary>Initializes the image using the given size and fills it with the value.</summary>
     Image(dmath::svec<Dim> size, const Pixel& value)
         : size_(size)
         , data_(size, value)
-    {
-    }
+    {}
 
     /// <summary>Initializes the image using the given size and data iterator.</summary>
     template <typename Iter>
     Image(dmath::svec<Dim> size, Iter first)
         : size_(size)
         , data_(first, std::next(first, size))
-    {
-    }
+    {}
 
     /// <summary>Initializes the image using the given size and pre-existing vector of data, which should match the size.</summary>
     /// <remarks>Highly consider passing the data as an r-value using std::move to avoid a copy.</remarks>
@@ -72,46 +68,25 @@ public:
     }
 
     /// <summary>Returns the size of the image along each axis.</summary>
-    dmath::svec<Dim> size() const
-    {
-        return size_;
-    }
+    dmath::svec<Dim> size() const { return size_; }
 
     /// <summary>Returns the total count of pixels.</summary>
-    std::size_t count() const
-    {
-        return size_.product();
-    }
+    std::size_t count() const { return size_.product(); }
 
     /// <summary>Returns the actual size of the image in bytes.</summary>
-    std::size_t byteSize() const
-    {
-        return count() * sizeof(Pixel);
-    }
+    std::size_t byteSize() const { return count() * sizeof(Pixel); }
 
     /// <summary>Provides access for a single pixel at the given position.</summary>
-    Pixel& operator[](dmath::svec<Dim> pos)
-    {
-        return data_[posToIndex(pos)];
-    }
+    Pixel& operator[](dmath::svec<Dim> pos) { return data_[posToIndex(pos)]; }
 
     /// <summary>Provides access for a single pixel at the given position.</summary>
-    const Pixel& operator[](dmath::svec<Dim> pos) const
-    {
-        return data_[posToIndex(pos)];
-    }
+    const Pixel& operator[](dmath::svec<Dim> pos) const { return data_[posToIndex(pos)]; }
 
     /// <summary>Provides access to the raw underlying data, which can be used to provide OpenGL the data.</summary>
-    Pixel* data()
-    {
-        return data_.data();
-    }
+    Pixel* data() { return data_.data(); }
 
     /// <summary>Provides access to the raw underlying data, which can be used to provide OpenGL the data.</summary>
-    const Pixel* data() const
-    {
-        return data_.data();
-    }
+    const Pixel* data() const { return data_.data(); }
 
 private:
     /// <summary>A helper function, which calculates the position offset of a single dimension.</summary>
@@ -130,10 +105,7 @@ private:
     }
 
     /// <summary>Converts the given pixel position into an index to the data.</summary>
-    std::size_t posToIndex(dmath::svec<Dim> pos)
-    {
-        return posToIndexHelper(pos, std::make_index_sequence<Dim>());
-    }
+    std::size_t posToIndex(dmath::svec<Dim> pos) { return posToIndexHelper(pos, std::make_index_sequence<Dim>()); }
 
     dmath::svec<Dim> size_;
     std::vector<Pixel> data_;
@@ -143,4 +115,4 @@ using Image1D = Image<1>;
 using Image2D = Image<2>;
 using Image3D = Image<3>;
 
-}
+} // namespace dang::gl

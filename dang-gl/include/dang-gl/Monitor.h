@@ -1,10 +1,9 @@
 #pragma once
 
-#include "dang-math/vector.h"
 #include "dang-math/bounds.h"
+#include "dang-math/vector.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 using GammaRamp = GLFWgammaramp;
 using VideoMode = GLFWvidmode;
@@ -20,7 +19,7 @@ public:
     /// <summary>Returns the wrapped handle pointer.</summary>
     GLFWmonitor* handle() const;
     /// <summary>Allows for implicit conversion to the handle pointer.</summary>
-    operator GLFWmonitor* () const;
+    operator GLFWmonitor*() const;
 
     /// <summary>Returns a human-readable name for the monitor.</summary>
     // TODO: std::u8string
@@ -51,4 +50,4 @@ private:
     GLFWmonitor* handle_ = nullptr;
 };
 
-}
+} // namespace dang::gl

@@ -10,8 +10,7 @@
 #include "ObjectWrapper.h"
 #include "RBO.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>An error caused by an invalid FBO operation.</summary>
 class FramebufferError : public std::runtime_error {
@@ -41,10 +40,7 @@ enum class BlitFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {
-    GL_NEAREST,
-    GL_LINEAR
-};
+constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
 
 /// <summary>A framebuffer object, which represents the destination (or source) of OpenGL render operations.</summary>
 /// <remarks>Framebuffer objects can be attached with both textures and renderbuffer objects.</remarks>
@@ -130,14 +126,13 @@ private:
     void updateAttachmentPoint(AttachmentPoint attachment_point, bool active);
 
     /// <summary>Helper to blit pixels from one framebuffer to another.</summary>
-    static void blit(
-        ObjectContext<ObjectType::Framebuffer>& context,
-        Handle read_framebuffer,
-        Handle draw_framebuffer,
-        const ibounds2& src_rect,
-        const ibounds2& dst_rect,
-        BufferMask mask,
-        BlitFilter filter);
+    static void blit(ObjectContext<ObjectType::Framebuffer>& context,
+                     Handle read_framebuffer,
+                     Handle draw_framebuffer,
+                     const ibounds2& src_rect,
+                     const ibounds2& dst_rect,
+                     BufferMask mask,
+                     BlitFilter filter);
 
     std::optional<svec2> size_;
     std::vector<bool> color_attachments_ = std::vector<bool>(context()->max_color_attachments);
@@ -146,4 +141,4 @@ private:
     bool depth_stencil_attachment_ = false;
 };
 
-}
+} // namespace dang::gl

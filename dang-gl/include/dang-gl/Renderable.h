@@ -2,8 +2,7 @@
 
 #include "Transform.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class Program;
 
@@ -28,4 +27,4 @@ public:
     virtual void draw() const = 0;
 };
 
-}
+} // namespace dang::gl

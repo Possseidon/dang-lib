@@ -4,8 +4,7 @@
 
 #include "Monitor.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class Window;
 
@@ -89,4 +88,4 @@ private:
     std::vector<Monitor> monitors_;
 };
 
-}
+} // namespace dang::gl

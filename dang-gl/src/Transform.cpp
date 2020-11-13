@@ -1,18 +1,12 @@
 #include "pch.h"
+
 #include "Transform.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
-UniqueTransform Transform::create()
-{
-    return std::make_unique<Transform>();
-}
+UniqueTransform Transform::create() { return std::make_unique<Transform>(); }
 
-const dquat& Transform::ownTransform() const
-{
-    return own_transform_;
-}
+const dquat& Transform::ownTransform() const { return own_transform_; }
 
 void Transform::setOwnTransform(const dquat& transform)
 {
@@ -32,10 +26,7 @@ const dquat& Transform::fullTransform()
     return *full_transform_;
 }
 
-SharedTransform Transform::parent() const
-{
-    return parent_;
-}
+SharedTransform Transform::parent() const { return parent_; }
 
 bool Transform::parentChainContains(const Transform& transform) const
 {
@@ -93,4 +84,4 @@ void Transform::resetParent()
         forceParent(nullptr);
 }
 
-}
+} // namespace dang::gl

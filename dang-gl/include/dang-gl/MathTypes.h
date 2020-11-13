@@ -5,8 +5,7 @@
 #include "dang-math/quaternion.h"
 #include "dang-math/vector.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 // Aliases for vector and matrix types, using GLSL naming
 
@@ -99,4 +98,4 @@ DMATH_MATRIX_DEFINE(dmat, GLdouble)
 using quat = dang::math::Quaternion<GLfloat>;
 using dquat = dang::math::DualQuaternion<GLfloat>;
 
-};
+}; // namespace dang::gl

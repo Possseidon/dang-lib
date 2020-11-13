@@ -2,8 +2,7 @@
 
 #include "MathTypes.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>A list of all data types, which can be used in GLSL.</summary>
 /// <remarks>Not using GLConstants, as this also has to be querried, which is faster this way.</remarks>
@@ -507,4 +506,4 @@ constexpr GLsizei getDataTypeColumnCount(DataType type)
     }
 }
 
-}
+} // namespace dang::gl

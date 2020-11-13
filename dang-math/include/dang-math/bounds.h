@@ -8,11 +8,9 @@
 #include "enums.h"
 #include "vector.h"
 
-namespace dang::math
-{
+namespace dang::math {
 
-namespace detail
-{
+namespace detail {
 
 /// <summary>Performs a floor division on the given arguments.</summary>
 template <typename T>
@@ -38,7 +36,7 @@ static constexpr T floormod(T numerator, T denominator)
     return numerator - floordiv(numerator, denominator) * denominator;
 }
 
-}
+} // namespace detail
 
 template <typename T, std::size_t Dim>
 struct Bounds;
@@ -63,8 +61,7 @@ struct BoundsIterator {
     constexpr explicit BoundsIterator(Bounds<T, Dim> bounds, Vector<T, Dim> current)
         : bounds_(bounds)
         , current_(current)
-    {
-    }
+    {}
 
     constexpr BoundsIterator& operator++()
     {
@@ -85,25 +82,13 @@ struct BoundsIterator {
         return old;
     }
 
-    constexpr bool operator==(const BoundsIterator& other) const
-    {
-        return current_ == other.current_;
-    }
+    constexpr bool operator==(const BoundsIterator& other) const { return current_ == other.current_; }
 
-    constexpr bool operator!=(const BoundsIterator& other) const
-    {
-        return current_ != other.current_;
-    }
+    constexpr bool operator!=(const BoundsIterator& other) const { return current_ != other.current_; }
 
-    constexpr const Vector<T, Dim>& operator*() const
-    {
-        return current_;
-    }
+    constexpr const Vector<T, Dim>& operator*() const { return current_; }
 
-    constexpr const Vector<T, Dim>* operator->() const
-    {
-        return &current_;
-    }
+    constexpr const Vector<T, Dim>* operator->() const { return &current_; }
 
 private:
     Bounds<T, Dim> bounds_;
@@ -123,15 +108,13 @@ struct Bounds {
     /// <summary>Initializes high with the given value and low with zero.</summary>
     constexpr explicit Bounds(const Vector<T, Dim>& high)
         : high(high)
-    {
-    }
+    {}
 
     /// <summary>Initializes low and high with the given values.</summary>
     constexpr Bounds(const Vector<T, Dim>& low, const Vector<T, Dim>& high)
         : low(low)
         , high(high)
-    {
-    }
+    {}
 
     /// <summary>Provides simplified access for one-dimensional bounds.</summary>
     template <typename = std::enable_if_t<Dim == 1>>
@@ -162,10 +145,7 @@ struct Bounds {
     }
 
     /// <summary>Returns true, when high is bigger than or equal to low.</summary>
-    constexpr bool isNormalized() const
-    {
-        return low.allLessEqual(high);
-    }
+    constexpr bool isNormalized() const { return low.allLessEqual(high); }
 
     /// <summary>Returns bounds with any non-normalized components swapped.</summary>
     constexpr Bounds normalize() const
@@ -185,10 +165,7 @@ struct Bounds {
     }
 
     /// <summary>Returns the size of the bounds, which is equal to <c>high - low</c>.</summary>
-    constexpr Vector<T, Dim> size() const
-    {
-        return high - low;
-    }
+    constexpr Vector<T, Dim> size() const { return high - low; }
 
     /// <summary>Returns the center of the bounds, rounded down for integral types.</summary>
     constexpr Vector<T, Dim> center() const
@@ -227,13 +204,7 @@ struct Bounds {
     }
 
     /// <summary>Clamps the given bounds, resulting in an intersection of both bounds.</summary>
-    constexpr Bounds clamp(const Bounds& other) const
-    {
-        return {
-            low.max(other.low),
-            high.min(other.high)
-        };
-    }
+    constexpr Bounds clamp(const Bounds& other) const { return {low.max(other.low), high.min(other.high)}; }
 
     /// <summary>Clamps the given point into the calling bounds.</summary>
     /// <remarks>For integral types, high is clamped exclusive.</remarks>
@@ -254,31 +225,13 @@ struct Bounds {
     }
 
     /// <summary>Returns the bounds offset by the given amount.</summary>
-    constexpr Bounds offset(Vector<T, Dim> amount) const
-    {
-        return {
-            low + amount,
-            high + amount
-        };
-    }
+    constexpr Bounds offset(Vector<T, Dim> amount) const { return {low + amount, high + amount}; }
 
     /// <summary>Returns the bounds outset by the given amount.</summary>
-    constexpr Bounds outset(Vector<T, Dim> amount) const
-    {
-        return {
-            low - amount,
-            high + amount
-        };
-    }
+    constexpr Bounds outset(Vector<T, Dim> amount) const { return {low - amount, high + amount}; }
 
     /// <summary>Returns the bounds inset by the given amount.</summary>
-    constexpr Bounds inset(Vector<T, Dim> amount) const
-    {
-        return {
-            low + amount,
-            high - amount
-        };
-    }
+    constexpr Bounds inset(Vector<T, Dim> amount) const { return {low + amount, high - amount}; }
 
     /// <summary>Returns an enum-array, mapping corners to the actual positions of the corners.</summary>
     template <typename = std::enable_if_t<(Dim >= 1 && Dim <= 3)>>
@@ -303,40 +256,22 @@ struct Bounds {
     }
 
     /// <summary>Returns true, if high of the first bounds is less than low of the second bounds.</summary>
-    friend constexpr bool operator<(const Bounds& lhs, const Bounds& rhs)
-    {
-        return lhs.high.allLess(rhs.low);
-    }
+    friend constexpr bool operator<(const Bounds& lhs, const Bounds& rhs) { return lhs.high.allLess(rhs.low); }
 
     /// <summary>Returns true, if high of the first bounds is less than or equal to low of the second bounds.</summary>
-    friend constexpr bool operator<=(const Bounds& lhs, const Bounds& rhs)
-    {
-        return lhs.high.allLessEqual(rhs.low);
-    }
+    friend constexpr bool operator<=(const Bounds& lhs, const Bounds& rhs) { return lhs.high.allLessEqual(rhs.low); }
 
     /// <summary>Returns true, if low of the first bounds is greater than high of the second bounds.</summary>
-    friend constexpr bool operator>(const Bounds& lhs, const Bounds& rhs)
-    {
-        return lhs.low.allGreater(rhs.high);
-    }
+    friend constexpr bool operator>(const Bounds& lhs, const Bounds& rhs) { return lhs.low.allGreater(rhs.high); }
 
     /// <summary>Returns true, if low of the first bounds is greater than or equal to high of the second bounds.</summary>
-    friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs)
-    {
-        return lhs.low.allGreaterEqual(rhs.high);
-    }
+    friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs) { return lhs.low.allGreaterEqual(rhs.high); }
 
     /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
-    constexpr BoundsIterator<T, Dim> begin() const
-    {
-        return BoundsIterator<T, Dim>(*this, low);
-    }
+    constexpr BoundsIterator<T, Dim> begin() const { return BoundsIterator<T, Dim>(*this, low); }
 
     /// <summary>Returns a bounds-iterator, allowing for range-based iteration.</summary>
-    constexpr BoundsIterator<T, Dim> end() const
-    {
-        return ++BoundsIterator<T, Dim>(*this, high - 1);
-    }
+    constexpr BoundsIterator<T, Dim> end() const { return ++BoundsIterator<T, Dim>(*this, high - 1); }
 };
 
 template <std::size_t Dim>
@@ -374,4 +309,4 @@ using sbounds1 = sbounds<1>;
 using sbounds2 = sbounds<2>;
 using sbounds3 = sbounds<3>;
 
-}
+} // namespace dang::math

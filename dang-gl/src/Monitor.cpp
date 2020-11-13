@@ -1,28 +1,18 @@
 #include "pch.h"
+
 #include "Monitor.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 Monitor::Monitor(GLFWmonitor* monitor)
     : handle_(monitor)
-{
-}
+{}
 
-GLFWmonitor* Monitor::handle() const
-{
-    return handle_;
-}
+GLFWmonitor* Monitor::handle() const { return handle_; }
 
-Monitor::operator GLFWmonitor* () const
-{
-    return handle_;
-}
+Monitor::operator GLFWmonitor*() const { return handle_; }
 
-std::string Monitor::name() const
-{
-    return glfwGetMonitorName(handle_);
-}
+std::string Monitor::name() const { return glfwGetMonitorName(handle_); }
 
 dmath::ivec2 Monitor::physicalSize() const
 {
@@ -53,25 +43,13 @@ dmath::ibounds2 Monitor::workarea() const
     return result;
 }
 
-void Monitor::setGamma(float gamma) const
-{
-    glfwSetGamma(handle_, gamma);
-}
+void Monitor::setGamma(float gamma) const { glfwSetGamma(handle_, gamma); }
 
-void Monitor::setGammaRamp(const GammaRamp& gamma_ramp) const
-{
-    glfwSetGammaRamp(handle_, &gamma_ramp);
-}
+void Monitor::setGammaRamp(const GammaRamp& gamma_ramp) const { glfwSetGammaRamp(handle_, &gamma_ramp); }
 
-const GammaRamp& Monitor::gammaRamp() const
-{
-    return *glfwGetGammaRamp(handle_);
-}
+const GammaRamp& Monitor::gammaRamp() const { return *glfwGetGammaRamp(handle_); }
 
-const VideoMode& Monitor::videoMode() const
-{
-    return *glfwGetVideoMode(handle_);
-}
+const VideoMode& Monitor::videoMode() const { return *glfwGetVideoMode(handle_); }
 
 std::vector<VideoMode> Monitor::videoModes() const
 {
@@ -81,4 +59,4 @@ std::vector<VideoMode> Monitor::videoModes() const
     return std::vector<VideoMode>(first, first + count);
 }
 
-}
+} // namespace dang::gl

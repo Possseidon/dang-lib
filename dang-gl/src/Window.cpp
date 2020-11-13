@@ -1,11 +1,11 @@
 #include "pch.h"
+
 #include "Window.h"
 
 #include "FBO.h"
 #include "GLFW.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 GLFWwindow* WindowInfo::createWindow() const
 {
@@ -79,35 +79,17 @@ Window::Window(const WindowInfo& info)
     last_time_ = GLFW::Instance.timerValue();
 }
 
-Window::~Window()
-{
-    glfwDestroyWindow(handle_);
-}
+Window::~Window() { glfwDestroyWindow(handle_); }
 
-Window& Window::fromUserPointer(GLFWwindow* window)
-{
-    return *static_cast<Window*>(glfwGetWindowUserPointer(window));
-}
+Window& Window::fromUserPointer(GLFWwindow* window) { return *static_cast<Window*>(glfwGetWindowUserPointer(window)); }
 
-GLFWwindow* Window::handle() const
-{
-    return handle_;
-}
+GLFWwindow* Window::handle() const { return handle_; }
 
-const Context& Window::context() const
-{
-    return context_;
-}
+const Context& Window::context() const { return context_; }
 
-Context& Window::context()
-{
-    return context_;
-}
+Context& Window::context() { return context_; }
 
-const std::string& Window::title() const
-{
-    return title_;
-}
+const std::string& Window::title() const { return title_; }
 
 void Window::setTitle(const std::string& title)
 {
@@ -124,10 +106,7 @@ dmath::ivec2 Window::pos() const
     return result;
 }
 
-void Window::move(dmath::ivec2 new_pos)
-{
-    glfwSetWindowPos(handle_, new_pos.x(), new_pos.y());
-}
+void Window::move(dmath::ivec2 new_pos) { glfwSetWindowPos(handle_, new_pos.x(), new_pos.y()); }
 
 dmath::ivec2 Window::size() const
 {
@@ -136,10 +115,7 @@ dmath::ivec2 Window::size() const
     return result;
 }
 
-void Window::resize(dmath::ivec2 new_size)
-{
-    glfwSetWindowSize(handle_, new_size.x(), new_size.y());
-}
+void Window::resize(dmath::ivec2 new_size) { glfwSetWindowSize(handle_, new_size.x(), new_size.y()); }
 
 dmath::ivec2 Window::framebufferSize() const
 {
@@ -161,15 +137,9 @@ dmath::vec2 Window::contentScale() const
     return result;
 }
 
-bool Window::isFullscreen() const
-{
-    return glfwGetWindowMonitor(handle_) != nullptr;
-}
+bool Window::isFullscreen() const { return glfwGetWindowMonitor(handle_) != nullptr; }
 
-Monitor Window::fullscreenMonitor() const
-{
-    return glfwGetWindowMonitor(handle_);
-}
+Monitor Window::fullscreenMonitor() const { return glfwGetWindowMonitor(handle_); }
 
 void Window::makeFullscreen(std::optional<dmath::ivec2> size, std::optional<int> refresh_rate)
 {
@@ -184,7 +154,8 @@ void Window::makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size, s
         glfwSetWindowMonitor(handle_, monitor, 0, 0, size->x(), size->y(), refresh_rate.value_or(GLFW_DONT_CARE));
     else {
         const VideoMode& video_mode = monitor.videoMode();
-        glfwSetWindowMonitor(handle_, monitor, 0, 0, video_mode.width, video_mode.height, refresh_rate.value_or(GLFW_DONT_CARE));
+        glfwSetWindowMonitor(
+            handle_, monitor, 0, 0, video_mode.width, video_mode.height, refresh_rate.value_or(GLFW_DONT_CARE));
     }
 }
 
@@ -192,18 +163,13 @@ void Window::restoreFullscreen(std::optional<dmath::ivec2> pos, std::optional<dm
 {
     dmath::ivec2 actual_pos = pos.value_or(fullscreen_restore_pos_);
     dmath::ivec2 actual_size = size.value_or(fullscreen_restore_size_);
-    glfwSetWindowMonitor(handle_, nullptr, actual_pos.x(), actual_pos.y(), actual_size.x(), actual_pos.y(), GLFW_DONT_CARE);
+    glfwSetWindowMonitor(
+        handle_, nullptr, actual_pos.x(), actual_pos.y(), actual_size.x(), actual_pos.y(), GLFW_DONT_CARE);
 }
 
-bool Window::isResizable() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_RESIZABLE);
-}
+bool Window::isResizable() const { return glfwGetWindowAttrib(handle_, GLFW_RESIZABLE); }
 
-void Window::setResizable(bool resizable)
-{
-    glfwSetWindowAttrib(handle_, GLFW_RESIZABLE, resizable);
-}
+void Window::setResizable(bool resizable) { glfwSetWindowAttrib(handle_, GLFW_RESIZABLE, resizable); }
 
 std::optional<int> Window::minWidth() const
 {
@@ -229,11 +195,13 @@ std::optional<int> Window::maxHeight() const
     return value != GLFW_DONT_CARE ? std::optional(value) : std::nullopt;
 }
 
-void Window::setSizeLimits(std::optional<int> min_width, std::optional<int> min_height, std::optional<int> max_width, std::optional<int> max_height)
+void Window::setSizeLimits(std::optional<int> min_width,
+                           std::optional<int> min_height,
+                           std::optional<int> max_width,
+                           std::optional<int> max_height)
 {
-    size_limits_ = {
-        { min_width.value_or(GLFW_DONT_CARE), min_height.value_or(GLFW_DONT_CARE) },
-        { max_width.value_or(GLFW_DONT_CARE), max_height.value_or(GLFW_DONT_CARE) } };
+    size_limits_ = {{min_width.value_or(GLFW_DONT_CARE), min_height.value_or(GLFW_DONT_CARE)},
+                    {max_width.value_or(GLFW_DONT_CARE), max_height.value_or(GLFW_DONT_CARE)}};
     updateSizeLimits();
 }
 
@@ -251,10 +219,7 @@ void Window::setMaxSize(std::optional<int> max_width, std::optional<int> max_hei
     updateSizeLimits();
 }
 
-std::optional<dmath::ivec2> Window::aspectRatio() const
-{
-    return aspect_ratio_;
-}
+std::optional<dmath::ivec2> Window::aspectRatio() const { return aspect_ratio_; }
 
 void Window::setAspectRatio(std::optional<dmath::ivec2> aspect_ratio)
 {
@@ -265,130 +230,55 @@ void Window::setAspectRatio(std::optional<dmath::ivec2> aspect_ratio)
         glfwSetWindowAspectRatio(handle_, GLFW_DONT_CARE, GLFW_DONT_CARE);
 }
 
-void Window::freezeAspectRatio()
-{
-    setAspectRatio(framebufferSize());
-}
+void Window::freezeAspectRatio() { setAspectRatio(framebufferSize()); }
 
-float Window::opacity() const
-{
-    return glfwGetWindowOpacity(handle_);
-}
+float Window::opacity() const { return glfwGetWindowOpacity(handle_); }
 
-void Window::setOpacity(float new_opacity)
-{
-    glfwSetWindowOpacity(handle_, new_opacity);
-}
+void Window::setOpacity(float new_opacity) { glfwSetWindowOpacity(handle_, new_opacity); }
 
-bool Window::isIconified() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_ICONIFIED);
-}
+bool Window::isIconified() const { return glfwGetWindowAttrib(handle_, GLFW_ICONIFIED); }
 
-void Window::iconify()
-{
-    glfwIconifyWindow(handle_);
-}
+void Window::iconify() { glfwIconifyWindow(handle_); }
 
-bool Window::autoIconify() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_AUTO_ICONIFY);
-}
+bool Window::autoIconify() const { return glfwGetWindowAttrib(handle_, GLFW_AUTO_ICONIFY); }
 
-void Window::setAutoIconify(bool auto_iconify)
-{
-    glfwSetWindowAttrib(handle_, GLFW_AUTO_ICONIFY, auto_iconify);
-}
+void Window::setAutoIconify(bool auto_iconify) { glfwSetWindowAttrib(handle_, GLFW_AUTO_ICONIFY, auto_iconify); }
 
-bool Window::isMaximized() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_MAXIMIZED);
-}
+bool Window::isMaximized() const { return glfwGetWindowAttrib(handle_, GLFW_MAXIMIZED); }
 
-void Window::maximize()
-{
-    glfwMaximizeWindow(handle_);
-}
+void Window::maximize() { glfwMaximizeWindow(handle_); }
 
-void Window::restore()
-{
-    glfwRestoreWindow(handle_);
-}
+void Window::restore() { glfwRestoreWindow(handle_); }
 
-bool Window::isVisible() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_VISIBLE);
-}
+bool Window::isVisible() const { return glfwGetWindowAttrib(handle_, GLFW_VISIBLE); }
 
-void Window::hide()
-{
-    glfwHideWindow(handle_);
-}
+void Window::hide() { glfwHideWindow(handle_); }
 
-void Window::show()
-{
-    glfwShowWindow(handle_);
-}
+void Window::show() { glfwShowWindow(handle_); }
 
-bool Window::isFocused() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_FOCUSED);
-}
+bool Window::isFocused() const { return glfwGetWindowAttrib(handle_, GLFW_FOCUSED); }
 
-void Window::focus()
-{
-    glfwFocusWindow(handle_);
-}
+void Window::focus() { glfwFocusWindow(handle_); }
 
-bool Window::focusOnShow() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW);
-}
+bool Window::focusOnShow() const { return glfwGetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW); }
 
-void Window::setFocusOnShow(bool focus_on_show)
-{
-    glfwSetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW, focus_on_show);
-}
+void Window::setFocusOnShow(bool focus_on_show) { glfwSetWindowAttrib(handle_, GLFW_FOCUS_ON_SHOW, focus_on_show); }
 
-void Window::requestAttention()
-{
-    glfwRequestWindowAttention(handle_);
-}
+void Window::requestAttention() { glfwRequestWindowAttention(handle_); }
 
-bool Window::isHovered() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_HOVERED);
-}
+bool Window::isHovered() const { return glfwGetWindowAttrib(handle_, GLFW_HOVERED); }
 
-bool Window::isDecorated() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_DECORATED);
-}
+bool Window::isDecorated() const { return glfwGetWindowAttrib(handle_, GLFW_DECORATED); }
 
-void Window::setDecorated(bool decorated)
-{
-    glfwSetWindowAttrib(handle_, GLFW_DECORATED, decorated);
-}
+void Window::setDecorated(bool decorated) { glfwSetWindowAttrib(handle_, GLFW_DECORATED, decorated); }
 
-bool Window::isFloating() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_FLOATING);
-}
+bool Window::isFloating() const { return glfwGetWindowAttrib(handle_, GLFW_FLOATING); }
 
-void Window::setFloating(bool floating)
-{
-    glfwSetWindowAttrib(handle_, GLFW_FLOATING, floating);
-}
+void Window::setFloating(bool floating) { glfwSetWindowAttrib(handle_, GLFW_FLOATING, floating); }
 
-bool Window::transparentFramebuffer() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_TRANSPARENT_FRAMEBUFFER);
-}
+bool Window::transparentFramebuffer() const { return glfwGetWindowAttrib(handle_, GLFW_TRANSPARENT_FRAMEBUFFER); }
 
-ClientAPI Window::clientAPI() const
-{
-    return static_cast<ClientAPI>(glfwGetWindowAttrib(handle_, GLFW_CLIENT_API));
-}
+ClientAPI Window::clientAPI() const { return static_cast<ClientAPI>(glfwGetWindowAttrib(handle_, GLFW_CLIENT_API)); }
 
 ContextAPI Window::contextAPI() const
 {
@@ -397,21 +287,14 @@ ContextAPI Window::contextAPI() const
 
 GLVersionFull Window::glVersion() const
 {
-    return {
-        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MAJOR),
-        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MINOR),
-        glfwGetWindowAttrib(handle_, GLFW_CONTEXT_REVISION) };
+    return {glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MAJOR),
+            glfwGetWindowAttrib(handle_, GLFW_CONTEXT_VERSION_MINOR),
+            glfwGetWindowAttrib(handle_, GLFW_CONTEXT_REVISION)};
 }
 
-bool Window::forwardCompatible() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_OPENGL_FORWARD_COMPAT);
-}
+bool Window::forwardCompatible() const { return glfwGetWindowAttrib(handle_, GLFW_OPENGL_FORWARD_COMPAT); }
 
-bool Window::debugContext() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_OPENGL_DEBUG_CONTEXT);
-}
+bool Window::debugContext() const { return glfwGetWindowAttrib(handle_, GLFW_OPENGL_DEBUG_CONTEXT); }
 
 GLProfile Window::glProfile() const
 {
@@ -423,35 +306,20 @@ ContextReleaseBehavior Window::contextReleaseBehavior() const
     return static_cast<ContextReleaseBehavior>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_RELEASE_BEHAVIOR));
 }
 
-bool Window::contextNoError() const
-{
-    return glfwGetWindowAttrib(handle_, GLFW_CONTEXT_NO_ERROR);
-}
+bool Window::contextNoError() const { return glfwGetWindowAttrib(handle_, GLFW_CONTEXT_NO_ERROR); }
 
 ContextRobustness Window::contextRobustness() const
 {
     return static_cast<ContextRobustness>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_ROBUSTNESS));
 }
 
-BufferMask Window::clearMask() const
-{
-    return clear_mask_;
-}
+BufferMask Window::clearMask() const { return clear_mask_; }
 
-void Window::setClearMask(BufferMask mask)
-{
-    clear_mask_ = mask;
-}
+void Window::setClearMask(BufferMask mask) { clear_mask_ = mask; }
 
-bool Window::finishAfterSwap() const
-{
-    return finish_after_swap_;
-}
+bool Window::finishAfterSwap() const { return finish_after_swap_; }
 
-void Window::setFinishAfterSwap(bool finish_after_swap)
-{
-    finish_after_swap_ = finish_after_swap;
-}
+void Window::setFinishAfterSwap(bool finish_after_swap) { finish_after_swap_ = finish_after_swap; }
 
 void Window::adjustViewport()
 {
@@ -460,10 +328,7 @@ void Window::adjustViewport()
     context_.resize(framebuffer_size);
 }
 
-bool Window::autoAdjustViewport() const
-{
-    return auto_adjust_viewport_;
-}
+bool Window::autoAdjustViewport() const { return auto_adjust_viewport_; }
 
 void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
 {
@@ -472,20 +337,11 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
         adjustViewport();
 }
 
-const std::string& Window::textInput() const
-{
-    return text_input_;
-}
+const std::string& Window::textInput() const { return text_input_; }
 
-bool Window::isKeyDown(Key key) const
-{
-    return glfwGetKey(handle_, static_cast<int>(key));
-}
+bool Window::isKeyDown(Key key) const { return glfwGetKey(handle_, static_cast<int>(key)); }
 
-bool Window::isButtonDown(Button button) const
-{
-    return glfwGetMouseButton(handle_, static_cast<int>(button));
-}
+bool Window::isButtonDown(Button button) const { return glfwGetMouseButton(handle_, static_cast<int>(button)); }
 
 dmath::dvec2 Window::cursorPos() const
 {
@@ -494,70 +350,43 @@ dmath::dvec2 Window::cursorPos() const
     return result;
 }
 
-void Window::setCursorPos(dmath::dvec2 cursor_pos)
-{
-    glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y());
-}
+void Window::setCursorPos(dmath::dvec2 cursor_pos) { glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y()); }
 
-CursorMode Window::cursorMode() const
-{
-    return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR));
-}
+CursorMode Window::cursorMode() const { return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR)); }
 
 void Window::setCursorMode(CursorMode cursor_mode)
 {
     glfwSetInputMode(handle_, GLFW_CURSOR, static_cast<int>(cursor_mode));
 }
 
-bool Window::stickyKeys() const
-{
-    return glfwGetInputMode(handle_, GLFW_STICKY_KEYS);
-}
+bool Window::stickyKeys() const { return glfwGetInputMode(handle_, GLFW_STICKY_KEYS); }
 
-void Window::setStickyKeys(bool sticky_keys)
-{
-    glfwSetInputMode(handle_, GLFW_STICKY_KEYS, sticky_keys);
-}
+void Window::setStickyKeys(bool sticky_keys) { glfwSetInputMode(handle_, GLFW_STICKY_KEYS, sticky_keys); }
 
-bool Window::stickyButtons() const
-{
-    return glfwGetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS);
-}
+bool Window::stickyButtons() const { return glfwGetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS); }
 
 void Window::setStickyButtons(bool sticky_buttons)
 {
     glfwSetInputMode(handle_, GLFW_STICKY_MOUSE_BUTTONS, sticky_buttons);
 }
 
-bool Window::lockKeyModifiers() const
-{
-    return glfwGetInputMode(handle_, GLFW_LOCK_KEY_MODS);
-}
+bool Window::lockKeyModifiers() const { return glfwGetInputMode(handle_, GLFW_LOCK_KEY_MODS); }
 
 void Window::setLockKeyModifiers(bool lock_key_modifiers)
 {
     glfwSetInputMode(handle_, GLFW_LOCK_KEY_MODS, lock_key_modifiers);
 }
 
-bool Window::rawMouseMotion() const
-{
-    return glfwGetInputMode(handle_, GLFW_RAW_MOUSE_MOTION);
-}
+bool Window::rawMouseMotion() const { return glfwGetInputMode(handle_, GLFW_RAW_MOUSE_MOTION); }
 
 void Window::setRawMouseMotion(bool raw_mouse_motion)
 {
     glfwSetInputMode(handle_, GLFW_RAW_MOUSE_MOTION, raw_mouse_motion);
 }
 
-bool Window::supportsRawMouseMotion()
-{
-    return glfwRawMouseMotionSupported();
-}
+bool Window::supportsRawMouseMotion() { return glfwRawMouseMotionSupported(); }
 
-void Window::activate()
-{
-    GLFW::Instance.setActiveWindow(this);
-}
+void Window::activate() { GLFW::Instance.setActiveWindow(this); }
 
 void Window::update()
 {
@@ -597,20 +426,11 @@ void Window::run()
         step();
 }
 
-bool Window::shouldClose() const
-{
-    return glfwWindowShouldClose(handle_);
-}
+bool Window::shouldClose() const { return glfwWindowShouldClose(handle_); }
 
-float Window::deltaTime() const
-{
-    return delta_time_;
-}
+float Window::deltaTime() const { return delta_time_; }
 
-float Window::fps() const
-{
-    return fps_;
-}
+float Window::fps() const { return fps_; }
 
 void Window::setVSync(VSync vsync)
 {
@@ -672,7 +492,7 @@ void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double yp
     dmath::dvec2 window_size = static_cast<dmath::dvec2>(window.framebufferSize());
     dmath::dvec2 pos = (window_pos * 2) / window_size.y() - dmath::dvec2(window.aspect(), 1);
     pos.y() = -pos.y();
-    window.onCursorMove({ window, window_pos, static_cast<dmath::vec2>(pos) });
+    window.onCursorMove({window, window_pos, static_cast<dmath::vec2>(pos)});
 }
 
 void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[])
@@ -682,7 +502,7 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
         return;
     std::vector<fs::path> paths(path_count);
     std::transform(path_array, path_array + path_count, paths.begin(), fs::u8path<const char*, 0>);
-    window.onDropPaths({ window, paths });
+    window.onDropPaths({window, paths});
 }
 
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int, int)
@@ -696,19 +516,23 @@ void Window::framebufferSizeCallback(GLFWwindow* window_handle, int, int)
 void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onKey({ window, static_cast<KeyAction>(action), KeyData(static_cast<Key>(key), scancode), static_cast<ModifierKeys>(mods) });
+    window.onKey({window,
+                  static_cast<KeyAction>(action),
+                  KeyData(static_cast<Key>(key), scancode),
+                  static_cast<ModifierKeys>(mods)});
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onButton({ window, static_cast<ButtonAction>(action), static_cast<Button>(button), static_cast<ModifierKeys>(mods) });
+    window.onButton(
+        {window, static_cast<ButtonAction>(action), static_cast<Button>(button), static_cast<ModifierKeys>(mods)});
 }
 
 void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onScroll({ window, dmath::dvec2(xoffset, yoffset) });
+    window.onScroll({window, dmath::dvec2(xoffset, yoffset)});
 }
 
 void Window::windowCloseCallback(GLFWwindow* window_handle)
@@ -772,18 +596,21 @@ void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
     window.onResize(window);
 }
 
-void Window::debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param)
+void Window::debugMessageCallback(GLenum source,
+                                  GLenum type,
+                                  GLuint id,
+                                  GLenum severity,
+                                  GLsizei length,
+                                  const GLchar* message,
+                                  const void* user_param)
 {
     Window& window = *static_cast<Window*>(const_cast<void*>(user_param));
-    window.onGLDebugMessage(
-        {
-            window,
-            static_cast<GLDebugSource>(source),
-            static_cast<GLDebugType>(type),
-            id,
-            static_cast<GLDebugSeverity>(severity),
-            std::string(message, message + length)
-        });
+    window.onGLDebugMessage({window,
+                             static_cast<GLDebugSource>(source),
+                             static_cast<GLDebugType>(type),
+                             id,
+                             static_cast<GLDebugSeverity>(severity),
+                             std::string(message, message + length)});
 }
 
 void Window::updateDeltaTime()
@@ -799,9 +626,8 @@ void Window::updateDeltaTime()
 
 void Window::updateSizeLimits()
 {
-    glfwSetWindowSizeLimits(handle_,
-        size_limits_.low.x(), size_limits_.low.y(),
-        size_limits_.high.x(), size_limits_.high.y());
+    glfwSetWindowSizeLimits(
+        handle_, size_limits_.low.x(), size_limits_.low.y(), size_limits_.high.x(), size_limits_.high.y());
 }
 
-}
+} // namespace dang::gl

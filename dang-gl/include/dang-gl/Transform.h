@@ -4,8 +4,7 @@
 
 #include "MathTypes.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Thrown, when setting a transform parent introduced a cycle.</summary>
 class TransformCycleError : public std::runtime_error {
@@ -61,4 +60,4 @@ private:
     Event::Subscription parent_change_;
 };
 
-}
+} // namespace dang::gl

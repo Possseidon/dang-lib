@@ -6,8 +6,7 @@
 #include "Object.h"
 #include "ObjectType.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 // TODO: Move a lot of VBO functionality in here
 // TODO: Lock mapped buffers again
@@ -27,10 +26,7 @@ public:
     BufferBase& operator=(const BufferBase&) = delete;
 
     /// <summary>Binds the buffer to the correct target.</summary>
-    void bind() const
-    {
-        objectContext().bind(Target, handle());
-    }
+    void bind() const { objectContext().bind(Target, handle()); }
 
 protected:
     BufferBase() = default;
@@ -39,4 +35,4 @@ protected:
     BufferBase& operator=(BufferBase&&) = default;
 };
 
-}
+} // namespace dang::gl

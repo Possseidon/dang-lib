@@ -2,8 +2,7 @@
 
 #include "utils.h"
 
-namespace dang::math
-{
+namespace dang::math {
 
 /// <summary>A vector of the templated type and dimension, using std::array as base.</summary>
 template <typename T, std::size_t Dim>
@@ -11,8 +10,7 @@ struct Vector : std::array<T, Dim> {
     /// <summary>Initializes all values with default values.</summary>
     constexpr Vector()
         : std::array<T, Dim>()
-    {
-    }
+    {}
 
     /// <summary>Initializes all values with the given value.</summary>
     constexpr Vector(T value)
@@ -25,30 +23,26 @@ struct Vector : std::array<T, Dim> {
     /// <summary>Initializes x and y with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 2>>
     constexpr Vector(T x, T y)
-        : std::array<T, Dim>{ x, y }
-    {
-    }
+        : std::array<T, Dim>{x, y}
+    {}
 
     /// <summary>Initializes x, y and z with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 3>>
     constexpr Vector(T x, T y, T z)
-        : std::array<T, Dim>{ x, y, z }
-    {
-    }
+        : std::array<T, Dim>{x, y, z}
+    {}
 
     /// <summary>Initializes x, y, z and w with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
     constexpr Vector(T x, T y, T z, T w)
-        : std::array<T, Dim>{ x, y, z, w }
-    {
-    }
+        : std::array<T, Dim>{x, y, z, w}
+    {}
 
     /// <summary>Converts a three-dimensional into a four-dimensional vector with the given value for w.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
     constexpr Vector(Vector<T, 3> vector, T w)
-        : std::array<T, Dim>{ vector[0], vector[1], vector[2], w }
-    {
-    }
+        : std::array<T, Dim>{vector[0], vector[1], vector[2], w}
+    {}
 
     /// <summary>Allows explicit casting between vector of same size but different types.</summary>
     template <typename TFrom>
@@ -110,16 +104,10 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns a new vector, which points from the vector to the given vector.</summary>
-    constexpr Vector<T, Dim> vectorTo(const Vector<T, Dim>& other) const
-    {
-        return other - *this;
-    }
+    constexpr Vector<T, Dim> vectorTo(const Vector<T, Dim>& other) const { return other - *this; }
 
     /// <summary>Returns the distance to the given vector.</summary>
-    constexpr T distanceTo(const Vector<T, Dim>& other) const
-    {
-        return (other - *this).length();
-    }
+    constexpr T distanceTo(const Vector<T, Dim>& other) const { return (other - *this).length(); }
 
     /// <summary>Returns the cosine of the angle to the given vector.</summary>
     constexpr T cosAngleTo(const Vector<T, Dim>& other) const
@@ -128,28 +116,16 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the angle to the given vector in radians.</summary>
-    constexpr T angleRadTo(const Vector<T, Dim>& other) const
-    {
-        return std::acos(cosAngleTo(other));
-    }
+    constexpr T angleRadTo(const Vector<T, Dim>& other) const { return std::acos(cosAngleTo(other)); }
 
     /// <summary>Returns the angle to the given vector in degrees.</summary>
-    constexpr T angleTo(const Vector<T, Dim>& other) const
-    {
-        return radToDeg(angleRadTo(other));
-    }
+    constexpr T angleTo(const Vector<T, Dim>& other) const { return radToDeg(angleRadTo(other)); }
 
     /// <summary>Converts every component from radians into degrees.</summary>
-    constexpr Vector<T, Dim> radToDeg() const
-    {
-        return unaryOp(&dmath::radToDeg<T>);
-    }
+    constexpr Vector<T, Dim> radToDeg() const { return unaryOp(&dmath::radToDeg<T>); }
 
     /// <summary>Converts every component from degrees into radians.</summary>
-    constexpr Vector<T, Dim> degToRad() const
-    {
-        return unaryOp(&dmath::degToRad<T>);
-    }
+    constexpr Vector<T, Dim> degToRad() const { return unaryOp(&dmath::degToRad<T>); }
 
     /// <summary>Returns the vector with each component being positive.</summary>
     constexpr Vector<T, Dim> abs() const
@@ -184,22 +160,13 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Reflects the vector on the given plane normal.</summary>
-    constexpr Vector<T, Dim> reflect(const Vector<T, Dim>& normal) const
-    {
-        return *this - 2 * dot(normal) * normal;
-    }
+    constexpr Vector<T, Dim> reflect(const Vector<T, Dim>& normal) const { return *this - 2 * dot(normal) * normal; }
 
     /// <summary>Simply returns the vector.</summary>
-    constexpr Vector<T, Dim> operator+() const
-    {
-        return *this;
-    }
+    constexpr Vector<T, Dim> operator+() const { return *this; }
 
     /// <summary>Returns the vector with each component negated.</summary>
-    constexpr Vector<T, Dim> operator-() const
-    {
-        return unaryOp(std::negate<T>{});
-    }
+    constexpr Vector<T, Dim> operator-() const { return unaryOp(std::negate<T>{}); }
 
     /// <summary>Component-wise addition of two vectors.</summary>
     friend constexpr Vector<T, Dim> operator+(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
@@ -208,10 +175,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator+=(const Vector<T, Dim>& other)
-    {
-        return assignmentOp(other, std::plus<T>{});
-    }
+    constexpr Vector<T, Dim>& operator+=(const Vector<T, Dim>& other) { return assignmentOp(other, std::plus<T>{}); }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
     friend constexpr Vector<T, Dim> operator-(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
@@ -220,10 +184,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator-=(const Vector<T, Dim>& other)
-    {
-        return assignmentOp(other, std::minus<T>{});
-    }
+    constexpr Vector<T, Dim>& operator-=(const Vector<T, Dim>& other) { return assignmentOp(other, std::minus<T>{}); }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
     friend constexpr Vector<T, Dim> operator*(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
@@ -244,10 +205,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator/=(const Vector<T, Dim>& other)
-    {
-        return assignmentOp(other, std::divides<T>{});
-    }
+    constexpr Vector<T, Dim>& operator/=(const Vector<T, Dim>& other) { return assignmentOp(other, std::divides<T>{}); }
 
     /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
     friend constexpr bool operator==(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
@@ -262,112 +220,58 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
-    constexpr bool allEqualTo(const Vector<T, Dim>& other) const
-    {
-        return all(std::equal_to<T>{}, other);
-    }
+    constexpr bool allEqualTo(const Vector<T, Dim>& other) const { return all(std::equal_to<T>{}, other); }
 
     /// <summary>Returns true, if, between both vectors, any components are equal.</summary>
-    constexpr bool anyEqualTo(const Vector<T, Dim>& other) const
-    {
-        return any(std::equal_to<T>{}, other);
-    }
+    constexpr bool anyEqualTo(const Vector<T, Dim>& other) const { return any(std::equal_to<T>{}, other); }
 
     /// <summary>Returns true, if, between both vectors, no components are equal.</summary>
-    constexpr bool noneEqualTo(const Vector<T, Dim>& other) const
-    {
-        return none(std::equal_to<T>{}, other);
-    }
+    constexpr bool noneEqualTo(const Vector<T, Dim>& other) const { return none(std::equal_to<T>{}, other); }
 
     /// <summary>Returns true, if, between both vectors, all components differ.</summary>
-    constexpr bool allNotEqualTo(const Vector<T, Dim>& other) const
-    {
-        return all(std::not_equal_to<T>{}, other);
-    }
+    constexpr bool allNotEqualTo(const Vector<T, Dim>& other) const { return all(std::not_equal_to<T>{}, other); }
 
     /// <summary>Returns true, if, between both vectors, any components differ.</summary>
-    constexpr bool anyNotEqualTo(const Vector<T, Dim>& other) const
-    {
-        return any(std::not_equal_to<T>{}, other);
-    }
+    constexpr bool anyNotEqualTo(const Vector<T, Dim>& other) const { return any(std::not_equal_to<T>{}, other); }
 
     /// <summary>Returns true, if, between both vectors, no components differ.</summary>
-    constexpr bool noneNotEqualTo(const Vector<T, Dim>& other) const
-    {
-        return none(std::not_equal_to<T>{}, other);
-    }
+    constexpr bool noneNotEqualTo(const Vector<T, Dim>& other) const { return none(std::not_equal_to<T>{}, other); }
 
     /// <summary>Returns true, if all components are less than the components of the given vector.</summary>
-    constexpr bool allLess(const Vector<T, Dim>& other) const
-    {
-        return all(std::less<T>{}, other);
-    }
+    constexpr bool allLess(const Vector<T, Dim>& other) const { return all(std::less<T>{}, other); }
 
     /// <summary>Returns true, if any component is less than the components of the given vector.</summary>
-    constexpr bool anyLess(const Vector<T, Dim>& other) const
-    {
-        return any(std::less<T>{}, other);
-    }
+    constexpr bool anyLess(const Vector<T, Dim>& other) const { return any(std::less<T>{}, other); }
 
     /// <summary>Returns true, if no component is less than the components of the given vector.</summary>
-    constexpr bool noneLess(const Vector<T, Dim>& other) const
-    {
-        return none(std::less<T>{}, other);
-    }
+    constexpr bool noneLess(const Vector<T, Dim>& other) const { return none(std::less<T>{}, other); }
 
     /// <summary>Returns true, if all components are less than or equal to the components of the given vector.</summary>
-    constexpr bool allLessEqual(const Vector<T, Dim>& other) const
-    {
-        return all(std::less_equal<T>{}, other);
-    }
+    constexpr bool allLessEqual(const Vector<T, Dim>& other) const { return all(std::less_equal<T>{}, other); }
 
     /// <summary>Returns true, if any component is less than or equal to the components of the given vector.</summary>
-    constexpr bool anyLessEqual(const Vector<T, Dim>& other) const
-    {
-        return any(std::less_equal<T>{}, other);
-    }
+    constexpr bool anyLessEqual(const Vector<T, Dim>& other) const { return any(std::less_equal<T>{}, other); }
 
     /// <summary>Returns true, if no component is less than or equal to the components of the given vector.</summary>
-    constexpr bool noneLessEqual(const Vector<T, Dim>& other) const
-    {
-        return none(std::less_equal<T>{}, other);
-    }
+    constexpr bool noneLessEqual(const Vector<T, Dim>& other) const { return none(std::less_equal<T>{}, other); }
 
     /// <summary>Returns true, if all components are greater than the components of the given vector.</summary>
-    constexpr bool allGreater(const Vector<T, Dim>& other) const
-    {
-        return all(std::greater<T>{}, other);
-    }
+    constexpr bool allGreater(const Vector<T, Dim>& other) const { return all(std::greater<T>{}, other); }
 
     /// <summary>Returns true, if any component is greater than the components of the given vector.</summary>
-    constexpr bool anyGreater(const Vector<T, Dim>& other) const
-    {
-        return any(std::greater<T>{}, other);
-    }
+    constexpr bool anyGreater(const Vector<T, Dim>& other) const { return any(std::greater<T>{}, other); }
 
     /// <summary>Returns true, if no component is greater than the components of the given vector.</summary>
-    constexpr bool noneGreater(const Vector<T, Dim>& other) const
-    {
-        return none(std::greater<T>{}, other);
-    }
+    constexpr bool noneGreater(const Vector<T, Dim>& other) const { return none(std::greater<T>{}, other); }
 
     /// <summary>Returns true, if all components are greater than or equal to the components of the given vector.</summary>
-    constexpr bool allGreaterEqual(const Vector<T, Dim>& other) const
-    {
-        return all(std::greater_equal<T>{}, other);
-    }
+    constexpr bool allGreaterEqual(const Vector<T, Dim>& other) const { return all(std::greater_equal<T>{}, other); }
 
     /// <summary>Returns true, if any component is greater than or equal to the components of the given vector.</summary>
-    constexpr bool anyGreaterEqual(const Vector<T, Dim>& other) const
-    {
-        return any(std::greater_equal<T>{}, other);
-    }
+    constexpr bool anyGreaterEqual(const Vector<T, Dim>& other) const { return any(std::greater_equal<T>{}, other); }
 
     /// <summary>Returns true, if no component is greater than or equal to the components of the given vector.</summary>
-    constexpr bool noneGreaterEqual(const Vector<T, Dim>& other) const
-    {
-        return none(std::greater_equal<T>{}, other);
-    }
+    constexpr bool noneGreaterEqual(const Vector<T, Dim>& other) const { return none(std::greater_equal<T>{}, other); }
 
     /// <summary>Used for tuple-unpacking.</summary>
     template <std::size_t Index>
@@ -387,7 +291,7 @@ struct Vector : std::array<T, Dim> {
     template <std::size_t... Indices>
     constexpr Vector<T, sizeof...(Indices)> swizzle() const
     {
-        return { std::get<Indices>(*this)... };
+        return {std::get<Indices>(*this)...};
     }
 
     /// <summary>Sets a swizzle for the given components.</summary>
@@ -464,10 +368,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns a string representing the vector in the form [x, y, z].</summary>
-    std::string format() const
-    {
-        return (std::stringstream() << *this).str();
-    }
+    std::string format() const { return (std::stringstream() << *this).str(); }
 
     /// <summary>Appends a string representation of the vector in the form [x, y, z] to the stream.</summary>
     friend std::ostream& operator<<(std::ostream& stream, const Vector& vector)
@@ -526,7 +427,7 @@ struct Vector : std::array<T, Dim> {
     template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromAngleRad(T radians)
     {
-        return { std::cos(radians), std::sin(radians) };
+        return {std::cos(radians), std::sin(radians)};
     }
 
     /// <summary>Creates a normalized vector of the given angle in degrees.</summary>
@@ -541,7 +442,7 @@ struct Vector : std::array<T, Dim> {
     template <typename = std::enable_if_t<Dim == 2>>
     constexpr Vector<T, 2> cross() const
     {
-        return { -y(), x() };
+        return {-y(), x()};
     }
 
     /// <summary>Returns the two-dimensional cross-product with the given vector.</summary>
@@ -582,9 +483,9 @@ struct Vector : std::array<T, Dim> {
     template <typename = std::enable_if_t<Dim == 3>>
     constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
     {
-        return { (*this)[1] * other[2] - (*this)[2] * other[1],
-                 (*this)[2] * other[0] - (*this)[0] * other[2],
-                 (*this)[0] * other[1] - (*this)[1] * other[0] };
+        return {(*this)[1] * other[2] - (*this)[2] * other[1],
+                (*this)[2] * other[0] - (*this)[0] * other[2],
+                (*this)[0] * other[1] - (*this)[1] * other[0]};
     }
 
     // --- Vector<T, 4> ---
@@ -605,11 +506,17 @@ struct Vector : std::array<T, Dim> {
 
     // --- Swizzles ---
 
-#define DMATH_DEFINE_SWIZZLE(name, ...) \
-template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>> \
-constexpr Vector<T, sizeof(#name) - 1> name() const { return swizzle<__VA_ARGS__>(); } \
-template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>> \
-void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { setSwizzle<__VA_ARGS__>(vector); }
+#define DMATH_DEFINE_SWIZZLE(name, ...)                                                                                \
+    template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>>                                                   \
+    constexpr Vector<T, sizeof(#name) - 1> name() const                                                                \
+    {                                                                                                                  \
+        return swizzle<__VA_ARGS__>();                                                                                 \
+    }                                                                                                                  \
+    template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>>                                                   \
+    void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                                        \
+    {                                                                                                                  \
+        setSwizzle<__VA_ARGS__>(vector);                                                                               \
+    }
 
     DMATH_DEFINE_SWIZZLE(xy, 0, 1);
     DMATH_DEFINE_SWIZZLE(xz, 0, 2);
@@ -669,7 +576,6 @@ void set_ ## name(const Vector<T, sizeof(#name) - 1>& vector) { setSwizzle<__VA_
     DMATH_DEFINE_SWIZZLE(wxzy, 3, 0, 2, 1);
 
 #undef DMATH_DEFINE_SWIZZLE
-
 };
 
 template <std::size_t Dim>
@@ -730,4 +636,4 @@ struct std::tuple_element<Index, Vector<T, Dim>> {
     using type = T;
 };
 
-}
+} // namespace dang::math

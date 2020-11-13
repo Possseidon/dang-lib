@@ -1,11 +1,11 @@
 #include "pch.h"
+
 #include "GLFW.h"
 
 #include "Context.h"
 #include "Window.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 GLFW GLFW::Instance;
 
@@ -22,25 +22,13 @@ void GLFW::setActiveWindow(Window* window)
         initializeGlad();
 }
 
-double GLFW::time() const
-{
-    return glfwGetTime();
-}
+double GLFW::time() const { return glfwGetTime(); }
 
-void GLFW::setTime(double new_time) const
-{
-    glfwSetTime(new_time);
-}
+void GLFW::setTime(double new_time) const { glfwSetTime(new_time); }
 
-uint64_t GLFW::timerValue() const
-{
-    return glfwGetTimerValue();
-}
+uint64_t GLFW::timerValue() const { return glfwGetTimerValue(); }
 
-uint64_t GLFW::timerFrequency() const
-{
-    return glfwGetTimerFrequency();
-}
+uint64_t GLFW::timerFrequency() const { return glfwGetTimerFrequency(); }
 
 std::string GLFW::clipboardOrThrow() const
 {
@@ -50,10 +38,7 @@ std::string GLFW::clipboardOrThrow() const
     return content ? content : std::string();
 }
 
-std::string GLFW::clipboardOrEmpty() const
-{
-    return clipboard().value_or(std::string());
-}
+std::string GLFW::clipboardOrEmpty() const { return clipboard().value_or(std::string()); }
 
 std::optional<std::string> GLFW::clipboard() const
 {
@@ -65,25 +50,13 @@ std::optional<std::string> GLFW::clipboard() const
     }
 }
 
-void GLFW::setClipboard(const std::string& content)
-{
-    glfwSetClipboardString(nullptr, content.c_str());
-}
+void GLFW::setClipboard(const std::string& content) { glfwSetClipboardString(nullptr, content.c_str()); }
 
-Monitor GLFW::primaryMonitor() const
-{
-    return primary_monitor_;
-}
+Monitor GLFW::primaryMonitor() const { return primary_monitor_; }
 
-const std::vector<Monitor>& GLFW::monitors() const
-{
-    return monitors_;
-}
+const std::vector<Monitor>& GLFW::monitors() const { return monitors_; }
 
-bool GLFW::hasActiveWindow()
-{
-    return active_window_ != nullptr;
-}
+bool GLFW::hasActiveWindow() { return active_window_ != nullptr; }
 
 Window& GLFW::activeWindow()
 {
@@ -101,10 +74,7 @@ GLFW::GLFW()
     initializeMonitors();
 }
 
-GLFW::~GLFW()
-{
-    glfwTerminate();
-}
+GLFW::~GLFW() { glfwTerminate(); }
 
 void GLFW::initializeGlad()
 {
@@ -167,4 +137,4 @@ void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
     }
 }
 
-}
+} // namespace dang::gl

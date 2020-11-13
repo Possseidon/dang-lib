@@ -5,8 +5,7 @@
 #include "bounds.h"
 #include "vector.h"
 
-namespace dang::math
-{
+namespace dang::math {
 
 /// <summary>A generic, column-major matrix of any dimensions.</summary>
 template <typename T, std::size_t Cols, std::size_t Rows = Cols>
@@ -14,27 +13,34 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     using Base = std::array<Vector<T, Rows>, Cols>;
 
     /// <summary>Initializes the matrix with zero.</summary>
-    constexpr Matrix() : Base() {}
+    constexpr Matrix()
+        : Base()
+    {}
 
     /// <summary>Initializes the matrix from a std::array of columns.</summary>
-    constexpr Matrix(const Base& columns) : Base(columns) {}
+    constexpr Matrix(const Base& columns)
+        : Base(columns)
+    {}
 
     /// <summary>Initializes the whole matrix with the same, given value.</summary>
-    constexpr Matrix(T value) : Base()
+    constexpr Matrix(T value)
+        : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = value;
     }
 
     /// <summary>Initializes the matrix from a C-style array of columns.</summary>
-    constexpr Matrix(const Vector<T, Rows>(&columns)[Cols]) : Base()
+    constexpr Matrix(const Vector<T, Rows> (&columns)[Cols])
+        : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
             (*this)[i] = columns[i];
     }
 
     /// <summary>Initializes a single-column matrix with the given values.</summary>
-    constexpr Matrix(Vector<T, Rows> col) : Base({ col })
+    constexpr Matrix(Vector<T, Rows> col)
+        : Base({col})
     {
         static_assert(Cols == 1, "only mat1xN can be constructed from vector");
     }
@@ -84,44 +90,29 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Returns a reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr T& operator[](const dmath::svec2& pos)
-    {
-        return (*this)(pos.x(), pos.y());
-    }
+    constexpr T& operator[](const dmath::svec2& pos) { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a const reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr const T& operator[](const dmath::svec2& pos) const
-    {
-        return (*this)(pos.x(), pos.y());
-    }
+    constexpr const T& operator[](const dmath::svec2& pos) const { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a reference to the value at the given column/row.</summary>
-    constexpr T& operator()(std::size_t col, std::size_t row)
-    {
-        return (*this)[col][row];
-    }
+    constexpr T& operator()(std::size_t col, std::size_t row) { return (*this)[col][row]; }
 
     /// <summary>Returns a const reference to the value at the given column/row.</summary>
-    constexpr const T& operator()(std::size_t col, std::size_t row) const
-    {
-        return (*this)[col][row];
-    }
+    constexpr const T& operator()(std::size_t col, std::size_t row) const { return (*this)[col][row]; }
 
     /// <summary>Returns the transposed matrix.</summary>
     constexpr Matrix<T, Rows, Cols> transpose() const
     {
         Matrix<T, Rows, Cols> result;
-        for (const auto& pos : dmath::sbounds2{ {Cols, Rows} })
+        for (const auto& pos : dmath::sbounds2{{Cols, Rows}})
             result[pos.yx()] = (*this)[pos];
         return result;
     }
 
     /// <summary>Returns the minor at the given column/row.</summary>
     /// <remarks>A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    constexpr Matrix<T, Cols - 1, Rows - 1> minor(std::size_t col, std::size_t row) const
-    {
-        return minor({ col, row });
-    }
+    constexpr Matrix<T, Cols - 1, Rows - 1> minor(std::size_t col, std::size_t row) const { return minor({col, row}); }
 
     /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
     /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
@@ -149,7 +140,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     constexpr T cofactor(std::size_t col, std::size_t row) const
     {
         static_assert(std::is_signed_v<T>, "mat::cofactor requires a signed value");
-        return cofactor({ col, row });
+        return cofactor({col, row});
     }
 
     /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
@@ -166,7 +157,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     {
         static_assert(std::is_signed_v<T>, "mat::cofactorMatrix requires a signed value");
         Matrix<T, Cols, Rows> result;
-        for (const auto& pos : dmath::sbounds2{ {Cols, Rows} })
+        for (const auto& pos : dmath::sbounds2{{Cols, Rows}})
             result[pos] = cofactor(pos);
         return result;
     }
@@ -240,18 +231,12 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             return *this;
         }
         else if constexpr (Dim == 2) {
-            return
-                (*this)(0, 0) * (*this)(1, 1) -
-                (*this)(0, 1) * (*this)(1, 0);
+            return (*this)(0, 0) * (*this)(1, 1) - (*this)(0, 1) * (*this)(1, 0);
         }
         else if constexpr (Dim == 3) {
-            return
-                (*this)(0, 0) * (*this)(1, 1) * (*this)(2, 2) +
-                (*this)(0, 1) * (*this)(1, 2) * (*this)(2, 0) +
-                (*this)(0, 2) * (*this)(1, 0) * (*this)(2, 1) -
-                (*this)(2, 0) * (*this)(1, 1) * (*this)(0, 2) -
-                (*this)(2, 1) * (*this)(1, 2) * (*this)(0, 0) -
-                (*this)(2, 2) * (*this)(1, 0) * (*this)(0, 1);
+            return (*this)(0, 0) * (*this)(1, 1) * (*this)(2, 2) + (*this)(0, 1) * (*this)(1, 2) * (*this)(2, 0) +
+                   (*this)(0, 2) * (*this)(1, 0) * (*this)(2, 1) - (*this)(2, 0) * (*this)(1, 1) * (*this)(0, 2) -
+                   (*this)(2, 1) * (*this)(1, 2) * (*this)(0, 0) - (*this)(2, 2) * (*this)(1, 0) * (*this)(0, 1);
         }
         else {
             T result = T();
@@ -263,10 +248,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns true, if the matrix is solvable, when seen as a linear equation.</summary>
     /// <remarks>Simply returns true, if the determinant is not zero.</remarks>
-    constexpr bool solvable() const
-    {
-        return determinant() != T();
-    }
+    constexpr bool solvable() const { return determinant() != T(); }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
     /// <remarks>
@@ -537,10 +519,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Returns the matrix itself.</summary>
-    constexpr Matrix<T, Cols, Rows> operator+() const
-    {
-        return *this;
-    }
+    constexpr Matrix<T, Cols, Rows> operator+() const { return *this; }
 
     /// <summary>Returns a component-wise negation of the matrix.</summary>
     constexpr Matrix<T, Cols, Rows> operator-() const
@@ -548,11 +527,16 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return unary([](Vector<T, Rows> a) { return -a; });
     }
 
-#define DMATH_MATRIX_OPERATION(op) \
-    friend constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return lhs op ## = rhs; } \
-    friend constexpr Matrix<T, Cols, Rows>& operator op ## =(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op ## = b; }); }
+#define DMATH_MATRIX_OPERATION(op)                                                                                     \
+    friend constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs)    \
+    {                                                                                                                  \
+        return lhs op## = rhs;                                                                                         \
+    }                                                                                                                  \
+    friend constexpr Matrix<T, Cols, Rows>& operator op##=(Matrix<T, Cols, Rows>& lhs,                                 \
+                                                           const Matrix<T, Cols, Rows>& rhs)                           \
+    {                                                                                                                  \
+        return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op## = b; });                        \
+    }
 
     /// <summary>Performs component-wise addition of two matrices.</summary>
     DMATH_MATRIX_OPERATION(+);
@@ -563,10 +547,11 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
     template <std::size_t OtherCols>
-    friend constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs,
+                                                          const Matrix<T, OtherCols, Cols>& rhs)
     {
         Matrix<T, OtherCols, Rows> result;
-        for (const auto& pos : dmath::sbounds2{ { OtherCols, Rows } })
+        for (const auto& pos : dmath::sbounds2{{OtherCols, Rows}})
             for (std::size_t i = 0; i < Cols; i++)
                 result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
         return result;
@@ -574,7 +559,8 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
     template <std::size_t OtherCols>
-    friend constexpr std::optional<Matrix<T, Cols, Rows>> operator/(Matrix<T, Cols, Rows> lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend constexpr std::optional<Matrix<T, Cols, Rows>> operator/(Matrix<T, Cols, Rows> lhs,
+                                                                    const Matrix<T, OtherCols, Cols>& rhs)
     {
         if (auto inv = rhs.inverse())
             return lhs * *inv;
@@ -631,33 +617,38 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
         return matrix.transpose() * vector;
     }
 
-#define DMATH_MATRIX_COMPARE(merge, op) \
-    friend constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs) \
-    { return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; }); }
+#define DMATH_MATRIX_COMPARE(merge, op)                                                                                \
+    friend constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs)              \
+    {                                                                                                                  \
+        return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; });                            \
+    }
 
     /// <summary>Returns true, if all elements are identical.</summary>
-    DMATH_MATRIX_COMPARE(all, == );
+    DMATH_MATRIX_COMPARE(all, ==);
     /// <summary>Returns true, if any elements differ.</summary>
-    DMATH_MATRIX_COMPARE(any, != );
+    DMATH_MATRIX_COMPARE(any, !=);
     /// <summary>Returns true, if all elements of lhs are smaller than rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, < );
+    DMATH_MATRIX_COMPARE(all, <);
     /// <summary>Returns true, if all elements of lhs are smaller than or equal to rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, <= );
+    DMATH_MATRIX_COMPARE(all, <=);
     /// <summary>Returns true, if all elements of lhs are greater than rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, > );
+    DMATH_MATRIX_COMPARE(all, >);
     /// <summary>Returns true, if all elements of lhs are greater than equal to rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, >= );
+    DMATH_MATRIX_COMPARE(all, >=);
 
 #undef DMATH_MATRIX_COMPARE
 
     using Base::begin;
     using Base::end;
+
     using Base::cbegin;
     using Base::cend;
 
 private:
     template <typename Op>
-    static constexpr Matrix<T, Cols, Rows>& assignment(Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs, const Op& op)
+    static constexpr Matrix<T, Cols, Rows>& assignment(Matrix<T, Cols, Rows>& lhs,
+                                                       const Matrix<T, Cols, Rows>& rhs,
+                                                       const Op& op)
     {
         for (std::size_t i = 0; i < Cols; i++)
             op(lhs[i], rhs[i]);
@@ -701,29 +692,29 @@ private:
     }
 };
 
-#define DMATH_MATRIX_DEFINE(name, type) \
-template <std::size_t Cols, std::size_t Rows = Cols> \
-using name = dang::math::Matrix<type, Cols, Rows>; \
-using name ## 1x1 = name<1, 1>; \
-using name ## 1x2 = name<1, 2>; \
-using name ## 1x3 = name<1, 3>; \
-using name ## 1x4 = name<1, 4>; \
-using name ## 2x1 = name<2, 1>; \
-using name ## 2x2 = name<2, 2>; \
-using name ## 2x3 = name<2, 3>; \
-using name ## 2x4 = name<2, 4>; \
-using name ## 3x1 = name<3, 1>; \
-using name ## 3x2 = name<3, 2>; \
-using name ## 3x3 = name<3, 3>; \
-using name ## 3x4 = name<3, 4>; \
-using name ## 4x1 = name<4, 1>; \
-using name ## 4x2 = name<4, 2>; \
-using name ## 4x3 = name<4, 3>; \
-using name ## 4x4 = name<4, 4>; \
-using name ## 1 = name ## 1x1; \
-using name ## 2 = name ## 2x2; \
-using name ## 3 = name ## 3x3; \
-using name ## 4 = name ## 4x4;
+#define DMATH_MATRIX_DEFINE(name, type)                                                                                \
+    template <std::size_t Cols, std::size_t Rows = Cols>                                                               \
+    using name = dang::math::Matrix<type, Cols, Rows>;                                                                 \
+    using name##1x1 = name<1, 1>;                                                                                      \
+    using name##1x2 = name<1, 2>;                                                                                      \
+    using name##1x3 = name<1, 3>;                                                                                      \
+    using name##1x4 = name<1, 4>;                                                                                      \
+    using name##2x1 = name<2, 1>;                                                                                      \
+    using name##2x2 = name<2, 2>;                                                                                      \
+    using name##2x3 = name<2, 3>;                                                                                      \
+    using name##2x4 = name<2, 4>;                                                                                      \
+    using name##3x1 = name<3, 1>;                                                                                      \
+    using name##3x2 = name<3, 2>;                                                                                      \
+    using name##3x3 = name<3, 3>;                                                                                      \
+    using name##3x4 = name<3, 4>;                                                                                      \
+    using name##4x1 = name<4, 1>;                                                                                      \
+    using name##4x2 = name<4, 2>;                                                                                      \
+    using name##4x3 = name<4, 3>;                                                                                      \
+    using name##4x4 = name<4, 4>;                                                                                      \
+    using name##1 = name##1x1;                                                                                         \
+    using name##2 = name##2x2;                                                                                         \
+    using name##3 = name##3x3;                                                                                         \
+    using name##4 = name##4x4;
 
 DMATH_MATRIX_DEFINE(mat, float)
 DMATH_MATRIX_DEFINE(dmat, double)
@@ -731,4 +722,4 @@ DMATH_MATRIX_DEFINE(imat, int)
 DMATH_MATRIX_DEFINE(umat, unsigned)
 DMATH_MATRIX_DEFINE(smat, std::size_t)
 
-}
+} // namespace dang::math

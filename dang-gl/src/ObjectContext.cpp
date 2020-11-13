@@ -1,17 +1,13 @@
 #include "pch.h"
+
 #include "ObjectContext.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 ObjectContextBase::ObjectContextBase(Context& context)
     : context_(context)
-{
-}
+{}
 
-Context& ObjectContextBase::context() const
-{
-    return context_;
-}
+Context& ObjectContextBase::context() const { return context_; }
 
-}
+} // namespace dang::gl

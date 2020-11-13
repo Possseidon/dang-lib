@@ -2,82 +2,34 @@
 
 #include "utils.h"
 
-namespace dang::math
-{
+namespace dang::math {
 
 /// <summary>Represents the single x-axis of a one-dimensional system or an optional None value.</summary>
-enum class Axis1 : char {
-    None = -1,
-    X,
-    COUNT
-};
+enum class Axis1 : char { None = -1, X, COUNT };
 
 /// <summary>Represents a set of the single x-axis of a one-dimensional system.</summary>
-enum class Axes1 : unsigned char {
-    NONE = 0,
-    X = 1 << 0,
-    ALL = ~(~0 << 1)
-};
+enum class Axes1 : unsigned char { NONE = 0, X = 1 << 0, ALL = ~(~0 << 1) };
 
 /// <summary>Represents one of the two axes in a two-dimensional system or an optional None value.</summary>
-enum class Axis2 : char {
-    None = -1,
-    X,
-    Y,
-    COUNT
-};
+enum class Axis2 : char { None = -1, X, Y, COUNT };
 
 /// <summary>Represents a set of the two axes in a two-dimensional system.</summary>
-enum class Axes2 : unsigned char {
-    NONE = 0,
-    X = 1 << 0,
-    Y = 1 << 1,
-    ALL = ~(~0 << 2)
-};
+enum class Axes2 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, ALL = ~(~0 << 2) };
 
 /// <summary>Represents one of the three axes in a three-dimensional system or an optional None value.</summary>
-enum class Axis3 : char {
-    None = -1,
-    X,
-    Y,
-    Z,
-    COUNT
-};
+enum class Axis3 : char { None = -1, X, Y, Z, COUNT };
 
 /// <summary>Represents a set of the three axes in a three-dimensional system.</summary>
-enum class Axes3 : unsigned char {
-    NONE = 0,
-    X = 1 << 0,
-    Y = 1 << 1,
-    Z = 1 << 2,
-    ALL = ~(~0 << 3)
-};
+enum class Axes3 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, Z = 1 << 2, ALL = ~(~0 << 3) };
 
 /// <summary>Represents one of the two corners in a one-dimensional system or an optional None value.</summary>
-enum class Corner1 : char {
-    None = -1,
-    Left,
-    Right,
-    COUNT
-};
+enum class Corner1 : char { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents a set of the two corners in a one-dimensional system.</summary>
-enum class Corners1 : unsigned char {
-    NONE = 0,
-    Left = 1 << 0,
-    Right = 1 << 1,
-    ALL = ~(~0 << 2)
-};
+enum class Corners1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0 << 2) };
 
 /// <summary>Represents one of the four corners in a two-dimensional system or an optional None value.</summary>
-enum class Corner2 : char {
-    None = -1,
-    LeftBottom,
-    RightBottom,
-    LeftTop,
-    RightTop,
-    COUNT
-};
+enum class Corner2 : char { None = -1, LeftBottom, RightBottom, LeftTop, RightTop, COUNT };
 
 /// <summary>Represents a set of the four corners in a two-dimensional system.</summary>
 enum class Corners2 : unsigned char {
@@ -118,14 +70,7 @@ enum class Corners3 : unsigned char {
 };
 
 /// <summary>Represents one of the four edges in a two-dimensional system or an optional None value.</summary>
-enum class Edge2 : char {
-    None = -1,
-    Left,
-    Right,
-    Bottom,
-    Top,
-    COUNT
-};
+enum class Edge2 : char { None = -1, Left, Right, Bottom, Top, COUNT };
 
 /// <summary>Represents a set of the four edges in a two-dimensional system.</summary>
 enum class Edges2 : unsigned char {
@@ -174,30 +119,13 @@ enum class Edges3 : unsigned short {
 };
 
 /// <summary>Represents one of the two facings in a one-dimensional system or an optional None value.</summary>
-enum class Facing1 : char {
-    None = -1,
-    Left,
-    Right,
-    COUNT
-};
+enum class Facing1 : char { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents a set of the two facings in a one-dimensional system.</summary>
-enum class Facings1 : unsigned char {
-    NONE = 0,
-    Left = 1 << 0,
-    Right = 1 << 1,
-    ALL = ~(~0 << 2)
-};
+enum class Facings1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0 << 2) };
 
 /// <summary>Represents one of the four facings in a two-dimensional system or an optional None value.</summary>
-enum class Facing2 : char {
-    None = -1,
-    Left,
-    Right,
-    Up,
-    Down,
-    COUNT
-};
+enum class Facing2 : char { None = -1, Left, Right, Up, Down, COUNT };
 
 /// <summary>Represents a set of the four facings in a two-dimensional system.</summary>
 enum class Facings2 : unsigned char {
@@ -210,16 +138,7 @@ enum class Facings2 : unsigned char {
 };
 
 /// <summary>Represents one of the six facings in a three-dimensional system or an optional None value.</summary>
-enum class Facing3 : char {
-    None = -1,
-    Left,
-    Right,
-    Up,
-    Down,
-    Back,
-    Front,
-    COUNT
-};
+enum class Facing3 : char { None = -1, Left, Right, Up, Down, Back, Front, COUNT };
 
 /// <summary>Represents a set of the six facings in a three-dimensional system.</summary>
 enum class Facings3 : unsigned char {
@@ -233,8 +152,7 @@ enum class Facings3 : unsigned char {
     ALL = ~(~0 << 6)
 };
 
-namespace detail
-{
+namespace detail {
 
 template <std::size_t Dim>
 struct AxisSelector {
@@ -326,7 +244,7 @@ struct FacingSelector<3> {
     using SetType = Facings3;
 };
 
-}
+} // namespace detail
 
 template <std::size_t Dim>
 using Axis = typename detail::AxisSelector<Dim>::Type;
@@ -352,4 +270,4 @@ using Facing = typename detail::FacingSelector<Dim>::Type;
 template <std::size_t Dim>
 using Facings = typename detail::FacingSelector<Dim>::SetType;
 
-}
+} // namespace dang::math

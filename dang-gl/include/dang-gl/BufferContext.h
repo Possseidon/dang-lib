@@ -5,8 +5,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Specializes the context class for buffer objects.</summary>
 template <>
@@ -39,4 +38,4 @@ private:
     dutils::EnumArray<BufferTarget, Handle> bound_buffers_{};
 };
 
-}
+} // namespace dang::gl

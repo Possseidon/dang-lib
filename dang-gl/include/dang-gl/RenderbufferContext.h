@@ -5,8 +5,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Specializes the context class for renderbuffer objects.</summary>
 template <>
@@ -39,4 +38,4 @@ private:
     Handle bound_renderbuffer_;
 };
 
-}
+} // namespace dang::gl

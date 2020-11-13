@@ -4,8 +4,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 class Context;
 
@@ -61,4 +60,4 @@ class ObjectContext : public ObjectContextBase {
     using ObjectContextBase::ObjectContextBase;
 };
 
-}
+} // namespace dang::gl

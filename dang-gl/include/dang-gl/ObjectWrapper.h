@@ -3,8 +3,7 @@
 #include "ObjectHandle.h"
 #include "ObjectType.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Wraps OpenGL object creation, destruction and binding with a consistent interface.</summary>
 template <ObjectType Type>
@@ -17,10 +16,10 @@ struct ObjectWrapper {
         if constexpr (detail::canExecute(detail::glGenObjects<Type>)) {
             GLuint raw_handle{};
             detail::glGenObjects<Type>(1, &raw_handle);
-            return Handle{ raw_handle };
+            return Handle{raw_handle};
         }
         else if constexpr (detail::canExecute(detail::glCreateObject<Type>)) {
-            return Handle{ detail::glCreateObject<Type>() };
+            return Handle{detail::glCreateObject<Type>()};
         }
         else {
             static_assert(false, "No function to create this GL-Object type.");
@@ -50,10 +49,7 @@ struct ObjectWrapper {
     }
 
     /// <summary>Binds the given OpenGL object.</summary>
-    static void bind(Handle handle)
-    {
-        detail::glBindObject<Type>(handle.unwrap());
-    }
+    static void bind(Handle handle) { detail::glBindObject<Type>(handle.unwrap()); }
 };
 
-}
+} // namespace dang::gl

@@ -1,14 +1,9 @@
 #pragma once
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Whether a mouse button has been pressed or released.</summary>
-enum class ButtonAction : int {
-    Release = GLFW_RELEASE,
-    Press = GLFW_PRESS,
-    COUNT
-};
+enum class ButtonAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, COUNT };
 
 /// <summary>A list of possible mouse buttons.</summary>
 enum class Button : int {
@@ -29,12 +24,7 @@ enum class Button : int {
 };
 
 /// <summary>Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
-enum class KeyAction : int {
-    Release = GLFW_RELEASE,
-    Press = GLFW_PRESS,
-    Repeat = GLFW_REPEAT,
-    COUNT
-};
+enum class KeyAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, Repeat = GLFW_REPEAT, COUNT };
 
 /// <summary>A list of all possible keyboard keys.</summary>
 enum class Key : int {
@@ -207,4 +197,4 @@ enum class ModifierKeys {
     ALL = ~(~0 << 6)
 };
 
-}
+} // namespace dang::gl

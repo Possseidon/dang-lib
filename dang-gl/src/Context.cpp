@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "Context.h"
 
 // Context specializations:
@@ -9,8 +10,7 @@
 #include "TextureContext.h"
 #include "VertexArrayContext.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 Context::Context(svec2 size)
     : state_(size)
@@ -25,4 +25,4 @@ void Context::createContexts(dutils::EnumSequence<ObjectType, Types...>)
     ((object_contexts_[Types] = std::make_unique<ObjectContext<Types>>(*this)), ...);
 }
 
-}
+} // namespace dang::gl

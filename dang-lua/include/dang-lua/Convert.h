@@ -2,8 +2,7 @@
 
 #include "utils.h"
 
-namespace dang::lua
-{
+namespace dang::lua {
 
 /// <summary>Serves as a container for typenames that represent subclasses.</summary>
 template <typename... TBases>
@@ -26,15 +25,9 @@ const char* ClassNameRef = typeid(T*).name();
 
 /// <summary>Returns empty index and metatable.</summary>
 struct DefaultClassInfo {
-    constexpr std::array<luaL_Reg, 0> table()
-    {
-        return {};
-    }
+    constexpr std::array<luaL_Reg, 0> table() { return {}; }
 
-    constexpr std::array<luaL_Reg, 0> metatable()
-    {
-        return {};
-    }
+    constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
 };
 
 /// <summary>Can be specialized to provide an index and metatable of a wrapped class.</summary>
@@ -54,8 +47,7 @@ const auto ClassMetatable = ClassInfo<T>().metatable();
 template <typename T>
 constexpr const char* EnumValues[1]{};
 
-namespace detail
-{
+namespace detail {
 
 /// <summary>Somewhat similar to luaL_setfuncs, except it uses any kind of container.</summary>
 template <typename T>
@@ -67,7 +59,7 @@ void setfuncs(lua_State* state, const T& funcs)
     }
 }
 
-}
+} // namespace detail
 
 /*
 
@@ -154,16 +146,13 @@ struct Convert<T> {
 */
 
 /// <summary>A Lua class instance can either be its own value or reference an existing instance.</summary>
-enum class StoreType {
-    None,
-    Value,
-    Reference
-};
+enum class StoreType { None, Value, Reference };
 
 /// <summary>Converts instances of classes and enums to and from Lua as either value or reference.</summary>
 template <typename T>
 struct Convert {
-    static_assert(dlua::EnumValues<T>[std::size(dlua::EnumValues<T>) - 1] == nullptr, "EnumValues is not null-terminated");
+    static_assert(dlua::EnumValues<T>[std::size(dlua::EnumValues<T>) - 1] == nullptr,
+                  "EnumValues is not null-terminated");
     static_assert(!std::is_enum_v<T> || std::size(dlua::EnumValues<T>) > 1, "EnumValues is empty");
 
     static constexpr std::optional<int> PushCount = 1;
@@ -180,10 +169,7 @@ struct Convert {
     }
 
     /// <summary>Serves as an exit condition when the list of sub classes is depleted.</summary>
-    static StoreType type(lua_State* state, int, SubClassList<>)
-    {
-        return StoreType::None;
-    }
+    static StoreType type(lua_State* state, int, SubClassList<>) { return StoreType::None; }
 
     /// <summary>Whether a stack position is a value, reference or neither.</summary>
     template <typename = std::enable_if_t<std::is_class_v<T>>>
@@ -218,10 +204,7 @@ struct Convert {
     }
 
     /// <summary>Whether the stack position is a valid class value or reference, or an enum.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return isExact(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
 
     /// <summary>Goes through the full list of subclasses to try and convert the value.</summary>
     template <typename TFirst, typename... TRest>
@@ -233,11 +216,7 @@ struct Convert {
     }
 
     /// <summary>Exit condition when the subclass list is depleted.</summary>
-    static auto at(lua_State*, int, SubClassList<>)
-        -> std::optional<std::reference_wrapper<T>>
-    {
-        return std::nullopt;
-    }
+    static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
 
     /// <summary>Returns a reference to the value at the given stack position or std::nullopt on failure.</summary>
     static auto at(lua_State* state, int pos)
@@ -261,8 +240,7 @@ struct Convert {
     }
 
     /// <summary>Returns a reference to the value at the given argument stack position and raises an argument error on failure.</summary>
-    static auto check(lua_State* state, int arg)
-        -> std::conditional_t<std::is_class_v<T>, T&, T>
+    static auto check(lua_State* state, int arg) -> std::conditional_t<std::is_class_v<T>, T&, T>
     {
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
@@ -343,10 +321,7 @@ struct Convert {
     }
 
     /// <summary>Returns the name of the class or enum.</summary>
-    static constexpr std::string_view getPushTypename()
-    {
-        return ClassName<T>;
-    }
+    static constexpr std::string_view getPushTypename() { return ClassName<T>; }
 
     /// <summary>Pushes the in place constructed value onto the stack.</summary>
     template <typename... TArgs, typename = std::enable_if_t<std::is_class_v<T>>>
@@ -383,10 +358,14 @@ struct Convert {
     }
 };
 
-template <typename T> struct Convert<T&> : Convert<T> {};
-template <typename T> struct Convert<T&&> : Convert<T> {};
-template <typename T> struct Convert<const T> : Convert<T> {};
-template <typename T> struct Convert<std::reference_wrapper<T>> : Convert<T> {};
+template <typename T>
+struct Convert<T&> : Convert<T> {};
+template <typename T>
+struct Convert<T&&> : Convert<T> {};
+template <typename T>
+struct Convert<const T> : Convert<T> {};
+template <typename T>
+struct Convert<std::reference_wrapper<T>> : Convert<T> {};
 
 /// <summary>Converts nothing.</summary>
 template <>
@@ -402,16 +381,10 @@ struct ConvertNil {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the given stack position is nil.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_isnil(state, pos);
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_isnil(state, pos); }
 
     /// <summary>Whether the given stack position is nil or none.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return lua_isnoneornil(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return lua_isnoneornil(state, pos); }
 
     /// <summary>Returns an instance of TNil for nil and none values, and std::nullopt otherwise.</summary>
     static std::optional<TNil> at(lua_State* state, int pos)
@@ -436,15 +409,15 @@ struct ConvertNil {
     }
 
     /// <summary>Pushes a nil value on the stack.</summary>
-    static void push(lua_State* state, TNil = {})
-    {
-        lua_pushnil(state);
-    }
+    static void push(lua_State* state, TNil = {}) { lua_pushnil(state); }
 };
 
-template <> struct Convert<std::nullptr_t> : ConvertNil<std::nullptr_t> {};
-template <> struct Convert<std::nullopt_t> : ConvertNil<std::nullopt_t> {};
-template <> struct Convert<std::monostate> : ConvertNil<std::monostate> {};
+template <>
+struct Convert<std::nullptr_t> : ConvertNil<std::nullptr_t> {};
+template <>
+struct Convert<std::nullopt_t> : ConvertNil<std::nullopt_t> {};
+template <>
+struct Convert<std::monostate> : ConvertNil<std::monostate> {};
 
 /// <summary>Allows for conversion between Lua boolean and C++ bool.</summary>
 template <>
@@ -453,28 +426,16 @@ struct Convert<bool> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the given stack position contains an actual boolean.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_isboolean(state, pos);
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_isboolean(state, pos); }
 
     /// <summary>Always returns true, as everything is convertible to boolean.</summary>
-    static constexpr bool isValid(lua_State*, int)
-    {
-        return true;
-    }
+    static constexpr bool isValid(lua_State*, int) { return true; }
 
     /// <summary>Converts the given stack position and never returns std::nullopt.</summary>
-    static std::optional<bool> at(lua_State* state, int pos)
-    {
-        return lua_toboolean(state, pos);
-    }
+    static std::optional<bool> at(lua_State* state, int pos) { return lua_toboolean(state, pos); }
 
     /// <summary>Converts the given stack position and never raises an error.</summary>
-    static bool check(lua_State* state, int arg)
-    {
-        return lua_toboolean(state, arg);
-    }
+    static bool check(lua_State* state, int arg) { return lua_toboolean(state, arg); }
 
     static constexpr std::string_view getPushTypename()
     {
@@ -483,10 +444,7 @@ struct Convert<bool> {
     }
 
     /// <summary>Pushes the given boolean on the stack.</summary>
-    static void push(lua_State* state, bool value)
-    {
-        lua_pushboolean(state, value);
-    }
+    static void push(lua_State* state, bool value) { lua_pushboolean(state, value); }
 };
 
 /// <summary>Allows for conversion between Lua numbers and C++ floating point types.</summary>
@@ -498,16 +456,10 @@ struct ConvertFloatingPoint {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the stack position contains an actual number.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_type(state, pos) == LUA_TNUMBER;
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TNUMBER; }
 
     /// <summary>Whether the stack position contains a number or a string, convertible to a number.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return lua_isnumber(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return lua_isnumber(state, pos); }
 
     /// <summary>Converts the given argument stack position into a Lua number and returns std::nullopt on failure.</summary>
     static std::optional<T> at(lua_State* state, int pos)
@@ -520,10 +472,7 @@ struct ConvertFloatingPoint {
     }
 
     /// <summary>Converts the given argument stack position into a floating point type and raises an error on failure.</summary>
-    static T check(lua_State* state, int arg)
-    {
-        return static_cast<T>(luaL_checknumber(state, arg));
-    }
+    static T check(lua_State* state, int arg) { return static_cast<T>(luaL_checknumber(state, arg)); }
 
     static constexpr std::string_view getPushTypename()
     {
@@ -532,15 +481,15 @@ struct ConvertFloatingPoint {
     }
 
     /// <summary>Pushes the given number on the stack.</summary>
-    static void push(lua_State* state, T value)
-    {
-        lua_pushnumber(state, static_cast<lua_Number>(value));
-    }
+    static void push(lua_State* state, T value) { lua_pushnumber(state, static_cast<lua_Number>(value)); }
 };
 
-template <> struct Convert<float> : ConvertFloatingPoint<float> {};
-template <> struct Convert<double> : ConvertFloatingPoint<double> {};
-template <> struct Convert<long double> : ConvertFloatingPoint<long double> {};
+template <>
+struct Convert<float> : ConvertFloatingPoint<float> {};
+template <>
+struct Convert<double> : ConvertFloatingPoint<double> {};
+template <>
+struct Convert<long double> : ConvertFloatingPoint<long double> {};
 
 /// <summary>Allows for conversion between Lua integers and C++ integral types.</summary>
 template <typename T>
@@ -591,8 +540,8 @@ struct ConvertIntegral {
     /// <summary>Returns an error message for the given number not being in the correct range.</summary>
     static std::string getRangeErrorMessage(lua_Integer value)
     {
-        return "value " + std::to_string(value) + " must be in range " +
-            std::to_string(std::numeric_limits<T>::min()) + " .. " + std::to_string(std::numeric_limits<T>::max());
+        return "value " + std::to_string(value) + " must be in range " + std::to_string(std::numeric_limits<T>::min()) +
+               " .. " + std::to_string(std::numeric_limits<T>::max());
     }
 
     /// <summary>Converts the given argument stack position into an integral type and returns std::nullopt on failure.</summary>
@@ -621,20 +570,25 @@ struct ConvertIntegral {
     }
 
     /// <summary>Pushes the given integer on the stack.</summary>
-    static void push(lua_State* state, T value)
-    {
-        lua_pushinteger(state, static_cast<lua_Integer>(value));
-    }
+    static void push(lua_State* state, T value) { lua_pushinteger(state, static_cast<lua_Integer>(value)); }
 };
 
-template <> struct Convert<std::int8_t> : ConvertIntegral<std::int8_t> {};
-template <> struct Convert<std::uint8_t> : ConvertIntegral<std::uint8_t> {};
-template <> struct Convert<std::int16_t> : ConvertIntegral<std::int16_t> {};
-template <> struct Convert<std::uint16_t> : ConvertIntegral<std::uint16_t> {};
-template <> struct Convert<std::int32_t> : ConvertIntegral<std::int32_t> {};
-template <> struct Convert<std::uint32_t> : ConvertIntegral<std::uint32_t> {};
-template <> struct Convert<std::int64_t> : ConvertIntegral<std::int64_t> {};
-template <> struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
+template <>
+struct Convert<std::int8_t> : ConvertIntegral<std::int8_t> {};
+template <>
+struct Convert<std::uint8_t> : ConvertIntegral<std::uint8_t> {};
+template <>
+struct Convert<std::int16_t> : ConvertIntegral<std::int16_t> {};
+template <>
+struct Convert<std::uint16_t> : ConvertIntegral<std::uint16_t> {};
+template <>
+struct Convert<std::int32_t> : ConvertIntegral<std::int32_t> {};
+template <>
+struct Convert<std::uint32_t> : ConvertIntegral<std::uint32_t> {};
+template <>
+struct Convert<std::int64_t> : ConvertIntegral<std::int64_t> {};
+template <>
+struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
 
 /// <summary>Allows for conversion between Lua strings and std::string.</summary>
 template <>
@@ -643,16 +597,10 @@ struct Convert<std::string> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the value at the given stack position is a string.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_type(state, pos) == LUA_TSTRING;
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TSTRING; }
 
     /// <summary>Whether the value at the given stack position is a string or a number.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return lua_isstring(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return lua_isstring(state, pos); }
 
     /// <summary>Checks, whether the given argument stack position is a string or number and returns std::nullopt on failure.</summary>
     /// <remarks>Numbers are actually converted to a string in place.</remarks>
@@ -694,16 +642,10 @@ struct Convert<std::string_view> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the value at the given stack position is a string.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_type(state, pos) == LUA_TSTRING;
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TSTRING; }
 
     /// <summary>Whether the value at the given stack position is a string or a number.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return lua_isstring(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return lua_isstring(state, pos); }
 
     /// <summary>Checks, whether the given argument stack position is a string or number and returns std::nullopt on failure.</summary>
     /// <remarks>Numbers are actually converted to a string in place.</remarks>
@@ -732,10 +674,7 @@ struct Convert<std::string_view> {
     }
 
     /// <summary>Pushes the given string onto the stack.</summary>
-    static void push(lua_State* state, std::string_view value)
-    {
-        lua_pushlstring(state, value.data(), value.size());
-    }
+    static void push(lua_State* state, std::string_view value) { lua_pushlstring(state, value.data(), value.size()); }
 };
 
 /// <summary>Allows pushing of char arrays as strings.</summary>
@@ -751,7 +690,7 @@ struct Convert<char[Count]> {
     }
 
     /// <summary>Pushes the given string onto the stack, shortening a potential null-termination.</summary>
-    static void push(lua_State* state, const char(&value)[Count])
+    static void push(lua_State* state, const char (&value)[Count])
     {
         lua_pushlstring(state, value, value[Count - 1] ? Count : Count - 1);
     }
@@ -770,10 +709,7 @@ struct Convert<const char*> {
     }
 
     /// <summary>Pushes the given null-terminated string onto the stack.</summary>
-    static void push(lua_State* state, const char* value)
-    {
-        lua_pushstring(state, value);
-    }
+    static void push(lua_State* state, const char* value) { lua_pushstring(state, value); }
 };
 
 /// <summary>Allows pushing of C-Style strings.</summary>
@@ -787,16 +723,10 @@ struct Convert<lua_CFunction> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the value at the given stack position is a C function.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_iscfunction(state, pos);
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_iscfunction(state, pos); }
 
     /// <summary>Whether the value at the given stack position is a C function.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return isExact(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
 
     /// <summary>Checks, whether the given argument stack position is a C function and returns std::nullopt on failure.</summary>
     static std::optional<lua_CFunction> at(lua_State* state, int pos)
@@ -821,14 +751,13 @@ struct Convert<lua_CFunction> {
     }
 
     /// <summary>Pushes the given C function onto the stack.</summary>
-    static void push(lua_State* state, lua_CFunction value)
-    {
-        lua_pushcfunction(state, value);
-    }
+    static void push(lua_State* state, lua_CFunction value) { lua_pushcfunction(state, value); }
 };
 
-template <> struct Convert<int(&)(lua_State*)> : Convert<lua_CFunction> {};
-template <> struct Convert<int(lua_State*)> : Convert<lua_CFunction> {};
+template <>
+struct Convert<int (&)(lua_State*)> : Convert<lua_CFunction> {};
+template <>
+struct Convert<int(lua_State*)> : Convert<lua_CFunction> {};
 
 /// <summary>Allows for conversion for possible nil values using std::optional.</summary>
 template <typename T>
@@ -841,16 +770,10 @@ struct Convert<std::optional<T>> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether the value at the given stack position is nil or a valid value.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return lua_isnoneornil(state, pos) || Base::isValid(state, pos);
-    }
+    static bool isExact(lua_State* state, int pos) { return lua_isnoneornil(state, pos) || Base::isValid(state, pos); }
 
     /// <summary>Whether the value at the given stack position is nil or a valid value.</summary>
-    static bool isValid(lua_State* state, int pos)
-    {
-        return isExact(state, pos);
-    }
+    static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
 
     /// <summary>Returns an optional containing a std::nullopt for nil values or a single std::nullopt for invalid values.</summary>
     static std::optional<std::optional<T>> at(lua_State* state, int pos)
@@ -900,7 +823,7 @@ static constexpr int combinedPushCount(const TValues&... values)
             return *Convert<TValues>::PushCount;
         else
             return Convert<TValues>::getPushCount(values);
-        }());
+    }());
 }
 
 /// <summary>Allows for conversion of multiple values using std::tuple.</summary>
@@ -970,16 +893,16 @@ private:
     template <std::size_t... Indices>
     static std::optional<std::tuple<TValues...>> atHelper(lua_State* state, int pos, std::index_sequence<Indices...>)
     {
-        std::tuple values{ Convert<TValues>::at(state, pos + Indices)... };
+        std::tuple values{Convert<TValues>::at(state, pos + Indices)...};
         if ((std::get<Indices>(values) && ...))
-            return std::tuple{ *std::get<Indices>(values)... };
+            return std::tuple{*std::get<Indices>(values)...};
         return std::nullopt;
     }
 
     template <std::size_t... Indices>
     static std::tuple<TValues...> checkHelper(lua_State* state, int arg, std::index_sequence<Indices...>)
     {
-        return { Convert<TValues>::check(state, arg + Indices)... };
+        return {Convert<TValues>::check(state, arg + Indices)...};
     }
 
     template <std::size_t... Indices>
@@ -1006,16 +929,10 @@ struct Convert<std::variant<TOptions...>> {
     static constexpr bool AllowNesting = true;
 
     /// <summary>Whether at least one option matches exactly.</summary>
-    static bool isExact(lua_State* state, int pos)
-    {
-        return (Convert<TOptions>::isExact(state, pos) || ...);
-    }
+    static bool isExact(lua_State* state, int pos) { return (Convert<TOptions>::isExact(state, pos) || ...); }
 
     /// <summary>Whether at least one option is valid.</summary>
-    static constexpr bool isValid(lua_State* state, int pos)
-    {
-        return (Convert<TOptions>::isValid(state, pos) || ...);
-    }
+    static constexpr bool isValid(lua_State* state, int pos) { return (Convert<TOptions>::isValid(state, pos) || ...); }
 
     /// <summary>Returns the first type that does not return std::nullopt or returns std::nullopt itself if none was found.</summary>
     static std::optional<Variant> at(lua_State* state, int pos)
@@ -1034,10 +951,7 @@ struct Convert<std::variant<TOptions...>> {
     }
 
     /// <summary>Combines all possible options of the variant in the form: "a, b, c or d"</summary>
-    static std::string getPushTypename()
-    {
-        return getPushTypenameHelper(TypeList<TOptions...>());
-    }
+    static std::string getPushTypename() { return getPushTypenameHelper(TypeList<TOptions...>()); }
 
     /// <summary>Pushes the value of the variant.</summary>
     static void push(lua_State* state, const Variant& variant)
@@ -1056,15 +970,12 @@ private:
         return value ? value : atHelper(state, pos, TypeList<TRest...>());
     }
 
-    static std::optional<Variant> atHelper(lua_State*, int, TypeList<>)
-    {
-        return std::nullopt;
-    }
+    static std::optional<Variant> atHelper(lua_State*, int, TypeList<>) { return std::nullopt; }
 
     template <typename TFirst, typename... TRest>
     static std::string getPushTypenameHelper(TypeList<TFirst, TRest...>)
     {
-        std::string result{ Convert<TFirst>::getPushTypename() };
+        std::string result{Convert<TFirst>::getPushTypename()};
         if constexpr (sizeof...(TRest) == 0)
             return result;
         else if constexpr (sizeof...(TRest) == 1)
@@ -1072,7 +983,6 @@ private:
         else
             return result + ", " + getPushTypenameHelper(TypeList<TRest...>());
     }
-
 };
 
-}
+} // namespace dang::lua

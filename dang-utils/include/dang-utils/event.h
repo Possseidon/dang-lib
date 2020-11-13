@@ -6,11 +6,9 @@
 #include <list>
 #include <memory>
 
-namespace dang::utils
-{
+namespace dang::utils {
 
-namespace detail
-{
+namespace detail {
 
 // TODO: C++20 use std::bind_front
 
@@ -32,7 +30,7 @@ auto bind_n(TArgs&&... args)
     return bind_indices<Index>(std::forward<TArgs>(args)...);
 }
 
-}
+} // namespace detail
 
 /// <summary>
 /// <para>Represents an event, for which handlers can be registered:</para>
@@ -60,8 +58,7 @@ public:
         Subscription(Handler&& handler, Event& event)
             : handlers_(&event.handlers())
             , handler_(handlers_->insert(handlers_->end(), std::move(handler)))
-        {
-        }
+        {}
 
     public:
         /// <summary>Subscriptions can be empty.</summary>
@@ -71,36 +68,31 @@ public:
         template <typename THandler>
         Subscription(Event& event, THandler&& handler)
             : Subscription(makeHandler(std::forward<THandler>(handler)), event)
-        {
-        }
+        {}
 
         /// <summary>Subscribes to an event using a member function.</summary>
         template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, T& instance, void (T::* method)(TOtherArgs...))
+        Subscription(Event& event, T& instance, void (T::*method)(TOtherArgs...))
             : Subscription(makeHandler(instance, method), event)
-        {
-        }
+        {}
 
         /// <summary>Subscribes to an event using a member function.</summary>
         template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, const T& instance, void (T::* method)(TOtherArgs...) const)
+        Subscription(Event& event, const T& instance, void (T::*method)(TOtherArgs...) const)
             : Subscription(makeHandler(instance, method), event)
-        {
-        }
+        {}
 
         /// <summary>Subscribes to an event using a member function.</summary>
         template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, T* instance, void (T::* method)(TOtherArgs...))
+        Subscription(Event& event, T* instance, void (T::*method)(TOtherArgs...))
             : Subscription(makeHandler(*instance, method), event)
-        {
-        }
+        {}
 
         /// <summary>Subscribes to an event using a member function.</summary>
         template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, const T* instance, void (T::* method)(TOtherArgs...) const)
+        Subscription(Event& event, const T* instance, void (T::*method)(TOtherArgs...) const)
             : Subscription(makeHandler(*instance, method), event)
-        {
-        }
+        {}
 
         /// <summary>Automatically unsubscribes the handler from the event.</summary>
         ~Subscription()
@@ -132,22 +124,13 @@ public:
             swap(handler_, other.handler_);
         }
 
-        friend void swap(Subscription& lhs, Subscription& rhs)
-        {
-            lhs.swap(rhs);
-        }
+        friend void swap(Subscription& lhs, Subscription& rhs) { lhs.swap(rhs); }
 
         /// <summary>Whether the subscription is currently subscribed to an event.</summary>
-        explicit operator bool() const
-        {
-            return handlers_;
-        }
+        explicit operator bool() const { return handlers_; }
 
         /// <summary>Removes an existing subscription prematurely, if there is one.</summary>
-        void remove()
-        {
-            *this = {};
-        }
+        void remove() { *this = {}; }
 
     private:
         std::list<Handler>* handlers_ = nullptr;
@@ -181,28 +164,28 @@ public:
 
     /// <summary>Utility to create subscriptions.</summary>
     template <typename T, typename... TOtherArgs>
-    [[nodiscard]] Subscription subscribe(T& instance, void (T::* method)(TOtherArgs...))
+    [[nodiscard]] Subscription subscribe(T& instance, void (T::*method)(TOtherArgs...))
     {
         return Subscription(*this, instance, method);
     }
 
     /// <summary>Utility to create subscriptions.</summary>
     template <typename T, typename... TOtherArgs>
-    [[nodiscard]] Subscription subscribe(const T& instance, void (T::* method)(TOtherArgs...) const)
+    [[nodiscard]] Subscription subscribe(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
         return Subscription(*this, instance, method);
     }
 
     /// <summary>Utility to create subscriptions.</summary>
     template <typename T, typename... TOtherArgs>
-    [[nodiscard]] Subscription subscribe(T* instance, void (T::* method)(TOtherArgs...))
+    [[nodiscard]] Subscription subscribe(T* instance, void (T::*method)(TOtherArgs...))
     {
         return Subscription(*this, instance, method);
     }
 
     /// <summary>Utility to create subscriptions.</summary>
     template <typename T, typename... TOtherArgs>
-    [[nodiscard]] Subscription subscribe(const T* instance, void (T::* method)(TOtherArgs...) const)
+    [[nodiscard]] Subscription subscribe(const T* instance, void (T::*method)(TOtherArgs...) const)
     {
         return Subscription(*this, instance, method);
     }
@@ -216,28 +199,28 @@ public:
 
     /// <summary>Appends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void append(T& instance, void (T::* method)(TOtherArgs...))
+    void append(T& instance, void (T::*method)(TOtherArgs...))
     {
         handlers().emplace_back(makeHandler(instance, method));
     }
 
     /// <summary>Appends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void append(const T& instance, void (T::* method)(TOtherArgs...) const)
+    void append(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
         handlers().emplace_back(makeHandler(instance, method));
     }
 
     /// <summary>Appends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void append(T* instance, void (T::* method)(TOtherArgs...))
+    void append(T* instance, void (T::*method)(TOtherArgs...))
     {
         handlers().emplace_back(makeHandler(*instance, method));
     }
 
     /// <summary>Appends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void append(const T* instance, void (T::* method)(TOtherArgs...) const)
+    void append(const T* instance, void (T::*method)(TOtherArgs...) const)
     {
         handlers().emplace_back(makeHandler(*instance, method));
     }
@@ -251,37 +234,34 @@ public:
 
     /// <summary>Prepends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void prepend(T& instance, void (T::* method)(TOtherArgs...))
+    void prepend(T& instance, void (T::*method)(TOtherArgs...))
     {
         handlers().emplace_front(makeHandler(instance, method));
     }
 
     /// <summary>Prepends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void prepend(const T& instance, void (T::* method)(TOtherArgs...) const)
+    void prepend(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
         handlers().emplace_front(makeHandler(instance, method));
     }
 
     /// <summary>Prepends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void prepend(T* instance, void (T::* method)(TOtherArgs...))
+    void prepend(T* instance, void (T::*method)(TOtherArgs...))
     {
         handlers().emplace_front(makeHandler(*instance, method));
     }
 
     /// <summary>Prepends an event handler which cannot be removed.</summary>
     template <typename T, typename... TOtherArgs>
-    void prepend(const T* instance, void (T::* method)(TOtherArgs...) const)
+    void prepend(const T* instance, void (T::*method)(TOtherArgs...) const)
     {
         handlers().emplace_front(makeHandler(*instance, method));
     }
 
     /// <summary>Returns true, if the event has at least one handler.</summary>
-    explicit operator bool() const
-    {
-        return handlers_ && !handlers_->empty();
-    }
+    explicit operator bool() const { return handlers_ && !handlers_->empty(); }
 
     /// <summary>Triggers the event with the given parameters, notifying all subscribers.</summary>
     void operator()(const TArgs&... args) const
@@ -315,14 +295,14 @@ private:
 
     /// <summary>Allows for handlers to have less arguments than the event.</summary>
     template <typename T, typename... TOtherArgs>
-    static Handler makeHandler(T& instance, void (T::* method)(TOtherArgs...))
+    static Handler makeHandler(T& instance, void (T::*method)(TOtherArgs...))
     {
         return detail::bind_n<sizeof...(TOtherArgs)>(method, &instance);
     }
 
     /// <summary>Allows for handlers to have less arguments than the event.</summary>
     template <typename T, typename... TOtherArgs>
-    static Handler makeHandler(const T& instance, void (T::* method)(TOtherArgs...) const)
+    static Handler makeHandler(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
         return detail::bind_n<sizeof...(TOtherArgs)>(method, &instance);
     }
@@ -333,12 +313,11 @@ private:
     std::unique_ptr<std::list<Handler>> handlers_;
 };
 
-}
+} // namespace dang::utils
 
-namespace std
-{
+namespace std {
 
 template <int Index>
 class is_placeholder<dutils::detail::Placeholder<Index>> : public integral_constant<int, Index> {};
 
-}
+} // namespace std

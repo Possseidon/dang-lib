@@ -2,8 +2,7 @@
 
 #include "utils.h"
 
-namespace dang::math
-{
+namespace dang::math {
 
 /// <summary>Linearly interpolates between two values.</summary>
 template <typename T, typename TFactor>
@@ -12,8 +11,7 @@ constexpr T interpolate(const T& from, const T& to, TFactor factor)
     return from + factor * (to - from);
 }
 
-namespace interp
-{
+namespace interp {
 
 /// <summary>Simple identity function.</summary>
 auto linear = [](auto x) { return x; };
@@ -28,7 +26,10 @@ auto cubic = [](auto x) { return x * x * (3 - 2 * x); };
 /// <summary>True exponential interpolation, quadratic is faster and usually sufficient.</summary>
 auto exp = [](auto x) { return x * std::exp(x) / std::exp(1); };
 /// <summary>True inverse-exponential interpolation, inv_quadratic is faster and usually sufficient.</summary>
-auto inv_exp = [](auto x) { x = 1 - x; return 1 - x * std::exp(x) / std::exp(1); };
+auto inv_exp = [](auto x) {
+    x = 1 - x;
+    return 1 - x * std::exp(x) / std::exp(1);
+};
 /// <summary>True cosine interpolation, cubic is faster and usually sufficient.</summary>
 auto cosine = [](auto x) { return (1 - std::cos(x * static_cast<decltype(x)>(pi))) / 2; };
 
@@ -39,6 +40,6 @@ auto smooth_start = quadratic;
 /// <summary>Alias for inv_quadtratic.</summary>
 auto smooth_end = inv_quadratic;
 
-}
+} // namespace interp
 
-}
+} // namespace dang::math

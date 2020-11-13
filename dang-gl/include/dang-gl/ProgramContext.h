@@ -3,8 +3,7 @@
 #include "ObjectContext.h"
 #include "ObjectType.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Specialization for GL-Programs using the default bindable context.</summary>
 template <>
@@ -12,4 +11,4 @@ class ObjectContext<ObjectType::Program> : public ObjectContextBindable<ObjectTy
     using ObjectContextBindable::ObjectContextBindable;
 };
 
-}
+} // namespace dang::gl

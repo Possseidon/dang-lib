@@ -6,8 +6,7 @@
 #include "PixelInternalFormat.h"
 #include "RenderbufferContext.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>A renderbuffer object containing image data, specifially used together with framebuffer objects.</summary>
 /// <remarks>Natively supports multisampling.</remarks>
@@ -21,7 +20,7 @@ public:
     RBO(RBO&&) = default;
     RBO& operator=(const RBO&) = delete;
     RBO& operator=(RBO&&) = default;
-            
+
     static RBO color(svec2 size, GLsizei samples = 0);
     static RBO depth(svec2 size, GLsizei samples = 0);
     static RBO depthStencil(svec2 size, GLsizei samples = 0);
@@ -40,4 +39,4 @@ private:
     PixelInternalFormat format_;
 };
 
-}
+} // namespace dang::gl

@@ -5,8 +5,7 @@
 #include "ObjectType.h"
 #include "ObjectWrapper.h"
 
-namespace dang::gl
-{
+namespace dang::gl {
 
 /// <summary>Serves as a base class for all GL-Objects of the template specified type.</summary>
 template <ObjectType Type>
@@ -16,10 +15,7 @@ public:
     using Wrapper = ObjectWrapper<Type>;
 
     /// <summary>Destroys the GL-Object.</summary>
-    ~Object()
-    {
-        destroy();
-    }
+    ~Object() { destroy(); }
 
     Object(const Object&) = delete;
     Object& operator=(const Object&) = delete;
@@ -34,28 +30,16 @@ public:
     }
 
     /// <summary>For valid objects, returns the associated GL-Context in form of a window.</summary>
-    Context& context() const noexcept
-    {
-        return *context_;
-    }
+    Context& context() const noexcept { return *context_; }
 
     /// <summary>Returns the context for this object type.</summary>
-    auto& objectContext() const
-    {
-        return context_->contextFor<Type>();
-    }
+    auto& objectContext() const { return context_->contextFor<Type>(); }
 
     /// <summary>Returns the handle of the GL-Object or InvalidHandle for default constructed objects.</summary>
-    Handle handle() const noexcept
-    {
-        return handle_;
-    }
+    Handle handle() const noexcept { return handle_; }
 
     /// <summary>Whether the object is valid.</summary>
-    explicit operator bool() const noexcept
-    {
-        return bool{ handle_ };
-    }
+    explicit operator bool() const noexcept { return bool{handle_}; }
 
     void swap(Object& other) noexcept
     {
@@ -65,26 +49,21 @@ public:
         swap(label_, other.label_);
     }
 
-    friend void swap(Object& lhs, Object& rhs) noexcept
-    {
-        lhs.swap(rhs);
-    }
+    friend void swap(Object& lhs, Object& rhs) noexcept { lhs.swap(rhs); }
 
     /// <summary>Sets an optional label for the object, which is used in by OpenGL generated debug messages.</summary>
     void setLabel(std::optional<std::string> label)
     {
         label_ = std::move(label);
         if (label_)
-            glObjectLabel(toGLConstant(Type), handle_.unwrap(), static_cast<GLsizei>(label_->length()), label_->c_str());
+            glObjectLabel(
+                toGLConstant(Type), handle_.unwrap(), static_cast<GLsizei>(label_->length()), label_->c_str());
         else
             glObjectLabel(toGLConstant(Type), handle_.unwrap(), 0, nullptr);
     }
 
     /// <summary>Returns the label used in OpenGL generated debug messages.</summary>
-    const std::optional<std::string>& label() const
-    {
-        return label_;
-    }
+    const std::optional<std::string>& label() const { return label_; }
 
 protected:
     Object()
@@ -98,8 +77,7 @@ protected:
         : context_(std::move(other.context_))
         , handle_(std::exchange(other.handle_, {}))
         , label_(std::move(other.label_))
-    {
-    }
+    {}
 
     Object& operator=(Object&& other) noexcept
     {
@@ -133,10 +111,7 @@ public:
     ObjectBindable& operator=(const ObjectBindable&) = delete;
 
     /// <summary>Binds the object.</summary>
-    void bind() const
-    {
-        this->objectContext().bind(this->handle());
-    }
+    void bind() const { this->objectContext().bind(this->handle()); }
 
 protected:
     ObjectBindable() = default;
@@ -145,4 +120,4 @@ protected:
     ObjectBindable& operator=(ObjectBindable&&) = default;
 };
 
-}
+} // namespace dang::gl
