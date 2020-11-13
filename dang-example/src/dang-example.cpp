@@ -4,10 +4,9 @@
 
 int main()
 {
-    dgl::WindowInfo windowInfo;
-    windowInfo.size = { 1280, 720 };
-    windowInfo.title = u8"Hello World!";
+    dgl::WindowInfo window_info;
+    window_info.title = u8"Hello World!";
 
-    dgl::Window window(windowInfo);
+    dgl::Window window(window_info);
     window.run();
 }
