@@ -49,6 +49,22 @@ constexpr const char* EnumValues[1]{};
 
 namespace detail {
 
+[[noreturn]] void noreturn_luaL_error(lua_State* state, const char* message)
+{
+    lua_pushstring(state, message);
+    lua_error(state);
+}
+
+[[noreturn]] void noreturn_luaL_typeerror(lua_State* state, int arg, const char* type_name)
+{
+    luaL_typeerror(state, arg, type_name);
+}
+
+[[noreturn]] void noreturn_luaL_argerror(lua_State* state, int arg, const char* extra_message)
+{
+    luaL_argerror(state, arg, extra_message);
+}
+
 /// <summary>Somewhat similar to luaL_setfuncs, except it uses any kind of container.</summary>
 template <typename T>
 void setfuncs(lua_State* state, const T& funcs)
@@ -245,7 +261,9 @@ struct Convert {
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
                 return *result;
-            throw luaL_checkudata(state, arg, ClassName<T>);
+            luaL_checkudata(state, arg, ClassName<T>);
+            // luaL_checkudata should always cause an error here, yet still, sanity check
+            detail::noreturn_luaL_error(state, "userdata suddenly of correct type - something went very wrong");
         }
         else if constexpr (std::is_enum_v<T>) {
             return static_cast<T>(luaL_checkoption(state, arg, nullptr, EnumValues<T>));
@@ -399,7 +417,7 @@ struct ConvertNil {
     {
         if (lua_isnoneornil(state, arg))
             return nullptr;
-        throw luaL_error(state, "expected a nil value");
+        detail::noreturn_luaL_argerror(state, arg, "expected a nil value");
     }
 
     static constexpr std::string_view getPushTypename()
@@ -559,7 +577,7 @@ struct ConvertIntegral {
     {
         lua_Integer result = luaL_checkinteger(state, arg);
         if (!checkRange(result))
-            throw luaL_argerror(state, arg, getRangeErrorMessage(result).c_str());
+            detail::noreturn_luaL_argerror(state, arg, getRangeErrorMessage(result).c_str());
         return static_cast<T>(result);
     }
 
@@ -741,7 +759,7 @@ struct Convert<lua_CFunction> {
     {
         if (auto result = lua_tocfunction(state, arg))
             return result;
-        throw luaL_argerror(state, arg, "C function expected");
+        detail::noreturn_luaL_argerror(state, arg, "C function expected");
     }
 
     static constexpr std::string_view getPushTypename()
@@ -947,7 +965,7 @@ struct Convert<std::variant<TOptions...>> {
         if (value)
             return *value;
         std::string error = getPushTypename() + " expected, got " + luaL_typename(state, arg);
-        throw luaL_argerror(state, arg, error.c_str());
+        detail::noreturn_luaL_argerror(state, arg, error.c_str());
     }
 
     /// <summary>Combines all possible options of the variant in the form: "a, b, c or d"</summary>
