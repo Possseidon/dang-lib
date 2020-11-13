@@ -153,13 +153,13 @@ inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
 template <PixelFormat Format>
 inline void PNGLoader::handleGrayRGB()
 {
-    auto is_gray = [&]() -> bool { return color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA; };
+    bool is_gray = color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA;
 
     if constexpr (Format == PixelFormat::RGB || Format == PixelFormat::BGR || Format == PixelFormat::RGBA ||
                   Format == PixelFormat::BGRA || Format == PixelFormat::RGB_INTEGER ||
                   Format == PixelFormat::BGR_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
                   Format == PixelFormat::BGRA_INTEGER) {
-        if (is_gray()) {
+        if (is_gray) {
             png_set_gray_to_rgb(png_ptr_);
             color_type_ |= PNG_COLOR_MASK_COLOR;
         }
@@ -173,7 +173,7 @@ inline void PNGLoader::handleGrayRGB()
 
         // red/green weight:
         // -1 -> default values for good rgb to gray conversion
-        if (!is_gray()) {
+        if (!is_gray) {
             png_set_rgb_to_gray(png_ptr_, 1, -1, -1);
             color_type_ &= ~PNG_COLOR_MASK_COLOR;
         }
@@ -183,18 +183,18 @@ inline void PNGLoader::handleGrayRGB()
 template <PixelFormat Format>
 inline void PNGLoader::handleAlpha()
 {
-    auto has_alpha = [&]() -> bool { return color_type_ & PNG_COLOR_MASK_ALPHA; };
+    bool has_alpha = color_type_ & PNG_COLOR_MASK_ALPHA;
 
     if constexpr (Format == PixelFormat::RG || Format == PixelFormat::RGBA || Format == PixelFormat::BGRA ||
                   Format == PixelFormat::RG_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
                   Format == PixelFormat::BGRA_INTEGER) {
-        if (!has_alpha()) {
+        if (!has_alpha) {
             png_set_add_alpha(png_ptr_, 0xFF, PNG_FILLER_AFTER);
             color_type_ |= PNG_COLOR_MASK_ALPHA;
         }
     }
     else {
-        if (has_alpha()) {
+        if (has_alpha) {
             png_set_strip_alpha(png_ptr_);
             color_type_ &= ~PNG_COLOR_MASK_ALPHA;
         }
