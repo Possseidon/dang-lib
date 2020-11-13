@@ -401,6 +401,22 @@ public:
     /// <summary>Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".</summary>
     explicit operator bool() { return check<bool>(); }
 
+    // --- Error ---
+
+    [[noreturn]] void error()
+    {
+        // always move, as it doesn't return anyway
+        this->state().error(std::move(*this));
+    }
+
+    [[noreturn]] void argError(const char* extra_message) { this->state().argError(index(), extra_message); }
+
+    [[noreturn]] void argError(const std::string& extra_message) { this->state().argError(index(), extra_message); }
+
+    [[noreturn]] void typeError(const char* type_name) { this->state().typeError(index(), type_name); }
+
+    [[noreturn]] void typeError(const std::string& type_name) { this->state().typeError(index(), type_name); }
+
     // --- Calling ---
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
@@ -1766,6 +1782,26 @@ public:
             lua_replace(state_, index.index());
         }
     }
+
+    // --- Error ---
+
+    template <typename TMessage>
+    [[noreturn]] void error(TMessage&& message)
+    {
+        static_assert(Convert<TMessage>::PushCount == 1,
+                      "Supplied error message must take up a single stack position.");
+        push(std::forward<TMessage>(message));
+        // technically lua_error pops the message, but since it doesn't return this is not really visible to users
+        lua_error(state_);
+    }
+
+    [[noreturn]] void argError(int arg, const char* extra_message) { luaL_argerror(state_, arg, extra_message); }
+
+    [[noreturn]] void argError(int arg, const std::string& extra_message) { argError(arg, extra_message.c_str()); }
+
+    [[noreturn]] void typeError(int arg, const char* type_name) { luaL_typeerror(state_, arg, type_name); }
+
+    [[noreturn]] void typeError(int arg, const std::string& type_name) { typeError(arg, type_name.c_str()); }
 
     // --- Calling ---
 
