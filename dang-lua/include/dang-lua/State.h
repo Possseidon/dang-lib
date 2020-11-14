@@ -942,7 +942,7 @@ public:
     void rawSetTable(TKey&& key, TValue&& value) &&
     {
         this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
-        // lua_rawsettable doesn't actually pop the table, only the key and value
+        // lua_rawset doesn't actually pop the table, only the key and value
         if constexpr (Type == StackIndexType::Result)
             popIfTop();
     }
@@ -2172,7 +2172,7 @@ public:
         }
         else {
             push(std::forward<TKey>(key));
-            Type type = static_cast<Type>(lua_rawgettable(state_, table.index()));
+            Type type = static_cast<Type>(lua_rawget(state_, table.index()));
             // remove key, add value
             // -1, +1
             // notifyPush(0);
@@ -2211,7 +2211,7 @@ public:
         }
         else {
             push(std::forward<TKey>(key), std::forward<TValue>(value));
-            lua_rawsettable(state_, table.index());
+            lua_rawset(state_, table.index());
             // remove key and value, push nothing
             // -2, +0
             notifyPush(-2);
