@@ -2338,7 +2338,7 @@ public:
         registerGlobal(name.c_str(), std::forward<TFunc>(func), std::forward<TUpvalues>(upvalues)...);
     }
 
-    /// <summary>Registers a tempalte specified function with a given name in the global table.</summary>
+    /// <summary>Registers a template specified function with a given name in the global table.</summary>
     template <auto Func, typename... TUpvalues>
     void registerGlobal(const char* name, TUpvalues&&... upvalues)
     {
@@ -2347,7 +2347,7 @@ public:
         notifyPush(-1);
     }
 
-    /// <summary>Registers a tempalte specified function with a given name in the global table.</summary>
+    /// <summary>Registers a template specified function with a given name in the global table.</summary>
     template <auto Func, typename... TUpvalues>
     void registerGlobal(const std::string& name, TUpvalues&&... upvalues)
     {
