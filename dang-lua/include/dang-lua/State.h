@@ -588,7 +588,7 @@ private:
 template <typename TState, int Count>
 class IndicesImpl : public IndexImplBase<TState> {
 public:
-    static_assert(Count >= 0);
+    static_assert(Count >= 0, "Indices must have a non-negative count.");
 
     /// <summary>Default constructible to stay consistent with Index.</summary>
     IndicesImpl() = default;
@@ -1775,8 +1775,8 @@ public:
     template <typename TIndex, typename TValue>
     void replace(TIndex&& index, TValue&& value)
     {
-        static_assert(Convert<TValue>::PushCount && *Convert<TValue>::PushCount == 1);
-        static_assert(IsIndex<std::decay_t<TIndex>>::value);
+        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(IsIndex<std::decay_t<TIndex>>::value, "Supplied index must be an index.");
 
         if constexpr (IsIndex<std::decay_t<TValue>>::value) {
             assertPushable();
@@ -1797,8 +1797,7 @@ public:
     template <typename TMessage>
     [[noreturn]] void error(TMessage&& message)
     {
-        static_assert(Convert<TMessage>::PushCount == 1,
-                      "Supplied error message must take up a single stack position.");
+        static_assert(Convert<TMessage>::PushCount == 1, "Supplied message must take up a single stack position.");
         push(std::forward<TMessage>(message));
         // technically lua_error pops the message, but since it doesn't return this is not really visible to users
         lua_error(state_);
@@ -1991,8 +1990,8 @@ public:
     template <typename TLeft, typename TRight>
     bool compare(CompareOp operation, TLeft&& lhs, TRight&& rhs) const
     {
-        static_assert(Convert<TRight>::PushCount && *Convert<TRight>::PushCount == 1);
-        static_assert(Convert<TLeft>::PushCount && *Convert<TLeft>::PushCount == 1);
+        static_assert(Convert<TLeft>::PushCount == 1, "Left operand must take up a single stack position.");
+        static_assert(Convert<TRight>::PushCount == 1, "Right operand must take up a single stack position.");
 
         constexpr bool left_is_index = IsIndex<std::decay_t<TLeft>>::value;
         constexpr bool right_is_index = IsIndex<std::decay_t<TRight>>::value;
@@ -2064,7 +2063,7 @@ public:
     template <typename TTable, typename TKey>
     auto getTableWithType(TTable& table, TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2110,8 +2109,8 @@ public:
     template <typename TTable, typename TKey, typename TValue>
     void setTable(TTable& table, TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
-        static_assert(Convert<TValue>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2143,7 +2142,7 @@ public:
     template <typename TTable, typename TKey>
     auto rawGetTableWithType(TTable& table, TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2183,8 +2182,8 @@ public:
     template <typename TTable, typename TKey, typename TValue>
     void rawSetTable(TTable& table, TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
-        static_assert(Convert<TValue>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2212,7 +2211,7 @@ public:
     template <typename TKey>
     auto getGlobalWithType(TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
             Type type = static_cast<Type>(lua_getglobal(state_, key));
             notifyPush(1);
@@ -2237,7 +2236,7 @@ public:
     template <typename TKey, typename TValue>
     void setGlobal(TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1);
+        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
         static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
             push(std::forward<TValue>(value));
