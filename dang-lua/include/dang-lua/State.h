@@ -395,7 +395,7 @@ public:
     /// <summary>Treats the element as a function argument and uses the Convert template to convert it.</summary>
     /// <remarks>Raises a Lua (argument) error if the conversion failed.</remarks>
     template <typename T>
-    auto check()
+    decltype(auto) check()
     {
         return this->state().check<T>(index());
     }
@@ -1577,7 +1577,7 @@ public:
     /// <summary>Treats the element at the given index as a function argument and uses the Convert template to convert it.</summary>
     /// <remarks>Raises a Lua (argument) error if the conversion failed.</remarks>
     template <typename T>
-    auto check(int index)
+    decltype(auto) check(int index)
     {
         return Convert<T>::check(state_, index);
     }
