@@ -119,7 +119,7 @@ struct Vector : std::array<T, Dim> {
     constexpr T angleRadTo(const Vector<T, Dim>& other) const { return std::acos(cosAngleTo(other)); }
 
     /// <summary>Returns the angle to the given vector in degrees.</summary>
-    constexpr T angleTo(const Vector<T, Dim>& other) const { return radToDeg(angleRadTo(other)); }
+    constexpr T angleTo(const Vector<T, Dim>& other) const { return dmath::radToDeg(angleRadTo(other)); }
 
     /// <summary>Converts every component from radians into degrees.</summary>
     constexpr Vector<T, Dim> radToDeg() const { return unaryOp(&dmath::radToDeg<T>); }
