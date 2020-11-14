@@ -87,8 +87,10 @@ namespace detail {
 /// <summary>Meant to be used as a base class to provide information about the signature of functions.</summary>
 template <typename TRet, typename... TArgs>
 struct SignatureInfoBase {
+    template <typename TArg>
+    using FixedArgType = decltype(Convert<TArg>::check(std::declval<State&>(), 1));
     using Return = TRet;
-    using Arguments = std::tuple<TArgs...>;
+    using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
 protected:
     /// <summary>
@@ -112,7 +114,7 @@ struct SignatureInfo;
 template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
     /// <summary>Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.</summary>
-    static std::tuple<TArgs...> convertArguments(State& state)
+    static auto convertArguments(State& state)
     {
         return convertArgumentsHelper(state, std::index_sequence_for<TArgs...>{});
     }
@@ -122,7 +124,7 @@ private:
 
     /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
     template <std::size_t... Indices>
-    static std::tuple<TArgs...> convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
+    static Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
     {
         return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
     }
