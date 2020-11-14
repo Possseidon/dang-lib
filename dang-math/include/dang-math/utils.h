@@ -15,6 +15,7 @@ constexpr double pi = 3.14159265358979323846;
 template <typename T>
 constexpr T radToDeg(T value)
 {
+    static_assert(std::is_floating_point_v<T>, "radToDeg requires a floating point type");
     return value * static_cast<T>(180) / static_cast<T>(pi);
 }
 
@@ -22,6 +23,7 @@ constexpr T radToDeg(T value)
 template <typename T>
 constexpr T degToRad(T value)
 {
+    static_assert(std::is_floating_point_v<T>, "degToRad requires a floating point type");
     return value * static_cast<T>(pi) / static_cast<T>(180);
 }
 

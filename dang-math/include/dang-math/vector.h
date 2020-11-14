@@ -107,25 +107,46 @@ struct Vector : std::array<T, Dim> {
     constexpr Vector<T, Dim> vectorTo(const Vector<T, Dim>& other) const { return other - *this; }
 
     /// <summary>Returns the distance to the given vector.</summary>
-    constexpr T distanceTo(const Vector<T, Dim>& other) const { return (other - *this).length(); }
+    constexpr T distanceTo(const Vector<T, Dim>& other) const
+    {
+        static_assert(std::is_floating_point_v<T>, "vec::distanceTo requires a floating point type");
+        return (other - *this).length();
+    }
 
     /// <summary>Returns the cosine of the angle to the given vector.</summary>
     constexpr T cosAngleTo(const Vector<T, Dim>& other) const
     {
+        static_assert(std::is_floating_point_v<T>, "vec::cosAngleTo requires a floating point type");
         return std::clamp(dot(other) / (length() * other.length()), T(-1), T(1));
     }
 
     /// <summary>Returns the angle to the given vector in radians.</summary>
-    constexpr T angleRadTo(const Vector<T, Dim>& other) const { return std::acos(cosAngleTo(other)); }
+    constexpr T angleRadTo(const Vector<T, Dim>& other) const
+    {
+        static_assert(std::is_floating_point_v<T>, "vec::angleRadTo requires a floating point type");
+        return std::acos(cosAngleTo(other));
+    }
 
     /// <summary>Returns the angle to the given vector in degrees.</summary>
-    constexpr T angleTo(const Vector<T, Dim>& other) const { return dmath::radToDeg(angleRadTo(other)); }
+    constexpr T angleTo(const Vector<T, Dim>& other) const
+    {
+        static_assert(std::is_floating_point_v<T>, "vec::angleTo requires a floating point type");
+        return dmath::radToDeg(angleRadTo(other));
+    }
 
     /// <summary>Converts every component from radians into degrees.</summary>
-    constexpr Vector<T, Dim> radToDeg() const { return unaryOp(&dmath::radToDeg<T>); }
+    constexpr Vector<T, Dim> radToDeg() const
+    {
+        static_assert(std::is_floating_point_v<T>, "vec::radToDeg requires a floating point type");
+        return unaryOp(&dmath::radToDeg<T>);
+    }
 
     /// <summary>Converts every component from degrees into radians.</summary>
-    constexpr Vector<T, Dim> degToRad() const { return unaryOp(&dmath::degToRad<T>); }
+    constexpr Vector<T, Dim> degToRad() const
+    {
+        static_assert(std::is_floating_point_v<T>, "vec::degToRad requires a floating point type");
+        return unaryOp(&dmath::degToRad<T>);
+    }
 
     /// <summary>Returns the vector with each component being positive.</summary>
     constexpr Vector<T, Dim> abs() const
@@ -427,6 +448,7 @@ struct Vector : std::array<T, Dim> {
     template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromAngleRad(T radians)
     {
+        static_assert(std::is_floating_point_v<T>, "vec::fromAngleRad requires a floating point type");
         return {std::cos(radians), std::sin(radians)};
     }
 
@@ -435,7 +457,8 @@ struct Vector : std::array<T, Dim> {
     template <typename = std::enable_if_t<Dim == 2>>
     static constexpr Vector<T, 2> fromAngle(T degrees)
     {
-        return fromAngleRad(degToRad(degrees));
+        static_assert(std::is_floating_point_v<T>, "vec::fromAngle requires a floating point type");
+        return fromAngleRad(dmath::degToRad(degrees));
     }
 
     /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>
