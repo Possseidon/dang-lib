@@ -577,6 +577,13 @@ public:
         this->state().setMetatable(index(), std::forward<TMetatable>(metatable));
     }
 
+    /// <summary>Returns the next key-value-pair of the table or nothing, if the table has been exhausted.</summary>
+    template <typename TKey>
+    auto next(TKey&& key)
+    {
+        return this->state().next(index(), std::forward<TKey>(key));
+    }
+
     // --- Formatting ---
 
     /// <summary>Converts the element to a string in a reasonable format using luaL_tolstring.</summary>
@@ -2278,6 +2285,19 @@ public:
         push(std::forward<TMetatable>(metatable));
         lua_setmetatable(state_, index);
         notifyPush(-1);
+    }
+
+    /// <summary>Returns the next key-value-pair of the table or nothing, if the table has been exhausted.</summary>
+    template <typename TKey>
+    auto next(int table_index, TKey&& key)
+    {
+        push(std::forward<TKey>(key));
+        if (lua_next(state_, table_index)) {
+            notifyPush(1);
+            return top(2).asResults();
+        }
+        notifyPush(-1);
+        return top(0).asResults();
     }
 
     // --- Formatting ---
