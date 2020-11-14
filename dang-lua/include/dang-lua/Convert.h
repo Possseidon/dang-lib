@@ -26,8 +26,8 @@ const char* ClassNameRef = typeid(T*).name();
 /// <summary>Returns empty index and metatable.</summary>
 struct DefaultClassInfo {
     constexpr std::array<luaL_Reg, 0> table() { return {}; }
-
     constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
+    // void require() {}
 };
 
 /// <summary>Can be specialized to provide an index and metatable of a wrapped class.</summary>

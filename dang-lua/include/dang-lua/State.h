@@ -2312,6 +2312,12 @@ public:
         lua_pop(state_, 1);
     }
 
+    template <typename T>
+    void require(bool global = false)
+    {
+        require(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
+    }
+
     /// <summary>Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it and optionally makes it global.</summary>
     auto pushRequire(const char* name, lua_CFunction open_function, bool global = false)
     {
@@ -2319,6 +2325,12 @@ public:
         luaL_requiref(state_, name, open_function, global);
         notifyPush();
         return top().asResult();
+    }
+
+    template <typename T>
+    auto pushRequire(bool global = false)
+    {
+        return pushRequire(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
     /// <summary>Registers a function with a given name in the global table.</summary>
