@@ -567,6 +567,16 @@ public:
         this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
+    /// <summary>Returns the metatable of the element or std::nullopt if it doesn't have one.</summary>
+    auto getMetatable() { return this->state().getMetatable(index()); }
+
+    /// <summary>Sets the metatable of the element to the specified table; or nil to remove it.</summary>
+    template <typename TMetatable>
+    auto setMetatable(TMetatable&& metatable)
+    {
+        this->state().setMetatable(index(), std::forward<TMetatable>(metatable));
+    }
+
     // --- Formatting ---
 
     /// <summary>Converts the element to a string in a reasonable format using luaL_tolstring.</summary>
@@ -2249,6 +2259,25 @@ public:
         else {
             return pushGlobalTable().setTable(std::forward<TKey>(key), std::forward<TValue>(value));
         }
+    }
+
+    /// <summary>Returns the metatable of the element at the given index or std::nullopt if it doesn't have one.</summary>
+    std::optional<StackIndexResult> getMetatable(int index)
+    {
+        if (lua_getmetatable(state_, index)) {
+            notifyPush(1);
+            return top().asResult();
+        }
+        return std::nullopt;
+    }
+
+    /// <summary>Sets the metatable of the element at the given index to the specified table; or nil to remove it.</summary>
+    template <typename TMetatable>
+    void setMetatable(int index, TMetatable&& metatable)
+    {
+        push(std::forward<TMetatable>(metatable));
+        lua_setmetatable(state_, index);
+        notifyPush(-1);
     }
 
     // --- Formatting ---
