@@ -1755,6 +1755,13 @@ public:
             wrappedFunction<decltype(wrapped_func)>, std::move(wrapped_func), std::forward<TUpvalues>(upvalues)...);
     }
 
+    /// <summary>Pushes the global table on the stack.</summary>
+    auto pushGlobalTable()
+    {
+        lua_pushglobaltable(state_);
+        return top().asResult();
+    }
+
     /// <summary>Same as push, recommended to use for temporaries in expressions.</summary>
     template <typename... TValues>
     auto operator()(TValues&&... values)
@@ -2083,7 +2090,7 @@ public:
             // remove key, add value
             // -1, +1
             // notifyPush(0);
-            return {type, top().asResult()};
+            return std::tuple{type, top().asResult()};
         }
     }
 
@@ -2158,7 +2165,7 @@ public:
             // remove key, add value
             // -1, +1
             // notifyPush(0);
-            return {type, top().asResult()};
+            return std::tuple{type, top().asResult()};
         }
     }
 
@@ -2197,6 +2204,49 @@ public:
             // remove key and value, push nothing
             // -2, +0
             notifyPush(-2);
+        }
+    }
+
+    template <typename TKey>
+    auto getGlobalWithType(TKey&& key)
+    {
+        static_assert(Convert<TKey>::PushCount == 1);
+        if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
+            Type type = static_cast<Type>(lua_getglobal(state_, key));
+            notifyPush(1);
+            return std::tuple{type, top().asResult()};
+        }
+        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+            return getGlobalWithType(key.c_str());
+        }
+        else {
+            return pushGlobalTable().getTableWithType(std::forward<TKey>(key));
+        }
+    }
+
+    template <typename TKey>
+    auto getGlobal(TKey&& key)
+    {
+        auto [type, result] = getGlobalWithType(std::forward<TKey>(key));
+        return result;
+    }
+
+    /// <summary>Sets a new value in the global table.</summary>
+    template <typename TKey, typename TValue>
+    void setGlobal(TKey&& key, TValue&& value)
+    {
+        static_assert(Convert<TKey>::PushCount == 1);
+        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
+            push(std::forward<TValue>(value));
+            lua_setglobal(state_, key);
+            notifyPush(-1);
+        }
+        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+            return setGlobal(key.c_str(), std::forward<TValue>(value));
+        }
+        else {
+            return pushGlobalTable().setTable(std::forward<TKey>(key), std::forward<TValue>(value));
         }
     }
 
