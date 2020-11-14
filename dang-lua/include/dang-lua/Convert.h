@@ -309,6 +309,8 @@ struct Convert {
         if (!luaL_getmetafield(state, -1, "__index")) {
             lua_createtable(state, 0, static_cast<int>(ClassTable<T>.size()));
             detail::setfuncs(state, ClassTable<T>);
+            lua_pushvalue(state, -1);
+            lua_setfield(state, -4, "__indextable");
         }
         if (lua_getfield(state, -3, "__index") != LUA_TNIL)
             lua_pushcclosure(state, customIndex, 2);
@@ -329,6 +331,8 @@ struct Convert {
         if (!luaL_getmetafield(state, -1, "__index")) {
             lua_createtable(state, 0, static_cast<int>(ClassTable<T>.size()));
             detail::setfuncs(state, ClassTable<T>);
+            lua_pushvalue(state, -1);
+            lua_setfield(state, -4, "__indextable");
         }
         if (lua_getfield(state, -3, "__index") != LUA_TNIL)
             lua_pushcclosure(state, customIndex, 2);
