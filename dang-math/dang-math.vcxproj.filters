@@ -42,6 +42,9 @@
     <ClInclude Include="include\dang-math\interpolation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dang-math\vector-lua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-math.natvis" />

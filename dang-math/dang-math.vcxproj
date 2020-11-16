@@ -99,34 +99,34 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugVLD|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugVLD|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)dang-utils\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)dang-utils\include;$(SolutionDir)dang-lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='DebugVLD|Win32'" />
@@ -230,6 +230,7 @@
     <ClInclude Include="include\dang-math\utils.h" />
     <ClInclude Include="include\dang-math\matrix.h" />
     <ClInclude Include="include\dang-math\vector.h" />
+    <ClInclude Include="include\dang-math\vector-lua.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-math.natvis" />
