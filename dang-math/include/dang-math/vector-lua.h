@@ -125,7 +125,7 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
         constexpr auto pairs = +[](dlua::State& lua, dlua::Arg vector) {
             constexpr auto next = +[](dlua::Arg table, dlua::Arg key) { return table.next(std::move(key)); };
             auto metatable = vector.getMetatable();
-            return std::tuple{wrap<next>, metatable ? (*metatable)["__indextable"] : lua.pushNil()};
+            return std::tuple{wrap<next>, metatable ? (*metatable)["indextable"] : lua.pushNil()};
         };
 
         std::vector result{reg<&Vector::format>("__tostring"),
