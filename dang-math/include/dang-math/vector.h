@@ -4,6 +4,8 @@
 
 namespace dang::math {
 
+// TODO: C++20 Replace SFINAE with requires
+
 /// <summary>A vector of the templated type and dimension, using std::array as base.</summary>
 template <typename T, std::size_t Dim>
 struct Vector : std::array<T, Dim> {
@@ -12,7 +14,11 @@ struct Vector : std::array<T, Dim> {
         : std::array<T, Dim>()
     {}
 
-    /// <summary>Initializes all values with the given value.</summary>
+    /// <summary>Implicit conversion between scalars and a vector containing said scalar for each component.</summary>
+    /// <remarks>
+    /// Being implicit greatly simplifies operator overloading, however GLSL does not provide this implicit conversion.
+    /// GLSL only allows this conversion when used in conjunction with an actual mathematical operations.
+    /// </remarks>
     constexpr Vector(T value)
         : std::array<T, Dim>()
     {
@@ -39,12 +45,16 @@ struct Vector : std::array<T, Dim> {
     {}
 
     /// <summary>Converts a three-dimensional into a four-dimensional vector with the given value for w.</summary>
+    /// <remarks>
+    /// GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to implement in C++.
+    /// Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
+    /// </remarks>
     template <typename = std::enable_if_t<Dim == 4>>
     constexpr Vector(Vector<T, 3> vector, T w)
         : std::array<T, Dim>{vector[0], vector[1], vector[2], w}
     {}
 
-    /// <summary>Allows explicit casting between vector of same size but different types.</summary>
+    /// <summary>Allows explicit conversion between vector of same size but different types.</summary>
     template <typename TFrom>
     explicit constexpr Vector(const Vector<TFrom, Dim>& other)
         : Vector()
@@ -54,7 +64,8 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the sum of all components.</summary>
-    constexpr T sum() const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto sum() const
     {
         T result{};
         for (std::size_t i = 0; i < Dim; i++)
@@ -63,16 +74,18 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the product of all components.</summary>
-    constexpr T product() const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto product() const
     {
-        T result = T(1);
+        T result{1};
         for (std::size_t i = 0; i < Dim; i++)
             result *= (*this)[i];
         return result;
     }
 
     /// <summary>Returns the dot-product with the given vector.</summary>
-    constexpr T dot(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto dot(const Vector<T, Dim>& other) const
     {
         T result{};
         for (std::size_t i = 0; i < Dim; i++)
@@ -81,7 +94,8 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the dot-product with the vector itself.</summary>
-    constexpr T sqrdot() const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto sqrdot() const
     {
         T result{};
         for (std::size_t i = 0; i < Dim; i++)
@@ -90,229 +104,252 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the length of the vector.</summary>
-    constexpr T length() const
+    /// <remarks>In GLSL vec3(0).length() returns the component count.</remarks>
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto length() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::length requires a floating point type");
         return std::sqrt(sqrdot());
     }
 
     /// <summary>Returns a normalized version of the vector.</summary>
-    constexpr Vector<T, Dim> normalize() const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto normalize() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::normalize requires a floating point type");
         return (*this) / length();
     }
 
     /// <summary>Returns a new vector, which points from the vector to the given vector.</summary>
-    constexpr Vector<T, Dim> vectorTo(const Vector<T, Dim>& other) const { return other - *this; }
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto vectorTo(const Vector<T, Dim>& other) const
+    {
+        return other - *this;
+    }
 
     /// <summary>Returns the distance to the given vector.</summary>
-    constexpr T distanceTo(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto distanceTo(const Vector<T, Dim>& other) const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::distanceTo requires a floating point type");
         return (other - *this).length();
     }
 
     /// <summary>Returns the cosine of the angle to the given vector.</summary>
-    constexpr T cosAngleTo(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto cosAngleTo(const Vector<T, Dim>& other) const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::cosAngleTo requires a floating point type");
-        return std::clamp(dot(other) / (length() * other.length()), T(-1), T(1));
+        return std::clamp(dot(other) / (length() * other.length()), T{-1}, T{1});
     }
 
     /// <summary>Returns the angle to the given vector in radians.</summary>
-    constexpr T angleRadTo(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto radiansTo(const Vector<T, Dim>& other) const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::angleRadTo requires a floating point type");
         return std::acos(cosAngleTo(other));
     }
 
     /// <summary>Returns the angle to the given vector in degrees.</summary>
-    constexpr T angleTo(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto degreesTo(const Vector<T, Dim>& other) const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::angleTo requires a floating point type");
-        return dmath::radToDeg(angleRadTo(other));
-    }
-
-    /// <summary>Converts every component from radians into degrees.</summary>
-    constexpr Vector<T, Dim> radToDeg() const
-    {
-        static_assert(std::is_floating_point_v<T>, "vec::radToDeg requires a floating point type");
-        return unaryOp(&dmath::radToDeg<T>);
+        return dmath::degrees(radiansTo(other));
     }
 
     /// <summary>Converts every component from degrees into radians.</summary>
-    constexpr Vector<T, Dim> degToRad() const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto radians() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::degToRad requires a floating point type");
-        return unaryOp(&dmath::degToRad<T>);
+        return variadicOp(dmath::radians<T>);
+    }
+
+    /// <summary>Converts every component from radians into degrees.</summary>
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto degrees() const
+    {
+        return variadicOp(dmath::degrees<T>);
     }
 
     /// <summary>Returns the vector with each component being positive.</summary>
-    constexpr Vector<T, Dim> abs() const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto abs() const
     {
-        return unaryOp([](T a) { return a < T(0) ? -a : a; });
+        return variadicOp([](T a) { return a < T{0} ? -a : a; });
     }
 
     /// <summary>Returns the vector with each component rounded down.</summary>
-    constexpr Vector<T, Dim> floor() const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto floor() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::floor requires a floating point type");
-        return unaryOp([](T a) { return std::floor(a); });
+        return variadicOp([](T a) { return std::floor(a); });
     }
 
     /// <summary>Returns the vector with each component rounded up.</summary>
-    constexpr Vector<T, Dim> ceil() const
+    template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
+    constexpr auto ceil() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec::ceil requires a floating point type");
-        return unaryOp([](T a) { return std::ceil(a); });
+        return variadicOp([](T a) { return std::ceil(a); });
     }
 
     /// <summary>Returns a vector, only taking the smaller components of both vectors.</summary>
-    constexpr Vector<T, Dim> min(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto min(const Vector<T, Dim>& other) const
     {
-        return binaryOp(other, [](T a, T b) { return a < b ? a : b; });
+        return variadicOp([](T a, T b) { return std::min(a, b); }, other);
     }
 
     /// <summary>Returns a vector, only taking the larger components of both vectors.</summary>
-    constexpr Vector<T, Dim> max(const Vector<T, Dim>& other) const
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto max(const Vector<T, Dim>& other) const
     {
-        return binaryOp(other, [](T a, T b) { return a > b ? a : b; });
+        return variadicOp([](T a, T b) { return std::max(a, b); }, other);
+    }
+
+    /// <summary>Returns a vector, for which each component is clamped between low and high.</summary>
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto clamp(const Vector<T, Dim>& low, const Vector<T, Dim>& high) const
+    {
+        return variadicOp([](T a, T b, T c) { return std::clamp(a, b, c); }, low, high);
     }
 
     /// <summary>Reflects the vector on the given plane normal.</summary>
-    constexpr Vector<T, Dim> reflect(const Vector<T, Dim>& normal) const { return *this - 2 * dot(normal) * normal; }
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto reflect(const Vector<T, Dim>& normal) const
+    {
+        return *this - 2 * dot(normal) * normal;
+    }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto lessThan(const Vector<T, Dim>& other) const { return variadicOp(std::less<>{}, other); }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto lessThanEqual(const Vector<T, Dim>& other) const { return variadicOp(std::less_equal<>{}, other); }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto greaterThan(const Vector<T, Dim>& other) const { return variadicOp(std::greater<>{}, other); }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto greaterThanEqual(const Vector<T, Dim>& other) const
+    {
+        return variadicOp(std::greater_equal<>{}, other);
+    }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto equal(const Vector<T, Dim>& other) const { return variadicOp(std::equal_to<>{}, other); }
+
+    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    constexpr auto notEqual(const Vector<T, Dim>& other) const { return variadicOp(std::not_equal_to<>{}, other); }
+
+    /// <summary>Whether all components satisfy a given predicate.</summary>
+    template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
+    constexpr auto all() const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if (!(*this)[i])
+                return false;
+        return true;
+    }
+
+    /// <summary>Whether any component satisfies a given predicate.</summary>
+    template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
+    constexpr auto any() const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if ((*this)[i])
+                return true;
+        return false;
+    }
+
+    /// <summary>Whether no component satisfies a given predicate.</summary>
+    template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
+    constexpr auto none() const
+    {
+        for (std::size_t i = 0; i < Dim; i++)
+            if ((*this)[i])
+                return false;
+        return true;
+    }
+
+    /// <summary>Inverts each component.</summary>
+    /// <remarks>Known as "not" in GLSL, which cannot be used in C++.</remarks>
+    template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
+    constexpr auto invert() const
+    {
+        return variadicOp(std::logical_not<>{});
+    }
 
     /// <summary>Simply returns the vector.</summary>
-    constexpr Vector<T, Dim> operator+() const { return *this; }
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto operator+() const
+    {
+        return *this;
+    }
 
     /// <summary>Returns the vector with each component negated.</summary>
-    constexpr Vector<T, Dim> operator-() const { return unaryOp(std::negate<T>{}); }
-
-    /// <summary>Component-wise addition of two vectors.</summary>
-    friend constexpr Vector<T, Dim> operator+(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto operator-() const
     {
-        return lhs.binaryOp(rhs, std::plus<T>{});
+        return variadicOp(std::negate<>{});
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator+=(const Vector<T, Dim>& other) { return assignmentOp(other, std::plus<T>{}); }
-
-    /// <summary>Component-wise subtraction of two vectors.</summary>
-    friend constexpr Vector<T, Dim> operator-(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    friend constexpr auto operator+(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
     {
-        return lhs.binaryOp(rhs, std::minus<T>{});
+        return lhs.variadicOp(std::plus<>{}, rhs);
+    }
+
+    /// <summary>Component-wise addition of two vectors.</summary>
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto& operator+=(const Vector<T, Dim>& other)
+    {
+        return assignmentOp(std::plus<>{}, other);
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator-=(const Vector<T, Dim>& other) { return assignmentOp(other, std::minus<T>{}); }
-
-    /// <summary>Component-wise multiplication of two vectors.</summary>
-    friend constexpr Vector<T, Dim> operator*(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    friend constexpr auto operator-(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
     {
-        return lhs.binaryOp(rhs, std::multiplies<T>{});
+        return lhs.variadicOp(std::minus<>{}, rhs);
+    }
+
+    /// <summary>Component-wise subtraction of two vectors.</summary>
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto& operator-=(const Vector<T, Dim>& other)
+    {
+        return assignmentOp(std::minus<>{}, other);
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator*=(const Vector<T, Dim>& other)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    friend constexpr auto operator*(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
     {
-        return assignmentOp(other, std::multiplies<T>{});
+        return lhs.variadicOp(std::multiplies<>{}, rhs);
+    }
+
+    /// <summary>Component-wise multiplication of two vectors.</summary>
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto& operator*=(const Vector<T, Dim>& other)
+    {
+        return assignmentOp(std::multiplies<>{}, other);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
-    friend constexpr Vector<T, Dim> operator/(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    friend constexpr auto operator/(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
     {
-        return lhs.binaryOp(rhs, std::divides<T>{});
+        return lhs.variadicOp(std::divides<>{}, rhs);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
-    constexpr Vector<T, Dim>& operator/=(const Vector<T, Dim>& other) { return assignmentOp(other, std::divides<T>{}); }
-
-    /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
-    friend constexpr bool operator==(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    constexpr auto& operator/=(const Vector<T, Dim>& other)
     {
-        return lhs.all(std::equal_to<T>{}, rhs);
-    }
-
-    /// <summary>Returns true, if, between both vectors, any components are not equal.</summary>
-    friend constexpr bool operator!=(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
-    {
-        return lhs.any(std::not_equal_to<T>{}, rhs);
-    }
-
-    /// <summary>Returns true, if, between both vectors, all components are equal.</summary>
-    constexpr bool allEqualTo(const Vector<T, Dim>& other) const { return all(std::equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if, between both vectors, any components are equal.</summary>
-    constexpr bool anyEqualTo(const Vector<T, Dim>& other) const { return any(std::equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if, between both vectors, no components are equal.</summary>
-    constexpr bool noneEqualTo(const Vector<T, Dim>& other) const { return none(std::equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if, between both vectors, all components differ.</summary>
-    constexpr bool allNotEqualTo(const Vector<T, Dim>& other) const { return all(std::not_equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if, between both vectors, any components differ.</summary>
-    constexpr bool anyNotEqualTo(const Vector<T, Dim>& other) const { return any(std::not_equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if, between both vectors, no components differ.</summary>
-    constexpr bool noneNotEqualTo(const Vector<T, Dim>& other) const { return none(std::not_equal_to<T>{}, other); }
-
-    /// <summary>Returns true, if all components are less than the components of the given vector.</summary>
-    constexpr bool allLess(const Vector<T, Dim>& other) const { return all(std::less<T>{}, other); }
-
-    /// <summary>Returns true, if any component is less than the components of the given vector.</summary>
-    constexpr bool anyLess(const Vector<T, Dim>& other) const { return any(std::less<T>{}, other); }
-
-    /// <summary>Returns true, if no component is less than the components of the given vector.</summary>
-    constexpr bool noneLess(const Vector<T, Dim>& other) const { return none(std::less<T>{}, other); }
-
-    /// <summary>Returns true, if all components are less than or equal to the components of the given vector.</summary>
-    constexpr bool allLessEqual(const Vector<T, Dim>& other) const { return all(std::less_equal<T>{}, other); }
-
-    /// <summary>Returns true, if any component is less than or equal to the components of the given vector.</summary>
-    constexpr bool anyLessEqual(const Vector<T, Dim>& other) const { return any(std::less_equal<T>{}, other); }
-
-    /// <summary>Returns true, if no component is less than or equal to the components of the given vector.</summary>
-    constexpr bool noneLessEqual(const Vector<T, Dim>& other) const { return none(std::less_equal<T>{}, other); }
-
-    /// <summary>Returns true, if all components are greater than the components of the given vector.</summary>
-    constexpr bool allGreater(const Vector<T, Dim>& other) const { return all(std::greater<T>{}, other); }
-
-    /// <summary>Returns true, if any component is greater than the components of the given vector.</summary>
-    constexpr bool anyGreater(const Vector<T, Dim>& other) const { return any(std::greater<T>{}, other); }
-
-    /// <summary>Returns true, if no component is greater than the components of the given vector.</summary>
-    constexpr bool noneGreater(const Vector<T, Dim>& other) const { return none(std::greater<T>{}, other); }
-
-    /// <summary>Returns true, if all components are greater than or equal to the components of the given vector.</summary>
-    constexpr bool allGreaterEqual(const Vector<T, Dim>& other) const { return all(std::greater_equal<T>{}, other); }
-
-    /// <summary>Returns true, if any component is greater than or equal to the components of the given vector.</summary>
-    constexpr bool anyGreaterEqual(const Vector<T, Dim>& other) const { return any(std::greater_equal<T>{}, other); }
-
-    /// <summary>Returns true, if no component is greater than or equal to the components of the given vector.</summary>
-    constexpr bool noneGreaterEqual(const Vector<T, Dim>& other) const { return none(std::greater_equal<T>{}, other); }
-
-    /// <summary>Used for tuple-unpacking.</summary>
-    template <std::size_t Index>
-    constexpr T& get() noexcept
-    {
-        return std::get<Index>(*this);
-    }
-
-    /// <summary>Used for tuple-unpacking.</summary>
-    template <std::size_t Index>
-    constexpr const T& get() const noexcept
-    {
-        return std::get<Index>(*this);
+        return assignmentOp(std::divides<>{}, other);
     }
 
     /// <summary>Returns a swizzle of the given components.</summary>
     template <std::size_t... Indices>
-    constexpr Vector<T, sizeof...(Indices)> swizzle() const
+    constexpr auto swizzle() const
     {
-        return {std::get<Indices>(*this)...};
+        return Vector<T, sizeof...(Indices)>{std::get<Indices>(*this)...};
     }
 
     /// <summary>Sets a swizzle for the given components.</summary>
@@ -329,77 +366,43 @@ struct Vector : std::array<T, Dim> {
         setSwizzleHelper<Indices...>(vector, std::make_index_sequence<sizeof...(Indices)>());
     }
 
-    /// <summary>Performs a unary operation on each component and returns the result.</summary>
-    template <typename TOperation>
-    constexpr Vector<T, Dim> unaryOp(TOperation operation) const
+    /// <summary>Performs an operation on each component using an arbitrary number of other vectors.</summary>
+    template <typename TOperation, typename... TVectors>
+    constexpr auto variadicOp(TOperation operation, const TVectors&... vectors) const
     {
-        Vector<T, Dim> result;
+        Vector<decltype(operation((*this)[0], vectors[0]...)), Dim> result;
         for (std::size_t i = 0; i < Dim; i++)
-            result[i] = operation((*this)[i]);
+            result[i] = operation((*this)[i], vectors[i]...);
         return result;
     }
 
-    /// <summary>Performs a binary operation with another vector and returns the result.</summary>
+    /// <summary>Performs an operation with another vector and assigns itself to the result.</summary>
     template <typename TOperation>
-    constexpr Vector<T, Dim> binaryOp(const Vector<T, Dim>& other, TOperation operation) const
-    {
-        Vector<T, Dim> result;
-        for (std::size_t i = 0; i < Dim; i++)
-            result[i] = operation((*this)[i], other[i]);
-        return result;
-    }
-
-    /// <summary>Performs a binary operation with another vector and assigns the result to itself and returns it.</summary>
-    template <typename TOperation>
-    constexpr Vector<T, Dim>& assignmentOp(const Vector<T, Dim>& other, TOperation operation)
+    constexpr auto& assignmentOp(TOperation operation, const Vector<T, Dim>& other)
     {
         for (std::size_t i = 0; i < Dim; i++)
             (*this)[i] = operation((*this)[i], other[i]);
         return *this;
     }
 
-    /// <summary>Whether all components satisfy a given predicate.</summary>
-    template <typename TPredicate, typename... TOthers>
-    constexpr bool all(TPredicate predicate, const TOthers&... others) const
-    {
-        for (std::size_t i = 0; i < Dim; i++)
-            if (!predicate((*this)[i], others[i]...))
-                return false;
-        return true;
-    }
-
-    /// <summary>Whether any component satisfies a given predicate.</summary>
-    template <typename TPredicate, typename... TOthers>
-    constexpr bool any(TPredicate predicate, const TOthers&... others) const
-    {
-        for (std::size_t i = 0; i < Dim; i++)
-            if (predicate((*this)[i], others[i]...))
-                return true;
-        return false;
-    }
-
-    /// <summary>Whether none of the components satisfy a given predicate.</summary>
-    template <typename TPredicate, typename... TOthers>
-    constexpr bool none(TPredicate predicate, const TOthers&... others) const
-    {
-        for (std::size_t i = 0; i < Dim; i++)
-            if (predicate((*this)[i], others[i]...))
-                return false;
-        return true;
-    }
-
     /// <summary>Returns a string representing the vector in the form [x, y, z].</summary>
-    std::string format() const { return (std::stringstream() << *this).str(); }
+    auto format() const { return (std::stringstream() << *this).str(); }
 
     /// <summary>Appends a string representation of the vector in the form [x, y, z] to the stream.</summary>
-    friend std::ostream& operator<<(std::ostream& stream, const Vector& vector)
+    friend auto& operator<<(std::ostream& stream, const Vector& vector)
     {
+        auto old_flags = stream.flags();
+        if constexpr (std::is_same_v<T, bool>)
+            stream << std::boolalpha;
+
         stream << '[';
         if constexpr (Dim > 0) {
             stream << vector[0];
             for (std::size_t i = 1; i < Dim; i++)
                 stream << ", " << vector[i];
         }
+        if constexpr (std::is_same_v<T, bool>)
+            stream.flags(old_flags);
         return stream << ']';
     }
 
@@ -407,80 +410,77 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>The x-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
-    constexpr T& x()
+    constexpr auto& x()
     {
-        return std::get<0>(*this);
+        return (*this)[0];
     }
 
     /// <summary>The x-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 1 && Dim <= 4>>
-    constexpr T x() const
+    constexpr auto x() const
     {
-        return std::get<0>(*this);
+        return (*this)[0];
     }
 
     // --- Vector<T, 2> ---
 
     /// <summary>The y-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 2 && Dim <= 4>>
-    constexpr T& y()
+    constexpr auto& y()
     {
-        return std::get<1>(*this);
+        return (*this)[1];
     }
 
     /// <summary>The y-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 2 && Dim <= 4>>
-    constexpr T y() const
+    constexpr auto y() const
     {
-        return std::get<1>(*this);
+        return (*this)[1];
     }
 
     /// <summary>Creates a vector from the given slope, which is NOT normalized.</summary>
     /// <remarks>The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.</remarks>
-    template <typename = std::enable_if_t<Dim == 2>>
-    static constexpr Vector<T, 2> fromSlope(std::optional<T> slope)
+    template <typename = std::enable_if_t<Dim == 2 && !std::is_same_v<T, bool>>>
+    static constexpr auto fromSlope(std::optional<T> slope)
     {
         return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
     }
 
     /// <summary>Creates a normalized vector of the given angle in radians.</summary>
     /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
-    template <typename = std::enable_if_t<Dim == 2>>
-    static constexpr Vector<T, 2> fromAngleRad(T radians)
+    template <typename = std::enable_if_t<Dim == 2 && std::is_floating_point_v<T>>>
+    static constexpr auto fromRadians(T radians)
     {
-        static_assert(std::is_floating_point_v<T>, "vec::fromAngleRad requires a floating point type");
-        return {std::cos(radians), std::sin(radians)};
+        return Vector<T, 2>{std::cos(radians), std::sin(radians)};
     }
 
     /// <summary>Creates a normalized vector of the given angle in degrees.</summary>
     /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
-    template <typename = std::enable_if_t<Dim == 2>>
-    static constexpr Vector<T, 2> fromAngle(T degrees)
+    template <typename = std::enable_if_t<Dim == 2 && std::is_floating_point_v<T>>>
+    static constexpr auto fromDegrees(T degrees)
     {
-        static_assert(std::is_floating_point_v<T>, "vec::fromAngle requires a floating point type");
-        return fromAngleRad(dmath::degToRad(degrees));
+        return fromRadians(dmath::radians(degrees));
     }
 
     /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>
-    template <typename = std::enable_if_t<Dim == 2>>
-    constexpr Vector<T, 2> cross() const
+    template <typename = std::enable_if_t<Dim == 2 && !std::is_same_v<T, bool>>>
+    constexpr auto cross() const
     {
-        return {-y(), x()};
+        return Vector<T, 2>{-y(), x()};
     }
 
     /// <summary>Returns the two-dimensional cross-product with the given vector.</summary>
     /// <remarks>Equivalent to <c>x1 * y2 - y1 * x2</c></remarks>
-    template <typename = std::enable_if_t<Dim == 2>>
-    constexpr T cross(const Vector<T, 2>& other) const
+    template <typename = std::enable_if_t<Dim == 2 && !std::is_same_v<T, bool>>>
+    constexpr auto cross(const Vector<T, 2>& other) const
     {
         return x() * other.y() - y() * other.x();
     }
 
     /// <summary>Returns the slope of the vector or std::nullopt if infinite.</summary>
-    template <typename = std::enable_if_t<Dim == 2>>
+    template <typename = std::enable_if_t<Dim == 2 && std::is_floating_point_v<T>>>
     constexpr std::optional<T> slope() const
     {
-        static_assert(std::is_floating_point_v<T>, "vec2::slope requires a floating point type");
         if (x() != T())
             return y() / x();
         return std::nullopt;
@@ -490,48 +490,48 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>The z-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 3 && Dim <= 4>>
-    constexpr T& z()
+    constexpr auto& z()
     {
-        return std::get<2>(*this);
+        return (*this)[2];
     }
 
     /// <summary>The z-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim >= 3 && Dim <= 4>>
-    constexpr T z() const
+    constexpr auto z() const
     {
-        return std::get<2>(*this);
+        return (*this)[2];
     }
 
     /// <summary>Returns the cross-product with the given vector.</summary>
-    template <typename = std::enable_if_t<Dim == 3>>
-    constexpr Vector<T, 3> cross(const Vector<T, 3>& other) const
+    template <typename = std::enable_if_t<Dim == 3 && !std::is_same_v<T, bool>>>
+    constexpr auto cross(const Vector<T, 3>& other) const
     {
-        return {(*this)[1] * other[2] - (*this)[2] * other[1],
-                (*this)[2] * other[0] - (*this)[0] * other[2],
-                (*this)[0] * other[1] - (*this)[1] * other[0]};
+        return Vector<T, 3>{(*this)[1] * other[2] - (*this)[2] * other[1],
+                            (*this)[2] * other[0] - (*this)[0] * other[2],
+                            (*this)[0] * other[1] - (*this)[1] * other[0]};
     }
 
     // --- Vector<T, 4> ---
 
     /// <summary>The w-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
-    constexpr T& w()
+    constexpr auto& w()
     {
-        return std::get<3>(*this);
+        return (*this)[3];
     }
 
     /// <summary>The w-component of the vector.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
-    constexpr T w() const
+    constexpr auto w() const
     {
-        return std::get<3>(*this);
+        return (*this)[3];
     }
 
     // --- Swizzles ---
 
 #define DMATH_DEFINE_SWIZZLE(name, ...)                                                                                \
     template <typename = std::enable_if_t<Dim >= sizeof(#name) - 1>>                                                   \
-    constexpr Vector<T, sizeof(#name) - 1> name() const                                                                \
+    constexpr auto name() const                                                                                        \
     {                                                                                                                  \
         return swizzle<__VA_ARGS__>();                                                                                 \
     }                                                                                                                  \
@@ -650,13 +650,9 @@ using bvec3 = bvec<3>;
 using bvec4 = bvec<4>;
 
 template <typename T, std::size_t Dim>
-struct std::tuple_size<Vector<T, Dim>> {
-    static constexpr int value = Dim;
-};
+struct std::tuple_size<Vector<T, Dim>> : std::tuple_size<std::array<T, Dim>> {};
 
 template <typename T, std::size_t Dim, std::size_t Index>
-struct std::tuple_element<Index, Vector<T, Dim>> {
-    using type = T;
-};
+struct std::tuple_element<Index, Vector<T, Dim>> : std::tuple_element<Index, std::array<T, Dim>> {};
 
 } // namespace dang::math

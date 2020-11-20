@@ -89,7 +89,7 @@ void PerspectiveProjection::setFarClip(float far_clip)
 mat4 PerspectiveProjection::calculateMatrix()
 {
     mat4 result;
-    float a = dmath::degToRad(field_of_view_) / 2;
+    float a = dmath::radians(field_of_view_) / 2;
     float f = std::cos(a) / std::sin(a);
     result(0, 0) = f / aspect();
     result(1, 1) = f;

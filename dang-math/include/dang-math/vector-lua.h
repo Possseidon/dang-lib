@@ -44,51 +44,31 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
 
         constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<Dim>{}); };
 
+        // Ugly workaround for SFINAE with <void>
+        // Should be gone with concepts hopefully
+
         std::vector result{reg<set>("set"),
                            reg<copy>("copy"),
                            reg<unpack>("unpack"),
-                           reg<&Vector::sum>("sum"),
-                           reg<&Vector::product>("product"),
-                           reg<&Vector::dot>("dot"),
-                           reg<&Vector::sqrdot>("sqrdot"),
-                           reg<&Vector::vectorTo>("vectorTo"),
-                           reg<&Vector::abs>("abs"),
-                           reg<&Vector::min>("min"),
-                           reg<&Vector::max>("max"),
-                           reg<&Vector::reflect>("reflect"),
-
-                           reg<&Vector::allEqualTo>("allEqualTo"),
-                           reg<&Vector::anyEqualTo>("anyEqualTo"),
-                           reg<&Vector::noneEqualTo>("noneEqualTo"),
-                           reg<&Vector::allNotEqualTo>("allNotEqualTo"),
-                           reg<&Vector::anyNotEqualTo>("anyNotEqualTo"),
-                           reg<&Vector::noneNotEqualTo>("noneNotEqualTo"),
-                           reg<&Vector::allLess>("allLess"),
-                           reg<&Vector::anyLess>("anyLess"),
-                           reg<&Vector::noneLess>("noneLess"),
-                           reg<&Vector::allLessEqual>("allLessEqual"),
-                           reg<&Vector::anyLessEqual>("anyLessEqual"),
-                           reg<&Vector::noneLessEqual>("noneLessEqual"),
-                           reg<&Vector::allGreater>("allGreater"),
-                           reg<&Vector::anyGreater>("anyGreater"),
-                           reg<&Vector::noneGreater>("noneGreater"),
-                           reg<&Vector::allGreaterEqual>("allGreaterEqual"),
-                           reg<&Vector::anyGreaterEqual>("anyGreaterEqual"),
-                           reg<&Vector::noneGreaterEqual>("noneGreaterEqual"),
-
+                           reg<&Vector::lessThan>("lessThan"),
+                           reg<&Vector::lessThanEqual>("lessThanEqual"),
+                           reg<&Vector::greaterThan>("greaterThan"),
+                           reg<&Vector::greaterThanEqual>("greaterThanEqual"),
+                           reg<&Vector::equal>("equal"),
+                           reg<&Vector::notEqual>("notEqual"),
                            reg<&Vector::format>("format")};
 
         if constexpr (std::is_floating_point_v<T>) {
-            result.push_back(reg<&Vector::normalize>("normalize"));
-            result.push_back(reg<&Vector::length>("length"));
-            result.push_back(reg<&Vector::floor>("floor"));
-            result.push_back(reg<&Vector::ceil>("ceil"));
-            result.push_back(reg<&Vector::radToDeg>("radToDeg"));
-            result.push_back(reg<&Vector::degToRad>("degToRad"));
-            result.push_back(reg<&Vector::distanceTo>("distanceTo"));
-            result.push_back(reg<&Vector::cosAngleTo>("cosAngleTo"));
-            result.push_back(reg<&Vector::angleRadTo>("angleRadTo"));
-            result.push_back(reg<&Vector::angleTo>("angleTo"));
+            result.push_back(reg<&Vector::length<void>>("length"));
+            result.push_back(reg<&Vector::normalize<void>>("normalize"));
+            result.push_back(reg<&Vector::distanceTo<void>>("distanceTo"));
+            result.push_back(reg<&Vector::cosAngleTo<void>>("cosAngleTo"));
+            result.push_back(reg<&Vector::radiansTo<void>>("radiansTo"));
+            result.push_back(reg<&Vector::degreesTo<void>>("degreesTo"));
+            result.push_back(reg<&Vector::radians<void>>("radians"));
+            result.push_back(reg<&Vector::degrees<void>>("degrees"));
+            result.push_back(reg<&Vector::floor<void>>("floor"));
+            result.push_back(reg<&Vector::ceil<void>>("ceil"));
 
             if constexpr (Dim == 2) {
                 constexpr auto cross = +[](const Vector& vec, const std::optional<Vector>& other) {
@@ -101,9 +81,28 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             }
         }
 
-        if constexpr (Dim == 3) {
-            constexpr auto cross = +[](const Vector& lhs, const Vector& rhs) { return lhs.cross(rhs); };
-            result.push_back(reg<cross>("cross"));
+        if constexpr (std::is_same_v<T, bool>) {
+            result.push_back(reg<&Vector::all<void>>("all"));
+            result.push_back(reg<&Vector::any<void>>("any"));
+            result.push_back(reg<&Vector::none<void>>("none"));
+            result.push_back(reg<&Vector::invert<void>>("invert"));
+        }
+        else {
+            result.push_back(reg<&Vector::sum<void>>("sum"));
+            result.push_back(reg<&Vector::product<void>>("product"));
+            result.push_back(reg<&Vector::dot<void>>("dot"));
+            result.push_back(reg<&Vector::sqrdot<void>>("sqrdot"));
+            result.push_back(reg<&Vector::vectorTo<void>>("vectorTo"));
+            result.push_back(reg<&Vector::abs<void>>("abs"));
+            result.push_back(reg<&Vector::min<void>>("min"));
+            result.push_back(reg<&Vector::max<void>>("max"));
+            result.push_back(reg<&Vector::clamp<void>>("clamp"));
+            result.push_back(reg<&Vector::reflect<void>>("reflect"));
+
+            if constexpr (Dim == 3) {
+                constexpr auto cross = +[](const Vector& lhs, const Vector& rhs) { return lhs.cross(rhs); };
+                result.push_back(reg<cross>("cross"));
+            }
         }
 
         return result;
@@ -111,20 +110,6 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
 
     constexpr auto metatable()
     {
-        constexpr auto add = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
-            return std::visit([](const auto& a, const auto& b) -> Vector { return a + b; }, lhs, rhs);
-        };
-        constexpr auto sub = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
-            return std::visit([](const auto& a, const auto& b) -> Vector { return a - b; }, lhs, rhs);
-        };
-        constexpr auto mul = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
-            return std::visit([](const auto& a, const auto& b) -> Vector { return a * b; }, lhs, rhs);
-        };
-        constexpr auto div = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
-            return std::visit([](const auto& a, const auto& b) -> Vector { return a / b; }, lhs, rhs);
-        };
-
-        constexpr auto unm = +[](const Vector& vec) { return -vec; };
         constexpr auto len = +[](const Vector&) { return Dim; };
 
         constexpr auto eq = +[](const Vector& lhs, const Vector& rhs) { return lhs == rhs; };
@@ -143,35 +128,54 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             return std::tuple{wrap<next>, metatable ? (*metatable)["__indextable"] : lua.pushNil()};
         };
 
-        return std::array{reg<&Vector::format>("__tostring"),
-                          reg<add>("__add"),
-                          reg<sub>("__sub"),
-                          reg<mul>("__mul"),
-                          reg<div>("__div"),
-                          reg<unm>("__unm"),
-                          reg<len>("__len"),
-                          reg<eq>("__eq"),
-                          reg<lt>("__lt"),
-                          reg<le>("__le"),
-                          reg<index>("__index"),
-                          reg<newindex>("__newindex"),
-                          reg<pairs>("__pairs")};
+        std::vector result{reg<&Vector::format>("__tostring"),
+                           reg<len>("__len"),
+                           reg<eq>("__eq"),
+                           reg<lt>("__lt"),
+                           reg<le>("__le"),
+                           reg<index>("__index"),
+                           reg<newindex>("__newindex"),
+                           reg<pairs>("__pairs")};
+
+        if constexpr (!std::is_same_v<T, bool>) {
+            constexpr auto add = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
+                return std::visit([](const auto& a, const auto& b) -> Vector { return a + b; }, lhs, rhs);
+            };
+            constexpr auto sub = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
+                return std::visit([](const auto& a, const auto& b) -> Vector { return a - b; }, lhs, rhs);
+            };
+            constexpr auto mul = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
+                return std::visit([](const auto& a, const auto& b) -> Vector { return a * b; }, lhs, rhs);
+            };
+            constexpr auto div = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
+                return std::visit([](const auto& a, const auto& b) -> Vector { return a / b; }, lhs, rhs);
+            };
+
+            constexpr auto unm = +[](const Vector& vec) { return -vec; };
+
+            result.push_back(reg<add>("__add"));
+            result.push_back(reg<sub>("__sub"));
+            result.push_back(reg<mul>("__mul"));
+            result.push_back(reg<div>("__div"));
+            result.push_back(reg<unm>("__unm"));
+        }
+
+        return result;
     }
 
     static auto require(dlua::State& lua)
     {
         constexpr auto create = +[](dlua::State& lua, dlua::Arg, dlua::VarArgs values) {
-            if (values.size() == 0) {
+            if (values.size() == 0)
                 return Vector();
-            }
-            else if (values.size() == 1) {
+            if (values.size() == 1)
                 return Vector(values[0].check<T>());
-            }
-            else if (values.size() == Dim) {
+            if (values.size() == Dim) {
                 Vector result;
                 std::transform(values.begin(), values.end(), result.begin(), ArgCheck<T>{});
                 return result;
             }
+
             if constexpr (Dim == 0)
                 lua.error("0 parameters expected, got " + std::to_string(values.size()));
             else if constexpr (Dim == 1)
@@ -188,11 +192,11 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             result.rawSetTable("fromSlope", wrap<from_slope>);
 
             if constexpr (std::is_floating_point_v<T>) {
-                constexpr auto from_angle_rad = +[](T radians) { return Vector::fromAngleRad(radians); };
-                result.rawSetTable("fromAngleRad", wrap<from_angle_rad>);
+                constexpr auto from_angle_rad = +[](T radians) { return Vector::fromRadians(radians); };
+                result.rawSetTable("fromRadians", wrap<from_angle_rad>);
 
-                constexpr auto from_angle = +[](T degrees) { return Vector::fromAngle(degrees); };
-                result.rawSetTable("fromAngle", wrap<from_angle>);
+                constexpr auto from_angle = +[](T degrees) { return Vector::fromDegrees(degrees); };
+                result.rawSetTable("fromDegrees", wrap<from_angle>);
             }
         }
 

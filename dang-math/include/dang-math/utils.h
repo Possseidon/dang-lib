@@ -1,30 +1,32 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <type_traits>
 
 namespace dang::math {
 
+// TODO: C++20 use math constants
 /// <summary>The value of Pi.</summary>
-constexpr double pi = 3.14159265358979323846;
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+constexpr T pi_v = static_cast<T>(3.141592653589793);
 
-/// <summary>Converts from radians to degrees using pi.</summary>
-template <typename T>
-constexpr T radToDeg(T value)
+/// <summary>Converts from radians to degrees by multiplying by 180 and dividing by pi.</summary>
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+constexpr T degrees(T value)
 {
-    static_assert(std::is_floating_point_v<T>, "radToDeg requires a floating point type");
-    return value * static_cast<T>(180) / static_cast<T>(pi);
+    return value * T{180} / pi_v<T>;
 }
 
-/// <summary>Converts from degrees to radians using pi.</summary>
-template <typename T>
-constexpr T degToRad(T value)
+/// <summary>Converts from degrees to radians by multiplying by pi and dividing by 180.</summary>
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+constexpr T radians(T value)
 {
-    static_assert(std::is_floating_point_v<T>, "degToRad requires a floating point type");
-    return value * static_cast<T>(pi) / static_cast<T>(180);
+    return value * pi_v<T> / T{180};
 }
 
 } // namespace dang::math

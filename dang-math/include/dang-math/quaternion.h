@@ -51,7 +51,7 @@ struct Quaternion : private Vector<T, 4> {
     /// <summary>Returns a quaternion from the given rotation, specified as rotation-axis and angle in degrees.</summary>
     static constexpr Quaternion fromAxis(const Vector<T, 3>& normal, T degrees)
     {
-        return fromAxisRad(normal, degToRad(degrees));
+        return fromAxisRad(normal, radians(degrees));
     }
 
     /// <summary>Returns a quaternion with all euler angles in radians applied in the given order.</summary>
@@ -70,7 +70,7 @@ struct Quaternion : private Vector<T, 4> {
     static constexpr Quaternion fromEuler(const Vector<T, AngleCount>& degrees,
                                           const std::array<Axis3, AngleCount>& order)
     {
-        return fromEulerRad(degrees.degToRad(), order);
+        return fromEulerRad(degrees.radians(), order);
     }
 
     /// <summary>Returns a quaternion with all euler angles in radians applied in YXZ-order.</summary>
@@ -80,7 +80,7 @@ struct Quaternion : private Vector<T, 4> {
     }
 
     /// <summary>Returns a quaternion with all euler angles in degrees applied in YXZ-order.</summary>
-    static constexpr Quaternion fromEuler(const Vector<T, 3>& degrees) { return fromEulerRad(degrees.degToRad()); }
+    static constexpr Quaternion fromEuler(const Vector<T, 3>& degrees) { return fromEulerRad(degrees.radians()); }
 
     /// <summary>Returns a quaternion with all euler angles in radians applied in YX-order.</summary>
     static constexpr Quaternion fromEulerRad(const Vector<T, 2>& radians)
@@ -89,7 +89,7 @@ struct Quaternion : private Vector<T, 4> {
     }
 
     /// <summary>Returns a quaternion with all euler angles in degrees applied in YX-order.</summary>
-    static constexpr Quaternion fromEuler(const Vector<T, 2>& degrees) { return fromEulerRad(degrees.degToRad()); }
+    static constexpr Quaternion fromEuler(const Vector<T, 2>& degrees) { return fromEulerRad(degrees.radians()); }
 
     /// <summary>Returns the scalar/w part of the quaternion.</summary>
     constexpr T scalar() const { return Base::w(); }
