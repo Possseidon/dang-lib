@@ -87,7 +87,7 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>Returns the dot-product with the given vector.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto dot(const Vector<T, Dim>& other) const
+    constexpr auto dot(const Vector& other) const
     {
         T result{};
         for (std::size_t i = 0; i < Dim; i++)
@@ -122,35 +122,35 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>Returns a new vector, which points from the vector to the given vector.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto vectorTo(const Vector<T, Dim>& other) const
+    constexpr auto vectorTo(const Vector& other) const
     {
         return other - *this;
     }
 
     /// <summary>Returns the distance to the given vector.</summary>
     template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
-    constexpr auto distanceTo(const Vector<T, Dim>& other) const
+    constexpr auto distanceTo(const Vector& other) const
     {
         return (other - *this).length();
     }
 
     /// <summary>Returns the cosine of the angle to the given vector.</summary>
     template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
-    constexpr auto cosAngleTo(const Vector<T, Dim>& other) const
+    constexpr auto cosAngleTo(const Vector& other) const
     {
         return std::clamp(dot(other) / (length() * other.length()), T{-1}, T{1});
     }
 
     /// <summary>Returns the angle to the given vector in radians.</summary>
     template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
-    constexpr auto radiansTo(const Vector<T, Dim>& other) const
+    constexpr auto radiansTo(const Vector& other) const
     {
         return std::acos(cosAngleTo(other));
     }
 
     /// <summary>Returns the angle to the given vector in degrees.</summary>
     template <typename = std::enable_if_t<std::is_floating_point_v<T>>>
-    constexpr auto degreesTo(const Vector<T, Dim>& other) const
+    constexpr auto degreesTo(const Vector& other) const
     {
         return dmath::degrees(radiansTo(other));
     }
@@ -192,58 +192,55 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>Returns a vector, only taking the smaller components of both vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto min(const Vector<T, Dim>& other) const
+    constexpr auto min(const Vector& other) const
     {
         return variadicOp([](T a, T b) { return std::min(a, b); }, other);
     }
 
     /// <summary>Returns a vector, only taking the larger components of both vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto max(const Vector<T, Dim>& other) const
+    constexpr auto max(const Vector& other) const
     {
         return variadicOp([](T a, T b) { return std::max(a, b); }, other);
     }
 
     /// <summary>Returns a vector, for which each component is clamped between low and high.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto clamp(const Vector<T, Dim>& low, const Vector<T, Dim>& high) const
+    constexpr auto clamp(const Vector& low, const Vector& high) const
     {
         return variadicOp([](T a, T b, T c) { return std::clamp(a, b, c); }, low, high);
     }
 
     /// <summary>Reflects the vector on the given plane normal.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto reflect(const Vector<T, Dim>& normal) const
+    constexpr auto reflect(const Vector& normal) const
     {
         return *this - 2 * dot(normal) * normal;
     }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto lessThan(const Vector<T, Dim>& other) const { return variadicOp(std::less<>{}, other); }
+    constexpr auto lessThan(const Vector& other) const { return variadicOp(std::less<>{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto lessThanEqual(const Vector<T, Dim>& other) const { return variadicOp(std::less_equal<>{}, other); }
+    constexpr auto lessThanEqual(const Vector& other) const { return variadicOp(std::less_equal<>{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto greaterThan(const Vector<T, Dim>& other) const { return variadicOp(std::greater<>{}, other); }
+    constexpr auto greaterThan(const Vector& other) const { return variadicOp(std::greater<>{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto greaterThanEqual(const Vector<T, Dim>& other) const
-    {
-        return variadicOp(std::greater_equal<>{}, other);
-    }
+    constexpr auto greaterThanEqual(const Vector& other) const { return variadicOp(std::greater_equal<>{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto equal(const Vector<T, Dim>& other) const { return variadicOp(std::equal_to<>{}, other); }
+    constexpr auto equal(const Vector& other) const { return variadicOp(std::equal_to<>{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto notEqual(const Vector<T, Dim>& other) const { return variadicOp(std::not_equal_to<>{}, other); }
+    constexpr auto notEqual(const Vector& other) const { return variadicOp(std::not_equal_to<>{}, other); }
 
     /// <summary>Provided as constexpr, as std::array does not.</summary>
-    constexpr auto operator==(const Vector<T, Dim>& other) const { return equal(other).all(); }
+    constexpr auto operator==(const Vector& other) const { return equal(other).all(); }
 
     /// <summary>Provided as constexpr, as std::array does not.</summary>
-    constexpr auto operator!=(const Vector<T, Dim>& other) const { return notEqual(other).any(); }
+    constexpr auto operator!=(const Vector& other) const { return notEqual(other).any(); }
 
     /// <summary>Whether all components satisfy a given predicate.</summary>
     template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
@@ -299,56 +296,56 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>Component-wise addition of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    friend constexpr auto operator+(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    friend constexpr auto operator+(const Vector& lhs, const Vector& rhs)
     {
         return lhs.variadicOp(std::plus<>{}, rhs);
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto& operator+=(const Vector<T, Dim>& other)
+    constexpr auto& operator+=(const Vector& other)
     {
         return assignmentOp(std::plus<>{}, other);
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    friend constexpr auto operator-(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    friend constexpr auto operator-(const Vector& lhs, const Vector& rhs)
     {
         return lhs.variadicOp(std::minus<>{}, rhs);
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto& operator-=(const Vector<T, Dim>& other)
+    constexpr auto& operator-=(const Vector& other)
     {
         return assignmentOp(std::minus<>{}, other);
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    friend constexpr auto operator*(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    friend constexpr auto operator*(const Vector& lhs, const Vector& rhs)
     {
         return lhs.variadicOp(std::multiplies<>{}, rhs);
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto& operator*=(const Vector<T, Dim>& other)
+    constexpr auto& operator*=(const Vector& other)
     {
         return assignmentOp(std::multiplies<>{}, other);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    friend constexpr auto operator/(const Vector<T, Dim>& lhs, const Vector<T, Dim>& rhs)
+    friend constexpr auto operator/(const Vector& lhs, const Vector& rhs)
     {
         return lhs.variadicOp(std::divides<>{}, rhs);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
     template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
-    constexpr auto& operator/=(const Vector<T, Dim>& other)
+    constexpr auto& operator/=(const Vector& other)
     {
         return assignmentOp(std::divides<>{}, other);
     }
@@ -386,7 +383,7 @@ struct Vector : std::array<T, Dim> {
 
     /// <summary>Performs an operation with another vector and assigns the result to itself.</summary>
     template <typename TOperation>
-    constexpr auto& assignmentOp(TOperation operation, const Vector<T, Dim>& other)
+    constexpr auto& assignmentOp(TOperation operation, const Vector& other)
     {
         for (std::size_t i = 0; i < Dim; i++)
             (*this)[i] = operation((*this)[i], other[i]);
