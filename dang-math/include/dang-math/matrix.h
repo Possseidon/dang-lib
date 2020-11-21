@@ -524,26 +524,11 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <summary>Performs a component-wise subtraction.</summary>
     constexpr auto& operator-=(const Matrix& other) { return assignmentOp(std::minus<>{}, other); }
 
-    /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
-    template <std::size_t OtherCols>
-    friend constexpr auto operator*(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
-    {
-        Matrix<T, OtherCols, Rows> result;
-        sbounds2 bounds{{OtherCols, Rows}};
-        for (const auto& pos : bounds)
-            for (std::size_t i = 0; i < Cols; i++)
-                result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
-        return result;
-    }
+    /// <summary>Performs a component-wise multiplication.</summary>
+    constexpr auto compMul(const Matrix& other) const { return variadicOp(std::multiplies<>{}, other); }
 
-    /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
-    template <std::size_t OtherCols>
-    friend constexpr std::optional<Matrix> operator/(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
-    {
-        if (auto inv = rhs.inverse())
-            return lhs * *inv;
-        return std::nullopt;
-    }
+    /// <summary>Performs a component-wise division.</summary>
+    constexpr auto compDiv(const Matrix& other) const { return variadicOp(std::divides<>{}, other); }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
     constexpr auto operator*(T scalar) const { return variadicOp(std::multiplies<>{}, Matrix{scalar}); }
@@ -567,6 +552,27 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Performs a component-wise division with the given scalar.</summary>
     constexpr auto& operator/=(T scalar) { return assignmentOp(std::divides<>{}, Matrix{scalar}); }
+
+    /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
+    template <std::size_t OtherCols>
+    friend constexpr auto operator*(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    {
+        Matrix<T, OtherCols, Rows> result;
+        sbounds2 bounds{{OtherCols, Rows}};
+        for (const auto& pos : bounds)
+            for (std::size_t i = 0; i < Cols; i++)
+                result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
+        return result;
+    }
+
+    /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
+    template <std::size_t OtherCols>
+    friend constexpr std::optional<Matrix> operator/(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    {
+        if (auto inv = rhs.inverse())
+            return lhs * *inv;
+        return std::nullopt;
+    }
 
     /// <summary>Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.</summary>
     friend constexpr auto operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
