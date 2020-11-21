@@ -9,9 +9,11 @@ namespace dang::math {
 /// <summary>A vector of the templated type and dimension, using std::array as base.</summary>
 template <typename T, std::size_t Dim>
 struct Vector : std::array<T, Dim> {
+    using Base = std::array<T, Dim>;
+
     /// <summary>Initializes all values with default values.</summary>
     constexpr Vector()
-        : std::array<T, Dim>()
+        : Base()
     {}
 
     /// <summary>Implicit conversion between scalars and a vector containing said scalar for each component.</summary>
@@ -20,7 +22,7 @@ struct Vector : std::array<T, Dim> {
     /// GLSL only allows this conversion when used in conjunction with an actual mathematical operations.
     /// </remarks>
     constexpr Vector(T value)
-        : std::array<T, Dim>()
+        : Base()
     {
         for (std::size_t i = 0; i < Dim; i++)
             (*this)[i] = value;
@@ -29,19 +31,19 @@ struct Vector : std::array<T, Dim> {
     /// <summary>Initializes x and y with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 2>>
     constexpr Vector(T x, T y)
-        : std::array<T, Dim>{x, y}
+        : Base{x, y}
     {}
 
     /// <summary>Initializes x, y and z with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 3>>
     constexpr Vector(T x, T y, T z)
-        : std::array<T, Dim>{x, y, z}
+        : Base{x, y, z}
     {}
 
     /// <summary>Initializes x, y, z and w with the given values.</summary>
     template <typename = std::enable_if_t<Dim == 4>>
     constexpr Vector(T x, T y, T z, T w)
-        : std::array<T, Dim>{x, y, z, w}
+        : Base{x, y, z, w}
     {}
 
     /// <summary>Converts a three-dimensional into a four-dimensional vector with the given value for w.</summary>
@@ -51,7 +53,7 @@ struct Vector : std::array<T, Dim> {
     /// </remarks>
     template <typename = std::enable_if_t<Dim == 4>>
     constexpr Vector(Vector<T, 3> vector, T w)
-        : std::array<T, Dim>{vector[0], vector[1], vector[2], w}
+        : Base{vector[0], vector[1], vector[2], w}
     {}
 
     /// <summary>Allows explicit conversion between vector of same size but different types.</summary>
