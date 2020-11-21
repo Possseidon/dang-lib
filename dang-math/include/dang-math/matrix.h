@@ -9,7 +9,7 @@ namespace dang::math {
 
 /// <summary>A generic, column-major matrix of any dimensions.</summary>
 template <typename T, std::size_t Cols, std::size_t Rows = Cols>
-struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
+struct Matrix : std::array<Vector<T, Rows>, Cols> {
     using Base = std::array<Vector<T, Rows>, Cols>;
 
     /// <summary>Initializes the matrix with zero.</summary>
@@ -39,44 +39,42 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Initializes a single-column matrix with the given values.</summary>
+    template <typename = std::enable_if_t<Cols == 1>>
     constexpr Matrix(Vector<T, Rows> col)
         : Base({col})
-    {
-        static_assert(Cols == 1, "only mat1xN can be constructed from vector");
-    }
+    {}
 
-    using Base::operator[];
-
-    /// <summary>Returns the identity matrix.</summary>
+    /// <summary>Returns the identity matrix, optionally multiplied with a scalar.</summary>
     /// <remarks>For non-square matrices the rest is filled with zeros.</remarks>
-    static constexpr Matrix identity()
+    static constexpr auto identity(T value = T{1})
     {
         Matrix result;
         for (std::size_t i = 0; i < (Cols < Rows ? Cols : Rows); i++)
-            result(i, i) = T(1);
+            result(i, i) = value;
         return result;
     }
 
     /// <summary>Allows for implicit conversion from single-column matrices to vectors.</summary>
+    template <typename = std::enable_if_t<Cols == 1>>
     constexpr operator Vector<T, Rows>() const
     {
-        static_assert(Cols == 1, "only mat1xN can be converted to vector");
         return (*this)[0];
     }
 
     /// <summary>Allows for implicit conversion from single-value matrices to their respective value type.</summary>
+    template <typename = std::enable_if_t<Cols == 1 && Rows == 1>>
     constexpr operator T() const
     {
-        static_assert(Cols == 1 && Rows == 1, "only mat1x1 can be converted to value type");
         return (*this)(0, 0);
     }
 
     /// <summary>Returns a sub matrix with the given offset and size.</summary>
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
-    constexpr Matrix<T, ColCount, RowCount> subMatrix() const
+    constexpr auto subMatrix() const
     {
         Matrix<T, ColCount, RowCount> result;
-        for (const auto& [col, row] : sbounds2(svec2(ColCount, RowCount)))
+        sbounds2 bounds{{ColCount, RowCount}};
+        for (const auto& [col, row] : bounds)
             result(col, row) = (*this)(StartCol + col, StartRow + row);
         return result;
     }
@@ -85,38 +83,42 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     template <std::size_t StartCol, std::size_t StartRow, std::size_t ColCount, std::size_t RowCount>
     constexpr void setSubMatrix(Matrix<T, ColCount, RowCount> matrix)
     {
-        for (const auto& [col, row] : sbounds2(svec2(ColCount, RowCount)))
+        sbounds2 bounds{{ColCount, RowCount}};
+        for (const auto& [col, row] : bounds)
             (*this)(StartCol + col, StartRow + row) = matrix(col, row);
     }
 
+    using Base::operator[];
+
     /// <summary>Returns a reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr T& operator[](const dmath::svec2& pos) { return (*this)(pos.x(), pos.y()); }
+    constexpr auto& operator[](const dmath::svec2& pos) { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a const reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr const T& operator[](const dmath::svec2& pos) const { return (*this)(pos.x(), pos.y()); }
+    constexpr const auto& operator[](const dmath::svec2& pos) const { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a reference to the value at the given column/row.</summary>
-    constexpr T& operator()(std::size_t col, std::size_t row) { return (*this)[col][row]; }
+    constexpr auto& operator()(std::size_t col, std::size_t row) { return (*this)[col][row]; }
 
     /// <summary>Returns a const reference to the value at the given column/row.</summary>
-    constexpr const T& operator()(std::size_t col, std::size_t row) const { return (*this)[col][row]; }
+    constexpr const auto& operator()(std::size_t col, std::size_t row) const { return (*this)[col][row]; }
 
     /// <summary>Returns the transposed matrix.</summary>
-    constexpr Matrix<T, Rows, Cols> transpose() const
+    constexpr auto transpose() const
     {
         Matrix<T, Rows, Cols> result;
-        for (const auto& pos : dmath::sbounds2{{Cols, Rows}})
+        dmath::sbounds2 bounds{{Cols, Rows}};
+        for (const auto& pos : bounds)
             result[pos.yx()] = (*this)[pos];
         return result;
     }
 
     /// <summary>Returns the minor at the given column/row.</summary>
     /// <remarks>A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    constexpr Matrix<T, Cols - 1, Rows - 1> minor(std::size_t col, std::size_t row) const { return minor({col, row}); }
+    constexpr auto minor(std::size_t col, std::size_t row) const { return minor({col, row}); }
 
     /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
     /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    constexpr Matrix<T, Cols - 1, Rows - 1> minor(const dmath::svec2& pos) const
+    constexpr auto minor(const dmath::svec2& pos) const
     {
         Matrix<T, Cols - 1, Rows - 1> result;
         std::size_t rcol = 0;
@@ -137,35 +139,29 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the cofactor at the given column/row.</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is odd.</remarks>
-    constexpr T cofactor(std::size_t col, std::size_t row) const
-    {
-        static_assert(std::is_signed_v<T>, "mat::cofactor requires a signed value");
-        return cofactor({col, row});
-    }
+    constexpr auto cofactor(std::size_t col, std::size_t row) const { return cofactor({col, row}); }
 
     /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.</remarks>
-    constexpr T cofactor(const dmath::svec2& pos) const
+    constexpr auto cofactor(const dmath::svec2& pos) const
     {
-        static_assert(std::is_signed_v<T>, "mat::cofactor requires a signed value");
-        const T factor = T(1) - ((pos.x() + pos.y()) & 1) * 2;
+        const T factor = T{1} - ((pos.x() + pos.y()) & 1) * 2;
         return minor(pos).determinant() * factor;
     }
 
     /// <summary>Returns a new matrix, where each element is the cofactor at the given position.</summary>
-    constexpr Matrix<T, Cols, Rows> cofactorMatrix() const
+    constexpr auto cofactorMatrix() const
     {
-        static_assert(std::is_signed_v<T>, "mat::cofactorMatrix requires a signed value");
-        Matrix<T, Cols, Rows> result;
-        for (const auto& pos : dmath::sbounds2{{Cols, Rows}})
+        Matrix result;
+        dmath::sbounds2 bounds{{Cols, Rows}};
+        for (const auto& pos : bounds)
             result[pos] = cofactor(pos);
         return result;
     }
 
     /// <summary>Return the adjugate of the matrix, which is simply the transposed cofactor-matrix.</summary>
-    constexpr Matrix<T, Rows, Cols> adjugate() const
+    constexpr auto adjugate() const
     {
-        static_assert(std::is_signed_v<T>, "mat::adjugate requires a signed value");
         if constexpr (Rows == 1 && Cols == 1)
             return identity();
         else
@@ -178,18 +174,16 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Dim &lt;= 4: Cramer's rule</para>
     /// <para>Dim > 4: Blockwise inversion (recursive)</para>
     /// </remarks>
-    constexpr std::optional<Matrix<T, Rows, Cols>> inverse() const
+    template <typename = std::enable_if_t<Cols == Rows>>
+    constexpr std::optional<Matrix> inverse() const
     {
-        static_assert(std::is_floating_point_v<T>, "mat::inverse requires a floating point type");
-        static_assert(Rows == Cols, "mat::inverse requires a square matrix");
-
         constexpr std::size_t Dim = Cols;
         constexpr std::size_t DimHalf1 = Dim / 2 + Dim % 2;
         constexpr std::size_t DimHalf2 = Dim / 2;
 
         if constexpr (Dim <= 4) {
             T det = determinant();
-            if (det == T())
+            if (det == T{})
                 return std::nullopt;
             return adjugate() / det;
         }
@@ -212,7 +206,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
             auto g = -*s_inv * c * *a_inv;
             auto h = *s_inv;
 
-            Matrix<T, Dim> result;
+            Matrix result;
             result.setSubMatrix<0, 0, DimHalf1, DimHalf1>(e);
             result.setSubMatrix<DimHalf1, 0, DimHalf2, DimHalf1>(f);
             result.setSubMatrix<0, DimHalf1, DimHalf1, DimHalf2>(g);
@@ -223,12 +217,11 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the determinant of the matrix.</summary>
     /// <remarks>Up to 3x3 is hard-coded, otherwise uses very costly recursion.</remarks>
-    constexpr T determinant() const
+    constexpr auto determinant() const
     {
-        static_assert(std::is_floating_point_v<T>, "mat::determinant requires a floating point type");
         constexpr std::size_t Dim = Cols < Rows ? Cols : Rows;
         if constexpr (Dim == 1) {
-            return *this;
+            return (*this)(0, 0);
         }
         else if constexpr (Dim == 2) {
             return (*this)(0, 0) * (*this)(1, 1) - (*this)(0, 1) * (*this)(1, 0);
@@ -239,7 +232,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
                    (*this)(2, 1) * (*this)(1, 2) * (*this)(0, 0) - (*this)(2, 2) * (*this)(1, 0) * (*this)(0, 1);
         }
         else {
-            T result = T();
+            T result{};
             for (std::size_t i = 0; i < Dim; i++)
                 result += (*this)(i, 0) * cofactor(i, 0);
             return result;
@@ -248,7 +241,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns true, if the matrix is solvable, when seen as a linear equation.</summary>
     /// <remarks>Simply returns true, if the determinant is not zero.</remarks>
-    constexpr bool solvable() const { return determinant() != T(); }
+    constexpr auto solvable() const { return determinant() != T{}; }
 
     /// <summary>Solves a single column of the matrix, when seen as a linear equation.</summary>
     /// <remarks>
@@ -256,25 +249,24 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<T> solveCol(std::size_t col)
     {
-        static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
-
         if constexpr (Rows >= 6) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return (*inv * (*this)[Rows])[col];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             auto tmp = (*this)[col];
             (*this)[col] = (*this)[Rows];
             (*this)[Rows] = tmp;
 
-            T result = determinant() / oldDeterminant;
+            T result = determinant() / old_determinant;
 
             (*this)[Rows] = (*this)[col];
             (*this)[col] = tmp;
@@ -289,23 +281,22 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<T> solveCol(std::size_t col) const
     {
-        static_assert(Cols == Rows + 1, "mat::solveCol() requires a single extra column");
-
         if constexpr (Rows >= 6) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return (*inv * (*this)[Rows])[col];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
-            auto swappedMatrix = *this;
-            swappedMatrix[col] = (*this)[Rows];
-            return swappedMatrix.determinant() / oldDeterminant;
+            auto swapped_matrix = *this;
+            swapped_matrix[col] = (*this)[Rows];
+            return swapped_matrix.determinant() / old_determinant;
         }
     }
 
@@ -315,25 +306,24 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector)
     {
-        static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
-
         if constexpr (Rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             auto tmp = (*this)[col];
             (*this)[col] = vector;
             vector = tmp;
 
-            T result = determinant() / oldDeterminant;
+            T result = determinant() / old_determinant;
 
             vector = (*this)[col];
             (*this)[col] = tmp;
@@ -348,23 +338,22 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector) const
     {
-        static_assert(Cols == Rows, "mat::solveCol(vector) requires a square matrix");
-
         if constexpr (Rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
-            auto swappedMatrix = *this;
-            swappedMatrix[col] = vector;
-            return swappedMatrix.determinant() / oldDeterminant;
+            auto swapped_matrix = *this;
+            swapped_matrix[col] = vector;
+            return swapped_matrix.determinant() / old_determinant;
         }
     }
 
@@ -374,18 +363,17 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<Vector<T, Rows>> solve()
     {
-        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
-
         if constexpr (Rows >= 5) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return *inv * (*this)[Rows];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             Vector<T, Rows> result;
@@ -395,7 +383,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
                 (*this)[col] = (*this)[Rows];
                 (*this)[Rows] = tmp;
 
-                result[col] = determinant() / oldDeterminant;
+                result[col] = determinant() / old_determinant;
 
                 (*this)[Rows] = (*this)[col];
                 (*this)[col] = tmp;
@@ -411,32 +399,31 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<Vector<T, Rows>> solve() const
     {
-        static_assert(Cols == Rows + 1, "mat::solve() requires a single extra column");
-
         if constexpr (Rows >= 5) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return *inv * (*this)[Rows];
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             Vector<T, Rows> result;
-            auto swappedMatrix = *this;
+            auto swapped_matrix = *this;
 
             for (std::size_t col = 0; col < Rows; col++) {
-                auto tmp = swappedMatrix[col];
-                swappedMatrix[col] = swappedMatrix[Rows];
-                swappedMatrix[Rows] = tmp;
+                auto tmp = swapped_matrix[col];
+                swapped_matrix[col] = swapped_matrix[Rows];
+                swapped_matrix[Rows] = tmp;
 
-                result[col] = swappedMatrix.determinant() / oldDeterminant;
+                result[col] = swapped_matrix.determinant() / old_determinant;
 
-                swappedMatrix[Rows] = swappedMatrix[col];
-                swappedMatrix[col] = tmp;
+                swapped_matrix[Rows] = swapped_matrix[col];
+                swapped_matrix[col] = tmp;
             }
 
             return result;
@@ -449,18 +436,17 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector)
     {
-        static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
-
         if constexpr (Rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             Vector<T, Cols> result;
@@ -470,7 +456,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
                 (*this)[col] = vector;
                 vector = tmp;
 
-                result[col] = determinant() / oldDeterminant;
+                result[col] = determinant() / old_determinant;
 
                 vector = (*this)[col];
                 (*this)[col] = tmp;
@@ -486,32 +472,31 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
+    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector) const
     {
-        static_assert(Cols == Rows, "mat::solve(vector) requires a square matrix");
-
         if constexpr (Rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
             return std::nullopt;
         }
         else {
-            T oldDeterminant = determinant();
-            if (oldDeterminant == T())
+            T old_determinant = determinant();
+            if (old_determinant == T{})
                 return std::nullopt;
 
             Vector<T, Cols> result;
-            auto swappedMatrix = *this;
+            auto swapped_matrix = *this;
 
             for (std::size_t col = 0; col < Cols; col++) {
-                auto tmp = swappedMatrix[col];
-                swappedMatrix[col] = vector;
+                auto tmp = swapped_matrix[col];
+                swapped_matrix[col] = vector;
                 vector = tmp;
 
-                result[col] = swappedMatrix.determinant() / oldDeterminant;
+                result[col] = swapped_matrix.determinant() / old_determinant;
 
-                vector = swappedMatrix[col];
-                swappedMatrix[col] = tmp;
+                vector = swapped_matrix[col];
+                swapped_matrix[col] = tmp;
             }
 
             return result;
@@ -519,39 +504,33 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Returns the matrix itself.</summary>
-    constexpr Matrix<T, Cols, Rows> operator+() const { return *this; }
+    constexpr auto operator+() const { return *this; }
 
     /// <summary>Returns a component-wise negation of the matrix.</summary>
-    constexpr Matrix<T, Cols, Rows> operator-() const
+    constexpr auto operator-() const { return variadicOp(std::negate<>{}); }
+
+    /// <summary>Performs a component-wise addition.</summary>
+    friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus<>{}, rhs); }
+
+    /// <summary>Performs a component-wise addition.</summary>
+    constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus<>, other); }
+
+    /// <summary>Performs a component-wise subtraction.</summary>
+    friend constexpr auto operator-(const Matrix& lhs, const Matrix& rhs)
     {
-        return unary([](Vector<T, Rows> a) { return -a; });
+        return lhs.variadicOp(std::minus<>{}, rhs);
     }
 
-#define DMATH_MATRIX_OPERATION(op)                                                                                     \
-    friend constexpr Matrix<T, Cols, Rows> operator op(Matrix<T, Cols, Rows> lhs, const Matrix<T, Cols, Rows>& rhs)    \
-    {                                                                                                                  \
-        return lhs op## = rhs;                                                                                         \
-    }                                                                                                                  \
-    friend constexpr Matrix<T, Cols, Rows>& operator op##=(Matrix<T, Cols, Rows>& lhs,                                 \
-                                                           const Matrix<T, Cols, Rows>& rhs)                           \
-    {                                                                                                                  \
-        return assignment(lhs, rhs, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a op## = b; });                        \
-    }
-
-    /// <summary>Performs component-wise addition of two matrices.</summary>
-    DMATH_MATRIX_OPERATION(+);
-    /// <summary>Performs component-wise subtraction of two matrices.</summary>
-    DMATH_MATRIX_OPERATION(-);
-
-#undef DMATH_MATRIX_OPERATION
+    /// <summary>Performs a component-wise subtraction.</summary>
+    constexpr auto& operator-=(const Matrix& other) { return assignmentOp(std::minus<>{}, other); }
 
     /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
     template <std::size_t OtherCols>
-    friend constexpr Matrix<T, OtherCols, Rows> operator*(const Matrix<T, Cols, Rows>& lhs,
-                                                          const Matrix<T, OtherCols, Cols>& rhs)
+    friend constexpr auto operator*(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
         Matrix<T, OtherCols, Rows> result;
-        for (const auto& pos : dmath::sbounds2{{OtherCols, Rows}})
+        sbounds2 bounds{{OtherCols, Rows}};
+        for (const auto& pos : bounds)
             for (std::size_t i = 0; i < Cols; i++)
                 result[pos] += lhs(i, pos.y()) * rhs(pos.x(), i);
         return result;
@@ -559,8 +538,7 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
     template <std::size_t OtherCols>
-    friend constexpr std::optional<Matrix<T, Cols, Rows>> operator/(Matrix<T, Cols, Rows> lhs,
-                                                                    const Matrix<T, OtherCols, Cols>& rhs)
+    friend constexpr std::optional<Matrix> operator/(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
     {
         if (auto inv = rhs.inverse())
             return lhs * *inv;
@@ -568,158 +546,99 @@ struct Matrix : protected std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
-    friend constexpr Matrix<T, Cols, Rows>& operator*=(Matrix<T, Cols, Rows>& matrix, T scalar)
-    {
-        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a *= b; });
-    }
-
-    /// <summary>Performs a component-wise division with the given scalar.</summary>
-    friend constexpr Matrix<T, Cols, Rows>& operator/=(Matrix<T, Cols, Rows>& matrix, T scalar)
-    {
-        return assignment(matrix, scalar, [](Vector<T, Rows>& a, Vector<T, Rows> b) { a /= b; });
-    }
+    constexpr auto operator*(T scalar) const { return variadicOp(std::multiplies<>{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
-    friend constexpr Matrix<T, Cols, Rows> operator*(Matrix<T, Cols, Rows> matrix, T scalar)
-    {
-        return matrix *= scalar;
-    }
+    friend constexpr auto operator*(T scalar, const Matrix& matrix) { return matrix * scalar; }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
-    friend constexpr Matrix<T, Cols, Rows> operator*(T scalar, Matrix<T, Cols, Rows> matrix)
-    {
-        return matrix *= scalar;
-    }
+    constexpr auto& operator*=(T scalar) { return assignmentOp(std::multiplies<>{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise division with the given scalar.</summary>
-    friend constexpr Matrix<T, Cols, Rows> operator/(Matrix<T, Cols, Rows> matrix, T scalar)
-    {
-        return matrix /= scalar;
-    }
+    constexpr auto operator/(T scalar) const { return variadicOp(std::divides<>{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise multiplication with the inverse of the matrix.</summary>
-    friend constexpr std::optional<Matrix<T, Cols, Rows>> operator/(T scalar, const Matrix<T, Cols, Rows>& matrix)
+    friend constexpr std::optional<Matrix> operator/(T scalar, const Matrix& matrix)
     {
         if (auto inv = matrix.inverse())
             return scalar * *inv;
         return std::nullopt;
     }
 
+    /// <summary>Performs a component-wise division with the given scalar.</summary>
+    constexpr auto& operator/=(T scalar) { return assignmentOp(std::divides<>{}, Matrix{scalar}); }
+
     /// <summary>Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.</summary>
-    friend constexpr Vector<T, Rows> operator*(Matrix<T, Cols, Rows> matrix, Vector<T, Cols> vector)
+    friend constexpr auto operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
     {
-        return matrix * Matrix<T, 1, Cols>(vector);
+        return Vector<T, Rows>{matrix * Matrix<T, 1, Cols>{vector}};
     }
 
     /// <summary>Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a single-column matrix.</summary>
-    friend constexpr Vector<T, Cols> operator*(Vector<T, Rows> vector, Matrix<T, Cols, Rows> matrix)
+    friend constexpr auto operator*(const Vector<T, Rows>& vector, const Matrix& matrix)
     {
         return matrix.transpose() * vector;
     }
 
-#define DMATH_MATRIX_COMPARE(merge, op)                                                                                \
-    friend constexpr bool operator op(const Matrix<T, Cols, Rows>& lhs, const Matrix<T, Cols, Rows>& rhs)              \
-    {                                                                                                                  \
-        return lhs.merge(rhs, [](Vector<T, Rows> a, Vector<T, Rows> b) { return a op b; });                            \
-    }
-
-    /// <summary>Returns true, if all elements are identical.</summary>
-    DMATH_MATRIX_COMPARE(all, ==);
-    /// <summary>Returns true, if any elements differ.</summary>
-    DMATH_MATRIX_COMPARE(any, !=);
-    /// <summary>Returns true, if all elements of lhs are smaller than rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, <);
-    /// <summary>Returns true, if all elements of lhs are smaller than or equal to rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, <=);
-    /// <summary>Returns true, if all elements of lhs are greater than rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, >);
-    /// <summary>Returns true, if all elements of lhs are greater than equal to rhs.</summary>
-    DMATH_MATRIX_COMPARE(all, >=);
-
-#undef DMATH_MATRIX_COMPARE
-
-    using Base::begin;
-    using Base::end;
-
-    using Base::cbegin;
-    using Base::cend;
-
-private:
-    template <typename Op>
-    static constexpr Matrix<T, Cols, Rows>& assignment(Matrix<T, Cols, Rows>& lhs,
-                                                       const Matrix<T, Cols, Rows>& rhs,
-                                                       const Op& op)
-    {
-        for (std::size_t i = 0; i < Cols; i++)
-            op(lhs[i], rhs[i]);
-        return lhs;
-    }
-
-    template <typename Op>
-    constexpr Matrix<T, Cols, Rows> binary(const Matrix<T, Cols, Rows>& other, const Op& op) const
+    /// <summary>Performs an operation on each component using an arbitrary number of other vectors.</summary>
+    template <typename TOperation, typename... TMatrices>
+    constexpr auto variadicOp(TOperation operation, const TMatrices&... matrices) const
     {
         Matrix<T, Cols, Rows> result;
         for (std::size_t i = 0; i < Cols; i++)
-            result[i] = op((*this)[i], other[i]);
+            result[i] = operation((*this)[i], matrices[i]...);
         return result;
     }
 
-    template <typename Op>
-    constexpr Matrix<T, Cols, Rows> unary(const Op& op) const
+    /// <summary>Performs an operation with another vector and assigns the result to itself.</summary>
+    template <typename TOperation>
+    constexpr auto& assignmentOp(TOperation operation, const Matrix& other)
     {
-        Matrix<T, Cols, Rows> result;
         for (std::size_t i = 0; i < Cols; i++)
-            result[i] = op((*this)[i]);
-        return result;
+            (*this)[i] = operation((*this)[i], other[i]);
+        return *this;
     }
 
-    template <typename Op>
-    constexpr bool all(const Matrix<T, Cols, Rows>& other, const Op& op) const
-    {
-        bool result = true;
-        for (std::size_t i = 0; i < Cols; i++)
-            result = result && op((*this)[i], other[i]);
-        return result;
-    }
+    /// <summary>Returns a multiline string representing the matrix.</summary>
+    auto format() const { return (std::stringstream() << *this).str(); }
 
-    template <typename Op>
-    constexpr bool any(const Matrix<T, Cols, Rows>& other, const Op& op) const
+    /// <summary>Appends a string representation of the vector in the form [x, y, z] to the stream.</summary>
+    friend auto& operator<<(std::ostream& stream, const Matrix& matrix)
     {
-        bool result = false;
-        for (std::size_t i = 0; i < Cols; i++)
-            result = result || op((*this)[i], other[i]);
-        return result;
+        for (std::size_t row = 0; row < Rows; row++) {
+            std::cout << '[';
+            if constexpr (Cols > 0)
+                std::cout << matrix(0, row);
+            for (std::size_t col = 1; col < Cols; col++)
+                std::cout << ", " << matrix(col, row);
+            std::cout << "]\n";
+        }
+        return stream;
     }
 };
 
-#define DMATH_MATRIX_DEFINE(name, type)                                                                                \
-    template <std::size_t Cols, std::size_t Rows = Cols>                                                               \
-    using name = dang::math::Matrix<type, Cols, Rows>;                                                                 \
-    using name##1x1 = name<1, 1>;                                                                                      \
-    using name##1x2 = name<1, 2>;                                                                                      \
-    using name##1x3 = name<1, 3>;                                                                                      \
-    using name##1x4 = name<1, 4>;                                                                                      \
-    using name##2x1 = name<2, 1>;                                                                                      \
-    using name##2x2 = name<2, 2>;                                                                                      \
-    using name##2x3 = name<2, 3>;                                                                                      \
-    using name##2x4 = name<2, 4>;                                                                                      \
-    using name##3x1 = name<3, 1>;                                                                                      \
-    using name##3x2 = name<3, 2>;                                                                                      \
-    using name##3x3 = name<3, 3>;                                                                                      \
-    using name##3x4 = name<3, 4>;                                                                                      \
-    using name##4x1 = name<4, 1>;                                                                                      \
-    using name##4x2 = name<4, 2>;                                                                                      \
-    using name##4x3 = name<4, 3>;                                                                                      \
-    using name##4x4 = name<4, 4>;                                                                                      \
-    using name##1 = name##1x1;                                                                                         \
-    using name##2 = name##2x2;                                                                                         \
-    using name##3 = name##3x3;                                                                                         \
-    using name##4 = name##4x4;
+template <std::size_t Cols, std::size_t Rows = Cols>
+using mat = Matrix<float, Cols, Rows>;
+using mat2 = mat<2, 2>;
+using mat2x3 = mat<2, 3>;
+using mat2x4 = mat<2, 4>;
+using mat3x2 = mat<3, 2>;
+using mat3 = mat<3, 3>;
+using mat3x4 = mat<3, 4>;
+using mat4x2 = mat<4, 2>;
+using mat4x3 = mat<4, 3>;
+using mat4 = mat<4, 4>;
 
-DMATH_MATRIX_DEFINE(mat, float)
-DMATH_MATRIX_DEFINE(dmat, double)
-DMATH_MATRIX_DEFINE(imat, int)
-DMATH_MATRIX_DEFINE(umat, unsigned)
-DMATH_MATRIX_DEFINE(smat, std::size_t)
+template <std::size_t Cols, std::size_t Rows = Cols>
+using dmat = Matrix<double, Cols, Rows>;
+using dmat2 = dmat<2, 2>;
+using dmat2x3 = dmat<2, 3>;
+using dmat2x4 = dmat<2, 4>;
+using dmat3x2 = dmat<3, 2>;
+using dmat3 = dmat<3, 3>;
+using dmat3x4 = dmat<3, 4>;
+using dmat4x2 = dmat<4, 2>;
+using dmat4x3 = dmat<4, 3>;
+using dmat4 = dmat<4, 4>;
 
 } // namespace dang::math
