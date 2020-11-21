@@ -239,6 +239,12 @@ struct Vector : std::array<T, Dim> {
     /// <summary>Component-wise comparison, returning a bvec.</summary>
     constexpr auto notEqual(const Vector<T, Dim>& other) const { return variadicOp(std::not_equal_to<>{}, other); }
 
+    /// <summary>Provided as constexpr, as std::array does not.</summary>
+    constexpr auto operator==(const Vector<T, Dim>& other) const { return equal(other).all(); }
+
+    /// <summary>Provided as constexpr, as std::array does not.</summary>
+    constexpr auto operator!=(const Vector<T, Dim>& other) const { return notEqual(other).any(); }
+
     /// <summary>Whether all components satisfy a given predicate.</summary>
     template <typename = std::enable_if_t<std::is_same_v<T, bool>>>
     constexpr auto all() const
