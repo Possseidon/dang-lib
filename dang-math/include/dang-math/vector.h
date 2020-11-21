@@ -378,7 +378,7 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Performs an operation with another vector and assigns itself to the result.</summary>
+    /// <summary>Performs an operation with another vector and assigns the result to itself.</summary>
     template <typename TOperation>
     constexpr auto& assignmentOp(TOperation operation, const Vector<T, Dim>& other)
     {
