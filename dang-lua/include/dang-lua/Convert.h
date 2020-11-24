@@ -49,18 +49,18 @@ constexpr const char* EnumValues[1]{};
 
 namespace detail {
 
-[[noreturn]] void noreturn_luaL_error(lua_State* state, const char* message)
+[[noreturn]] inline void noreturn_luaL_error(lua_State* state, const char* message)
 {
     lua_pushstring(state, message);
     lua_error(state);
 }
 
-[[noreturn]] void noreturn_luaL_typeerror(lua_State* state, int arg, const char* type_name)
+[[noreturn]] inline void noreturn_luaL_typeerror(lua_State* state, int arg, const char* type_name)
 {
     luaL_typeerror(state, arg, type_name);
 }
 
-[[noreturn]] void noreturn_luaL_argerror(lua_State* state, int arg, const char* extra_message)
+[[noreturn]] inline void noreturn_luaL_argerror(lua_State* state, int arg, const char* extra_message)
 {
     luaL_argerror(state, arg, extra_message);
 }
