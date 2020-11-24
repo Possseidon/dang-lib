@@ -92,8 +92,29 @@ using sbounds1 = sbounds<1>;
 using sbounds2 = sbounds<2>;
 using sbounds3 = sbounds<3>;
 
-DMATH_MATRIX_DEFINE(mat, GLfloat)
-DMATH_MATRIX_DEFINE(dmat, GLdouble)
+template <std::size_t Cols, std::size_t Rows = Cols>
+using mat = dang::math::Matrix<GLfloat, Cols, Rows>;
+using mat2 = mat<2, 2>;
+using mat2x3 = mat<2, 3>;
+using mat2x4 = mat<2, 4>;
+using mat3x2 = mat<3, 2>;
+using mat3 = mat<3, 3>;
+using mat3x4 = mat<3, 4>;
+using mat4x2 = mat<4, 2>;
+using mat4x3 = mat<4, 3>;
+using mat4 = mat<4, 4>;
+
+template <std::size_t Cols, std::size_t Rows = Cols>
+using dmat = dang::math::Matrix<GLdouble, Cols, Rows>;
+using dmat2 = dmat<2, 2>;
+using dmat2x3 = dmat<2, 3>;
+using dmat2x4 = dmat<2, 4>;
+using dmat3x2 = dmat<3, 2>;
+using dmat3 = dmat<3, 3>;
+using dmat3x4 = dmat<3, 4>;
+using dmat4x2 = dmat<4, 2>;
+using dmat4x3 = dmat<4, 3>;
+using dmat4 = dmat<4, 4>;
 
 using quat = dang::math::Quaternion<GLfloat>;
 using dquat = dang::math::DualQuaternion<GLfloat>;
