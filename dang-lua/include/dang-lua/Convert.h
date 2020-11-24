@@ -968,7 +968,16 @@ struct Convert<std::variant<TOptions...>> {
         auto value = at(state, arg);
         if (value)
             return *value;
-        std::string error = getPushTypename() + " expected, got " + luaL_typename(state, arg);
+
+        // Generate a similar message to the official (unfortunately internal) luaL_typeerror() function in the Lua source code:
+        // https://www.lua.org/source/5.4/lauxlib.c.html#luaL_typeerror
+        std::string error = getPushTypename() + " expected, got ";
+        if (luaL_getmetafield(state, arg, "__name") == LUA_TSTRING)
+            error += lua_tostring(state, -1);
+        else if (lua_type(state, arg) == LUA_TLIGHTUSERDATA)
+            error += "light userdata";
+        else
+            error += luaL_typename(state, arg);
         detail::noreturn_luaL_argerror(state, arg, error.c_str());
     }
 
