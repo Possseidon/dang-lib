@@ -93,7 +93,6 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             result.push_back(reg<&Vector::dot<void>>("dot"));
             result.push_back(reg<&Vector::sqrdot<void>>("sqrdot"));
             result.push_back(reg<&Vector::vectorTo<void>>("vectorTo"));
-            result.push_back(reg<&Vector::abs<void>>("abs"));
             result.push_back(reg<&Vector::min<void>>("min"));
             result.push_back(reg<&Vector::max<void>>("max"));
             result.push_back(reg<&Vector::clamp<void>>("clamp"));
@@ -102,6 +101,10 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             if constexpr (Dim == 3) {
                 constexpr auto cross = +[](const Vector& lhs, const Vector& rhs) { return lhs.cross(rhs); };
                 result.push_back(reg<cross>("cross"));
+            }
+
+            if constexpr (std::is_signed_v<T>) {
+                result.push_back(reg<&Vector::abs<void>>("abs"));
             }
         }
 
@@ -151,13 +154,15 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
                 return std::visit([](const auto& a, const auto& b) -> Vector { return a / b; }, lhs, rhs);
             };
 
-            constexpr auto unm = +[](const Vector& vec) { return -vec; };
-
             result.push_back(reg<add>("__add"));
             result.push_back(reg<sub>("__sub"));
             result.push_back(reg<mul>("__mul"));
             result.push_back(reg<div>("__div"));
-            result.push_back(reg<unm>("__unm"));
+
+            if constexpr (std::is_signed_v<T>) {
+                constexpr auto unm = +[](const Vector& vec) { return -vec; };
+                result.push_back(reg<unm>("__unm"));
+            }
         }
 
         return result;
@@ -188,8 +193,10 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
         auto result = lua.pushTable();
 
         if constexpr (Dim == 2) {
-            constexpr auto from_slope = +[](std::optional<T> slope) { return Vector::fromSlope(slope); };
-            result.rawSetTable("fromSlope", wrap<from_slope>);
+            if constexpr (!std::is_same_v<T, bool>) {
+                constexpr auto from_slope = +[](std::optional<T> slope) { return Vector::fromSlope(slope); };
+                result.rawSetTable("fromSlope", wrap<from_slope>);
+            }
 
             if constexpr (std::is_floating_point_v<T>) {
                 constexpr auto from_angle_rad = +[](T radians) { return Vector::fromRadians(radians); };

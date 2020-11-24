@@ -170,7 +170,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the vector with each component being positive.</summary>
-    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    template <typename = std::enable_if_t<std::is_signed_v<T>>>
     constexpr auto abs() const
     {
         return variadicOp([](T a) { return a < T{0} ? -a : a; });
@@ -288,7 +288,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Returns the vector with each component negated.</summary>
-    template <typename = std::enable_if_t<!std::is_same_v<T, bool>>>
+    template <typename = std::enable_if_t<std::is_signed_v<T>>>
     constexpr auto operator-() const
     {
         return variadicOp(std::negate<>{});
