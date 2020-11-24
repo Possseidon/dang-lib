@@ -107,17 +107,22 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     {
         Matrix<T, Rows, Cols> result;
         dmath::sbounds2 bounds{{Cols, Rows}};
-        for (const auto& pos : bounds)
-            result[pos.yx()] = (*this)[pos];
+        for (auto [x, y] : bounds)
+            result(y, x) = (*this)(x, y);
         return result;
     }
 
     /// <summary>Returns the minor at the given column/row.</summary>
     /// <remarks>A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    constexpr auto minor(std::size_t col, std::size_t row) const { return minor({col, row}); }
+    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
+    constexpr auto minor(std::size_t col, std::size_t row) const
+    {
+        return minor({col, row});
+    }
 
     /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
     /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
+    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto minor(const dmath::svec2& pos) const
     {
         Matrix<T, Cols - 1, Rows - 1> result;
@@ -139,10 +144,15 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the cofactor at the given column/row.</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is odd.</remarks>
-    constexpr auto cofactor(std::size_t col, std::size_t row) const { return cofactor({col, row}); }
+    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
+    constexpr auto cofactor(std::size_t col, std::size_t row) const
+    {
+        return cofactor({col, row});
+    }
 
     /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.</remarks>
+    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto cofactor(const dmath::svec2& pos) const
     {
         const T factor = T{1} - ((pos.x() + pos.y()) & 1) * 2;
@@ -153,9 +163,11 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     constexpr auto cofactorMatrix() const
     {
         Matrix result;
-        dmath::sbounds2 bounds{{Cols, Rows}};
-        for (const auto& pos : bounds)
-            result[pos] = cofactor(pos);
+        if constexpr (Cols > 0 && Rows > 0) {
+            dmath::sbounds2 bounds{{Cols, Rows}};
+            for (const auto& pos : bounds)
+                result[pos] = cofactor(pos);
+        }
         return result;
     }
 
@@ -233,8 +245,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
         }
         else {
             T result{};
-            for (std::size_t i = 0; i < Dim; i++)
-                result += (*this)(i, 0) * cofactor(i, 0);
+            if constexpr (Dim > 0) {
+                for (std::size_t i = 0; i < Dim; i++)
+                    result += (*this)(i, 0) * cofactor(i, 0);
+            }
             return result;
         }
     }
@@ -507,7 +521,11 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     constexpr auto operator+() const { return *this; }
 
     /// <summary>Returns a component-wise negation of the matrix.</summary>
-    constexpr auto operator-() const { return variadicOp(std::negate<>{}); }
+    template <typename = std::enable_if_t<std::is_signed_v<T>>>
+    constexpr auto operator-() const
+    {
+        return variadicOp(std::negate<>{});
+    }
 
     /// <summary>Performs a component-wise addition.</summary>
     friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus<>{}, rhs); }
@@ -575,9 +593,9 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.</summary>
-    friend constexpr auto operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
+    friend constexpr Vector<T, Rows> operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
     {
-        return Vector<T, Rows>{matrix * Matrix<T, 1, Cols>{vector}};
+        return matrix * Matrix<T, 1, Cols>{vector};
     }
 
     /// <summary>Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a single-column matrix.</summary>
