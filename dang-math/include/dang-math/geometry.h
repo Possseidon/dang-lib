@@ -79,7 +79,7 @@ struct AxisSystemBase {
 
 /// <summary>Used as a base for lines, consisting of one support and one direction vector.</summary>
 template <typename T, std::size_t Dim>
-struct LineBase : public AxisSystemBase<T, Dim, 1> {
+struct LineBase : AxisSystemBase<T, Dim, 1> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr LineBase()
         : AxisSystemBase<T, Dim, 1>()
@@ -123,7 +123,7 @@ struct LineBase : public AxisSystemBase<T, Dim, 1> {
 
 /// <summary>Used as a base for planes, consisting of one support and two direction vectors.</summary>
 template <typename T, std::size_t Dim>
-struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
+struct PlaneBase : AxisSystemBase<T, Dim, 2> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr PlaneBase()
         : AxisSystemBase<T, Dim, 2>()
@@ -156,7 +156,7 @@ struct PlaneBase : public AxisSystemBase<T, Dim, 2> {
 
 /// <summary>Used as a base for spats, consisting of one support and three direction vectors.</summary>
 template <typename T, std::size_t Dim>
-struct SpatBase : public AxisSystemBase<T, Dim, 3> {
+struct SpatBase : AxisSystemBase<T, Dim, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr SpatBase()
         : AxisSystemBase<T, Dim, 3>()
@@ -171,7 +171,7 @@ struct SpatBase : public AxisSystemBase<T, Dim, 3> {
 
 /// <summary>An axis-system with one support and an arbitrary amount of direction vectors.</summary>
 template <typename T, std::size_t Dim, std::size_t AxisCount>
-struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
+struct AxisSystem : detail::AxisSystemBase<T, Dim, AxisCount> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr AxisSystem()
         : detail::AxisSystemBase<T, Dim, AxisCount>()
@@ -184,7 +184,7 @@ struct AxisSystem : public detail::AxisSystemBase<T, Dim, AxisCount> {
 
 /// <summary>A line with one support and one direction vector.</summary>
 template <typename T, std::size_t Dim>
-struct Line : public detail::LineBase<T, Dim> {
+struct Line : detail::LineBase<T, Dim> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Line()
         : detail::LineBase<T, Dim>()
@@ -200,7 +200,7 @@ enum class LineSide { Left, Hit, Right, COUNT };
 
 /// <summary>A two-dimensional line with one support and one direction vector.</summary>
 template <typename T>
-struct Line<T, 2> : public detail::LineBase<T, 2> {
+struct Line<T, 2> : detail::LineBase<T, 2> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Line()
         : detail::LineBase<T, 2>()
@@ -259,7 +259,7 @@ struct Line<T, 2> : public detail::LineBase<T, 2> {
 
 /// <summary>A three-dimensional line with one support and one direction vector.</summary>
 template <typename T>
-struct Line<T, 3> : public detail::LineBase<T, 3> {
+struct Line<T, 3> : detail::LineBase<T, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Line()
         : detail::LineBase<T, 3>()
@@ -276,7 +276,7 @@ using Line3 = Line<float, 3>;
 
 /// <summary>A plane with one support and two direction vectors.</summary>
 template <typename T, std::size_t Dim>
-struct Plane : public detail::PlaneBase<T, Dim> {
+struct Plane : detail::PlaneBase<T, Dim> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Plane()
         : detail::PlaneBase<T, Dim>()
@@ -289,7 +289,7 @@ struct Plane : public detail::PlaneBase<T, Dim> {
 
 /// <summary>A two-dimensional plane with one support and two direction vectors.</summary>
 template <typename T>
-struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
+struct Plane<T, 2> : detail::PlaneBase<T, 2> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Plane()
         : detail::PlaneBase<T, 2>()
@@ -326,7 +326,7 @@ struct Plane<T, 2> : public detail::PlaneBase<T, 2> {
 
 /// <summary>A three-dimensional plane with one support and two direction vectors.</summary>
 template <typename T>
-struct Plane<T, 3> : public detail::PlaneBase<T, 3> {
+struct Plane<T, 3> : detail::PlaneBase<T, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Plane()
         : detail::PlaneBase<T, 3>()
@@ -399,7 +399,7 @@ using Plane3 = Plane<float, 3>;
 
 /// <summary>A spat with one support and three direction vectors.</summary>
 template <typename T, std::size_t Dim>
-struct Spat : public detail::SpatBase<T, Dim> {
+struct Spat : detail::SpatBase<T, Dim> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Spat()
         : detail::SpatBase<T, Dim>()
@@ -412,7 +412,7 @@ struct Spat : public detail::SpatBase<T, Dim> {
 
 /// <summary>A three-dimensional spat with one support and three direction vectors.</summary>
 template <typename T>
-struct Spat<T, 3> : public detail::SpatBase<T, 3> {
+struct Spat<T, 3> : detail::SpatBase<T, 3> {
     /// <summary>Initializes support and direction vectors with zero.</summary>
     constexpr Spat()
         : detail::SpatBase<T, 3>()
