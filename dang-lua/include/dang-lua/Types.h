@@ -78,30 +78,31 @@ enum class CompareOp {
 /// <summary>A list of all Lua standard libraries.</summary>
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
-std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryFunctions = {luaopen_base,
-                                                                                                luaopen_coroutine,
-                                                                                                luaopen_table,
-                                                                                                luaopen_io,
-                                                                                                luaopen_os,
-                                                                                                luaopen_string,
-                                                                                                luaopen_utf8,
-                                                                                                luaopen_math,
-                                                                                                luaopen_debug,
-                                                                                                luaopen_package};
+constexpr std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryFunctions = {
+    luaopen_base,
+    luaopen_coroutine,
+    luaopen_table,
+    luaopen_io,
+    luaopen_os,
+    luaopen_string,
+    luaopen_utf8,
+    luaopen_math,
+    luaopen_debug,
+    luaopen_package};
 
-std::array<const char*, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryNames = {"_G",
-                                                                                          LUA_COLIBNAME,
-                                                                                          LUA_TABLIBNAME,
-                                                                                          LUA_IOLIBNAME,
-                                                                                          LUA_OSLIBNAME,
-                                                                                          LUA_STRLIBNAME,
-                                                                                          LUA_UTF8LIBNAME,
-                                                                                          LUA_MATHLIBNAME,
-                                                                                          LUA_DBLIBNAME,
-                                                                                          LUA_LOADLIBNAME};
+constexpr std::array<const char*, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryNames = {"_G",
+                                                                                                    LUA_COLIBNAME,
+                                                                                                    LUA_TABLIBNAME,
+                                                                                                    LUA_IOLIBNAME,
+                                                                                                    LUA_OSLIBNAME,
+                                                                                                    LUA_STRLIBNAME,
+                                                                                                    LUA_UTF8LIBNAME,
+                                                                                                    LUA_MATHLIBNAME,
+                                                                                                    LUA_DBLIBNAME,
+                                                                                                    LUA_LOADLIBNAME};
 
 enum class LoadMode { Default, Binary, Text, Both, COUNT };
 
-std::array<const char*, static_cast<std::size_t>(LoadMode::COUNT)> loadModeNames = {nullptr, "b", "t", "bt"};
+constexpr std::array<const char*, static_cast<std::size_t>(LoadMode::COUNT)> loadModeNames = {nullptr, "b", "t", "bt"};
 
 } // namespace dang::lua
