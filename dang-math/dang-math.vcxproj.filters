@@ -42,7 +42,7 @@
     <ClInclude Include="include\dang-math\interpolation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dang-math\vector-lua.h">
+    <ClInclude Include="include\dang-math\vector-math-lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

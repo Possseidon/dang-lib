@@ -230,7 +230,7 @@
     <ClInclude Include="include\dang-math\utils.h" />
     <ClInclude Include="include\dang-math\matrix.h" />
     <ClInclude Include="include\dang-math\vector.h" />
-    <ClInclude Include="include\dang-math\vector-lua.h" />
+    <ClInclude Include="include\dang-math\vector-math-lua.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="dang-math.natvis" />
