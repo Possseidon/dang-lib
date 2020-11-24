@@ -584,8 +584,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a matrix-multiplication with the inverse of rhs.</summary>
-    template <std::size_t OtherCols>
-    friend constexpr std::optional<Matrix> operator/(const Matrix& lhs, const Matrix<T, OtherCols, Cols>& rhs)
+    friend constexpr std::optional<Matrix> operator/(const Matrix& lhs, const Matrix<T, Cols, Cols>& rhs)
     {
         if (auto inv = rhs.inverse())
             return lhs * *inv;
@@ -602,6 +601,15 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     friend constexpr auto operator*(const Vector<T, Rows>& vector, const Matrix& matrix)
     {
         return matrix.transpose() * vector;
+    }
+
+    /// <summary>Performs a matrix-multiplication between the inverse of the matrix and the given vector, seen as a single-column matrix.</summary>
+    template <typename = std::enable_if_t<Cols == Rows>>
+    friend constexpr std::optional<Vector<T, Rows>> operator/(const Vector<T, Rows>& vector, const Matrix& matrix)
+    {
+        if (auto inv = matrix.inverse())
+            return vector * *inv;
+        return std::nullopt;
     }
 
     /// <summary>Performs an operation on each component using an arbitrary number of other vectors.</summary>
