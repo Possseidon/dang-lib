@@ -122,42 +122,20 @@ struct Convert<T> {
     static constexpr std::optional<int> PushCount = 1;
     static constexpr bool AllowNesting = true;
 
-    static bool isExact(lua_State* state, int pos)
-    {
+    static bool isExact(lua_State* state, int pos) {}
 
-    }
+    static constexpr bool isValid(lua_State* state, int pos) {}
 
-    static constexpr bool isValid(lua_State* state, int pos)
-    {
+    static std::optional<T> at(lua_State* state, int pos) {}
 
-    }
+    static T check(lua_State* state, int arg) {}
 
-    static std::optional<T> at(lua_State* state, int pos)
-    {
+    static int getPushCount(const T& value) {}
 
-    }
+    static constexpr std::string_view getPushTypename() {}
 
-    static T check(lua_State* state, int arg)
-    {
-
-    }
-
-    static int getPushCount(const T& value)
-    {
-
-    }
-
-    static constexpr std::string_view getPushTypename()
-    {
-
-    }
-
-    static void push(lua_State* state, const T& value)
-    {
-
-    }
+    static void push(lua_State* state, const T& value) {}
 };
-
 
 */
 
