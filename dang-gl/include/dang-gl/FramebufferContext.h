@@ -41,6 +41,9 @@ public:
             Wrapper::bind(target, handle);
             bound_read_buffer_ = handle;
             break;
+
+        default:
+            throw std::runtime_error("unknown framebuffer target");
         }
     }
 
