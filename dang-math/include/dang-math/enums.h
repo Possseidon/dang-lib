@@ -8,25 +8,25 @@ namespace dang::math {
 enum class Axis1 : char { None = -1, X, COUNT };
 
 /// <summary>Represents a set of the single x-axis of a one-dimensional system.</summary>
-enum class Axes1 : unsigned char { NONE = 0, X = 1 << 0, ALL = ~(~0 << 1) };
+enum class Axes1 : unsigned char { NONE = 0, X = 1 << 0, ALL = ~(~0u << 1) };
 
 /// <summary>Represents one of the two axes in a two-dimensional system or an optional None value.</summary>
 enum class Axis2 : char { None = -1, X, Y, COUNT };
 
 /// <summary>Represents a set of the two axes in a two-dimensional system.</summary>
-enum class Axes2 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, ALL = ~(~0 << 2) };
+enum class Axes2 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, ALL = ~(~0u << 2) };
 
 /// <summary>Represents one of the three axes in a three-dimensional system or an optional None value.</summary>
 enum class Axis3 : char { None = -1, X, Y, Z, COUNT };
 
 /// <summary>Represents a set of the three axes in a three-dimensional system.</summary>
-enum class Axes3 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, Z = 1 << 2, ALL = ~(~0 << 3) };
+enum class Axes3 : unsigned char { NONE = 0, X = 1 << 0, Y = 1 << 1, Z = 1 << 2, ALL = ~(~0u << 3) };
 
 /// <summary>Represents one of the two corners in a one-dimensional system or an optional None value.</summary>
 enum class Corner1 : char { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents a set of the two corners in a one-dimensional system.</summary>
-enum class Corners1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0 << 2) };
+enum class Corners1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0u << 2) };
 
 /// <summary>Represents one of the four corners in a two-dimensional system or an optional None value.</summary>
 enum class Corner2 : char { None = -1, LeftBottom, RightBottom, LeftTop, RightTop, COUNT };
@@ -38,7 +38,7 @@ enum class Corners2 : unsigned char {
     RightBottom = 1 << 1,
     LeftTop = 1 << 2,
     RightTop = 1 << 3,
-    ALL = ~(~0 << 4)
+    ALL = ~(~0u << 4)
 };
 
 /// <summary>Represents one of the eight corners in a three-dimensional system or an optional None value.</summary>
@@ -66,7 +66,7 @@ enum class Corners3 : unsigned char {
     RightBottomFront = 1 << 5,
     LeftTopFront = 1 << 6,
     RightTopFront = 1 << 7,
-    ALL = ~(~0 << 8)
+    ALL = ~(~0u << 8)
 };
 
 /// <summary>Represents one of the four edges in a two-dimensional system or an optional None value.</summary>
@@ -79,7 +79,7 @@ enum class Edges2 : unsigned char {
     Right = 1 << 1,
     Bottom = 1 << 2,
     Top = 1 << 3,
-    ALL = ~(~0 << 4)
+    ALL = ~(~0u << 4)
 };
 
 /// <summary>Represents one of the twelve edges in a three-dimensional system or an optional None value.</summary>
@@ -115,14 +115,14 @@ enum class Edges3 : unsigned short {
     RightFront = 1 << 9,
     LeftBack = 1 << 10,
     RightBack = 1 << 11,
-    ALL = ~(~0 << 12)
+    ALL = ~(~0u << 12)
 };
 
 /// <summary>Represents one of the two facings in a one-dimensional system or an optional None value.</summary>
 enum class Facing1 : char { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents a set of the two facings in a one-dimensional system.</summary>
-enum class Facings1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0 << 2) };
+enum class Facings1 : unsigned char { NONE = 0, Left = 1 << 0, Right = 1 << 1, ALL = ~(~0u << 2) };
 
 /// <summary>Represents one of the four facings in a two-dimensional system or an optional None value.</summary>
 enum class Facing2 : char { None = -1, Left, Right, Up, Down, COUNT };
@@ -134,7 +134,7 @@ enum class Facings2 : unsigned char {
     Right = 1 << 1,
     Up = 1 << 2,
     Down = 1 << 3,
-    ALL = ~(~0 << 4)
+    ALL = ~(~0u << 4)
 };
 
 /// <summary>Represents one of the six facings in a three-dimensional system or an optional None value.</summary>
@@ -149,7 +149,7 @@ enum class Facings3 : unsigned char {
     Down = 1 << 3,
     Back = 1 << 4,
     Front = 1 << 5,
-    ALL = ~(~0 << 6)
+    ALL = ~(~0u << 6)
 };
 
 namespace detail {

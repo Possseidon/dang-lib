@@ -194,7 +194,7 @@ enum class ModifierKeys {
     Super = GLFW_MOD_SUPER,
     CapsLock = GLFW_MOD_CAPS_LOCK,
     NumLock = GLFW_MOD_NUM_LOCK,
-    ALL = ~(~0 << 6)
+    ALL = ~(~0u << 6)
 };
 
 } // namespace dang::gl
