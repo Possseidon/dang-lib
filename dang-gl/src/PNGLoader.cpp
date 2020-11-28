@@ -5,13 +5,15 @@
 namespace dang::gl {
 
 PNGLoader::PNGLoader()
-try
-    : png_ptr_(initCheck(png_create_read_struct(PNG_LIBPNG_VER_STRING, this, errorCallback, warningCallback)))
-    , info_ptr_(initCheck(png_create_info_struct(png_ptr_))) {
-}
-catch (...) {
-    cleanup();
-    throw;
+{
+    try {
+        png_ptr_ = initCheck(png_create_read_struct(PNG_LIBPNG_VER_STRING, this, errorCallback, warningCallback));
+        info_ptr_ = initCheck(png_create_info_struct(png_ptr_));
+    }
+    catch (...) {
+        cleanup();
+        throw;
+    }
 }
 
 PNGLoader::PNGLoader(std::istream& stream)
