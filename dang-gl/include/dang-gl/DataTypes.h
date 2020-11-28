@@ -258,9 +258,10 @@ constexpr DataType getBaseDataType(DataType type)
 
     case DataType::AtomicUInt:
         return DataType::UInt;
-    }
 
-    throw std::runtime_error("Unknown base GL-DataType.");
+    default:
+        throw std::runtime_error("Unknown base GL-DataType.");
+    }
 }
 
 /// <summary>Returns the size in bytes of the given data type.</summary>
@@ -420,9 +421,10 @@ constexpr GLsizei getDataTypeSize(DataType type)
 
     case DataType::AtomicUInt:
         return sizeof(GLuint);
-    }
 
-    throw std::runtime_error("Unknown GL-DataType.");
+    default:
+        throw std::runtime_error("Unknown GL-DataType.");
+    }
 }
 
 /// <summary>Returns the component count of a given data type, being the vector component count or matrix-rows, where matrices are column-major.</summary>

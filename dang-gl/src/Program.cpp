@@ -234,6 +234,9 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& prog
                                                              std::string name)
 {
     switch (type) {
+    case DataType::None:
+        return std::make_unique<ShaderUniformBase>(program, count, type, name);
+
     case DataType::Float:
         return std::make_unique<ShaderUniform<GLfloat>>(program, count, type, name);
     case DataType::Vec2:
@@ -387,8 +390,10 @@ std::unique_ptr<ShaderUniformBase> ShaderUniformBase::create(const Program& prog
 
     case DataType::AtomicUInt:
         return std::make_unique<ShaderUniform<GLuint>>(program, count, type, name);
+
+    default:
+        throw std::runtime_error("Unknown GL-DataType.");
     }
-    return std::make_unique<ShaderUniformBase>(program, count, type, name);
 }
 
 ShaderAttribute::ShaderAttribute(const Program& program, GLint count, DataType type, std::string name)
