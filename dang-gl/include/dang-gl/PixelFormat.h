@@ -118,22 +118,22 @@ struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO: PixelFormatInfo<Pi
 
 /// <summary>The GL-Constants for the pixel formats.</summary>
 template <>
-constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
-                                                                             GL_RG,
-                                                                             GL_RGB,
-                                                                             GL_BGR,
-                                                                             GL_RGBA,
-                                                                             GL_BGRA,
+inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
+                                                                                    GL_RG,
+                                                                                    GL_RGB,
+                                                                                    GL_BGR,
+                                                                                    GL_RGBA,
+                                                                                    GL_BGRA,
 
-                                                                             GL_RED_INTEGER,
-                                                                             GL_RG_INTEGER,
-                                                                             GL_RGB_INTEGER,
-                                                                             GL_BGR_INTEGER,
-                                                                             GL_RGBA_INTEGER,
-                                                                             GL_BGRA_INTEGER,
+                                                                                    GL_RED_INTEGER,
+                                                                                    GL_RG_INTEGER,
+                                                                                    GL_RGB_INTEGER,
+                                                                                    GL_BGR_INTEGER,
+                                                                                    GL_RGBA_INTEGER,
+                                                                                    GL_BGRA_INTEGER,
 
-                                                                             GL_STENCIL_INDEX,
-                                                                             GL_DEPTH_COMPONENT,
-                                                                             GL_DEPTH_STENCIL};
+                                                                                    GL_STENCIL_INDEX,
+                                                                                    GL_DEPTH_COMPONENT,
+                                                                                    GL_DEPTH_STENCIL};
 
 } // namespace dang::gl

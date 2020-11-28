@@ -106,7 +106,7 @@ enum class PixelInternalFormat {
 
 /// <summary>GL-Constants for internal pixel formats.</summary>
 template <>
-constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {
+inline constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {
     // base formats
     GL_DEPTH_COMPONENT,
     GL_DEPTH_STENCIL,

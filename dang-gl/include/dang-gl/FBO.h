@@ -40,7 +40,7 @@ enum class BlitFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
+inline constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
 
 /// <summary>A framebuffer object, which represents the destination (or source) of OpenGL render operations.</summary>
 /// <remarks>Framebuffer objects can be attached with both textures and renderbuffer objects.</remarks>

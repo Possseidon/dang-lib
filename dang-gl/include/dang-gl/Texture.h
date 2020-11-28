@@ -84,8 +84,8 @@ enum class TextureDepthStencilMode {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {GL_DEPTH_COMPONENT,
-                                                                                                     GL_STENCIL_INDEX};
+inline constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
+    GL_DEPTH_COMPONENT, GL_STENCIL_INDEX};
 
 enum class TextureMagFilter {
     Nearest,
@@ -95,7 +95,7 @@ enum class TextureMagFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
+inline constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
 
 enum class TextureMinFilter {
     Nearest,
@@ -109,12 +109,12 @@ enum class TextureMinFilter {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
-                                                                                       GL_LINEAR,
-                                                                                       GL_NEAREST_MIPMAP_NEAREST,
-                                                                                       GL_LINEAR_MIPMAP_NEAREST,
-                                                                                       GL_NEAREST_MIPMAP_LINEAR,
-                                                                                       GL_LINEAR_MIPMAP_LINEAR};
+inline constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
+                                                                                              GL_LINEAR,
+                                                                                              GL_NEAREST_MIPMAP_NEAREST,
+                                                                                              GL_LINEAR_MIPMAP_NEAREST,
+                                                                                              GL_NEAREST_MIPMAP_LINEAR,
+                                                                                              GL_LINEAR_MIPMAP_LINEAR};
 
 enum class TextureCompareFunc {
     Never,
@@ -130,7 +130,7 @@ enum class TextureCompareFunc {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
+inline constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
     GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS};
 
 enum class TextureSwizzle {
@@ -145,7 +145,7 @@ enum class TextureSwizzle {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
+inline constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
     GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
 
 enum class TextureWrap {
@@ -159,38 +159,38 @@ enum class TextureWrap {
 };
 
 template <>
-constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
+inline constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
     GL_REPEAT, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_TO_EDGE};
 
 namespace detail {
 
 template <std::size_t Dim>
-constexpr auto glTexStorage = nullptr;
+inline constexpr auto glTexStorage = nullptr;
 
 template <>
-constexpr auto& glTexStorage<1> = glTexStorage1D;
+inline constexpr auto& glTexStorage<1> = glTexStorage1D;
 template <>
-constexpr auto& glTexStorage<2> = glTexStorage2D;
+inline constexpr auto& glTexStorage<2> = glTexStorage2D;
 template <>
-constexpr auto& glTexStorage<3> = glTexStorage3D;
-
-template <std::size_t Dim>
-constexpr auto glTexStorageMultisample = nullptr;
-
-template <>
-constexpr auto& glTexStorageMultisample<2> = glTexStorage2DMultisample;
-template <>
-constexpr auto& glTexStorageMultisample<3> = glTexStorage3DMultisample;
+inline constexpr auto& glTexStorage<3> = glTexStorage3D;
 
 template <std::size_t Dim>
-constexpr auto glTexSubImage = nullptr;
+inline constexpr auto glTexStorageMultisample = nullptr;
 
 template <>
-constexpr auto& glTexSubImage<1> = glTexSubImage1D;
+inline constexpr auto& glTexStorageMultisample<2> = glTexStorage2DMultisample;
 template <>
-constexpr auto& glTexSubImage<2> = glTexSubImage2D;
+inline constexpr auto& glTexStorageMultisample<3> = glTexStorage3DMultisample;
+
+template <std::size_t Dim>
+inline constexpr auto glTexSubImage = nullptr;
+
 template <>
-constexpr auto& glTexSubImage<3> = glTexSubImage3D;
+inline constexpr auto& glTexSubImage<1> = glTexSubImage1D;
+template <>
+inline constexpr auto& glTexSubImage<2> = glTexSubImage2D;
+template <>
+inline constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 
 /// <summary>A base for all textures with template parameters for the dimension and texture target.</summary>
 template <std::size_t Dim, TextureTarget Target>

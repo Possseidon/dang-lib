@@ -29,21 +29,21 @@ enum class BlendFactorSrc {
 };
 
 template <>
-constexpr dutils::EnumArray<BlendFactorSrc, GLenum> GLConstants<BlendFactorSrc> = {GL_ZERO,
-                                                                                   GL_ONE,
-                                                                                   GL_SRC_COLOR,
-                                                                                   GL_ONE_MINUS_SRC_COLOR,
-                                                                                   GL_DST_COLOR,
-                                                                                   GL_ONE_MINUS_DST_COLOR,
-                                                                                   GL_SRC_ALPHA,
-                                                                                   GL_ONE_MINUS_SRC_ALPHA,
-                                                                                   GL_DST_ALPHA,
-                                                                                   GL_ONE_MINUS_DST_ALPHA,
-                                                                                   GL_CONSTANT_COLOR,
-                                                                                   GL_ONE_MINUS_CONSTANT_COLOR,
-                                                                                   GL_CONSTANT_ALPHA,
-                                                                                   GL_ONE_MINUS_CONSTANT_ALPHA,
-                                                                                   GL_SRC_ALPHA_SATURATE};
+inline constexpr dutils::EnumArray<BlendFactorSrc, GLenum> GLConstants<BlendFactorSrc> = {GL_ZERO,
+                                                                                          GL_ONE,
+                                                                                          GL_SRC_COLOR,
+                                                                                          GL_ONE_MINUS_SRC_COLOR,
+                                                                                          GL_DST_COLOR,
+                                                                                          GL_ONE_MINUS_DST_COLOR,
+                                                                                          GL_SRC_ALPHA,
+                                                                                          GL_ONE_MINUS_SRC_ALPHA,
+                                                                                          GL_DST_ALPHA,
+                                                                                          GL_ONE_MINUS_DST_ALPHA,
+                                                                                          GL_CONSTANT_COLOR,
+                                                                                          GL_ONE_MINUS_CONSTANT_COLOR,
+                                                                                          GL_CONSTANT_ALPHA,
+                                                                                          GL_ONE_MINUS_CONSTANT_ALPHA,
+                                                                                          GL_SRC_ALPHA_SATURATE};
 
 /// <summary>The destination factor, used for the blending function.</summary>
 enum class BlendFactorDst {
@@ -66,20 +66,20 @@ enum class BlendFactorDst {
 };
 
 template <>
-constexpr dutils::EnumArray<BlendFactorDst, GLenum> GLConstants<BlendFactorDst> = {GL_ZERO,
-                                                                                   GL_ONE,
-                                                                                   GL_SRC_COLOR,
-                                                                                   GL_ONE_MINUS_SRC_COLOR,
-                                                                                   GL_DST_COLOR,
-                                                                                   GL_ONE_MINUS_DST_COLOR,
-                                                                                   GL_SRC_ALPHA,
-                                                                                   GL_ONE_MINUS_SRC_ALPHA,
-                                                                                   GL_DST_ALPHA,
-                                                                                   GL_ONE_MINUS_DST_ALPHA,
-                                                                                   GL_CONSTANT_COLOR,
-                                                                                   GL_ONE_MINUS_CONSTANT_COLOR,
-                                                                                   GL_CONSTANT_ALPHA,
-                                                                                   GL_ONE_MINUS_CONSTANT_ALPHA};
+inline constexpr dutils::EnumArray<BlendFactorDst, GLenum> GLConstants<BlendFactorDst> = {GL_ZERO,
+                                                                                          GL_ONE,
+                                                                                          GL_SRC_COLOR,
+                                                                                          GL_ONE_MINUS_SRC_COLOR,
+                                                                                          GL_DST_COLOR,
+                                                                                          GL_ONE_MINUS_DST_COLOR,
+                                                                                          GL_SRC_ALPHA,
+                                                                                          GL_ONE_MINUS_SRC_ALPHA,
+                                                                                          GL_DST_ALPHA,
+                                                                                          GL_ONE_MINUS_DST_ALPHA,
+                                                                                          GL_CONSTANT_COLOR,
+                                                                                          GL_ONE_MINUS_CONSTANT_COLOR,
+                                                                                          GL_CONSTANT_ALPHA,
+                                                                                          GL_ONE_MINUS_CONSTANT_ALPHA};
 
 /// <summary>Used by functions to compare values.</summary>
 enum class CompareFunc {
@@ -96,7 +96,7 @@ enum class CompareFunc {
 };
 
 template <>
-constexpr dutils::EnumArray<CompareFunc, GLenum> GLConstants<CompareFunc> = {
+inline constexpr dutils::EnumArray<CompareFunc, GLenum> GLConstants<CompareFunc> = {
     GL_NEVER, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL, GL_EQUAL, GL_NOTEQUAL, GL_ALWAYS};
 
 /// <summary>Which face to hide/cull.</summary>
@@ -109,7 +109,8 @@ enum class CullFaceMode {
 };
 
 template <>
-constexpr dutils::EnumArray<CullFaceMode, GLenum> GLConstants<CullFaceMode> = {GL_FRONT, GL_BACK, GL_FRONT_AND_BACK};
+inline constexpr dutils::EnumArray<CullFaceMode, GLenum> GLConstants<CullFaceMode> = {
+    GL_FRONT, GL_BACK, GL_FRONT_AND_BACK};
 
 /// <summary>A list of all binary operations of boolean algebra.</summary>
 enum class LogicOp {
@@ -134,22 +135,22 @@ enum class LogicOp {
 };
 
 template <>
-constexpr dutils::EnumArray<LogicOp, GLenum> GLConstants<LogicOp> = {GL_CLEAR,
-                                                                     GL_SET,
-                                                                     GL_COPY,
-                                                                     GL_COPY_INVERTED,
-                                                                     GL_NOOP,
-                                                                     GL_INVERT,
-                                                                     GL_AND,
-                                                                     GL_NAND,
-                                                                     GL_OR,
-                                                                     GL_NOR,
-                                                                     GL_XOR,
-                                                                     GL_EQUIV,
-                                                                     GL_AND_REVERSE,
-                                                                     GL_AND_INVERTED,
-                                                                     GL_OR_REVERSE,
-                                                                     GL_OR_INVERTED};
+inline constexpr dutils::EnumArray<LogicOp, GLenum> GLConstants<LogicOp> = {GL_CLEAR,
+                                                                            GL_SET,
+                                                                            GL_COPY,
+                                                                            GL_COPY_INVERTED,
+                                                                            GL_NOOP,
+                                                                            GL_INVERT,
+                                                                            GL_AND,
+                                                                            GL_NAND,
+                                                                            GL_OR,
+                                                                            GL_NOR,
+                                                                            GL_XOR,
+                                                                            GL_EQUIV,
+                                                                            GL_AND_REVERSE,
+                                                                            GL_AND_INVERTED,
+                                                                            GL_OR_REVERSE,
+                                                                            GL_OR_INVERTED};
 
 /// <summary>Specifies the side of a polygon.</summary>
 enum class PolygonSide {
@@ -160,7 +161,7 @@ enum class PolygonSide {
 };
 
 template <>
-constexpr dutils::EnumArray<PolygonSide, GLenum> GLConstants<PolygonSide> = {GL_FRONT, GL_BACK};
+inline constexpr dutils::EnumArray<PolygonSide, GLenum> GLConstants<PolygonSide> = {GL_FRONT, GL_BACK};
 
 /// <summary>Specfies, whether polygons should render full faces, the outline or just corner points.</summary>
 enum class PolygonMode {
@@ -172,7 +173,7 @@ enum class PolygonMode {
 };
 
 template <>
-constexpr dutils::EnumArray<PolygonMode, GLenum> GLConstants<PolygonMode> = {
+inline constexpr dutils::EnumArray<PolygonMode, GLenum> GLConstants<PolygonMode> = {
     GL_POINT,
     GL_LINE,
     GL_FILL,
@@ -193,7 +194,7 @@ enum class StencilAction {
 };
 
 template <>
-constexpr dutils::EnumArray<StencilAction, GLenum> GLConstants<StencilAction> = {
+inline constexpr dutils::EnumArray<StencilAction, GLenum> GLConstants<StencilAction> = {
     GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_INCR_WRAP, GL_DECR, GL_DECR_WRAP, GL_INVERT};
 
 /// <summary>Combines blending source and destination factors into a single type.</summary>

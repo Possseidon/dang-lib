@@ -25,17 +25,17 @@ enum class ObjectType {
 
 /// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
 template <>
-constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
-                                                                           GL_SHADER,
-                                                                           GL_PROGRAM,
-                                                                           GL_VERTEX_ARRAY,
-                                                                           GL_QUERY,
-                                                                           GL_PROGRAM_PIPELINE,
-                                                                           GL_TRANSFORM_FEEDBACK,
-                                                                           GL_SAMPLER,
-                                                                           GL_TEXTURE,
-                                                                           GL_RENDERBUFFER,
-                                                                           GL_FRAMEBUFFER};
+inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
+                                                                                  GL_SHADER,
+                                                                                  GL_PROGRAM,
+                                                                                  GL_VERTEX_ARRAY,
+                                                                                  GL_QUERY,
+                                                                                  GL_PROGRAM_PIPELINE,
+                                                                                  GL_TRANSFORM_FEEDBACK,
+                                                                                  GL_SAMPLER,
+                                                                                  GL_TEXTURE,
+                                                                                  GL_RENDERBUFFER,
+                                                                                  GL_FRAMEBUFFER};
 
 /// <summary>The different buffer targets, which can be specified in glBindBuffer.</summary>
 enum class BufferTarget {
@@ -59,20 +59,20 @@ enum class BufferTarget {
 
 /// <summary>Maps from buffer targets to their respective constants, which need to be supplied to the glBindBuffer function.</summary>
 template <>
-constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarget> = {GL_ARRAY_BUFFER,
-                                                                               GL_ATOMIC_COUNTER_BUFFER,
-                                                                               GL_COPY_READ_BUFFER,
-                                                                               GL_COPY_WRITE_BUFFER,
-                                                                               GL_DISPATCH_INDIRECT_BUFFER,
-                                                                               GL_DRAW_INDIRECT_BUFFER,
-                                                                               GL_ELEMENT_ARRAY_BUFFER,
-                                                                               GL_PIXEL_PACK_BUFFER,
-                                                                               GL_PIXEL_UNPACK_BUFFER,
-                                                                               GL_QUERY_BUFFER,
-                                                                               GL_SHADER_STORAGE_BUFFER,
-                                                                               GL_TEXTURE_BUFFER,
-                                                                               GL_TRANSFORM_FEEDBACK_BUFFER,
-                                                                               GL_UNIFORM_BUFFER};
+inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarget> = {GL_ARRAY_BUFFER,
+                                                                                      GL_ATOMIC_COUNTER_BUFFER,
+                                                                                      GL_COPY_READ_BUFFER,
+                                                                                      GL_COPY_WRITE_BUFFER,
+                                                                                      GL_DISPATCH_INDIRECT_BUFFER,
+                                                                                      GL_DRAW_INDIRECT_BUFFER,
+                                                                                      GL_ELEMENT_ARRAY_BUFFER,
+                                                                                      GL_PIXEL_PACK_BUFFER,
+                                                                                      GL_PIXEL_UNPACK_BUFFER,
+                                                                                      GL_QUERY_BUFFER,
+                                                                                      GL_SHADER_STORAGE_BUFFER,
+                                                                                      GL_TEXTURE_BUFFER,
+                                                                                      GL_TRANSFORM_FEEDBACK_BUFFER,
+                                                                                      GL_UNIFORM_BUFFER};
 
 /// <summary>The different texture targets, which can be specified in glBindTexture.</summary>
 enum class TextureTarget {
@@ -91,15 +91,15 @@ enum class TextureTarget {
 
 /// <summary>Maps from texture targets to their respective constants, which need to be supplied to the glBindTexture function.</summary>
 template <>
-constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTarget> = {GL_TEXTURE_1D,
-                                                                                 GL_TEXTURE_1D_ARRAY,
-                                                                                 GL_TEXTURE_2D,
-                                                                                 GL_TEXTURE_2D_ARRAY,
-                                                                                 GL_TEXTURE_2D_MULTISAMPLE,
-                                                                                 GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
-                                                                                 GL_TEXTURE_3D,
-                                                                                 GL_TEXTURE_CUBE_MAP,
-                                                                                 GL_TEXTURE_RECTANGLE};
+inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTarget> = {GL_TEXTURE_1D,
+                                                                                        GL_TEXTURE_1D_ARRAY,
+                                                                                        GL_TEXTURE_2D,
+                                                                                        GL_TEXTURE_2D_ARRAY,
+                                                                                        GL_TEXTURE_2D_MULTISAMPLE,
+                                                                                        GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+                                                                                        GL_TEXTURE_3D,
+                                                                                        GL_TEXTURE_CUBE_MAP,
+                                                                                        GL_TEXTURE_RECTANGLE};
 
 /// <summary>The different framebuffer targets, which can be specified in glBindFramebuffer.</summary>
 /// <remarks>
@@ -116,7 +116,7 @@ enum class FramebufferTarget {
 
 /// <summary>Maps from framebuffer targets to their respective constants, which need to be supplied to the glBindFramebuffer function.</summary>
 template <>
-constexpr dutils::EnumArray<FramebufferTarget, GLenum> GLConstants<FramebufferTarget> = {
+inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> GLConstants<FramebufferTarget> = {
     GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER};
 
 /// <summary>The different renderbuffer targets, which can be specified in glBindRenderbuffer.</summary>
@@ -129,7 +129,7 @@ enum class RenderbufferTarget {
 
 /// <summary>Maps from renderbuffer targets to their respective constants, which need to be supplied to the glBindRenderbuffer function.</summary>
 template <>
-constexpr dutils::EnumArray<RenderbufferTarget, GLenum> GLConstants<RenderbufferTarget> = {GL_RENDERBUFFER};
+inline constexpr dutils::EnumArray<RenderbufferTarget, GLenum> GLConstants<RenderbufferTarget> = {GL_RENDERBUFFER};
 
 namespace detail {
 
@@ -172,85 +172,85 @@ namespace detail {
 // Wraps OpenGL functions in a templated manner
 
 template <ObjectType Type>
-constexpr auto glGenObjects = nullptr;
+inline constexpr auto glGenObjects = nullptr;
 
 template <>
-constexpr auto& glGenObjects<ObjectType::Buffer> = glGenBuffers;
+inline constexpr auto& glGenObjects<ObjectType::Buffer> = glGenBuffers;
 template <>
-constexpr auto& glGenObjects<ObjectType::VertexArray> = glGenVertexArrays;
+inline constexpr auto& glGenObjects<ObjectType::VertexArray> = glGenVertexArrays;
 template <>
-constexpr auto& glGenObjects<ObjectType::Query> = glGenQueries;
+inline constexpr auto& glGenObjects<ObjectType::Query> = glGenQueries;
 template <>
-constexpr auto& glGenObjects<ObjectType::ProgramPipeline> = glGenProgramPipelines;
+inline constexpr auto& glGenObjects<ObjectType::ProgramPipeline> = glGenProgramPipelines;
 template <>
-constexpr auto& glGenObjects<ObjectType::TransformFeedback> = glGenTransformFeedbacks;
+inline constexpr auto& glGenObjects<ObjectType::TransformFeedback> = glGenTransformFeedbacks;
 template <>
-constexpr auto& glGenObjects<ObjectType::Sampler> = glGenSamplers;
+inline constexpr auto& glGenObjects<ObjectType::Sampler> = glGenSamplers;
 template <>
-constexpr auto& glGenObjects<ObjectType::Texture> = glGenTextures;
+inline constexpr auto& glGenObjects<ObjectType::Texture> = glGenTextures;
 template <>
-constexpr auto& glGenObjects<ObjectType::Renderbuffer> = glGenRenderbuffers;
+inline constexpr auto& glGenObjects<ObjectType::Renderbuffer> = glGenRenderbuffers;
 template <>
-constexpr auto& glGenObjects<ObjectType::Framebuffer> = glGenFramebuffers;
-
-template <ObjectType Type>
-constexpr auto glCreateObject = nullptr;
-
-template <>
-constexpr auto& glCreateObject<ObjectType::Shader> = glCreateShader;
-template <>
-constexpr auto& glCreateObject<ObjectType::Program> = glCreateProgram;
+inline constexpr auto& glGenObjects<ObjectType::Framebuffer> = glGenFramebuffers;
 
 template <ObjectType Type>
-constexpr auto glDeleteObjects = nullptr;
+inline constexpr auto glCreateObject = nullptr;
 
 template <>
-constexpr auto& glDeleteObjects<ObjectType::Buffer> = glDeleteBuffers;
+inline constexpr auto& glCreateObject<ObjectType::Shader> = glCreateShader;
 template <>
-constexpr auto& glDeleteObjects<ObjectType::VertexArray> = glDeleteVertexArrays;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::Query> = glDeleteQueries;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::ProgramPipeline> = glDeleteProgramPipelines;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::TransformFeedback> = glDeleteTransformFeedbacks;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::Sampler> = glDeleteSamplers;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::Texture> = glDeleteTextures;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::Renderbuffer> = glDeleteRenderbuffers;
-template <>
-constexpr auto& glDeleteObjects<ObjectType::Framebuffer> = glDeleteFramebuffers;
+inline constexpr auto& glCreateObject<ObjectType::Program> = glCreateProgram;
 
 template <ObjectType Type>
-constexpr auto glDeleteObject = nullptr;
+inline constexpr auto glDeleteObjects = nullptr;
+
 template <>
-constexpr auto& glDeleteObject<ObjectType::Shader> = glDeleteShader;
+inline constexpr auto& glDeleteObjects<ObjectType::Buffer> = glDeleteBuffers;
 template <>
-constexpr auto& glDeleteObject<ObjectType::Program> = glDeleteProgram;
+inline constexpr auto& glDeleteObjects<ObjectType::VertexArray> = glDeleteVertexArrays;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::Query> = glDeleteQueries;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::ProgramPipeline> = glDeleteProgramPipelines;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::TransformFeedback> = glDeleteTransformFeedbacks;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::Sampler> = glDeleteSamplers;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::Texture> = glDeleteTextures;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::Renderbuffer> = glDeleteRenderbuffers;
+template <>
+inline constexpr auto& glDeleteObjects<ObjectType::Framebuffer> = glDeleteFramebuffers;
+
+template <ObjectType Type>
+inline constexpr auto glDeleteObject = nullptr;
+template <>
+inline constexpr auto& glDeleteObject<ObjectType::Shader> = glDeleteShader;
+template <>
+inline constexpr auto& glDeleteObject<ObjectType::Program> = glDeleteProgram;
 
 template <ObjectType>
-constexpr auto glBindObject = nullptr;
+inline constexpr auto glBindObject = nullptr;
 
 template <>
-constexpr auto& glBindObject<ObjectType::Buffer> = glBindBuffer;
+inline constexpr auto& glBindObject<ObjectType::Buffer> = glBindBuffer;
 template <>
-constexpr auto& glBindObject<ObjectType::Program> = glUseProgram;
+inline constexpr auto& glBindObject<ObjectType::Program> = glUseProgram;
 template <>
-constexpr auto& glBindObject<ObjectType::VertexArray> = glBindVertexArray;
+inline constexpr auto& glBindObject<ObjectType::VertexArray> = glBindVertexArray;
 template <>
-constexpr auto& glBindObject<ObjectType::ProgramPipeline> = glBindProgramPipeline;
+inline constexpr auto& glBindObject<ObjectType::ProgramPipeline> = glBindProgramPipeline;
 template <>
-constexpr auto& glBindObject<ObjectType::TransformFeedback> = glBindTransformFeedback;
+inline constexpr auto& glBindObject<ObjectType::TransformFeedback> = glBindTransformFeedback;
 template <>
-constexpr auto& glBindObject<ObjectType::Sampler> = glBindSampler;
+inline constexpr auto& glBindObject<ObjectType::Sampler> = glBindSampler;
 template <>
-constexpr auto& glBindObject<ObjectType::Texture> = glBindTexture;
+inline constexpr auto& glBindObject<ObjectType::Texture> = glBindTexture;
 template <>
-constexpr auto& glBindObject<ObjectType::Renderbuffer> = glBindRenderbuffer;
+inline constexpr auto& glBindObject<ObjectType::Renderbuffer> = glBindRenderbuffer;
 template <>
-constexpr auto& glBindObject<ObjectType::Framebuffer> = glBindFramebuffer;
+inline constexpr auto& glBindObject<ObjectType::Framebuffer> = glBindFramebuffer;
 
 /// <summary>Whether the given function does not exist and is still a nullptr.</summary>
 template <typename T>

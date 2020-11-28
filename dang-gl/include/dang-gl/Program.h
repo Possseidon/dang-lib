@@ -27,12 +27,12 @@ enum class ShaderType {
 
 /// <summary>A mapping to the GL-Constants for each shader stage.</summary>
 template <>
-constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {GL_VERTEX_SHADER,
-                                                                           GL_FRAGMENT_SHADER,
-                                                                           GL_GEOMETRY_SHADER,
-                                                                           GL_TESS_CONTROL_SHADER,
-                                                                           GL_TESS_EVALUATION_SHADER,
-                                                                           GL_COMPUTE_SHADER};
+inline constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {GL_VERTEX_SHADER,
+                                                                                  GL_FRAGMENT_SHADER,
+                                                                                  GL_GEOMETRY_SHADER,
+                                                                                  GL_TESS_CONTROL_SHADER,
+                                                                                  GL_TESS_EVALUATION_SHADER,
+                                                                                  GL_COMPUTE_SHADER};
 
 /// <summary>Human-readable names for each sahder stage.</summary>
 const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames{"Vertex-Shader",

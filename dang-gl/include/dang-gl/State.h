@@ -180,18 +180,18 @@ private:
 };
 
 template <typename T>
-constexpr auto glGet = nullptr;
+inline constexpr auto glGet = nullptr;
 
 template <>
-constexpr auto& glGet<GLboolean> = glGetBooleanv;
+inline constexpr auto& glGet<GLboolean> = glGetBooleanv;
 template <>
-constexpr auto& glGet<GLdouble> = glGetDoublev;
+inline constexpr auto& glGet<GLdouble> = glGetDoublev;
 template <>
-constexpr auto& glGet<GLfloat> = glGetFloatv;
+inline constexpr auto& glGet<GLfloat> = glGetFloatv;
 template <>
-constexpr auto& glGet<GLint> = glGetIntegerv;
+inline constexpr auto& glGet<GLint> = glGetIntegerv;
 template <>
-constexpr auto& glGet<GLint64> = glGetInteger64v;
+inline constexpr auto& glGet<GLint64> = glGetInteger64v;
 
 /// <summary>A constant, which is queried on first use, but cached for further accesses.</summary>
 template <typename T, GLenum Name>
@@ -215,18 +215,18 @@ private:
 };
 
 template <typename T>
-constexpr auto glGeti = nullptr;
+inline constexpr auto glGeti = nullptr;
 
 template <>
-constexpr auto& glGeti<GLboolean> = glGetBooleani_v;
+inline constexpr auto& glGeti<GLboolean> = glGetBooleani_v;
 template <>
-constexpr auto& glGeti<GLdouble> = glGetDoublei_v;
+inline constexpr auto& glGeti<GLdouble> = glGetDoublei_v;
 template <>
-constexpr auto& glGeti<GLfloat> = glGetFloati_v;
+inline constexpr auto& glGeti<GLfloat> = glGetFloati_v;
 template <>
-constexpr auto& glGeti<GLint> = glGetIntegeri_v;
+inline constexpr auto& glGeti<GLint> = glGetIntegeri_v;
 template <>
-constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
+inline constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
 
 /// <summary>A list of constants, which is queried on first use, but cached for further accesses.</summary>
 template <typename T, GLenum Name>
