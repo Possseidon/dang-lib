@@ -13,6 +13,10 @@ struct ObjectWrapper {
     /// <summary>Creates a new OpenGL object and returns its handle.</summary>
     static Handle create()
     {
+        static_assert(detail::canExecute(detail::glGenObjects<Type>) ||
+                          detail::canExecute(detail::glCreateObject<Type>),
+                      "No function to create this GL-Object type.");
+
         if constexpr (detail::canExecute(detail::glGenObjects<Type>)) {
             GLuint raw_handle{};
             detail::glGenObjects<Type>(1, &raw_handle);
@@ -21,23 +25,21 @@ struct ObjectWrapper {
         else if constexpr (detail::canExecute(detail::glCreateObject<Type>)) {
             return Handle{detail::glCreateObject<Type>()};
         }
-        else {
-            static_assert(false, "No function to create this GL-Object type.");
-        }
     }
 
     /// <summary>Destroys an OpenGL object with the given handle.</summary>
     static void destroy(Handle handle)
     {
+        static_assert(detail::canExecute(detail::glDeleteObjects<Type>) ||
+                          detail::canExecute(detail::glDeleteObject<Type>),
+                      "No function to destroy this GL-Object type.");
+
         if constexpr (detail::canExecute(detail::glDeleteObjects<Type>)) {
             GLuint raw_handle = handle.unwrap();
             detail::glDeleteObjects<Type>(1, &raw_handle);
         }
         else if constexpr (detail::canExecute(detail::glDeleteObject<Type>)) {
             return detail::glDeleteObject<Type>(handle.unwrap());
-        }
-        else {
-            static_assert(false, "No function to destroy this GL-Object type.");
         }
     }
 
