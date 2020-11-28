@@ -39,10 +39,11 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Initializes a single-column matrix with the given values.</summary>
-    template <typename = std::enable_if_t<Cols == 1>>
     constexpr Matrix(Vector<T, Rows> col)
         : Base({col})
-    {}
+    {
+        static_assert(Cols == 1);
+    }
 
     /// <summary>Returns the identity matrix, optionally multiplied with a scalar.</summary>
     /// <remarks>For non-square matrices the rest is filled with zeros.</remarks>
@@ -55,16 +56,16 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Allows for implicit conversion from single-column matrices to vectors.</summary>
-    template <typename = std::enable_if_t<Cols == 1>>
     constexpr operator Vector<T, Rows>() const
     {
+        static_assert(Cols == 1);
         return (*this)[0];
     }
 
     /// <summary>Allows for implicit conversion from single-value matrices to their respective value type.</summary>
-    template <typename = std::enable_if_t<Cols == 1 && Rows == 1>>
     constexpr operator T() const
     {
+        static_assert(Cols == 1 && Rows == 1);
         return (*this)(0, 0);
     }
 
@@ -114,17 +115,17 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the minor at the given column/row.</summary>
     /// <remarks>A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto minor(std::size_t col, std::size_t row) const
     {
+        static_assert(Cols > 0 && Rows > 0);
         return minor({col, row});
     }
 
     /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
     /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto minor(const dmath::svec2& pos) const
     {
+        static_assert(Cols > 0 && Rows > 0);
         Matrix<T, Cols - 1, Rows - 1> result;
         std::size_t rcol = 0;
         for (std::size_t col = 0; col < Cols; col++) {
@@ -144,17 +145,17 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the cofactor at the given column/row.</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is odd.</remarks>
-    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto cofactor(std::size_t col, std::size_t row) const
     {
+        static_assert(Cols > 0 && Rows > 0);
         return cofactor({col, row});
     }
 
     /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.</remarks>
-    template <typename = std::enable_if_t<(Cols > 0 && Rows > 0)>>
     constexpr auto cofactor(const dmath::svec2& pos) const
     {
+        static_assert(Cols > 0 && Rows > 0);
         const T factor = T{1} - ((pos.x() + pos.y()) & 1) * 2;
         return minor(pos).determinant() * factor;
     }
@@ -186,9 +187,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Dim &lt;= 4: Cramer's rule</para>
     /// <para>Dim > 4: Blockwise inversion (recursive)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<Matrix> inverse() const
     {
+        static_assert(Cols == Rows);
+
         constexpr std::size_t Dim = Cols;
         constexpr std::size_t DimHalf1 = Dim / 2 + Dim % 2;
         constexpr std::size_t DimHalf2 = Dim / 2;
@@ -263,9 +265,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<T> solveCol(std::size_t col)
     {
+        static_assert(Cols == Rows + 1);
+
         if constexpr (Rows >= 6) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return (*inv * (*this)[Rows])[col];
@@ -295,9 +298,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<T> solveCol(std::size_t col) const
     {
+        static_assert(Cols == Rows + 1);
+
         if constexpr (Rows >= 6) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return (*inv * (*this)[Rows])[col];
@@ -320,9 +324,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector)
     {
+        static_assert(Cols == Rows);
+
         if constexpr (Rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
@@ -352,9 +357,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 6: Inverse</para>
     /// <para>Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<T> solveCol(std::size_t col, Vector<T, Cols> vector) const
     {
+        static_assert(Cols == Rows);
+
         if constexpr (Rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
@@ -377,9 +383,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<Vector<T, Rows>> solve()
     {
+        static_assert(Cols == Rows + 1);
+
         if constexpr (Rows >= 5) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return *inv * (*this)[Rows];
@@ -413,9 +420,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows + 1>>
     constexpr std::optional<Vector<T, Rows>> solve() const
     {
+        static_assert(Cols == Rows + 1);
+
         if constexpr (Rows >= 5) {
             if (auto inv = subMatrix<0, 0, Rows, Rows>().inverse())
                 return *inv * (*this)[Rows];
@@ -450,9 +458,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector)
     {
+        static_assert(Cols == Rows);
+
         if constexpr (Rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
@@ -486,9 +495,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     /// <para>Unknowns >= 5: Inverse</para>
     /// <para>Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)</para>
     /// </remarks>
-    template <typename = std::enable_if_t<Cols == Rows>>
     constexpr std::optional<Vector<T, Cols>> solve(Vector<T, Cols> vector) const
     {
+        static_assert(Cols == Rows);
+
         if constexpr (Rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
@@ -521,9 +531,9 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     constexpr auto operator+() const { return *this; }
 
     /// <summary>Returns a component-wise negation of the matrix.</summary>
-    template <typename = std::enable_if_t<std::is_signed_v<T>>>
     constexpr auto operator-() const
     {
+        static_assert(std::is_signed_v<T>);
         return variadicOp(std::negate<>{});
     }
 
@@ -531,7 +541,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus<>{}, rhs); }
 
     /// <summary>Performs a component-wise addition.</summary>
-    constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus<>, other); }
+    constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus<>{}, other); }
 
     /// <summary>Performs a component-wise subtraction.</summary>
     friend constexpr auto operator-(const Matrix& lhs, const Matrix& rhs)
@@ -604,9 +614,9 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a matrix-multiplication between the inverse of the matrix and the given vector, seen as a single-column matrix.</summary>
-    template <typename = std::enable_if_t<Cols == Rows>>
     friend constexpr std::optional<Vector<T, Rows>> operator/(const Vector<T, Rows>& vector, const Matrix& matrix)
     {
+        static_assert(Cols == Rows);
         if (auto inv = matrix.inverse())
             return vector * *inv;
         return std::nullopt;

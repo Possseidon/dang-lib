@@ -117,30 +117,30 @@ struct Bounds {
     {}
 
     /// <summary>Provides simplified access for one-dimensional bounds.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
     T& lowValue()
     {
+        static_assert(Dim == 1);
         return low.x();
     }
 
     /// <summary>Provides simplified access for one-dimensional bounds.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
     constexpr T lowValue() const
     {
+        static_assert(Dim == 1);
         return low.x();
     }
 
     /// <summary>Provides simplified access for one-dimensional bounds.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
     T& highValue()
     {
+        static_assert(Dim == 1);
         return high.x();
     }
 
     /// <summary>Provides simplified access for one-dimensional bounds.</summary>
-    template <typename = std::enable_if_t<Dim == 1>>
     constexpr T highValue() const
     {
+        static_assert(Dim == 1);
         return high.x();
     }
 
@@ -234,9 +234,9 @@ struct Bounds {
     constexpr Bounds inset(Vector<T, Dim> amount) const { return {low + amount, high - amount}; }
 
     /// <summary>Returns an enum-array, mapping corners to the actual positions of the corners.</summary>
-    template <typename = std::enable_if_t<(Dim >= 1 && Dim <= 3)>>
     constexpr dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> corners() const
     {
+        static_assert(Dim >= 1 && Dim <= 3);
         dutils::EnumArray<Corner<Dim>, Vector<T, Dim>> result;
         for (auto corner : Corner<Dim>())
             result[corner] = low + Vector<T, Dim>(CornerVector<Dim>[corner]) * (high - low);
