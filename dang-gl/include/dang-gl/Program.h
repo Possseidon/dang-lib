@@ -186,9 +186,9 @@ public:
     operator T() const;
 
     /// <summary>Automatically binds the texture and assigns the returned slot to the sampler uniform.</summary>
-    template <typename = std::enable_if_t<std::is_same_v<T, GLint>>>
     ShaderUniform& operator=(const TextureBase& texture)
     {
+        static_assert(std::is_same_v<T, GLint>);
         set(static_cast<GLint>(texture.bind()));
         return *this;
     }
