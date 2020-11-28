@@ -654,10 +654,10 @@ using bvec2 = bvec<2>;
 using bvec3 = bvec<3>;
 using bvec4 = bvec<4>;
 
+} // namespace dang::math
+
 template <typename T, std::size_t Dim>
-struct std::tuple_size<Vector<T, Dim>> : std::tuple_size<std::array<T, Dim>> {};
+struct std::tuple_size<dang::math::Vector<T, Dim>> : tuple_size<array<T, Dim>> {};
 
 template <typename T, std::size_t Dim, std::size_t Index>
-struct std::tuple_element<Index, Vector<T, Dim>> : std::tuple_element<Index, std::array<T, Dim>> {};
-
-} // namespace dang::math
+struct std::tuple_element<Index, dang::math::Vector<T, Dim>> : tuple_element<Index, array<T, Dim>> {};
