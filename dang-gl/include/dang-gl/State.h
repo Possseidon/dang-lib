@@ -20,7 +20,7 @@ class StateProperty;
 /// <summary>A base class for all different OpenGL states.</summary>
 class StatePropertyBase {
 public:
-    friend class State;
+    friend class dang::gl::State;
 
     /// <summary>Initializes the property, automatically incrementing the property count on the state itself.</summary>
     StatePropertyBase(State& state);
