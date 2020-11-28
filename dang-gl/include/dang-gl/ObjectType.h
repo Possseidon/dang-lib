@@ -135,8 +135,10 @@ namespace detail {
 
 // Helper to select the matching target enum for a given object type
 
-template <ObjectType Type>
-struct TargetSelector;
+template <ObjectType>
+struct TargetSelector {
+    using Type = void;
+};
 
 template <>
 struct TargetSelector<ObjectType::Buffer> {
