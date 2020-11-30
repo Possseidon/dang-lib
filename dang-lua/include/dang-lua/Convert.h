@@ -54,6 +54,8 @@ namespace detail {
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
 #endif
 
+[[noreturn]] inline void noreturn_lua_error(lua_State* state) { lua_error(state); }
+
 [[noreturn]] inline void noreturn_luaL_error(lua_State* state, const char* message)
 {
     lua_pushstring(state, message);

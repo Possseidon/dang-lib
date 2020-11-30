@@ -1870,7 +1870,7 @@ public:
         static_assert(Convert<TMessage>::PushCount == 1, "Supplied message must take up a single stack position.");
         push(std::forward<TMessage>(message));
         // technically lua_error pops the message, but since it doesn't return this is not really visible to users
-        lua_error(state_);
+        detail::noreturn_lua_error(state_);
     }
 
     [[noreturn]] void argError(int arg, const char* extra_message)
