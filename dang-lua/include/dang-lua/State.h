@@ -1820,11 +1820,17 @@ public:
         lua_error(state_);
     }
 
-    [[noreturn]] void argError(int arg, const char* extra_message) { luaL_argerror(state_, arg, extra_message); }
+    [[noreturn]] void argError(int arg, const char* extra_message)
+    {
+        detail::noreturn_luaL_argerror(state_, arg, extra_message);
+    }
 
     [[noreturn]] void argError(int arg, const std::string& extra_message) { argError(arg, extra_message.c_str()); }
 
-    [[noreturn]] void typeError(int arg, const char* type_name) { luaL_typeerror(state_, arg, type_name); }
+    [[noreturn]] void typeError(int arg, const char* type_name)
+    {
+        detail::noreturn_luaL_typeerror(state_, arg, type_name);
+    }
 
     [[noreturn]] void typeError(int arg, const std::string& type_name) { typeError(arg, type_name.c_str()); }
 

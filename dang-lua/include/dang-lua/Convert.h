@@ -49,6 +49,11 @@ constexpr const char* EnumValues[1]{};
 
 namespace detail {
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-noreturn"
+#endif
+
 [[noreturn]] inline void noreturn_luaL_error(lua_State* state, const char* message)
 {
     lua_pushstring(state, message);
@@ -64,6 +69,10 @@ namespace detail {
 {
     luaL_argerror(state, arg, extra_message);
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 /// <summary>Somewhat similar to luaL_setfuncs, except it uses any kind of container.</summary>
 template <typename T>
