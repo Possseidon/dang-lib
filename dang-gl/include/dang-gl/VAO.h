@@ -188,6 +188,9 @@ private:
             case DataType::UInt:
                 for (GLuint offset = 0; offset < location_count; offset++)
                     glVertexAttribIPointer(index(offset), size, type, stride, pointer(offset));
+
+            default:
+                throw std::runtime_error("Invalid base GL-DataType.");
             }
         }
     }
