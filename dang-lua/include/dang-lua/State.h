@@ -83,10 +83,54 @@ using WeakReference = std::weak_ptr<Reference>;
 template <typename T>
 struct IsIndex : std::false_type {};
 
-namespace detail {
+template <typename T>
+struct IsIndices : std::false_type {};
 
 template <typename T>
-struct IsFixedSizeStackIndex : std::false_type {};
+struct IsIndexRange : std::false_type {};
+
+template <typename T>
+struct IsStackIndex : std::false_type {};
+
+template <typename T>
+struct IsStackIndexResult : std::false_type {};
+
+template <typename T>
+struct IsStackIndices : std::false_type {};
+
+template <typename T>
+struct IsStackIndicesResult : std::false_type {};
+
+template <typename T>
+struct IsStackIndexRange : std::false_type {};
+
+template <typename T>
+struct IsStackIndexRangeResult : std::false_type {};
+
+template <typename T>
+struct IsPseudoIndex : std::false_type {};
+
+template <typename T>
+struct IsUpvalueIndex : std::false_type {};
+
+template <typename T>
+using IsAnyIndex = std::disjunction<IsIndex<T>, IsIndices<T>, IsIndexRange<T>>;
+
+template <typename T>
+using IsAnyStackIndex = std::disjunction<IsStackIndex<T>, IsStackIndices<T>, IsStackIndexRange<T>>;
+
+template <typename T>
+using IsAnyStackIndexResult =
+    std::disjunction<IsStackIndexResult<T>, IsStackIndicesResult<T>, IsStackIndexRangeResult<T>>;
+
+template <typename T>
+using IsAnyMovedStackIndexResult =
+    std::conjunction<IsAnyStackIndexResult<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
+
+template <typename T>
+using IsFixedSizeStackIndex = std::disjunction<IsStackIndex<T>, IsStackIndices<T>>;
+
+namespace detail {
 
 // --- Signature Information ---
 
@@ -99,7 +143,7 @@ struct SignatureInfoBase {
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
     static constexpr bool AnyFixedSizeStackArgs = (IsFixedSizeStackIndex<TArgs>::value || ...);
-    static constexpr bool AnyStateArgs = ((IsIndex<TArgs>::value || std::is_same_v<TArgs, State&>) || ...);
+    static constexpr bool AnyStateArgs = ((std::is_same_v<TArgs, State&> || IsAnyIndex<TArgs>::value) || ...);
 
 protected:
     /// <summary>
@@ -1127,11 +1171,6 @@ public:
     }
 };
 
-template <typename TState, detail::StackIndexType Type>
-struct IsFixedSizeStackIndex<StackIndex<TState, Type>> : std::true_type {};
-template <typename TState, int Count, detail::StackIndexType Type>
-struct IsFixedSizeStackIndex<StackIndices<TState, Count, Type>> : std::true_type {};
-
 } // namespace detail
 
 using StackIndex = detail::StackIndex<State, detail::StackIndexType::Reference>;
@@ -1177,35 +1216,41 @@ struct IsIndex<detail::RegistryIndex<TState>> : std::true_type {};
 template <typename TState>
 struct IsIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
-template <typename T>
-struct IsStackIndex : std::false_type {};
+template <typename TState, int Count, detail::StackIndexType Type>
+struct IsIndices<detail::StackIndices<TState, Count, Type>> : std::true_type {};
+template <typename TState, int Count>
+struct IsIndices<detail::UpvalueIndices<TState, Count>> : std::true_type {};
+
+template <typename TState, detail::StackIndexType Type>
+struct IsIndexRange<detail::StackIndexRange<TState, Type>> : std::true_type {};
+template <typename TState>
+struct IsIndexRange<detail::UpvalueIndexRange<TState>> : std::true_type {};
 
 template <typename TState, detail::StackIndexType Type>
 struct IsStackIndex<detail::StackIndex<TState, Type>> : std::true_type {};
 
-template <typename T>
-struct IsStackIndexResult : std::false_type {};
-
 template <typename TState>
 struct IsStackIndexResult<detail::StackIndex<TState, detail::StackIndexType::Result>> : std::true_type {};
 
-template <typename T>
-struct IsPseudoIndex : std::false_type {};
+template <typename TState, int Count, detail::StackIndexType Type>
+struct IsStackIndices<detail::StackIndices<TState, Count, Type>> : std::true_type {};
+
+template <typename TState, int Count>
+struct IsStackIndicesResult<detail::StackIndices<TState, Count, detail::StackIndexType::Result>> : std::true_type {};
+
+template <typename TState, detail::StackIndexType Type>
+struct IsStackIndexRange<detail::StackIndexRange<TState, Type>> : std::true_type {};
+
+template <typename TState>
+struct IsStackIndexRangeResult<detail::StackIndexRange<TState, detail::StackIndexType::Result>> : std::true_type {};
 
 template <typename TState>
 struct IsPseudoIndex<detail::RegistryIndex<TState>> : std::true_type {};
 template <typename TState>
 struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
-template <typename T>
-struct IsUpvalueIndex : std::false_type {};
-
 template <typename TState>
 struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
-
-template <typename T>
-using IsMovedStackIndexResult =
-    std::conjunction<IsStackIndexResult<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
 
 // --- State ---
 
@@ -1806,7 +1851,7 @@ public:
         if constexpr (IsIndex<std::decay_t<TValue>>::value) {
             assertPushable();
             lua_copy(state_, value.index(), index.index());
-            if constexpr (IsMovedStackIndexResult<TValue&&>)
+            if constexpr (IsAnyMovedStackIndexResult<TValue&&>)
                 if (value.isTop())
                     pop();
         }
@@ -2472,7 +2517,7 @@ private:
     template <typename TFirst, typename... TRest>
     void pushHelper(TFirst&& first, TRest&&... rest)
     {
-        if constexpr (IsMovedStackIndexResult<TFirst&&>::value) {
+        if constexpr (IsAnyMovedStackIndexResult<TFirst&&>::value) {
             int skipped = 1;
             int top_offset = indexOffsetFromTop(first.last());
             if (top_offset > 0) {
@@ -2512,7 +2557,7 @@ private:
     template <typename TFirst, typename... TRest>
     void countSkipped(int& skipped, int& top_offset, [[maybe_unused]] TFirst&& first, [[maybe_unused]] TRest&&... rest)
     {
-        if constexpr (IsMovedStackIndexResult<TFirst&&>::value) {
+        if constexpr (IsAnyMovedStackIndexResult<TFirst&&>::value) {
             skipped++;
             top_offset -= first.size();
             if (top_offset <= 0 || top_offset != indexOffsetFromTop(first.last()))
