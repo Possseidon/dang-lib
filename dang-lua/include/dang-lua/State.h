@@ -2892,25 +2892,25 @@ using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, dlua::Stack
 template <typename TLeft, typename TRight>
 inline auto operator+(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Add>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Add>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator-(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Sub>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Sub>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator*(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Mul>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Mul>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator%(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Mod>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Mod>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 // Would be ambiguous with binary xor
@@ -2918,14 +2918,14 @@ inline auto operator%(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
 template <typename TLeft, typename TRight>
 inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Pow>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Pow>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
 template <typename TLeft, typename TRight>
 inline auto operator/(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::Div>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::Div>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 // Integer division works different in C++
@@ -2933,20 +2933,22 @@ inline auto operator/(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
 template <typename TLeft, typename TRight>
 inline auto operator//(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::IDiv>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::IDiv>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
 template <typename TLeft, typename TRight>
 inline auto operator&(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::BinaryAnd>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryAnd>(std::forward<TLeft>(lhs),
+                                                                        std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator|(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::BinaryOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryOr>(std::forward<TLeft>(lhs),
+                                                                       std::forward<TRight>(rhs));
 }
 
 // Would be ambiguous with pow
@@ -2954,7 +2956,7 @@ inline auto operator|(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
 template <typename TLeft, typename TRight>
 inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
@@ -2963,25 +2965,27 @@ inline auto operator<<(TLeft&& lhs, TRight&& rhs)
     -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value && !std::is_same_v<std::decay_t<TLeft>, std::ostream>,
                         StackIndexResult>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs),
+                                                                        std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
 inline auto operator>>(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).arith<ArithOp::RightShift>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::RightShift>(std::forward<TLeft>(lhs),
+                                                                         std::forward<TRight>(rhs));
 }
 
 template <typename T>
 inline auto operator-(T&& operand) -> detail::EnableIfAnyIndex<T>
 {
-    return operand.stack().arith<ArithOp::UnaryMinus>(std::forward<T>(operand));
+    return operand.stack().template arith<ArithOp::UnaryMinus>(std::forward<T>(operand));
 }
 
 template <typename T>
 inline auto operator~(T&& operand) -> detail::EnableIfAnyIndex<T>
 {
-    return operand.stack().arith<ArithOp::BinaryNot>(std::forward<T>(operand));
+    return operand.stack().template arith<ArithOp::BinaryNot>(std::forward<T>(operand));
 }
 
 template <typename TLeft, typename TRight>
