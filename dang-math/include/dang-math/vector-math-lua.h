@@ -59,9 +59,6 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
 
         constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<Dim>{}); };
 
-        // Ugly workaround for SFINAE with <void>
-        // Should be gone with concepts hopefully
-
         std::vector result{reg<set>("set"),
                            reg<copy>("copy"),
                            reg<unpack>("unpack"),
@@ -74,16 +71,16 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
                            reg<&Vector::format>("format")};
 
         if constexpr (std::is_floating_point_v<T>) {
-            result.push_back(reg<&Vector::length<void>>("length"));
-            result.push_back(reg<&Vector::normalize<void>>("normalize"));
-            result.push_back(reg<&Vector::distanceTo<void>>("distanceTo"));
-            result.push_back(reg<&Vector::cosAngleTo<void>>("cosAngleTo"));
-            result.push_back(reg<&Vector::radiansTo<void>>("radiansTo"));
-            result.push_back(reg<&Vector::degreesTo<void>>("degreesTo"));
-            result.push_back(reg<&Vector::radians<void>>("radians"));
-            result.push_back(reg<&Vector::degrees<void>>("degrees"));
-            result.push_back(reg<&Vector::floor<void>>("floor"));
-            result.push_back(reg<&Vector::ceil<void>>("ceil"));
+            result.push_back(reg<&Vector::length>("length"));
+            result.push_back(reg<&Vector::normalize>("normalize"));
+            result.push_back(reg<&Vector::distanceTo>("distanceTo"));
+            result.push_back(reg<&Vector::cosAngleTo>("cosAngleTo"));
+            result.push_back(reg<&Vector::radiansTo>("radiansTo"));
+            result.push_back(reg<&Vector::degreesTo>("degreesTo"));
+            result.push_back(reg<&Vector::radians>("radians"));
+            result.push_back(reg<&Vector::degrees>("degrees"));
+            result.push_back(reg<&Vector::floor>("floor"));
+            result.push_back(reg<&Vector::ceil>("ceil"));
 
             if constexpr (Dim == 2) {
                 constexpr auto cross = +[](const Vector& vec, const std::optional<Vector>& other) {
@@ -97,21 +94,21 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
         }
 
         if constexpr (std::is_same_v<T, bool>) {
-            result.push_back(reg<&Vector::all<void>>("all"));
-            result.push_back(reg<&Vector::any<void>>("any"));
-            result.push_back(reg<&Vector::none<void>>("none"));
-            result.push_back(reg<&Vector::invert<void>>("invert"));
+            result.push_back(reg<&Vector::all>("all"));
+            result.push_back(reg<&Vector::any>("any"));
+            result.push_back(reg<&Vector::none>("none"));
+            result.push_back(reg<&Vector::invert>("invert"));
         }
         else {
-            result.push_back(reg<&Vector::sum<void>>("sum"));
-            result.push_back(reg<&Vector::product<void>>("product"));
-            result.push_back(reg<&Vector::dot<void>>("dot"));
-            result.push_back(reg<&Vector::sqrdot<void>>("sqrdot"));
-            result.push_back(reg<&Vector::vectorTo<void>>("vectorTo"));
-            result.push_back(reg<&Vector::min<void>>("min"));
-            result.push_back(reg<&Vector::max<void>>("max"));
-            result.push_back(reg<&Vector::clamp<void>>("clamp"));
-            result.push_back(reg<&Vector::reflect<void>>("reflect"));
+            result.push_back(reg<&Vector::sum>("sum"));
+            result.push_back(reg<&Vector::product>("product"));
+            result.push_back(reg<&Vector::dot>("dot"));
+            result.push_back(reg<&Vector::sqrdot>("sqrdot"));
+            result.push_back(reg<&Vector::vectorTo>("vectorTo"));
+            result.push_back(reg<&Vector::min>("min"));
+            result.push_back(reg<&Vector::max>("max"));
+            result.push_back(reg<&Vector::clamp>("clamp"));
+            result.push_back(reg<&Vector::reflect>("reflect"));
 
             if constexpr (Dim == 3) {
                 constexpr auto cross = +[](const Vector& lhs, const Vector& rhs) { return lhs.cross(rhs); };
@@ -119,7 +116,7 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
             }
 
             if constexpr (std::is_signed_v<T>) {
-                result.push_back(reg<&Vector::abs<void>>("abs"));
+                result.push_back(reg<&Vector::abs>("abs"));
             }
         }
 
@@ -474,7 +471,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
         }
 
         if constexpr (Cols == Rows) {
-            result.push_back(reg<&Matrix::inverse<void>>("inverse"));
+            result.push_back(reg<&Matrix::inverse>("inverse"));
 
             constexpr auto solve_col =
                 +[](State& lua, Matrix& mat, std::size_t col, const dmath::Vector<T, Cols>& vec) {
