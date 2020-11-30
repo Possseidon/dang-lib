@@ -312,14 +312,14 @@ struct DualQuaternion {
 
     /// <summary>Initializes the dual-quaternion with the given rotation and translation quaternions.</summary>
     /// <remarks>The translation is optional and defaults to zero.</remarks>
-    constexpr explicit DualQuaternion(const Quaternion<T>& real, const Quaternion<T>& dual = Quaternion<T>::zero())
+    explicit constexpr DualQuaternion(const Quaternion<T>& real, const Quaternion<T>& dual = Quaternion<T>::zero())
         : real(real)
         , dual(dual)
     {}
 
     /// <summary>Initializes the dual-quaternion with the given translation quaternion (and identity rotation).</summary>
     /// <remarks>The vector does NOT describe the actual translation, but is instead copied unmodified into the dual part.</remarks>
-    constexpr explicit DualQuaternion(const Vector<T, 3>& dual)
+    explicit constexpr DualQuaternion(const Vector<T, 3>& dual)
         : real(Quaternion<T>::identity())
         , dual(T(), dual)
     {}

@@ -58,7 +58,7 @@ struct BoundsIterator {
 
     constexpr BoundsIterator() = default;
 
-    constexpr explicit BoundsIterator(Bounds<T, Dim> bounds, Vector<T, Dim> current)
+    explicit constexpr BoundsIterator(Bounds<T, Dim> bounds, Vector<T, Dim> current)
         : bounds_(bounds)
         , current_(current)
     {}
@@ -106,7 +106,7 @@ struct Bounds {
     constexpr Bounds() = default;
 
     /// <summary>Initializes high with the given value and low with zero.</summary>
-    constexpr explicit Bounds(const Vector<T, Dim>& high)
+    explicit constexpr Bounds(const Vector<T, Dim>& high)
         : high(high)
     {}
 

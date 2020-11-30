@@ -70,7 +70,7 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Allows for conversion from single-value vectors to their respective value type.</summary>
-    constexpr explicit operator T()
+    explicit constexpr operator T()
     {
         static_assert(Dim == 1);
         return (*this)[0];

@@ -23,7 +23,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     {}
 
     /// <summary>Initializes the whole matrix with the same, given value.</summary>
-    constexpr explicit Matrix(T value)
+    explicit constexpr Matrix(T value)
         : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
@@ -56,14 +56,14 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Allows for conversion from single-column matrices to vectors.</summary>
-    constexpr explicit operator Vector<T, Rows>() const
+    explicit constexpr operator Vector<T, Rows>() const
     {
         static_assert(Cols == 1);
         return (*this)[0];
     }
 
     /// <summary>Allows for conversion from single-value matrices to their respective value type.</summary>
-    constexpr explicit operator T() const
+    explicit constexpr operator T() const
     {
         static_assert(Cols == 1 && Rows == 1);
         return (*this)(0, 0);
