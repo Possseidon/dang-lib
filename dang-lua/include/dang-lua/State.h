@@ -1031,9 +1031,9 @@ public:
     // --- Formatting ---
 
     /// <summary>Prints all indices to the stream, separated by comma (and space).</summary>
-    template <typename = std::enable_if_t<Type == StackIndexType::Result>>
     friend std::ostream& operator<<(std::ostream& stream, StackIndices&& indices)
     {
+        static_assert(Type == StackIndexType::Result);
         stream << indices;
         if (indices.isTop())
             indices.state().pop(indices.size());
@@ -1081,9 +1081,9 @@ public:
     // --- Formatting ---
 
     /// <summary>Prints all indices to the stream, separated by comma (and space).</summary>
-    template <typename = std::enable_if_t<Type == StackIndexType::Result>>
     friend std::ostream& operator<<(std::ostream& stream, StackIndexRange&& index_range)
     {
+        static_assert(Type == StackIndexType::Result);
         stream << index_range;
         if (index_range.isTop())
             index_range.state().pop(index_range.size());
