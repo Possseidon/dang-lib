@@ -198,12 +198,11 @@ struct Convert {
     /// <summary>Whether the stack position is a valid class value or reference, or an enum.</summary>
     static bool isExact(lua_State* state, int pos)
     {
+        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>)
             return type(state, pos) != StoreType::None;
         else if constexpr (std::is_enum_v<T>)
             return at(state, pos);
-        else
-            static_assert(false, "class or enum expected");
     }
 
     /// <summary>Whether the stack position is a valid class value or reference, or an enum.</summary>
@@ -225,6 +224,7 @@ struct Convert {
     static auto at(lua_State* state, int pos)
         -> std::optional<std::conditional_t<std::is_class_v<T>, std::reference_wrapper<T>, T>>
     {
+        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
             if (void* value = luaL_testudata(state, pos, ClassName<T>))
                 return *static_cast<T*>(value);
@@ -238,13 +238,12 @@ struct Convert {
             lua_pop(state, 1);
             return result;
         }
-        else
-            static_assert(false, "class or enum expected");
     }
 
     /// <summary>Returns a reference to the value at the given argument stack position and raises an argument error on failure.</summary>
     static auto check(lua_State* state, int arg) -> std::conditional_t<std::is_class_v<T>, T&, T>
     {
+        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
                 return *result;
@@ -255,8 +254,6 @@ struct Convert {
         else if constexpr (std::is_enum_v<T>) {
             return static_cast<T>(luaL_checkoption(state, arg, nullptr, EnumValues<T>));
         }
-        else
-            static_assert(false, "class or enum expected");
     }
 
     /// <summary>__gc, which is used to do cleanup for non-reference values.</summary>
