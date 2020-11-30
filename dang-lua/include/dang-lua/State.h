@@ -82,6 +82,9 @@ using WeakReference = std::weak_ptr<Reference>;
 
 namespace detail {
 
+template <typename T>
+struct IsFixedSizeStackIndex : std::false_type {};
+
 // --- Signature Information ---
 
 /// <summary>Meant to be used as a base class to provide information about the signature of functions.</summary>
@@ -91,6 +94,8 @@ struct SignatureInfoBase {
     using FixedArgType = decltype(Convert<TArg>::check(std::declval<State&>(), 1));
     using Return = TRet;
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
+
+    static constexpr bool AnyFixedSizeStackArgs = (IsFixedSizeStackIndex<TArgs>::value || ...);
 
 protected:
     /// <summary>
@@ -1104,6 +1109,11 @@ public:
         assert(first >= 1);
     }
 };
+
+template <typename TState, detail::StackIndexType Type>
+struct IsFixedSizeStackIndex<StackIndex<TState, Type>> : std::true_type {};
+template <typename TState, int Count, detail::StackIndexType Type>
+struct IsFixedSizeStackIndex<StackIndices<TState, Count, Type>> : std::true_type {};
 
 } // namespace detail
 
@@ -2578,13 +2588,15 @@ inline int wrap(lua_State* state)
     auto old_top = lua.size();
     auto&& args = Info::convertArguments(lua);
 
-    // convertArguments potentially calls maxFuncArg, which updates the internal size
-    if (old_top != lua.size()) {
-        // It should only increase
-        assert(lua.size() > old_top);
-        // Fill the rest with nil
-        lua.ensurePushable(lua.size() - old_top);
-        lua_settop(state, lua.size());
+    // convertArguments calls maxFuncArg for StackIndex and StackIndices, which updates the internal size
+    if constexpr (Info::AnyFixedSizeStackArgs) {
+        if (old_top != lua.size()) {
+            // It should only increase
+            assert(lua.size() > old_top);
+            // Fill the rest with nil
+            lua.ensurePushable(lua.size() - old_top);
+            lua_settop(state, lua.size());
+        }
     }
 
     // Actually call the wrapped function object
