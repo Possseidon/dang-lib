@@ -78,7 +78,7 @@ enum class CompareOp {
 /// <summary>A list of all Lua standard libraries.</summary>
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
-constexpr std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryFunctions = {
+inline const std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryFunctions = {
     luaopen_base,
     luaopen_coroutine,
     luaopen_table,
@@ -90,19 +90,22 @@ constexpr std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::CO
     luaopen_debug,
     luaopen_package};
 
-constexpr std::array<const char*, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryNames = {"_G",
-                                                                                                    LUA_COLIBNAME,
-                                                                                                    LUA_TABLIBNAME,
-                                                                                                    LUA_IOLIBNAME,
-                                                                                                    LUA_OSLIBNAME,
-                                                                                                    LUA_STRLIBNAME,
-                                                                                                    LUA_UTF8LIBNAME,
-                                                                                                    LUA_MATHLIBNAME,
-                                                                                                    LUA_DBLIBNAME,
-                                                                                                    LUA_LOADLIBNAME};
+inline constexpr std::array<const char*, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryNames = {
+    "_G",
+    LUA_COLIBNAME,
+    LUA_TABLIBNAME,
+    LUA_IOLIBNAME,
+    LUA_OSLIBNAME,
+    LUA_STRLIBNAME,
+    LUA_UTF8LIBNAME,
+    LUA_MATHLIBNAME,
+    LUA_DBLIBNAME,
+    LUA_LOADLIBNAME};
 
+/// <summary>Wether to load Lua code only as text or binary, or accept both.</summary>
 enum class LoadMode { Default, Binary, Text, Both, COUNT };
 
-constexpr std::array<const char*, static_cast<std::size_t>(LoadMode::COUNT)> loadModeNames = {nullptr, "b", "t", "bt"};
+inline constexpr std::array<const char*, static_cast<std::size_t>(LoadMode::COUNT)> loadModeNames = {
+    nullptr, "b", "t", "bt"};
 
 } // namespace dang::lua
