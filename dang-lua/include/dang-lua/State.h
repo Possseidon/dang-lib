@@ -1209,6 +1209,18 @@ public:
     State& operator=(const State&) = delete;
     State& operator=(State&&) = default;
 
+    void swap(State& other)
+    {
+        using std::swap;
+        swap(state_, other.state_);
+        swap(top_, other.top_);
+#ifndef NDEBUG
+        swap(pushable_, other.pushable_);
+#endif
+    }
+
+    friend void swap(State& lhs, State& rhs) { lhs.swap(rhs); }
+
     // --- State Conversion ---
 
     /// <summary>Returns the wrapped Lua state.</summary>
@@ -2610,19 +2622,27 @@ public:
 
     OwnedState(OwnedState&& other) noexcept
         : State(std::exchange(other.state_, nullptr))
-    {}
+    {
+        top_ = other.top_;
+#ifndef NDEBUG
+        pushable_ = other.pushable_;
+#endif
+    }
 
     OwnedState& operator=(const OwnedState&) = delete;
 
-    OwnedState& operator=(OwnedState&& other) noexcept { swap(other); }
-
-    void swap(OwnedState& other) noexcept
+    OwnedState& operator=(OwnedState&& other) noexcept
     {
-        using std::swap;
-        swap(state_, other.state_);
+        if (this == &other)
+            return *this;
+        close();
+        state_ = std::exchange(other.state_, nullptr);
+        top_ = other.top_;
+#ifndef NDEBUG
+        pushable_ = other.pushable_;
+#endif
+        return *this;
     }
-
-    friend void swap(OwnedState& lhs, OwnedState& rhs) noexcept { lhs.swap(rhs); }
 
     /// <summary>Whether the state as been closed manually.</summary>
     bool closed() { return state_ == nullptr; }
