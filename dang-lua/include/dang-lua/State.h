@@ -80,6 +80,9 @@ private:
 using SharedReference = std::shared_ptr<Reference>;
 using WeakReference = std::weak_ptr<Reference>;
 
+template <typename T>
+struct IsIndex : std::false_type {};
+
 namespace detail {
 
 template <typename T>
@@ -96,6 +99,7 @@ struct SignatureInfoBase {
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
     static constexpr bool AnyFixedSizeStackArgs = (IsFixedSizeStackIndex<TArgs>::value || ...);
+    static constexpr bool AnyStateArgs = ((IsIndex<TArgs>::value || std::is_same_v<TArgs, State&>) || ...);
 
 protected:
     /// <summary>
@@ -124,12 +128,25 @@ struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
         return convertArgumentsHelper(state, std::index_sequence_for<TArgs...>{});
     }
 
+    /// <summary>Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.</summary>
+    static auto convertArgumentsRaw(lua_State* state)
+    {
+        return convertArgumentsRawHelper(state, std::index_sequence_for<TArgs...>{});
+    }
+
 private:
     using Base = SignatureInfoBase<TRet, TArgs...>;
 
     /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
     template <std::size_t... Indices>
     static typename Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
+    {
+        return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
+    }
+
+    /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
+    template <std::size_t... Indices>
+    static typename Base::Arguments convertArgumentsRawHelper(lua_State* state, std::index_sequence<Indices...>)
     {
         return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
     }
@@ -1152,9 +1169,6 @@ using ConstStackIndexRangeResult = detail::StackIndexRange<const State, detail::
 
 using UpvalueIndexRange = detail::UpvalueIndexRange<State>;
 using ConstUpvalueIndexRange = detail::UpvalueIndexRange<const State>;
-
-template <typename T>
-struct IsIndex : std::false_type {};
 
 template <typename TState, detail::StackIndexType Type>
 struct IsIndex<detail::StackIndex<TState, Type>> : std::true_type {};
@@ -2584,28 +2598,54 @@ inline int wrap(lua_State* state)
 {
     using Info = detail::SignatureInfo<decltype(Func)>;
 
-    State lua(state);
-    auto old_top = lua.size();
-    auto&& args = Info::convertArguments(lua);
+    if constexpr (Info::AnyStateArgs) {
+        State lua(state);
+        auto old_top = lua.size();
+        auto&& args = Info::convertArguments(lua);
 
-    // convertArguments calls maxFuncArg for StackIndex and StackIndices, which updates the internal size
-    if constexpr (Info::AnyFixedSizeStackArgs) {
-        if (old_top != lua.size()) {
-            // It should only increase
-            assert(lua.size() > old_top);
-            // Fill the rest with nil
-            lua.ensurePushable(lua.size() - old_top);
-            lua_settop(state, lua.size());
+        // convertArguments calls maxFuncArg for StackIndex and StackIndices, which updates the internal size
+        if constexpr (Info::AnyFixedSizeStackArgs) {
+            if (old_top != lua.size()) {
+                // It should only increase
+                assert(lua.size() > old_top);
+                // Fill the rest with nil
+                lua.ensurePushable(lua.size() - old_top);
+                lua_settop(state, lua.size());
+            }
+        }
+
+        if constexpr (std::is_void_v<typename Info::Return>) {
+            std::apply(Func, std::move(args));
+            return 0;
+        }
+        else {
+            return lua.push(std::apply(Func, std::move(args))).size();
         }
     }
-
-    // Actually call the wrapped function object
-    if constexpr (std::is_void_v<typename Info::Return>) {
-        std::apply(Func, std::move(args));
-        return 0;
-    }
     else {
-        return lua.push(std::apply(Func, std::move(args))).size();
+        auto&& args = Info::convertArgumentsRaw(state);
+        if constexpr (std::is_void_v<typename Info::Return>) {
+            std::apply(Func, std::move(args));
+            return 0;
+        }
+        else {
+            auto&& result = std::apply(Func, std::move(args));
+            using TResult = decltype(result);
+            if constexpr (Convert<TResult>::PushCount) {
+                constexpr auto push_count = *Convert<TResult>::PushCount;
+                if constexpr (push_count > LUA_MINSTACK)
+                    luaL_checkstack(state, push_count);
+                Convert<TResult>::push(state, std::move(result));
+                return push_count;
+            }
+            else {
+                auto push_count = Convert<TResult>::pushCount(result);
+                if (push_count > LUA_MINSTACK)
+                    luaL_checkstack(state, push_count);
+                Convert<TResult>::push(state, std::move(result));
+                return push_count;
+            }
+        }
     }
 }
 
