@@ -230,22 +230,22 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto lessThan(const Vector& other) const { return variadicOp(std::less<>{}, other); }
+    constexpr auto lessThan(const Vector& other) const { return variadicOp(std::less{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto lessThanEqual(const Vector& other) const { return variadicOp(std::less_equal<>{}, other); }
+    constexpr auto lessThanEqual(const Vector& other) const { return variadicOp(std::less_equal{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto greaterThan(const Vector& other) const { return variadicOp(std::greater<>{}, other); }
+    constexpr auto greaterThan(const Vector& other) const { return variadicOp(std::greater{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto greaterThanEqual(const Vector& other) const { return variadicOp(std::greater_equal<>{}, other); }
+    constexpr auto greaterThanEqual(const Vector& other) const { return variadicOp(std::greater_equal{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto equal(const Vector& other) const { return variadicOp(std::equal_to<>{}, other); }
+    constexpr auto equal(const Vector& other) const { return variadicOp(std::equal_to{}, other); }
 
     /// <summary>Component-wise comparison, returning a bvec.</summary>
-    constexpr auto notEqual(const Vector& other) const { return variadicOp(std::not_equal_to<>{}, other); }
+    constexpr auto notEqual(const Vector& other) const { return variadicOp(std::not_equal_to{}, other); }
 
     /// <summary>Provided as constexpr, as std::array does not.</summary>
     constexpr auto operator==(const Vector& other) const { return equal(other).all(); }
@@ -288,7 +288,7 @@ struct Vector : std::array<T, Dim> {
     constexpr auto invert() const
     {
         static_assert(std::is_same_v<T, bool>);
-        return variadicOp(std::logical_not<>{});
+        return variadicOp(std::logical_not{});
     }
 
     /// <summary>Simply returns the vector.</summary>
@@ -302,63 +302,63 @@ struct Vector : std::array<T, Dim> {
     constexpr auto operator-() const
     {
         static_assert(std::is_signed_v<T>);
-        return variadicOp(std::negate<>{});
+        return variadicOp(std::negate{});
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
     friend constexpr auto operator+(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return lhs.variadicOp(std::plus<>{}, rhs);
+        return lhs.variadicOp(std::plus{}, rhs);
     }
 
     /// <summary>Component-wise addition of two vectors.</summary>
     constexpr auto& operator+=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return assignmentOp(std::plus<>{}, other);
+        return assignmentOp(std::plus{}, other);
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
     friend constexpr auto operator-(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return lhs.variadicOp(std::minus<>{}, rhs);
+        return lhs.variadicOp(std::minus{}, rhs);
     }
 
     /// <summary>Component-wise subtraction of two vectors.</summary>
     constexpr auto& operator-=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return assignmentOp(std::minus<>{}, other);
+        return assignmentOp(std::minus{}, other);
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
     friend constexpr auto operator*(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return lhs.variadicOp(std::multiplies<>{}, rhs);
+        return lhs.variadicOp(std::multiplies{}, rhs);
     }
 
     /// <summary>Component-wise multiplication of two vectors.</summary>
     constexpr auto& operator*=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return assignmentOp(std::multiplies<>{}, other);
+        return assignmentOp(std::multiplies{}, other);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
     friend constexpr auto operator/(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return lhs.variadicOp(std::divides<>{}, rhs);
+        return lhs.variadicOp(std::divides{}, rhs);
     }
 
     /// <summary>Component-wise division of two vectors.</summary>
     constexpr auto& operator/=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
-        return assignmentOp(std::divides<>{}, other);
+        return assignmentOp(std::divides{}, other);
     }
 
     /// <summary>Returns a swizzle of the given components.</summary>

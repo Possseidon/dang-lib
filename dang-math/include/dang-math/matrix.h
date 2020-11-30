@@ -534,41 +534,41 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     constexpr auto operator-() const
     {
         static_assert(std::is_signed_v<T>);
-        return variadicOp(std::negate<>{});
+        return variadicOp(std::negate{});
     }
 
     /// <summary>Performs a component-wise addition.</summary>
-    friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus<>{}, rhs); }
+    friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus{}, rhs); }
 
     /// <summary>Performs a component-wise addition.</summary>
-    constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus<>{}, other); }
+    constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus{}, other); }
 
     /// <summary>Performs a component-wise subtraction.</summary>
     friend constexpr auto operator-(const Matrix& lhs, const Matrix& rhs)
     {
-        return lhs.variadicOp(std::minus<>{}, rhs);
+        return lhs.variadicOp(std::minus{}, rhs);
     }
 
     /// <summary>Performs a component-wise subtraction.</summary>
-    constexpr auto& operator-=(const Matrix& other) { return assignmentOp(std::minus<>{}, other); }
+    constexpr auto& operator-=(const Matrix& other) { return assignmentOp(std::minus{}, other); }
 
     /// <summary>Performs a component-wise multiplication.</summary>
-    constexpr auto compMul(const Matrix& other) const { return variadicOp(std::multiplies<>{}, other); }
+    constexpr auto compMul(const Matrix& other) const { return variadicOp(std::multiplies{}, other); }
 
     /// <summary>Performs a component-wise division.</summary>
-    constexpr auto compDiv(const Matrix& other) const { return variadicOp(std::divides<>{}, other); }
+    constexpr auto compDiv(const Matrix& other) const { return variadicOp(std::divides{}, other); }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
-    constexpr auto operator*(T scalar) const { return variadicOp(std::multiplies<>{}, Matrix{scalar}); }
+    constexpr auto operator*(T scalar) const { return variadicOp(std::multiplies{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
     friend constexpr auto operator*(T scalar, const Matrix& matrix) { return matrix * scalar; }
 
     /// <summary>Performs a component-wise multiplication with the given scalar.</summary>
-    constexpr auto& operator*=(T scalar) { return assignmentOp(std::multiplies<>{}, Matrix{scalar}); }
+    constexpr auto& operator*=(T scalar) { return assignmentOp(std::multiplies{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise division with the given scalar.</summary>
-    constexpr auto operator/(T scalar) const { return variadicOp(std::divides<>{}, Matrix{scalar}); }
+    constexpr auto operator/(T scalar) const { return variadicOp(std::divides{}, Matrix{scalar}); }
 
     /// <summary>Performs a component-wise multiplication with the inverse of the matrix.</summary>
     friend constexpr std::optional<Matrix> operator/(T scalar, const Matrix& matrix)
@@ -579,7 +579,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a component-wise division with the given scalar.</summary>
-    constexpr auto& operator/=(T scalar) { return assignmentOp(std::divides<>{}, Matrix{scalar}); }
+    constexpr auto& operator/=(T scalar) { return assignmentOp(std::divides{}, Matrix{scalar}); }
 
     /// <summary>Performs a matrix-multiplication between the two matrices.</summary>
     template <std::size_t OtherCols>
