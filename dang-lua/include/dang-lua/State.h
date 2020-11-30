@@ -389,7 +389,7 @@ public:
     template <typename T>
     auto to()
     {
-        return this->state().to<T>(index());
+        return this->state().template to<T>(index());
     }
 
     /// <summary>Treats the element as a function argument and uses the Convert template to convert it.</summary>
@@ -397,7 +397,7 @@ public:
     template <typename T>
     decltype(auto) check()
     {
-        return this->state().check<T>(index());
+        return this->state().template check<T>(index());
     }
 
     /// <summary>Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".</summary>
@@ -426,7 +426,7 @@ public:
     template <int Results = 0, typename... TArgs>
     auto call(TArgs&&... args) const
     {
-        return this->state().call<Results>(*this, std::forward<TArgs>(args)...);
+        return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
@@ -447,7 +447,7 @@ public:
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const
     {
-        return this->state().pcall<Results>(*this, std::forward<TArgs>(args)...);
+        return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
@@ -485,21 +485,21 @@ public:
     template <typename T>
     auto idiv(T&& other) const
     {
-        return this->state().arith<ArithOp::IDiv>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
     /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
     template <typename T>
     auto pow(T&& other) const
     {
-        return this->state().arith<ArithOp::Pow>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
     /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
     template <typename T>
     auto bxor(T&& other) const
     {
-        return this->state().arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
     /// <summary>Pushes the length of the element on the stack.</summary>
@@ -738,7 +738,7 @@ public:
     template <int Results = 0, typename... TArgs>
     auto call(TArgs&&... args) const&
     {
-        return this->state().call<Results>(*this, std::forward<TArgs>(args)...);
+        return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
@@ -747,9 +747,9 @@ public:
     auto call(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
-            return this->state().call<Results>(std::move(*this), std::forward<TArgs>(args)...);
+            return this->state().template call<Results>(std::move(*this), std::forward<TArgs>(args)...);
         else
-            return this->state().call<Results>(*this, std::forward<TArgs>(args)...);
+            return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
@@ -790,7 +790,7 @@ public:
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const&
     {
-        return this->state().pcall<Results>(*this, std::forward<TArgs>(args)...);
+        return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
@@ -798,9 +798,9 @@ public:
     auto pcall(TArgs&&... args) &&
     {
         if constexpr (Type == StackIndexType::Result)
-            return this->state().pcall<Results>(std::move(*this), std::forward<TArgs>(args)...);
+            return this->state().template pcall<Results>(std::move(*this), std::forward<TArgs>(args)...);
         else
-            return this->state().pcall<Results>(*this, std::forward<TArgs>(args)...);
+            return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
     /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
@@ -843,7 +843,7 @@ public:
     template <typename T>
     auto idiv(T&& other) const&
     {
-        return this->state().arith<ArithOp::IDiv>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
     /// <summary>Performs integer division with another value. (// in Lua)</summary>
@@ -851,16 +851,16 @@ public:
     auto idiv(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
-            return this->state().arith<ArithOp::IDiv>(std::move(*this), std::forward<T>(other));
+            return this->state().template arith<ArithOp::IDiv>(std::move(*this), std::forward<T>(other));
         else
-            return this->state().arith<ArithOp::IDiv>(*this, std::forward<T>(other));
+            return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
     /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
     template <typename T>
     auto pow(T&& other) const&
     {
-        return this->state().arith<ArithOp::Pow>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
     /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
@@ -868,16 +868,16 @@ public:
     auto pow(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
-            return this->state().arith<ArithOp::Pow>(std::move(*this), std::forward<T>(other));
+            return this->state().template arith<ArithOp::Pow>(std::move(*this), std::forward<T>(other));
         else
-            return this->state().arith<ArithOp::Pow>(*this, std::forward<T>(other));
+            return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
     /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
     template <typename T>
     auto bxor(T&& other) const&
     {
-        return this->state().arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
+        return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
     /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
@@ -885,9 +885,9 @@ public:
     auto bxor(T&& other) &&
     {
         if constexpr (Type == StackIndexType::Result)
-            return this->state().arith<ArithOp::BinaryXOr>(std::move(*this), std::forward<T>(other));
+            return this->state().template arith<ArithOp::BinaryXOr>(std::move(*this), std::forward<T>(other));
         else
-            return this->state().arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
+            return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
     /// <summary>Returns the length of the element using luaL_len.</summary>
@@ -2815,7 +2815,7 @@ struct ArgCheck {
     template <typename TArg>
     auto operator()(TArg&& arg) const
     {
-        return std::forward<TArg>(arg).check<T>();
+        return std::forward<TArg>(arg).template check<T>();
     }
 };
 
@@ -2825,7 +2825,7 @@ struct ValueTo {
     template <typename TIndex>
     auto operator()(TIndex&& index) const
     {
-        return std::forward<TIndex>(index).to<T>();
+        return std::forward<TIndex>(index).template to<T>();
     }
 };
 
