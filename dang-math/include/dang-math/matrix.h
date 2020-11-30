@@ -39,7 +39,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Initializes a single-column matrix with the given values.</summary>
-    constexpr Matrix(Vector<T, Rows> col)
+    explicit constexpr Matrix(Vector<T, Rows> col)
         : Base({col})
     {
         static_assert(Cols == 1);
@@ -541,16 +541,31 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus{}, rhs); }
 
     /// <summary>Performs a component-wise addition.</summary>
+    friend constexpr auto operator+(T lhs, const Matrix& rhs) { return Matrix{lhs}.variadicOp(std::plus{}, rhs); }
+
+    /// <summary>Performs a component-wise addition.</summary>
+    friend constexpr auto operator+(const Matrix& lhs, T rhs) { return lhs.variadicOp(std::plus{}, Matrix{rhs}); }
+
+    /// <summary>Performs a component-wise addition.</summary>
     constexpr auto& operator+=(const Matrix& other) { return assignmentOp(std::plus{}, other); }
 
+    /// <summary>Performs a component-wise addition.</summary>
+    constexpr auto& operator+=(T value) { return assignmentOp(std::plus{}, Matrix{value}); }
+
     /// <summary>Performs a component-wise subtraction.</summary>
-    friend constexpr auto operator-(const Matrix& lhs, const Matrix& rhs)
-    {
-        return lhs.variadicOp(std::minus{}, rhs);
-    }
+    friend constexpr auto operator-(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::minus{}, rhs); }
+
+    /// <summary>Performs a component-wise subtraction.</summary>
+    friend constexpr auto operator-(T lhs, const Matrix& rhs) { return Matrix{lhs}.variadicOp(std::minus{}, rhs); }
+
+    /// <summary>Performs a component-wise subtraction.</summary>
+    friend constexpr auto operator-(const Matrix& lhs, T rhs) { return lhs.variadicOp(std::minus{}, Matrix{rhs}); }
 
     /// <summary>Performs a component-wise subtraction.</summary>
     constexpr auto& operator-=(const Matrix& other) { return assignmentOp(std::minus{}, other); }
+
+    /// <summary>Performs a component-wise subtraction.</summary>
+    constexpr auto& operator-=(T value) { return assignmentOp(std::minus{}, Matrix{value}); }
 
     /// <summary>Performs a component-wise multiplication.</summary>
     constexpr auto compMul(const Matrix& other) const { return variadicOp(std::multiplies{}, other); }
