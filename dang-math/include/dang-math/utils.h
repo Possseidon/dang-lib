@@ -6,6 +6,7 @@
 #include <iostream>
 #include <numeric>
 #include <optional>
+#include <sstream>
 #include <type_traits>
 
 namespace dang::math {
