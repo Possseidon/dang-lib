@@ -124,7 +124,7 @@ private:
 
     /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
     template <std::size_t... Indices>
-    static Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
+    static typename Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
     {
         return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
     }
