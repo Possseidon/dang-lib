@@ -175,9 +175,9 @@ struct Convert {
     static StoreType type(lua_State* state, int, SubClassList<>) { return StoreType::None; }
 
     /// <summary>Whether a stack position is a value, reference or neither.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static StoreType type(lua_State* state, int pos)
     {
+        static_assert(std::is_class_v<T>);
         if (luaL_testudata(state, pos, ClassName<T>))
             return StoreType::Value;
         if (luaL_testudata(state, pos, ClassNameRef<T>))
@@ -186,9 +186,9 @@ struct Convert {
     }
 
     /// <summary>Finds the given string enum value or std::nullopt if not found.</summary>
-    template <typename = std::enable_if_t<std::is_enum_v<T>>>
     static std::optional<T> findEnumValue(const char* value)
     {
+        static_assert(std::is_enum_v<T>);
         for (std::size_t i = 0; EnumValues<T>[i]; i++)
             if (std::strcmp(EnumValues<T>[i], value) == 0)
                 return static_cast<T>(i);
@@ -257,18 +257,18 @@ struct Convert {
     }
 
     /// <summary>__gc, which is used to do cleanup for non-reference values.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static int cleanup(lua_State* state)
     {
+        static_assert(std::is_class_v<T>);
         T* userdata = static_cast<T*>(lua_touserdata(state, 1));
         userdata->~T();
         return 0;
     }
 
     /// <summary>__index, which first checks the original index table, and then tries to call the customized __index method.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static int customIndex(lua_State* state)
     {
+        static_assert(std::is_class_v<T>);
         lua_pushvalue(state, lua_upvalueindex(1));
         lua_pushvalue(state, -2);
         if (lua_gettable(state, -2) != LUA_TNIL)
@@ -281,9 +281,9 @@ struct Convert {
     }
 
     /// <summary>Pushes the metatable for a value instance onto the stack.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void pushValueMetatable(lua_State* state)
     {
+        static_assert(std::is_class_v<T>);
         if (!luaL_newmetatable(state, ClassName<T>))
             return;
         detail::setfuncs(state, ClassMetatable<T>);
@@ -305,9 +305,9 @@ struct Convert {
     }
 
     /// <summary>Pushes the metatable for a reference instance onto the stack.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void pushReferenceMetatable(lua_State* state)
     {
+        static_assert(std::is_class_v<T>);
         if (!luaL_newmetatable(state, ClassNameRef<T>))
             return;
         detail::setfuncs(state, ClassMetatable<T>);
@@ -330,33 +330,33 @@ struct Convert {
     static constexpr std::string_view getPushTypename() { return ClassName<T>; }
 
     /// <summary>Pushes the in place constructed value onto the stack.</summary>
-    template <typename... TArgs, typename = std::enable_if_t<std::is_class_v<T>>>
+    template <typename... TArgs>
     static void push(lua_State* state, TArgs&&... values)
     {
-        T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
-        new (userdata) T(std::forward<TArgs>(values)...);
-        pushValueMetatable(state);
-        lua_setmetatable(state, -2);
-    }
-
-    /// <summary>Pushes a string for the given enum value on the stack.</summary>
-    template <typename = std::enable_if_t<std::is_enum_v<T>>>
-    static void push(lua_State* state, T value)
-    {
-        lua_pushstring(state, EnumValues<T>[static_cast<std::size_t>(value)]);
+        static_assert(std::is_class_v<T> || std::is_enum_v<T>);
+        static_assert(!std::is_enum_v<T> || sizeof...(TArgs) == 1);
+        if constexpr (std::is_class_v<T>) {
+            T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
+            new (userdata) T(std::forward<TArgs>(values)...);
+            pushValueMetatable(state);
+            lua_setmetatable(state, -2);
+        }
+        else if constexpr (std::is_enum_v<T>) {
+            lua_pushstring(state, EnumValues<T>[static_cast<std::size_t>(values)]...);
+        }
     }
 
     /// <summary>Pushes a reference to the value on the stack.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void push(lua_State* state, std::reference_wrapper<T> value)
     {
+        static_assert(std::is_class_v<T>);
         pushRef(state, value.get());
     }
 
     /// <summary>Pushes a reference to the value on the stack.</summary>
-    template <typename = std::enable_if_t<std::is_class_v<T>>>
     static void pushRef(lua_State* state, T& value)
     {
+        static_assert(std::is_class_v<T>);
         T** userdata = static_cast<T**>(lua_newuserdata(state, sizeof(T*)));
         *userdata = &value;
         pushReferenceMetatable(state);
@@ -877,9 +877,9 @@ struct Convert<std::tuple<TValues...>> {
     }
 
     /// <summary>Returns the total push count of all values in the tuple.</summary>
-    template <typename = std::enable_if_t<!PushCount>>
     static constexpr int getPushCount(const std::tuple<TValues...>& values)
     {
+        static_assert(!PushCount);
         return std::apply(combinedPushCount, values);
     }
 
