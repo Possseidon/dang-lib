@@ -14,28 +14,28 @@ constexpr T interpolate(const T& from, const T& to, TFactor factor)
 namespace interp {
 
 /// <summary>Simple identity function.</summary>
-constexpr auto linear = [](auto x) { return x; };
+auto linear = [](auto x) { return x; };
 
 /// <summary>Starts slow, ends fast.</summary>
-constexpr auto quadratic = [](auto x) { return x * x; };
+auto quadratic = [](auto x) { return x * x; };
 /// <summary>Starts fast, ends slow.</summary>
-constexpr auto inv_quadratic = [](auto x) { return x * (2 - x); };
+auto inv_quadratic = [](auto x) { return x * (2 - x); };
 /// <summary>Starts slow, ends slow.</summary>
-constexpr auto cubic = [](auto x) { return x * x * (3 - 2 * x); };
+auto cubic = [](auto x) { return x * x * (3 - 2 * x); };
 
 /// <summary>True exponential interpolation, quadratic is faster and usually sufficient.</summary>
-constexpr auto exp = [](auto x) { return x * std::exp(x) / std::exp(1); };
+auto exp = [](auto x) { return x * std::exp(x) / std::exp(1); };
 /// <summary>True inverse-exponential interpolation, inv_quadratic is faster and usually sufficient.</summary>
-constexpr auto inv_exp = [](auto x) { return 1 - exp(1 - x); };
+auto inv_exp = [](auto x) { return 1 - exp(1 - x); };
 /// <summary>True cosine interpolation, cubic is faster and usually sufficient.</summary>
-constexpr auto cosine = [](auto x) { return (1 - std::cos(x * static_cast<decltype(x)>(pi))) / 2; };
+auto cosine = [](auto x) { return (1 - std::cos(x * pi_v<decltype(x)>)) / 2; };
 
 /// <summary>Alias for cubic.</summary>
-constexpr auto smooth = cubic;
+auto smooth = cubic;
 /// <summary>Alias for quadtratic.</summary>
-constexpr auto smooth_start = quadratic;
+auto smooth_start = quadratic;
 /// <summary>Alias for inv_quadtratic.</summary>
-constexpr auto smooth_end = inv_quadratic;
+auto smooth_end = inv_quadratic;
 
 } // namespace interp
 
