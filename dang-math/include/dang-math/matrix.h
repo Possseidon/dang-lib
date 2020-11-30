@@ -23,7 +23,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     {}
 
     /// <summary>Initializes the whole matrix with the same, given value.</summary>
-    constexpr Matrix(T value)
+    constexpr explicit Matrix(T value)
         : Base()
     {
         for (std::size_t i = 0; i < Cols; i++)
@@ -55,15 +55,15 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
         return result;
     }
 
-    /// <summary>Allows for implicit conversion from single-column matrices to vectors.</summary>
-    constexpr operator Vector<T, Rows>() const
+    /// <summary>Allows for conversion from single-column matrices to vectors.</summary>
+    constexpr explicit operator Vector<T, Rows>() const
     {
         static_assert(Cols == 1);
         return (*this)[0];
     }
 
-    /// <summary>Allows for implicit conversion from single-value matrices to their respective value type.</summary>
-    constexpr operator T() const
+    /// <summary>Allows for conversion from single-value matrices to their respective value type.</summary>
+    constexpr explicit operator T() const
     {
         static_assert(Cols == 1 && Rows == 1);
         return (*this)(0, 0);
@@ -602,9 +602,9 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// <summary>Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.</summary>
-    friend constexpr Vector<T, Rows> operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
+    friend constexpr auto operator*(const Matrix& matrix, const Vector<T, Cols>& vector)
     {
-        return matrix * Matrix<T, 1, Cols>{vector};
+        return Vector<T, Rows>{matrix * Matrix<T, 1, Cols>{vector}};
     }
 
     /// <summary>Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a single-column matrix.</summary>

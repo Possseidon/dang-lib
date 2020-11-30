@@ -69,6 +69,13 @@ struct Vector : std::array<T, Dim> {
             (*this)[i] = static_cast<T>(other[i]);
     }
 
+    /// <summary>Allows for conversion from single-value vectors to their respective value type.</summary>
+    constexpr explicit operator T()
+    {
+        static_assert(Dim == 1);
+        return (*this)[0];
+    }
+
     /// <summary>Returns the sum of all components.</summary>
     constexpr auto sum() const
     {
