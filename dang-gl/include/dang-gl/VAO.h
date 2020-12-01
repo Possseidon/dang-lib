@@ -30,6 +30,17 @@ enum class BeginMode {
     COUNT
 };
 
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::BeginMode> : DefaultEnumCount<dang::gl::BeginMode> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
 /// <summary>Maps the different begin modes to their GL-Constants.</summary>
 template <>
 inline constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {GL_POINTS,

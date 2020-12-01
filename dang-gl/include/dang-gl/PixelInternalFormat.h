@@ -104,6 +104,17 @@ enum class PixelInternalFormat {
     COUNT
 };
 
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::PixelInternalFormat> : DefaultEnumCount<dang::gl::PixelInternalFormat> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
 /// <summary>GL-Constants for internal pixel formats.</summary>
 template <>
 inline constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {

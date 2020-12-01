@@ -41,6 +41,17 @@ enum class PixelType {
     COUNT
 };
 
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::PixelType> : DefaultEnumCount<dang::gl::PixelType> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
 template <>
 inline constexpr dutils::EnumArray<PixelType, GLenum> GLConstants<PixelType> = {GL_UNSIGNED_BYTE,
                                                                                 GL_BYTE,

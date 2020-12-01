@@ -23,20 +23,6 @@ enum class ObjectType {
     COUNT
 };
 
-/// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
-template <>
-inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
-                                                                                  GL_SHADER,
-                                                                                  GL_PROGRAM,
-                                                                                  GL_VERTEX_ARRAY,
-                                                                                  GL_QUERY,
-                                                                                  GL_PROGRAM_PIPELINE,
-                                                                                  GL_TRANSFORM_FEEDBACK,
-                                                                                  GL_SAMPLER,
-                                                                                  GL_TEXTURE,
-                                                                                  GL_RENDERBUFFER,
-                                                                                  GL_FRAMEBUFFER};
-
 /// <summary>The different buffer targets, which can be specified in glBindBuffer.</summary>
 enum class BufferTarget {
     ArrayBuffer,
@@ -57,6 +43,79 @@ enum class BufferTarget {
     COUNT
 };
 
+/// <summary>The different texture targets, which can be specified in glBindTexture.</summary>
+enum class TextureTarget {
+    Texture1D,
+    Texture1DArray,
+    Texture2D,
+    Texture2DArray,
+    Texture2DMultisample,
+    Texture2DMultisampleArray,
+    Texture3D,
+    TextureCubeMap,
+    TextureRectangle,
+
+    COUNT
+};
+
+/// <summary>The different framebuffer targets, which can be specified in glBindFramebuffer.</summary>
+/// <remarks>
+/// <para>- "Framebuffer" means both draw AND read framebuffers.</para>
+/// <para>- If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.</para>
+/// </remarks>
+enum class FramebufferTarget {
+    Framebuffer,
+    DrawFramebuffer,
+    ReadFramebuffer,
+
+    COUNT
+};
+
+/// <summary>The different renderbuffer targets, which can be specified in glBindRenderbuffer.</summary>
+/// <remarks>Currently the only "option" is simply GL_RENDERBUFFER.</remarks>
+enum class RenderbufferTarget {
+    Renderbuffer,
+
+    COUNT
+};
+
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::ObjectType> : DefaultEnumCount<dang::gl::ObjectType> {};
+
+template <>
+struct EnumCount<dang::gl::BufferTarget> : DefaultEnumCount<dang::gl::BufferTarget> {};
+
+template <>
+struct EnumCount<dang::gl::TextureTarget> : DefaultEnumCount<dang::gl::TextureTarget> {};
+
+template <>
+struct EnumCount<dang::gl::FramebufferTarget> : DefaultEnumCount<dang::gl::FramebufferTarget> {};
+
+template <>
+struct EnumCount<dang::gl::RenderbufferTarget> : DefaultEnumCount<dang::gl::RenderbufferTarget> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
+/// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
+template <>
+inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
+                                                                                  GL_SHADER,
+                                                                                  GL_PROGRAM,
+                                                                                  GL_VERTEX_ARRAY,
+                                                                                  GL_QUERY,
+                                                                                  GL_PROGRAM_PIPELINE,
+                                                                                  GL_TRANSFORM_FEEDBACK,
+                                                                                  GL_SAMPLER,
+                                                                                  GL_TEXTURE,
+                                                                                  GL_RENDERBUFFER,
+                                                                                  GL_FRAMEBUFFER};
+
 /// <summary>Maps from buffer targets to their respective constants, which need to be supplied to the glBindBuffer function.</summary>
 template <>
 inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarget> = {GL_ARRAY_BUFFER,
@@ -74,21 +133,6 @@ inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarge
                                                                                       GL_TRANSFORM_FEEDBACK_BUFFER,
                                                                                       GL_UNIFORM_BUFFER};
 
-/// <summary>The different texture targets, which can be specified in glBindTexture.</summary>
-enum class TextureTarget {
-    Texture1D,
-    Texture1DArray,
-    Texture2D,
-    Texture2DArray,
-    Texture2DMultisample,
-    Texture2DMultisampleArray,
-    Texture3D,
-    TextureCubeMap,
-    TextureRectangle,
-
-    COUNT
-};
-
 /// <summary>Maps from texture targets to their respective constants, which need to be supplied to the glBindTexture function.</summary>
 template <>
 inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTarget> = {GL_TEXTURE_1D,
@@ -101,31 +145,10 @@ inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTar
                                                                                         GL_TEXTURE_CUBE_MAP,
                                                                                         GL_TEXTURE_RECTANGLE};
 
-/// <summary>The different framebuffer targets, which can be specified in glBindFramebuffer.</summary>
-/// <remarks>
-/// <para>- "Framebuffer" means both draw AND read framebuffers.</para>
-/// <para>- If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.</para>
-/// </remarks>
-enum class FramebufferTarget {
-    Framebuffer,
-    DrawFramebuffer,
-    ReadFramebuffer,
-
-    COUNT
-};
-
 /// <summary>Maps from framebuffer targets to their respective constants, which need to be supplied to the glBindFramebuffer function.</summary>
 template <>
 inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> GLConstants<FramebufferTarget> = {
     GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER};
-
-/// <summary>The different renderbuffer targets, which can be specified in glBindRenderbuffer.</summary>
-/// <remarks>Currently the only "option" is simply GL_RENDERBUFFER.</remarks>
-enum class RenderbufferTarget {
-    Renderbuffer,
-
-    COUNT
-};
 
 /// <summary>Maps from renderbuffer targets to their respective constants, which need to be supplied to the glBindRenderbuffer function.</summary>
 template <>

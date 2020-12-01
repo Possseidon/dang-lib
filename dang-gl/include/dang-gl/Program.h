@@ -25,6 +25,17 @@ enum class ShaderType {
     COUNT
 };
 
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::ShaderType> : DefaultEnumCount<dang::gl::ShaderType> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
 /// <summary>A mapping to the GL-Constants for each shader stage.</summary>
 template <>
 inline constexpr dutils::EnumArray<ShaderType, GLenum> GLConstants<ShaderType> = {GL_VERTEX_SHADER,

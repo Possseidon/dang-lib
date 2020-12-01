@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-utils/enum.h"
+
 #include "BufferMask.h"
 #include "FramebufferContext.h"
 #include "MathTypes.h"
@@ -11,6 +13,29 @@
 #include "RBO.h"
 
 namespace dang::gl {
+
+/// <summary>The filtering method to use for framebuffer blitting.</summary>
+/// <remarks>The linear filtering method only works for the color buffer.</remarks>
+enum class BlitFilter {
+    Nearest,
+    Linear,
+
+    COUNT
+};
+
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::BlitFilter> : DefaultEnumCount<dang::gl::BlitFilter> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
+template <>
+inline constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
 
 /// <summary>An error caused by an invalid FBO operation.</summary>
 class FramebufferError : public std::runtime_error {
@@ -29,18 +54,6 @@ enum class FramebufferStatus : GLenum {
     IncompleteMultisample = GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
     IncompleteLayerTargets = GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
 };
-
-/// <summary>The filtering method to use for framebuffer blitting.</summary>
-/// <remarks>The linear filtering method only works for the color buffer.</remarks>
-enum class BlitFilter {
-    Nearest,
-    Linear,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
 
 /// <summary>A framebuffer object, which represents the destination (or source) of OpenGL render operations.</summary>
 /// <remarks>Framebuffer objects can be attached with both textures and renderbuffer objects.</remarks>

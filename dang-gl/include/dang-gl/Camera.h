@@ -9,6 +9,21 @@
 
 namespace dang::gl {
 
+/// <summary>The different cached transform (quaternion, not matrix) types of a camera, namely model, view and a combined model-view.</summary>
+/// <remarks>The projection uses a matrix and is therefore handled separately.</remarks>
+enum class CameraTransformType { Model, View, ModelView, COUNT };
+
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::CameraTransformType> : DefaultEnumCount<dang::gl::CameraTransformType> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
 class ProjectionProvider;
 
 using UniqueProjectionProvider = std::unique_ptr<ProjectionProvider>;
@@ -103,10 +118,6 @@ protected:
 private:
     bounds3 clip_;
 };
-
-/// <summary>The different cached transform (quaternion, not matrix) types of a camera, namely model, view and a combined model-view.</summary>
-/// <remarks>The projection uses a matrix and is therefore handled separately.</remarks>
-enum class CameraTransformType { Model, View, ModelView, COUNT };
 
 /// <summary>A simple struct for all the different uniform names, which a camera can write to.</summary>
 struct CameraUniformNames {

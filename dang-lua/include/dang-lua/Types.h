@@ -2,6 +2,8 @@
 
 #include "utils.h"
 
+#include "dang-utils/enum.h"
+
 namespace dang::lua {
 
 /// <summary>Several functions that report errors in the API use the following status codes to indicate different kinds of errors or other conditions.</summary>
@@ -44,6 +46,7 @@ enum class Type {
     Function = LUA_TFUNCTION,
     Userdata = LUA_TUSERDATA,
     Thread = LUA_TTHREAD,
+
     COUNT = LUA_NUMTYPES
 };
 
@@ -65,7 +68,9 @@ enum class ArithOp {
 
     // unary (pop 1, push 1)
     UnaryMinus = LUA_OPUNM,
-    BinaryNot = LUA_OPBNOT
+    BinaryNot = LUA_OPBNOT,
+
+    COUNT
 };
 
 /// <summary>Possible operations for lua_compare.</summary>
@@ -73,39 +78,61 @@ enum class CompareOp {
     Equal = LUA_OPEQ,
     LessThan = LUA_OPLT,
     LessEqual = LUA_OPLE,
+
+    COUNT
 };
 
 /// <summary>A list of all Lua standard libraries.</summary>
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
-inline const std::array<lua_CFunction, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryFunctions = {
-    luaopen_base,
-    luaopen_coroutine,
-    luaopen_table,
-    luaopen_io,
-    luaopen_os,
-    luaopen_string,
-    luaopen_utf8,
-    luaopen_math,
-    luaopen_debug,
-    luaopen_package};
-
-inline constexpr std::array<const char*, static_cast<std::size_t>(StandardLibrary::COUNT)> libraryNames = {
-    "_G",
-    LUA_COLIBNAME,
-    LUA_TABLIBNAME,
-    LUA_IOLIBNAME,
-    LUA_OSLIBNAME,
-    LUA_STRLIBNAME,
-    LUA_UTF8LIBNAME,
-    LUA_MATHLIBNAME,
-    LUA_DBLIBNAME,
-    LUA_LOADLIBNAME};
-
 /// <summary>Wether to load Lua code only as text or binary, or accept both.</summary>
 enum class LoadMode { Default, Binary, Text, Both, COUNT };
 
-inline constexpr std::array<const char*, static_cast<std::size_t>(LoadMode::COUNT)> loadModeNames = {
-    nullptr, "b", "t", "bt"};
+} // namespace dang::lua
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::lua::Type> : DefaultEnumCount<dang::lua::Type> {};
+
+template <>
+struct EnumCount<dang::lua::ArithOp> : DefaultEnumCount<dang::lua::ArithOp> {};
+
+template <>
+struct EnumCount<dang::lua::CompareOp> : DefaultEnumCount<dang::lua::CompareOp> {};
+
+template <>
+struct EnumCount<dang::lua::StandardLibrary> : DefaultEnumCount<dang::lua::StandardLibrary> {};
+
+template <>
+struct EnumCount<dang::lua::LoadMode> : DefaultEnumCount<dang::lua::LoadMode> {};
+
+} // namespace dang::utils
+
+namespace dang::lua {
+
+inline const dutils::EnumArray<StandardLibrary, lua_CFunction> libraryFunctions = {luaopen_base,
+                                                                                   luaopen_coroutine,
+                                                                                   luaopen_table,
+                                                                                   luaopen_io,
+                                                                                   luaopen_os,
+                                                                                   luaopen_string,
+                                                                                   luaopen_utf8,
+                                                                                   luaopen_math,
+                                                                                   luaopen_debug,
+                                                                                   luaopen_package};
+
+inline constexpr dutils::EnumArray<StandardLibrary, const char*> libraryNames = {"_G",
+                                                                                 LUA_COLIBNAME,
+                                                                                 LUA_TABLIBNAME,
+                                                                                 LUA_IOLIBNAME,
+                                                                                 LUA_OSLIBNAME,
+                                                                                 LUA_STRLIBNAME,
+                                                                                 LUA_UTF8LIBNAME,
+                                                                                 LUA_MATHLIBNAME,
+                                                                                 LUA_DBLIBNAME,
+                                                                                 LUA_LOADLIBNAME};
+
+inline constexpr dutils::EnumArray<LoadMode, const char*> loadModeNames = {nullptr, "b", "t", "bt"};
 
 } // namespace dang::lua

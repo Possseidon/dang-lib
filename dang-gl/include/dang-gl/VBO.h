@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-utils/enum.h"
+
 #include "Buffer.h"
 #include "GLConstants.h"
 #include "ObjectType.h"
@@ -21,6 +23,17 @@ enum class BufferUsageHint {
 
     COUNT
 };
+
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::BufferUsageHint> : DefaultEnumCount<dang::gl::BufferUsageHint> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
 
 /// <summary>Maps the various buffer usage hints to their GL-Constants.</summary>
 template <>

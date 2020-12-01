@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-utils/enum.h"
+
 namespace dang::glfw {
 
 /// <summary>Whether a mouse button has been pressed or released.</summary>
@@ -25,6 +27,23 @@ enum class Button : int {
 
 /// <summary>Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
 enum class KeyAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, Repeat = GLFW_REPEAT, COUNT };
+
+} // namespace dang::glfw
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::glfw::ButtonAction> : DefaultEnumCount<dang::glfw::ButtonAction> {};
+
+template <>
+struct EnumCount<dang::glfw::Button> : DefaultEnumCount<dang::glfw::Button> {};
+
+template <>
+struct EnumCount<dang::glfw::KeyAction> : DefaultEnumCount<dang::glfw::KeyAction> {};
+
+} // namespace dang::utils
+
+namespace dang::glfw {
 
 /// <summary>A list of all possible keyboard keys.</summary>
 enum class Key : int {

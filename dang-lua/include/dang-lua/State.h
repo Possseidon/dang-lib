@@ -1993,7 +1993,7 @@ public:
     {
         // TODO: C++20 replace buffer and size with std::span
         assertPushableAuxiliary();
-        int status = luaL_loadbufferx(state_, buffer, size, name, loadModeNames[static_cast<std::size_t>(mode)]);
+        int status = luaL_loadbufferx(state_, buffer, size, name, loadModeNames[mode]);
         notifyPush();
         return std::tuple{static_cast<Status>(status), top().asResult()};
     }
@@ -2390,8 +2390,7 @@ public:
     void openLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
-        int index = static_cast<int>(library);
-        luaL_requiref(state_, libraryNames[index], libraryFunctions[index], 1);
+        luaL_requiref(state_, libraryNames[library], libraryFunctions[library], 1);
         lua_pop(state_, 1);
     }
 
@@ -2399,8 +2398,7 @@ public:
     auto pushLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
-        int index = static_cast<int>(library);
-        luaL_requiref(state_, libraryNames[index], libraryFunctions[index], 1);
+        luaL_requiref(state_, libraryNames[library], libraryFunctions[library], 1);
         notifyPush();
         return top().asResult();
     }

@@ -30,6 +30,37 @@ enum class PixelFormat {
     COUNT
 };
 
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::PixelFormat> : DefaultEnumCount<dang::gl::PixelFormat> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
+/// <summary>The GL-Constants for the pixel formats.</summary>
+template <>
+inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
+                                                                                    GL_RG,
+                                                                                    GL_RGB,
+                                                                                    GL_BGR,
+                                                                                    GL_RGBA,
+                                                                                    GL_BGRA,
+
+                                                                                    GL_RED_INTEGER,
+                                                                                    GL_RG_INTEGER,
+                                                                                    GL_RGB_INTEGER,
+                                                                                    GL_BGR_INTEGER,
+                                                                                    GL_RGBA_INTEGER,
+                                                                                    GL_BGRA_INTEGER,
+
+                                                                                    GL_STENCIL_INDEX,
+                                                                                    GL_DEPTH_COMPONENT,
+                                                                                    GL_DEPTH_STENCIL};
+
 /// <summary>Provides info about a pixel format, like its component count, which is necessary to find out the storage size.</summary>
 template <PixelFormat>
 struct PixelFormatInfo {};
@@ -115,25 +146,5 @@ struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO: PixelFormatInfo<
 template <>
 struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO: PixelFormatInfo<PixelFormat::DEPTH_STENCIL> */
 };
-
-/// <summary>The GL-Constants for the pixel formats.</summary>
-template <>
-inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
-                                                                                    GL_RG,
-                                                                                    GL_RGB,
-                                                                                    GL_BGR,
-                                                                                    GL_RGBA,
-                                                                                    GL_BGRA,
-
-                                                                                    GL_RED_INTEGER,
-                                                                                    GL_RG_INTEGER,
-                                                                                    GL_RGB_INTEGER,
-                                                                                    GL_BGR_INTEGER,
-                                                                                    GL_RGBA_INTEGER,
-                                                                                    GL_BGRA_INTEGER,
-
-                                                                                    GL_STENCIL_INDEX,
-                                                                                    GL_DEPTH_COMPONENT,
-                                                                                    GL_DEPTH_STENCIL};
 
 } // namespace dang::gl

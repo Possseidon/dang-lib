@@ -2,6 +2,8 @@
 
 #include "dang-math/vector.h"
 
+#include "dang-utils/enum.h"
+
 #include "Image.h"
 #include "Object.h"
 #include "ObjectContext.h"
@@ -14,6 +16,118 @@
 #include "TextureContext.h"
 
 namespace dang::gl {
+
+enum class TextureDepthStencilMode {
+    DepthComponent,
+    StencilIndex,
+
+    COUNT
+};
+
+enum class TextureMagFilter {
+    Nearest,
+    Linear,
+
+    COUNT
+};
+
+enum class TextureMinFilter {
+    Nearest,
+    Linear,
+    NearestMipmapNearest,
+    LinearMipmapNearest,
+    NearestMipmapLinear,
+    LinearMipmapLinear,
+
+    COUNT
+};
+
+enum class TextureCompareFunc {
+    Never,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always,
+
+    COUNT
+};
+
+enum class TextureSwizzle {
+    Red,
+    Green,
+    Blue,
+    Alpha,
+    Zero,
+    One,
+
+    COUNT
+};
+
+enum class TextureWrap {
+    Repeat,
+    ClampToBorder,
+    ClampToEdge,
+    MirroredRepeat,
+    MirrorClampToEdge,
+
+    COUNT
+};
+
+} // namespace dang::gl
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::gl::TextureDepthStencilMode> : DefaultEnumCount<dang::gl::TextureDepthStencilMode> {};
+
+template <>
+struct EnumCount<dang::gl::TextureMagFilter> : DefaultEnumCount<dang::gl::TextureMagFilter> {};
+
+template <>
+struct EnumCount<dang::gl::TextureMinFilter> : DefaultEnumCount<dang::gl::TextureMinFilter> {};
+
+template <>
+struct EnumCount<dang::gl::TextureCompareFunc> : DefaultEnumCount<dang::gl::TextureCompareFunc> {};
+
+template <>
+struct EnumCount<dang::gl::TextureSwizzle> : DefaultEnumCount<dang::gl::TextureSwizzle> {};
+
+template <>
+struct EnumCount<dang::gl::TextureWrap> : DefaultEnumCount<dang::gl::TextureWrap> {};
+
+} // namespace dang::utils
+
+namespace dang::gl {
+
+template <>
+inline constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
+    GL_DEPTH_COMPONENT, GL_STENCIL_INDEX};
+
+template <>
+inline constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
+
+template <>
+inline constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
+                                                                                              GL_LINEAR,
+                                                                                              GL_NEAREST_MIPMAP_NEAREST,
+                                                                                              GL_LINEAR_MIPMAP_NEAREST,
+                                                                                              GL_NEAREST_MIPMAP_LINEAR,
+                                                                                              GL_LINEAR_MIPMAP_LINEAR};
+
+template <>
+inline constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
+    GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS};
+
+template <>
+inline constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
+    GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
+
+template <>
+inline constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
+    GL_REPEAT, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_TO_EDGE};
 
 /*
 
@@ -75,92 +189,6 @@ private:
     TextureTarget target_;
     mutable std::optional<std::size_t> active_slot_;
 };
-
-enum class TextureDepthStencilMode {
-    DepthComponent,
-    StencilIndex,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
-    GL_DEPTH_COMPONENT, GL_STENCIL_INDEX};
-
-enum class TextureMagFilter {
-    Nearest,
-    Linear,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
-
-enum class TextureMinFilter {
-    Nearest,
-    Linear,
-    NearestMipmapNearest,
-    LinearMipmapNearest,
-    NearestMipmapLinear,
-    LinearMipmapLinear,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
-                                                                                              GL_LINEAR,
-                                                                                              GL_NEAREST_MIPMAP_NEAREST,
-                                                                                              GL_LINEAR_MIPMAP_NEAREST,
-                                                                                              GL_NEAREST_MIPMAP_LINEAR,
-                                                                                              GL_LINEAR_MIPMAP_LINEAR};
-
-enum class TextureCompareFunc {
-    Never,
-    Less,
-    Equal,
-    LessEqual,
-    Greater,
-    NotEqual,
-    GreaterEqual,
-    Always,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
-    GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS};
-
-enum class TextureSwizzle {
-    Red,
-    Green,
-    Blue,
-    Alpha,
-    Zero,
-    One,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
-    GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
-
-enum class TextureWrap {
-    Repeat,
-    ClampToBorder,
-    ClampToEdge,
-    MirroredRepeat,
-    MirrorClampToEdge,
-
-    COUNT
-};
-
-template <>
-inline constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
-    GL_REPEAT, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_TO_EDGE};
 
 namespace detail {
 

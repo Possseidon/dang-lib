@@ -2,6 +2,8 @@
 
 #include "utils.h"
 
+#include "dang-utils/enum.h"
+
 namespace dang::math {
 
 /// <summary>Represents the single x-axis of a one-dimensional system or an optional None value.</summary>
@@ -152,12 +154,53 @@ enum class Facings3 : unsigned char {
     ALL = ~(~0u << 6)
 };
 
+} // namespace dang::math
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::math::Axis1> : DefaultEnumCount<dang::math::Axis1> {};
+
+template <>
+struct EnumCount<dang::math::Axis2> : DefaultEnumCount<dang::math::Axis2> {};
+
+template <>
+struct EnumCount<dang::math::Axis3> : DefaultEnumCount<dang::math::Axis3> {};
+
+template <>
+struct EnumCount<dang::math::Corner1> : DefaultEnumCount<dang::math::Corner1> {};
+
+template <>
+struct EnumCount<dang::math::Corner2> : DefaultEnumCount<dang::math::Corner2> {};
+
+template <>
+struct EnumCount<dang::math::Corner3> : DefaultEnumCount<dang::math::Corner3> {};
+
+template <>
+struct EnumCount<dang::math::Edge2> : DefaultEnumCount<dang::math::Edge2> {};
+
+template <>
+struct EnumCount<dang::math::Edge3> : DefaultEnumCount<dang::math::Edge3> {};
+
+template <>
+struct EnumCount<dang::math::Facing1> : DefaultEnumCount<dang::math::Facing1> {};
+
+template <>
+struct EnumCount<dang::math::Facing2> : DefaultEnumCount<dang::math::Facing2> {};
+
+template <>
+struct EnumCount<dang::math::Facing3> : DefaultEnumCount<dang::math::Facing3> {};
+
+} // namespace dang::utils
+
+namespace dang::math {
+
 namespace detail {
 
 template <std::size_t Dim>
 struct AxisSelector {
-    enum class Type { COUNT = 0 };
-    enum class SetType { NONE = 0, ALL = 0 };
+    enum class Type {};
+    enum class SetType {};
 };
 
 template <>
@@ -180,8 +223,8 @@ struct AxisSelector<3> {
 
 template <std::size_t Dim>
 struct CornerSelector {
-    enum class Type { COUNT = 0 };
-    enum class SetType { NONE = 0, ALL = 0 };
+    enum class Type {};
+    enum class SetType {};
 };
 
 template <>
@@ -204,8 +247,8 @@ struct CornerSelector<3> {
 
 template <std::size_t Dim>
 struct EdgeSelector {
-    enum class Type { COUNT = 0 };
-    enum class SetType { NONE = 0, ALL = 0 };
+    enum class Type {};
+    enum class SetType {};
 };
 
 template <>
@@ -222,8 +265,8 @@ struct EdgeSelector<3> {
 
 template <std::size_t Dim>
 struct FacingSelector {
-    enum class Type { COUNT = 0 };
-    enum class SetType { NONE = 0, ALL = 0 };
+    enum class Type {};
+    enum class SetType {};
 };
 
 template <>

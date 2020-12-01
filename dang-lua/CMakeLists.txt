@@ -7,6 +7,7 @@ find_package(Lua REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} 
   INTERFACE
+    dang-utils
     ${LUA_LIBRARIES}
 )
 
