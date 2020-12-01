@@ -2,7 +2,7 @@
 
 #include "Monitor.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 Monitor::Monitor(GLFWmonitor* monitor)
     : handle_(monitor)
@@ -59,4 +59,4 @@ std::vector<VideoMode> Monitor::videoModes() const
     return std::vector<VideoMode>(first, first + count);
 }
 
-} // namespace dang::gl
+} // namespace dang::glfw

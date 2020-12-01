@@ -2,10 +2,11 @@
 
 #include "GLFW.h"
 
-#include "Context.h"
+#include "dang-gl/Context.h"
+
 #include "Window.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 GLFW GLFW::Instance;
 
@@ -16,7 +17,7 @@ void GLFW::setActiveWindow(Window* window)
 
     active_window_ = window;
     glfwMakeContextCurrent(window ? window->handle() : nullptr);
-    Context::current = &window->context();
+    dgl::Context::current = &window->context();
 
     if (!glad_initialized_ && window)
         initializeGlad();
@@ -137,4 +138,4 @@ void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
     }
 }
 
-} // namespace dang::gl
+} // namespace dang::glfw

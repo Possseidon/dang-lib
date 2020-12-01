@@ -5,9 +5,6 @@ add_library(${PROJECT_NAME}
     src/Camera.cpp
     src/Context.cpp
     src/FBO.cpp
-    src/GLFW.cpp
-    src/Input.cpp
-    src/Monitor.cpp
     src/ObjectContext.cpp
     src/pch.cpp
     src/PNGLoader.cpp
@@ -18,19 +15,16 @@ add_library(${PROJECT_NAME}
     src/StateTypes.cpp
     src/Transform.cpp
     src/VAO.cpp
-    src/Window.cpp
 )
 
 find_package(glad CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
 find_package(libpng CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE
+  PUBLIC
     dang-math
     dang-utils
     glad::glad
-    glfw
     png
 )
 

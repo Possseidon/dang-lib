@@ -8,6 +8,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     dang-gl
+    dang-glfw
     dang-lua
     dang-math
     dang-utils

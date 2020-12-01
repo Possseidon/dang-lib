@@ -1,17 +1,19 @@
 #pragma once
 
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <codecvt>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
 #include <iostream>
+#include <istream>
+#include <iterator>
 #include <limits>
-#include <locale>
 #include <map>
 #include <memory>
 #include <optional>
@@ -19,13 +21,15 @@
 #include <set>
 #include <sstream>
 #include <stack>
+#include <stdexcept>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "glad/glad.h"
 
-#include "GLFW/glfw3.h"
 #include "png.h"
 
 namespace fs = std::filesystem;

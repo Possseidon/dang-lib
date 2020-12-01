@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dang::gl {
+namespace dang::glfw {
 
 /// <summary>Whether a mouse button has been pressed or released.</summary>
 enum class ButtonAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, COUNT };
@@ -197,4 +197,4 @@ enum class ModifierKeys {
     ALL = ~(~0u << 6)
 };
 
-} // namespace dang::gl
+} // namespace dang::glfw

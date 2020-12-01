@@ -3,7 +3,7 @@
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 using GammaRamp = GLFWgammaramp;
 using VideoMode = GLFWvidmode;
@@ -50,4 +50,4 @@ private:
     GLFWmonitor* handle_ = nullptr;
 };
 
-} // namespace dang::gl
+} // namespace dang::glfw

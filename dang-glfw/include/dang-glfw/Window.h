@@ -1,16 +1,17 @@
 #pragma once
 
+#include "dang-gl/BufferMask.h"
+#include "dang-gl/Context.h"
+
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"
 
 #include "dang-utils/event.h"
 
-#include "BufferMask.h"
-#include "Context.h"
 #include "Input.h"
 #include "Monitor.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 using GLVersion = std::tuple<int, int>;
 using GLVersionFull = std::tuple<int, int, int>;
@@ -210,9 +211,9 @@ public:
     GLFWwindow* handle() const;
 
     /// <summary>Returns the OpenGL context of this window.</summary>
-    const Context& context() const;
+    const dgl::Context& context() const;
     /// <summary>Returns the OpenGL context of this window.</summary>
-    Context& context();
+    dgl::Context& context();
 
     // TODO: C++20 use std::u8string
     /// <summary>Returns the title of the window.</summary>
@@ -360,9 +361,9 @@ public:
     ContextRobustness contextRobustness() const;
 
     /// <summary>Returns the current clear mask, which is used at the beginning of a render call.</summary>
-    BufferMask clearMask() const;
+    dgl::BufferMask clearMask() const;
     /// <summary>Setst the clear mask, which is used at the beginning of a render call.</summary>
-    void setClearMask(BufferMask mask);
+    void setClearMask(dgl::BufferMask mask);
 
     /// <summary>Whether the window should call glFinish after SwapBuffers.</summary>
     bool finishAfterSwap() const;
@@ -538,7 +539,7 @@ private:
 
     GLFWwindow* handle_ = nullptr;
 
-    Context context_{(activate(), size())};
+    dgl::Context context_{(activate(), size())};
 
     // Window-Properties
     std::string title_;
@@ -548,7 +549,7 @@ private:
     std::optional<dmath::ivec2> aspect_ratio_;
 
     // Render-Properties
-    BufferMask clear_mask_ = BufferMask::ALL;
+    dgl::BufferMask clear_mask_ = dgl::BufferMask::ALL;
     bool auto_adjust_viewport_ = true;
     bool finish_after_swap_ = true;
 
@@ -561,4 +562,4 @@ private:
     std::string text_input_;
 };
 
-} // namespace dang::gl
+} // namespace dang::glfw

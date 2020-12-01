@@ -2,7 +2,7 @@
 
 #include "Input.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 KeyData::KeyData(Key key, int scancode)
     : key_(key)
@@ -21,4 +21,4 @@ std::string KeyData::name() const
 
 KeyData::operator Key() const { return key_; }
 
-} // namespace dang::gl
+} // namespace dang::glfw

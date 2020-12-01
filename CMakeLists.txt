@@ -13,6 +13,7 @@ include(FindLua)
 
 add_subdirectory(dang-example)
 add_subdirectory(dang-gl)
+add_subdirectory(dang-glfw)
 add_subdirectory(dang-lua)
 add_subdirectory(dang-math)
 add_subdirectory(dang-utils)

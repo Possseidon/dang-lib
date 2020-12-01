@@ -2,10 +2,11 @@
 
 #include "Window.h"
 
-#include "FBO.h"
+#include "dang-gl/FBO.h"
+
 #include "GLFW.h"
 
-namespace dang::gl {
+namespace dang::glfw {
 
 GLFWwindow* WindowInfo::createWindow() const
 {
@@ -85,9 +86,9 @@ Window& Window::fromUserPointer(GLFWwindow* window) { return *static_cast<Window
 
 GLFWwindow* Window::handle() const { return handle_; }
 
-const Context& Window::context() const { return context_; }
+const dgl::Context& Window::context() const { return context_; }
 
-Context& Window::context() { return context_; }
+dgl::Context& Window::context() { return context_; }
 
 const std::string& Window::title() const { return title_; }
 
@@ -313,9 +314,9 @@ ContextRobustness Window::contextRobustness() const
     return static_cast<ContextRobustness>(glfwGetWindowAttrib(handle_, GLFW_CONTEXT_ROBUSTNESS));
 }
 
-BufferMask Window::clearMask() const { return clear_mask_; }
+dgl::BufferMask Window::clearMask() const { return clear_mask_; }
 
-void Window::setClearMask(BufferMask mask) { clear_mask_ = mask; }
+void Window::setClearMask(dgl::BufferMask mask) { clear_mask_ = mask; }
 
 bool Window::finishAfterSwap() const { return finish_after_swap_; }
 
@@ -398,7 +399,7 @@ void Window::update()
 void Window::render()
 {
     activate();
-    FBO::clearDefault(context_, clear_mask_);
+    dgl::FBO::clearDefault(context_, clear_mask_);
     onRender(*this);
     glfwSwapBuffers(handle_);
     if (finish_after_swap_)
@@ -630,4 +631,4 @@ void Window::updateSizeLimits()
         handle_, size_limits_.low.x(), size_limits_.low.y(), size_limits_.high.x(), size_limits_.high.y());
 }
 
-} // namespace dang::gl
+} // namespace dang::glfw

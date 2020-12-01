@@ -71,16 +71,18 @@ IncludeCategories:
     Priority: 2
   - Regex: '"glad/glad\.h"'
     Priority: 3
-  - Regex: '"dang-gl'
+  - Regex: '"dang-gl/'
     Priority: 4
-  - Regex: '"dang-lua'
+  - Regex: '"dang-glfw/'
     Priority: 5
-  - Regex: '"dang-math'
+  - Regex: '"dang-lua/'
     Priority: 6
-  - Regex: '"dang-utils'
+  - Regex: '"dang-math/'
     Priority: 7
-  - Regex: ".*"
+  - Regex: '"dang-utils/'
     Priority: 8
+  - Regex: ".*"
+    Priority: 9
 IncludeIsMainRegex: ""
 IncludeIsMainSourceRegex: ""
 IndentCaseLabels: false

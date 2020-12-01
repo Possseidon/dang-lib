@@ -51,7 +51,7 @@ public:
         static_assert(Type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
         PNGLoader png_loader;
         // TODO: Better logging
-        png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << std::endl; });
+        png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << '\n'; });
         png_loader.init(stream);
         std::vector<Pixel> data = png_loader.read<Format>(true);
         return Image(png_loader.size(), data);
