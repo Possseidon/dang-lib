@@ -455,12 +455,27 @@ public:
     constexpr T front() const { return *first(); }
     constexpr T back() const { return *last(); }
 
-    friend constexpr bool operator==(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ == rhs.words_; }
-    friend constexpr bool operator!=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ != rhs.words_; }
-    friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ < rhs.words_; }
-    friend constexpr bool operator<=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ <= rhs.words_; }
-    friend constexpr bool operator>(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ > rhs.words_; }
-    friend constexpr bool operator>=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ >= rhs.words_; }
+    friend constexpr bool operator==(const EnumSet& lhs, const EnumSet& rhs)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            if (lhs.words_[i] != rhs.words_[i])
+                return false;
+        return true;
+    }
+
+    friend constexpr bool operator!=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs.words_ == rhs.words_); }
+
+    friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            if (lhs.words_[i] >= rhs.words_[i])
+                return false;
+        return true;
+    }
+
+    friend constexpr bool operator<=(const EnumSet& lhs, const EnumSet& rhs) { return !(rhs.words_ < lhs.words_); }
+    friend constexpr bool operator>(const EnumSet& lhs, const EnumSet& rhs) { return rhs.words_ < lhs.words_; }
+    friend constexpr bool operator>=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs.words_ < rhs.words_); }
 
     // --- custom operations
 
