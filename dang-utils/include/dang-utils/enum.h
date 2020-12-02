@@ -241,6 +241,29 @@ public:
         return result;
     }
 
+    template <typename TIntegral>
+    static constexpr EnumSet fromBits(TIntegral bits)
+    {
+        static_assert(WordCount == 1);
+        static_assert(std::is_integral_v<TIntegral>);
+        EnumSet result;
+        result.words_[0] = static_cast<Word>(bits);
+        assert(result.trimmed());
+        // TIntegral might've been bigger, some bits might've gotten chopped off
+        assert(static_cast<TIntegral>(result.words_[0]) == bits);
+        return result;
+    }
+
+    static constexpr EnumSet fromBits(void* first, std::size_t bytes)
+    {
+        // TODO: C++20 use bit_cast?
+        assert(bytes <= sizeof(EnumSet::words_));
+        EnumSet result;
+        std::memcpy(result.words_.data(), first, bytes);
+        assert(result.trimmed());
+        return result;
+    }
+
     constexpr EnumSet<T, EnumSetIteration::Bidirectional> bidirectional() { return *this; }
 
     // --- bitset operations
@@ -493,7 +516,7 @@ public:
     constexpr const auto& words() const { return words_; }
 
     template <typename TIntegral>
-    constexpr TIntegral as() const
+    constexpr TIntegral toBits() const
     {
         static_assert(WordCount == 1);
         static_assert(std::is_integral_v<TIntegral>);
@@ -550,6 +573,14 @@ private:
     {
         if constexpr (PaddingBits > 0)
             words_.back() &= static_cast<Word>(static_cast<Word>(~Word{}) >> PaddingBits);
+    }
+
+    constexpr bool trimmed() const
+    {
+        if constexpr (PaddingBits > 0)
+            return (words_.back() & (static_cast<Word>(static_cast<Word>(~Word{}) << (WordBits - PaddingBits)))) == 0;
+        else
+            return true;
     }
 
     std::array<Word, WordCount> words_{};
