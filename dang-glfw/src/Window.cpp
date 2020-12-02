@@ -520,14 +520,14 @@ void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int a
     window.onKey({window,
                   static_cast<KeyAction>(action),
                   KeyData(static_cast<Key>(key), scancode),
-                  static_cast<ModifierKeys>(mods)});
+                  ModifierKeys::fromBits(mods)});
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods)
 {
     Window& window = Window::fromUserPointer(window_handle);
     window.onButton(
-        {window, static_cast<ButtonAction>(action), static_cast<Button>(button), static_cast<ModifierKeys>(mods)});
+        {window, static_cast<ButtonAction>(action), static_cast<Button>(button), ModifierKeys::fromBits(mods)});
 }
 
 void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset)

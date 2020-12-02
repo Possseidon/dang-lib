@@ -28,6 +28,9 @@ enum class Button : int {
 /// <summary>Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
 enum class KeyAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, Repeat = GLFW_REPEAT, COUNT };
 
+/// <summary>Modifier keys, which can be held down in key-combinations.</summary>
+enum class ModifierKey : int { Shift, Control, Alt, Super, CapsLock, NumLock, COUNT };
+
 } // namespace dang::glfw
 
 namespace dang::utils {
@@ -41,9 +44,21 @@ struct EnumCount<dang::glfw::Button> : DefaultEnumCount<dang::glfw::Button> {};
 template <>
 struct EnumCount<dang::glfw::KeyAction> : DefaultEnumCount<dang::glfw::KeyAction> {};
 
+template <>
+struct EnumCount<dang::glfw::ModifierKey> : DefaultEnumCount<dang::glfw::ModifierKey> {};
+
 } // namespace dang::utils
 
 namespace dang::glfw {
+
+using ModifierKeys = dutils::EnumSet<ModifierKey>;
+
+static_assert(ModifierKeys::fromBits(GLFW_MOD_SHIFT) == ModifierKey::Shift);
+static_assert(ModifierKeys::fromBits(GLFW_MOD_CONTROL) == ModifierKey::Control);
+static_assert(ModifierKeys::fromBits(GLFW_MOD_ALT) == ModifierKey::Alt);
+static_assert(ModifierKeys::fromBits(GLFW_MOD_SUPER) == ModifierKey::Super);
+static_assert(ModifierKeys::fromBits(GLFW_MOD_CAPS_LOCK) == ModifierKey::CapsLock);
+static_assert(ModifierKeys::fromBits(GLFW_MOD_NUM_LOCK) == ModifierKey::NumLock);
 
 /// <summary>A list of all possible keyboard keys.</summary>
 enum class Key : int {
@@ -202,18 +217,6 @@ public:
 private:
     Key key_;
     int scancode_;
-};
-
-/// <summary>A set-style enum of all possible modifier keys, which can be held down in key-combinations.</summary>
-enum class ModifierKeys {
-    NONE = 0,
-    Shift = GLFW_MOD_SHIFT,
-    Control = GLFW_MOD_CONTROL,
-    Alt = GLFW_MOD_ALT,
-    Super = GLFW_MOD_SUPER,
-    CapsLock = GLFW_MOD_CAPS_LOCK,
-    NumLock = GLFW_MOD_NUM_LOCK,
-    ALL = ~(~0u << 6)
 };
 
 } // namespace dang::glfw
