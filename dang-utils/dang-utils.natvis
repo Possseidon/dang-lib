@@ -16,6 +16,23 @@
     </Expand>
   </Type>
 
+  <Type Name="dang::utils::EnumSet&lt;*&gt;">
+    <DisplayString>set of {"$T1"}</DisplayString>
+    <Expand HideRawView="true">
+      <CustomListItems>
+        <Variable Name="value" InitialValue="0"/>
+        <Variable Name="index" InitialValue="0"/>
+        <Loop Condition="value &lt; Size">
+          <If Condition="(words_._Elems[value / WordBits] &gt;&gt; value - value / WordBits * WordBits) &amp; 1">
+            <Item Name="[{index}]">static_cast&lt;$T1&gt;(value)</Item>
+            <Exec>index++</Exec>
+          </If>
+          <Exec>value++</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
   <!-- event.h -->
 
   <Type Name="dang::utils::Event&lt;*&gt;">

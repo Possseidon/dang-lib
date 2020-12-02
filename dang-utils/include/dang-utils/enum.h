@@ -3,6 +3,9 @@
 #include "utils.h"
 
 #include <array>
+#include <cassert>
+#include <cstdint>
+#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -59,46 +62,497 @@ struct EnumArray : std::array<TValue, EnumCountV<TEnum>> {
     constexpr const TValue& at(TEnum pos) const { return Base::at(static_cast<typename Base::size_type>(pos)); }
 };
 
-/// <summary>An iterator, allowing iteration over all set bits in a flags-enum with NONE and ALL specified.</summary>
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, T = T::NONE, T = T::ALL>
-class EnumSetIterator : public std::iterator<std::forward_iterator_tag, T> {
+enum class EnumSetIteration { Forward, Bidirectional };
+
+struct All {};
+inline constexpr All all;
+
+template <typename T, EnumSetIteration Iteration = EnumSetIteration::Forward>
+class EnumSet {
 public:
-    constexpr EnumSetIterator() = default;
-    constexpr EnumSetIterator(T set)
-        : set_(static_cast<std::underlying_type_t<T>>(set))
-        , value_(1)
-    {
-        while (set_ && !(set_ & 1)) {
-            set_ >>= 1;
-            value_ <<= 1;
+    static constexpr std::size_t Size = EnumCountV<T>;
+
+    using Word = std::conditional_t<
+        Size <= 8,
+        std::uint8_t,
+        std::conditional_t<Size <= 16, std::uint16_t, std::conditional_t<Size <= 32, std::uint32_t, std::uint64_t>>>;
+
+    static constexpr std::size_t WordBits = sizeof(Word) * CHAR_BIT;
+    static constexpr std::size_t WordCount = (Size + WordBits - 1) / WordBits;
+    static constexpr std::size_t PaddingBits = WordCount * WordBits - Size;
+
+    class iterator_base {
+    public:
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
+
+        constexpr iterator_base() = default;
+
+        constexpr iterator_base(std::optional<T> value)
+            : value_(value)
+        {}
+
+        constexpr reference operator*() const { return *value_; }
+        constexpr pointer operator->() const { return &*value_; }
+
+        friend constexpr bool operator==(const iterator_base& lhs, const iterator_base& rhs)
+        {
+            return lhs.value_ == rhs.value_;
         }
+
+        friend constexpr bool operator!=(const iterator_base& lhs, const iterator_base& rhs) { return !(lhs == rhs); }
+
+        friend constexpr bool operator<(const iterator_base& lhs, const iterator_base& rhs)
+        {
+            if (!rhs.value_)
+                return false;
+            if (!lhs.value_)
+                return true;
+            return static_cast<std::underlying_type_t<T>>(*lhs.value_) <
+                   static_cast<std::underlying_type_t<T>>(*rhs.value_);
+        }
+
+        friend constexpr bool operator<=(const iterator_base& lhs, const iterator_base& rhs) { return !(rhs < lhs); }
+
+        friend constexpr bool operator>(const iterator_base& lhs, const iterator_base& rhs) { return rhs < lhs; }
+
+        friend constexpr bool operator>=(const iterator_base& lhs, const iterator_base& rhs) { return !(lhs < rhs); }
+
+    protected:
+        std::optional<T> value_;
+    };
+
+    class forward_iterator : public iterator_base {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+
+        forward_iterator() = default;
+
+        explicit constexpr forward_iterator(EnumSet set)
+            : iterator_base(set.first())
+            , set_(set)
+        {
+            if (this->value_)
+                set_.reset(*this->value_);
+        }
+
+        constexpr forward_iterator& operator++()
+        {
+            assert(this->value_);
+            this->value_ = set_.first();
+            if (this->value_)
+                set_.reset(*this->value_);
+            return *this;
+        }
+
+        constexpr forward_iterator operator++(int)
+        {
+            auto old = *this;
+            ++*this;
+            return old;
+        }
+
+    private:
+        EnumSet set_;
+    };
+
+    class bidirectional_iterator : public iterator_base {
+    public:
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        bidirectional_iterator() = default;
+
+        explicit constexpr bidirectional_iterator(EnumSet set)
+            : iterator_base(set.first())
+            , set_(set)
+        {}
+
+        constexpr bidirectional_iterator(EnumSet set, std::optional<T> value)
+            : iterator_base(value)
+            , set_(set)
+        {}
+
+        constexpr bidirectional_iterator& operator++()
+        {
+            assert(this->value_);
+            do {
+                if (this->value_ == static_cast<T>(EnumCountV<T> - 1)) {
+                    this->value_ = std::nullopt;
+                    break;
+                }
+                this->value_ = static_cast<T>(static_cast<std::underlying_type_t<T>>(*this->value_) + 1);
+            } while (!set_[*this->value_]);
+            return *this;
+        }
+
+        constexpr bidirectional_iterator operator++(int)
+        {
+            auto old = *this;
+            ++*this;
+            return old;
+        }
+
+        constexpr bidirectional_iterator& operator--()
+        {
+            if (!this->value_)
+                this->value_ = static_cast<T>(EnumCountV<T> - 1);
+            while (!set_[*this->value_])
+                this->value_ = static_cast<T>(static_cast<std::underlying_type_t<T>>(*this->value_) - 1);
+            return *this;
+        }
+
+        constexpr bidirectional_iterator operator--(int)
+        {
+            auto old = *this;
+            --*this;
+            return old;
+        }
+
+    private:
+        EnumSet set_;
+    };
+
+    using Iterator =
+        std::conditional_t<Iteration == EnumSetIteration::Forward, forward_iterator, bidirectional_iterator>;
+
+    EnumSet() = default;
+
+    template <EnumSetIteration OtherIteration>
+    constexpr EnumSet(const EnumSet<T, OtherIteration>& other)
+        : words_(other.words())
+    {}
+
+    constexpr EnumSet(T value) { set(value); }
+
+    constexpr EnumSet(std::initializer_list<T> values)
+    {
+        for (auto value : values)
+            set(value);
     }
 
-    constexpr EnumSetIterator<T>& operator++()
-    {
-        do {
-            set_ >>= 1;
-            value_ <<= 1;
-        } while (set_ && !(set_ & 1));
-        return *this;
-    }
+    constexpr EnumSet(All) { set(); }
 
-    constexpr EnumSetIterator<T> operator++(int)
+    static constexpr EnumSet allValues()
     {
-        auto result = *this;
-        ++(*this);
+        EnumSet result;
+        result.set();
         return result;
     }
 
-    constexpr bool operator==(EnumSetIterator<T> other) { return set_ == other->set_; }
+    constexpr EnumSet<T, EnumSetIteration::Bidirectional> bidirectional() { return *this; }
 
-    constexpr bool operator!=(EnumSetIterator<T> other) { return set_ != other.set_; }
+    // --- bitset operations
 
-    constexpr T operator*() { return static_cast<T>(value_); }
+    constexpr bool operator[](T value) const { return test(value); }
+
+    constexpr bool test(T value) const
+    {
+        auto shifted = static_cast<Word>(words_[wordIndex(value)] >> wordOffset(value));
+        return static_cast<Word>(shifted & Word{1}) == Word{1};
+    }
+
+    constexpr bool all()
+    {
+        for (auto word : words_)
+            if (word != static_cast<Word>(~Word{}))
+                return false;
+        return true;
+    }
+
+    constexpr bool any()
+    {
+        for (auto word : words_)
+            if (word != Word{})
+                return true;
+        return false;
+    }
+
+    constexpr bool none()
+    {
+        for (auto word : words_)
+            if (word != Word{})
+                return false;
+        return true;
+    }
+
+    constexpr auto count() const
+    {
+        std::size_t count = 0;
+        for (auto word : words_)
+            count += popcount(word);
+        return count;
+    }
+
+    constexpr EnumSet& set(bool on = true)
+    {
+        if (on) {
+            for (auto& word : words_)
+                word = static_cast<Word>(~Word{});
+            trim();
+        }
+        else {
+            for (auto& word : words_)
+                word = Word{};
+        }
+        return *this;
+    }
+
+    constexpr EnumSet& set(T value, bool on = true)
+    {
+        if (on)
+            words_[wordIndex(value)] |= static_cast<Word>(Word{1} << wordOffset(value));
+        else
+            words_[wordIndex(value)] &= static_cast<Word>(~static_cast<Word>(Word{1} << wordOffset(value)));
+        return *this;
+    }
+
+    constexpr EnumSet& reset()
+    {
+        set(false);
+        return *this;
+    }
+
+    constexpr EnumSet& reset(T value)
+    {
+        set(value, false);
+        return *this;
+    }
+
+    constexpr EnumSet& flip()
+    {
+        for (auto& word : words_)
+            word ^= static_cast<Word>(~Word{});
+        trim();
+        return *this;
+    }
+
+    constexpr EnumSet& flip(T value)
+    {
+        for (auto& word : words_)
+            word ^= static_cast<Word>(Word{1} << wordOffset(value));
+        return *this;
+    }
+
+    friend constexpr EnumSet operator|(EnumSet lhs, const EnumSet& rhs) { return lhs |= rhs; }
+    friend constexpr EnumSet operator|(EnumSet lhs, T rhs) { return lhs |= rhs; }
+    friend constexpr EnumSet operator|(T lhs, EnumSet rhs) { return rhs |= rhs; }
+
+    constexpr EnumSet& operator|=(const EnumSet& other)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            words_[i] |= other.words_[i];
+        return *this;
+    }
+
+    constexpr EnumSet& operator|=(T value) { return set(value); }
+
+    friend constexpr EnumSet operator&(EnumSet lhs, const EnumSet& rhs) { return lhs &= rhs; }
+
+    constexpr EnumSet& operator&=(const EnumSet& other)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            words_[i] &= other.words_[i];
+        return *this;
+    }
+
+    friend constexpr EnumSet operator^(EnumSet lhs, const EnumSet& rhs) { return lhs ^= rhs; }
+    friend constexpr EnumSet operator^(EnumSet lhs, T rhs) { return lhs ^= rhs; }
+    friend constexpr EnumSet operator^(T lhs, EnumSet rhs) { return rhs ^= lhs; }
+
+    constexpr EnumSet& operator^=(const EnumSet& other)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            words_[i] ^= other.words_[i];
+        return *this;
+    }
+
+    constexpr EnumSet& operator^=(T value) { return flip(value); }
+
+    friend constexpr EnumSet operator-(EnumSet lhs, const EnumSet& rhs) { return lhs -= rhs; }
+    friend constexpr EnumSet operator-(EnumSet lhs, T rhs) { return lhs -= rhs; }
+
+    constexpr EnumSet& operator-=(const EnumSet& other)
+    {
+        for (std::size_t i = 0; i < WordCount; i++)
+            words_[i] &= static_cast<Word>(~other.words_[i]);
+        return *this;
+    }
+
+    constexpr EnumSet& operator-=(T value) { return reset(value); }
+
+    constexpr EnumSet operator~() { return EnumSet(*this).flip(); }
+
+    // --- container operations
+
+    constexpr Iterator begin() const { return Iterator(*this); }
+
+    constexpr Iterator end() const
+    {
+        if constexpr (Iteration == EnumSetIteration::Forward)
+            return Iterator();
+        else
+            return Iterator(*this, std::nullopt);
+    }
+
+    constexpr auto empty() const { return none(); }
+    constexpr auto size() const { return count(); }
+    constexpr auto max_size() const { return Size; }
+
+    constexpr void clear() { reset(); }
+
+    constexpr auto insert(T value)
+    {
+        bool exists = test(value);
+        if (!exists)
+            set(value);
+        return std::pair{forward_iterator(*this, value), !exists};
+    }
+
+    constexpr auto emplace(T value) { return insert(value); }
+
+    constexpr void erase(T value) { reset(value); }
+
+    constexpr void swap(EnumSet& other)
+    {
+        using std::swap;
+        swap(words_, other.words_);
+    }
+
+    friend constexpr void swap(EnumSet& lhs, EnumSet& rhs) { lhs.swap(rhs); }
+
+    constexpr bidirectional_iterator find(T value) const
+    {
+        return bidirectional_iterator(*this, test(value) ? std::optional{value} : std::nullopt);
+    }
+
+    constexpr bool contains(T value) const { return test(value); }
+
+    constexpr T front() const { return *first(); }
+    constexpr T back() const { return *last(); }
+
+    friend constexpr bool operator==(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ == rhs.words_; }
+    friend constexpr bool operator!=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ != rhs.words_; }
+    friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ < rhs.words_; }
+    friend constexpr bool operator<=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ <= rhs.words_; }
+    friend constexpr bool operator>(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ > rhs.words_; }
+    friend constexpr bool operator>=(const EnumSet& lhs, const EnumSet& rhs) { return lhs.words_ >= rhs.words_; }
+
+    // --- custom operations
+
+    constexpr std::optional<T> first() const
+    {
+        static_assert(WordCount > 0);
+        if constexpr (WordCount == 1) {
+            if (words_[0] != Word{})
+                return static_cast<T>(countr_zero(words_[0]));
+        }
+        else {
+            std::underlying_type_t<T> result = 0;
+            for (auto word : words_) {
+                if (word != Word{})
+                    return static_cast<T>(result + countr_zero(word));
+                result += WordBits;
+            }
+        }
+        return std::nullopt;
+    };
+
+    constexpr std::optional<T> last() const
+    {
+        static_assert(WordCount > 0);
+        if constexpr (WordCount == 1) {
+            if (words_[0] != Word{})
+                return static_cast<T>(WordBits - countl_zero(words_[0]) - 1);
+        }
+        else {
+            std::underlying_type_t<T> result = WordBits * WordCount;
+            for (auto iter = words_.rbegin(); iter != words_.rend(); ++iter) {
+                if (*iter != Word{})
+                    return static_cast<T>(result - countl_zero(*iter) - 1);
+                result -= WordBits;
+            }
+        }
+        return std::nullopt;
+    };
+
+    constexpr Word& word()
+    {
+        static_assert(WordCount == 1);
+        return words_[0];
+    }
+
+    constexpr Word word() const
+    {
+        static_assert(WordCount == 1);
+        return words_[0];
+    }
+
+    constexpr auto& words() { return words_; }
+    constexpr const auto& words() const { return words_; }
+
+    template <typename TIntegral>
+    constexpr TIntegral as() const
+    {
+        static_assert(WordCount == 1);
+        static_assert(std::is_integral_v<TIntegral>);
+        static_assert(sizeof(TIntegral) >= sizeof(Word));
+        return static_cast<TIntegral>(words_[0]);
+    }
 
 private:
-    std::underlying_type_t<T> set_{};
-    std::underlying_type_t<T> value_{};
+    // TODO: C++20 replace with std::popcount
+    static constexpr int popcount(Word word)
+    {
+        // Modified version of an algorithm taken from:
+        // https://en.wikipedia.org/wiki/Hamming_weight
+        constexpr Word m1 = static_cast<Word>(0x5555555555555555);
+        constexpr Word m2 = static_cast<Word>(0x3333333333333333);
+        constexpr Word m4 = static_cast<Word>(0x0f0f0f0f0f0f0f0f);
+        constexpr Word h01 = static_cast<Word>(0x0101010101010101);
+        word -= (word >> 1) & m1;
+        word = (word & m2) + ((word >> 2) & m2);
+        word = (word + (word >> 4)) & m4;
+        return static_cast<int>(static_cast<Word>(word * h01) >> (WordBits - 8));
+    }
+
+    // TODO: C++20 replace with std::countl_zero
+    static constexpr int countl_zero(Word word)
+    {
+        int count = 0;
+        while (word) {
+            word >>= 1;
+            count++;
+        }
+        return WordBits - count;
+    }
+
+    // TODO: C++20 replace with std::countr_zero
+    static constexpr int countr_zero(Word word)
+    {
+        int count = 0;
+        while (word) {
+            word <<= 1;
+            count++;
+        }
+        return WordBits - count;
+    }
+
+    static constexpr std::size_t wordIndex(T value) { return static_cast<std::size_t>(value) / WordBits; }
+
+    static constexpr std::size_t wordOffset(T value)
+    {
+        return static_cast<std::size_t>(value) - wordIndex(value) * WordBits;
+    }
+
+    constexpr void trim()
+    {
+        if constexpr (PaddingBits > 0)
+            words_.back() &= static_cast<Word>(static_cast<Word>(~Word{}) >> PaddingBits);
+    }
+
+    std::array<Word, WordCount> words_{};
 };
 
 /// <summary>Used in the same fashion as std::index_sequence.</summary>
@@ -146,3 +600,9 @@ constexpr auto end(T)
 }
 
 } // namespace std
+
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dutils::EnumCountV<T>>
+inline constexpr dutils::EnumSet<T> operator|(T lhs, T rhs)
+{
+    return dutils::EnumSet<T>{lhs, rhs};
+}
