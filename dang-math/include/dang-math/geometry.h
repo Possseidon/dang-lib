@@ -7,6 +7,20 @@
 
 namespace dang::math {
 
+/// <summary>The side of a two-dimensional line.</summary>
+enum class LineSide { Left, Hit, Right, COUNT };
+
+} // namespace dang::math
+
+namespace dang::utils {
+
+template <>
+struct EnumCount<dang::math::LineSide> : DefaultEnumCount<dang::math::LineSide> {};
+
+} // namespace dang::utils
+
+namespace dang::math {
+
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystem;
 
@@ -194,9 +208,6 @@ struct Line : detail::LineBase<T, Dim> {
         : detail::LineBase<T, Dim>(support, directions)
     {}
 };
-
-/// <summary>The side of a two-dimensional line.</summary>
-enum class LineSide { Left, Hit, Right, COUNT };
 
 /// <summary>A two-dimensional line with one support and one direction vector.</summary>
 template <typename T>
