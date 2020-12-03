@@ -7,22 +7,22 @@
 namespace dang::math {
 
 /// <summary>Represents the single x-axis of a one-dimensional system or an optional None value.</summary>
-enum class Axis1 : char { None = -1, X, COUNT };
+enum class Axis1 { None = -1, X, COUNT };
 
 /// <summary>Represents one of the two axes in a two-dimensional system or an optional None value.</summary>
-enum class Axis2 : char { None = -1, X, Y, COUNT };
+enum class Axis2 { None = -1, X, Y, COUNT };
 
 /// <summary>Represents one of the three axes in a three-dimensional system or an optional None value.</summary>
-enum class Axis3 : char { None = -1, X, Y, Z, COUNT };
+enum class Axis3 { None = -1, X, Y, Z, COUNT };
 
 /// <summary>Represents one of the two corners in a one-dimensional system or an optional None value.</summary>
-enum class Corner1 : char { None = -1, Left, Right, COUNT };
+enum class Corner1 { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents one of the four corners in a two-dimensional system or an optional None value.</summary>
-enum class Corner2 : char { None = -1, LeftBottom, RightBottom, LeftTop, RightTop, COUNT };
+enum class Corner2 { None = -1, LeftBottom, RightBottom, LeftTop, RightTop, COUNT };
 
 /// <summary>Represents one of the eight corners in a three-dimensional system or an optional None value.</summary>
-enum class Corner3 : char {
+enum class Corner3 {
     None = -1,
     LeftBottomBack,
     RightBottomBack,
@@ -36,10 +36,10 @@ enum class Corner3 : char {
 };
 
 /// <summary>Represents one of the four edges in a two-dimensional system or an optional None value.</summary>
-enum class Edge2 : char { None = -1, Left, Right, Bottom, Top, COUNT };
+enum class Edge2 { None = -1, Left, Right, Bottom, Top, COUNT };
 
 /// <summary>Represents one of the twelve edges in a three-dimensional system or an optional None value.</summary>
-enum class Edge3 : char {
+enum class Edge3 {
     None = -1,
     LeftBottom,
     RightBottom,
@@ -57,13 +57,13 @@ enum class Edge3 : char {
 };
 
 /// <summary>Represents one of the two facings in a one-dimensional system or an optional None value.</summary>
-enum class Facing1 : char { None = -1, Left, Right, COUNT };
+enum class Facing1 { None = -1, Left, Right, COUNT };
 
 /// <summary>Represents one of the four facings in a two-dimensional system or an optional None value.</summary>
-enum class Facing2 : char { None = -1, Left, Right, Up, Down, COUNT };
+enum class Facing2 { None = -1, Left, Right, Up, Down, COUNT };
 
 /// <summary>Represents one of the six facings in a three-dimensional system or an optional None value.</summary>
-enum class Facing3 : char { None = -1, Left, Right, Up, Down, Back, Front, COUNT };
+enum class Facing3 { None = -1, Left, Right, Up, Down, Back, Front, COUNT };
 
 } // namespace dang::math
 
