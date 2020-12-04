@@ -1820,10 +1820,10 @@ public:
 
     /// <summary>Pushes a function or closure with an arbitrary number of upvalues on the stack.</summary>
     template <typename... TUpvalues>
-    auto pushFunction(lua_CFunction function, TUpvalues&&... upvalues)
+    auto pushFunction(lua_CFunction func, TUpvalues&&... upvalues)
     {
         auto upvalue_count = push(std::forward<TUpvalues>(upvalues)...).size();
-        lua_pushcclosure(state_, function, upvalue_count);
+        lua_pushcclosure(state_, func, upvalue_count);
         notifyPush(1 - upvalue_count);
         return top().asResult();
     }
