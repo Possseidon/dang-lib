@@ -13,8 +13,16 @@
 
 namespace dang::glfw {
 
-using GLVersion = std::tuple<int, int>;
-using GLVersionFull = std::tuple<int, int, int>;
+struct GLVersion {
+    int major;
+    int minor;
+};
+
+struct GLVersionFull {
+    int major;
+    int minor;
+    int revision;
+};
 
 enum class ClientAPI { None = GLFW_NO_API, OpenGL = GLFW_OPENGL_API, OpenGLES = GLFW_OPENGL_ES_API };
 
