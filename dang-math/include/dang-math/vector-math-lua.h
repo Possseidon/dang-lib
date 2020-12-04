@@ -49,7 +49,7 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
     inline static const std::string name = base_name + std::to_string(Dim);
     inline static const std::string ref_name = name + '&';
 
-    constexpr auto table()
+    static constexpr auto table()
     {
         constexpr auto set = +[](Vector& vec, Args<Dim> values) {
             std::transform(values.begin(), values.end(), vec.begin(), ArgCheck<T>{});
@@ -123,7 +123,7 @@ struct ClassInfo<dmath::Vector<T, Dim>> {
         return result;
     }
 
-    constexpr auto metatable()
+    static constexpr auto metatable()
     {
         constexpr auto len = +[](const Vector&) { return Dim; };
 
@@ -412,7 +412,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
         base_name + std::to_string(Cols) + (Cols != Rows ? 'x' + std::to_string(Rows) : "");
     inline static const std::string ref_name = name + '&';
 
-    constexpr auto table()
+    static constexpr auto table()
     {
         constexpr auto set = +[](Matrix& mat, Args<Cols> values) {
             std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dmath::Vector<T, Rows>>{});
@@ -486,7 +486,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
         return result;
     }
 
-    constexpr auto metatable()
+    static constexpr auto metatable()
     {
         constexpr auto add = +[](const MatrixOrScalar& lhs, const MatrixOrScalar& rhs) {
             return std::visit([](const auto& a, const auto& b) -> MatrixOrScalar { return a + b; }, lhs, rhs);

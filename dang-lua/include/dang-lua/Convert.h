@@ -25,9 +25,9 @@ const char* ClassNameRef = typeid(T*).name();
 
 /// <summary>Returns empty index and metatable.</summary>
 struct DefaultClassInfo {
-    constexpr std::array<luaL_Reg, 0> table() { return {}; }
-    constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
-    // void require() {}
+    static constexpr std::array<luaL_Reg, 0> table() { return {}; }
+    static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
+    static void require() {}
 };
 
 /// <summary>Can be specialized to provide an index and metatable of a wrapped class.</summary>
@@ -36,11 +36,11 @@ struct ClassInfo : DefaultClassInfo {};
 
 /// <summary>Shorthand to access the index table of a wrapped class.</summary>
 template <typename T>
-const auto ClassTable = ClassInfo<T>().table();
+const auto ClassTable = ClassInfo<T>::table();
 
 /// <summary>Shorthand to access the metatable of a wrapped class.</summary>
 template <typename T>
-const auto ClassMetatable = ClassInfo<T>().metatable();
+const auto ClassMetatable = ClassInfo<T>::metatable();
 
 /// <summary>Can be specialized to provide an array of string names for a given enum to convert from and to Lua.</summary>
 /// <remarks>The array needs to end with a "null" entry.</remarks>
