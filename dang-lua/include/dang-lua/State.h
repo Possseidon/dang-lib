@@ -14,6 +14,19 @@ class State;
 /// <remarks>This information can only be found in the documentation, there does not seem to be any constant for this defined.</remarks>
 constexpr int auxiliary_required_pushable = 4;
 
+// --- Utility Structs ---
+
+/// <summary>Wraps allocation function and optional userdata, which is always passed to this function.</summary>
+struct Allocator {
+    Allocator(lua_Alloc function, void* userdata = nullptr)
+        : function(function)
+        , userdata(userdata)
+    {}
+
+    lua_Alloc function;
+    void* userdata;
+};
+
 // --- Reference ---
 
 /// <summary>Wraps a reference to a Lua value, that lives in the registry table.</summary>
@@ -1330,11 +1343,11 @@ public:
     {
         void* userdata;
         auto allocator = lua_getallocf(state_, &userdata);
-        return std::tuple{allocator, userdata};
+        return Allocator{allocator, userdata};
     }
 
     /// <summary>Sets a new allocation function and an optionally associated userdata pointer.</summary>
-    void setAllocator(lua_Alloc allocator, void* userdata = nullptr) { lua_setallocf(state_, allocator, userdata); }
+    void setAllocator(Allocator allocator) { lua_setallocf(state_, allocator.function, allocator.userdata); }
 
     // --- Garbage Collector ---
 
