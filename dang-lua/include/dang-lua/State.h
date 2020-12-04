@@ -1849,6 +1849,7 @@ public:
     auto pushGlobalTable()
     {
         lua_pushglobaltable(state_);
+        notifyPush();
         return top().asResult();
     }
 
