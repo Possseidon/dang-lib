@@ -1791,7 +1791,7 @@ public:
     {
         State thread = lua_newthread(state_);
         notifyPush();
-        return std::tuple{top().asResult(), std::move(thread)};
+        return std::tuple{std::move(thread), top().asResult()};
     }
 
     /// <summary>Pushes an in-place constructed object with the given parameters.</summary>
