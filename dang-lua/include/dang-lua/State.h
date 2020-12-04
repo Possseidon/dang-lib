@@ -1280,6 +1280,52 @@ inline int wrap(lua_State* state);
 template <auto Func>
 inline constexpr luaL_Reg reg(const char* name);
 
+struct Error {
+    Status status;
+    StackIndexResult message;
+};
+
+template <typename TResult>
+struct Expected : std::variant<TResult, Error> {
+    using std::variant<TResult, Error>::variant;
+
+    explicit operator bool() const { return std::holds_alternative<TResult>(*this); }
+
+    template <typename TOkFunc>
+    auto then(TOkFunc&& ok_func) const
+    {
+        return then(std::forward<TOkFunc>(ok_func), [](Error) {});
+    }
+
+    template <typename TOkFunc, typename TErrFunc>
+    auto then(TOkFunc&& ok_func, TErrFunc&& err_func) const
+    {
+        return std::visit(dutils::Overloaded{[&](TResult result) { return std::forward<TOkFunc>(ok_func)(result); },
+                                             [&](Error error) { return std::forward<TErrFunc>(err_func)(error); }},
+                          *this);
+    }
+};
+
+struct LoadInfo {
+    template <typename TBuffer>
+    LoadInfo(TBuffer&& buffer, const char* name = nullptr, LoadMode mode = LoadMode::Default)
+        : buffer(std::forward<TBuffer>(buffer))
+        , name(name)
+        , mode(mode)
+    {}
+
+    template <typename TBuffer>
+    LoadInfo(TBuffer&& buffer, const std::string& name, LoadMode mode = LoadMode::Default)
+        : buffer(std::forward<TBuffer>(buffer))
+        , name(name.c_str())
+        , mode(mode)
+    {}
+
+    std::string_view buffer;
+    const char* name;
+    LoadMode mode;
+};
+
 /// <summary>Wraps a Lua state or thread.</summary>
 class State {
 public:
@@ -1906,6 +1952,21 @@ public:
 
     [[noreturn]] void typeError(int arg, const std::string& type_name) { typeError(arg, type_name.c_str()); }
 
+    // --- Compiling ---
+
+    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
+    auto load(const LoadInfo& info)
+    {
+        assertPushableAuxiliary();
+        auto status = static_cast<Status>(
+            luaL_loadbufferx(state_, info.buffer.data(), info.buffer.size(), info.name, loadModeNames[info.mode]));
+        notifyPush();
+        if (status == Status::Ok)
+            return Expected<Arg>{top().asResult()};
+        else
+            return Expected<Arg>{Error{status, top().asResult()}};
+    }
+
     // --- Calling ---
 
     /// <summary>Calls the given function with the supplied arguments and returns a template specified number of results.</summary>
@@ -1970,14 +2031,28 @@ public:
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, Results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? lua_gettop(state_) - first_result_index : 1;
             notifyPush(results - 1 - arg_count);
-            return std::tuple{status, top(results).asResults()};
+            if (status == Status::Ok)
+                return Expected<VarArgs>{top(results).asResults()};
+            else
+                return Expected<VarArgs>{Error{status, top().asResult()}};
         }
         else {
             assertPushable(Results - 1 - arg_count);
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, Results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? Results : 1;
             notifyPush(results - 1 - arg_count);
-            return std::tuple{status, top(results).asResults()};
+            if constexpr (Results == 1) {
+                if (status == Status::Ok)
+                    return Expected<Arg>{top().asResult()};
+                else
+                    return Expected<Arg>{Error{status, top().asResult()}};
+            }
+            else {
+                if (status == Status::Ok)
+                    return Expected<Args<Results>>{top<Results>().asResults()};
+                else
+                    return Expected<Args<Results>>{Error{status, top().asResult()}};
+            }
         }
     }
 
@@ -2002,37 +2077,58 @@ public:
         if (status != Status::Ok)
             results = 1;
         notifyPush(results - 1 - arg_count);
-        return std::tuple{status, top(results).asResults()};
+        if (status == Status::Ok)
+            return Expected<VarArgs>{top(results).asResults()};
+        else
+            return Expected<VarArgs>{Error{status, top().asResult()}};
     }
 
-    // --- Compiling ---
+    // --- Compiling and Calling ---
 
-    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
-    auto load(const char* buffer, std::size_t size, const char* name = nullptr, LoadMode mode = LoadMode::Default)
+    template <int Results = 0, typename... TArgs>
+    auto callString(const LoadInfo& info, TArgs&&... args)
     {
-        // TODO: C++20 replace buffer and size with std::span
-        assertPushableAuxiliary();
-        int status = luaL_loadbufferx(state_, buffer, size, name, loadModeNames[mode]);
-        notifyPush();
-        return std::tuple{static_cast<Status>(status), top().asResult()};
+        using E = decltype(std::declval<Arg>().pcall<Results>());
+        return load(info).then(
+            [&](Arg function) { return E{std::move(function).call<Results>(std::forward<TArgs>(args)...)}; },
+            [](Error error) { return E{error}; });
     }
 
-    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
-    auto load(std::string_view buffer, const char* name = nullptr, LoadMode mode = LoadMode::Default)
+    template <typename... TArgs>
+    auto callStringMultRet(const LoadInfo& info, TArgs&&... args)
     {
-        return load(buffer.data(), buffer.size(), name, mode);
+        return callString<LUA_MULTRET>(info, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
-    auto load(const char* buffer, std::size_t size, const std::string& name, LoadMode mode = LoadMode::Default)
+    template <typename... TArgs>
+    auto callStringReturning(int results, const LoadInfo& info, TArgs&&... args)
     {
-        return load(buffer, size, name.c_str(), mode);
+        using E = Expected<VarArgs>;
+        return load(info).then(
+            [&](Arg function) { return E{std::move(function).callReturning(results, std::forward<TArgs>(args)...)}; },
+            [](Error error) { return E{error}; });
     }
 
-    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
-    auto load(std::string_view buffer, const std::string& name, LoadMode mode = LoadMode::Default)
+    template <int Results = 0, typename... TArgs>
+    auto pcallString(const LoadInfo& info, TArgs&&... args)
     {
-        return load(buffer.data(), buffer.size(), name.c_str(), mode);
+        return load(info).then(
+            [&](Arg function) { return std::move(function).pcall<Results>(std::forward<TArgs>(args)...); },
+            [](Error error) { return decltype(std::declval<Arg>().pcall<Results>()){error}; });
+    }
+
+    template <typename... TArgs>
+    auto pcallStringMultRet(const LoadInfo& info, TArgs&&... args)
+    {
+        return pcallString<LUA_MULTRET>(info, std::forward<TArgs>(args)...);
+    }
+
+    template <typename... TArgs>
+    auto pcallStringReturning(int results, const LoadInfo& info, TArgs&&... args)
+    {
+        return load(info).then(
+            [&](Arg function) { return std::move(function).pcallReturning(results, std::forward<TArgs>(args)...); },
+            [](Error error) { return Expected<VarArgs>{error}; });
     }
 
     // --- Operations ---
