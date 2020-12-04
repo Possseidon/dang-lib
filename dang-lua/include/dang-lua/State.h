@@ -1265,6 +1265,11 @@ struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 template <typename TState>
 struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
+using Arg = dlua::StackIndexResult;
+template <std::size_t Size>
+using Args = StackIndicesResult<Size>;
+using VarArgs = StackIndexRangeResult;
+
 // --- State ---
 
 /// <summary>Wraps the template supplied function into a Lua function in an almost cost-free way.</summary>
@@ -2811,11 +2816,6 @@ struct Convert<State&> {
 
     static State& check(State& state, int) { return state; }
 };
-
-using Arg = dlua::StackIndexResult;
-template <std::size_t Size>
-using Args = StackIndicesResult<Size>;
-using VarArgs = StackIndexRangeResult;
 
 namespace detail {
 
