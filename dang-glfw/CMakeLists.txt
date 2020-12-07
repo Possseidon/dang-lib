@@ -8,7 +8,7 @@ add_library(${PROJECT_NAME}
     src/pch.cpp
     src/Window.cpp
 )
-            
+
 if(MSVC)
   target_compile_definitions(${PROJECT_NAME} 
     PUBLIC
