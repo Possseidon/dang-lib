@@ -1264,7 +1264,7 @@ struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 template <typename TState>
 struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
 
-using Arg = dlua::StackIndexResult;
+using Arg = StackIndexResult;
 template <std::size_t Size>
 using Args = StackIndicesResult<Size>;
 using VarArgs = StackIndexRangeResult;
@@ -3127,7 +3127,7 @@ using AnyIndex = std::disjunction<IsIndex<std::decay_t<TArgs>>...>;
 
 /// <summary>Enable-if wrapper to check for any index and results in StackIndexResult.</summary>
 template <typename... TArgs>
-using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, dlua::StackIndexResult>;
+using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, StackIndexResult>;
 
 } // namespace detail
 
@@ -3278,7 +3278,7 @@ namespace detail::force_include
 {
 
 // forcefully include these functions for debugger visualization
-extern const auto State_formatDebug = &dlua::State::formatDebug;
+extern const auto State_formatDebug = &State::formatDebug;
 
 }
 #endif

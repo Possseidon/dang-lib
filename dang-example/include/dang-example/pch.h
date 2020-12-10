@@ -6,9 +6,12 @@
 
 #include "dang-glfw/pch.h"
 
+#include "dang-lua/utils.h"
+
 #include "dang-math/utils.h"
 
 #include "dang-utils/utils.h"
 
+namespace dlua = dang::lua;
 namespace dmath = dang::math;
 namespace dutils = dang::utils;

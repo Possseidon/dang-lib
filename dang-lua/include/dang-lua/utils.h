@@ -22,6 +22,7 @@
 #include "lua.hpp"
 
 namespace dang::lua {
+
 namespace dutils = dang::utils;
-}
-namespace dlua = dang::lua;
+
+} // namespace dang::lua

@@ -156,9 +156,9 @@ enum class StoreType { None, Value, Reference };
 /// <summary>Converts instances of classes and enums to and from Lua as either value or reference.</summary>
 template <typename T>
 struct Convert {
-    static_assert(dlua::EnumValues<T>[std::size(dlua::EnumValues<T>) - 1] == nullptr,
+    static_assert(EnumValues<T>[std::size(EnumValues<T>) - 1] == nullptr,
                   "EnumValues is not null-terminated");
-    static_assert(!std::is_enum_v<T> || std::size(dlua::EnumValues<T>) > 1, "EnumValues is empty");
+    static_assert(!std::is_enum_v<T> || std::size(EnumValues<T>) > 1, "EnumValues is empty");
 
     static constexpr std::optional<int> PushCount = 1;
     static constexpr bool AllowNesting = true;
