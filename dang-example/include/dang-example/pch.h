@@ -12,6 +12,7 @@
 
 #include "dang-utils/utils.h"
 
+namespace dgl = dang::gl;
 namespace dlua = dang::lua;
 namespace dmath = dang::math;
 namespace dutils = dang::utils;

@@ -44,5 +44,3 @@ namespace dmath = dang::math;
 namespace dutils = dang::utils;
 
 } // namespace dang::gl
-
-namespace dgl = dang::gl;

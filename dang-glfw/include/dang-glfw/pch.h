@@ -27,6 +27,7 @@ namespace fs = std::filesystem;
 
 namespace dang::glfw {
 
+namespace dgl = dang::gl;
 namespace dmath = dang::math;
 namespace dutils = dang::utils;
 
