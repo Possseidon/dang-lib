@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dang-math/bounds.h"
-#include "dang-math/utils.h"
+#include "dang-math/global.h"
 #include "dang-math/vector.h"
 
 namespace dang::math {

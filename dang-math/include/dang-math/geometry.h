@@ -1,7 +1,7 @@
 #pragma once
 
+#include "dang-math/global.h"
 #include "dang-math/matrix.h"
-#include "dang-math/utils.h"
 #include "dang-math/vector.h"
 
 namespace dang::math {

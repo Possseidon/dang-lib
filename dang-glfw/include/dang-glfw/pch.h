@@ -17,7 +17,7 @@
 
 #include "dang-gl/pch.h"
 
-#include "dang-math/utils.h"
+#include "dang-math/global.h"
 
 #include "dang-utils/global.h"
 

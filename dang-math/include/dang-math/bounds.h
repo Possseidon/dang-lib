@@ -2,7 +2,7 @@
 
 #include "dang-math/consts.h"
 #include "dang-math/enums.h"
-#include "dang-math/utils.h"
+#include "dang-math/global.h"
 #include "dang-math/vector.h"
 
 #include "dang-utils/enum.h"

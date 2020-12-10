@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-math/global.h"
 #include "dang-math/utils.h"
 
 namespace dang::math {

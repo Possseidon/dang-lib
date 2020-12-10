@@ -30,7 +30,7 @@
 
 #include "glad/glad.h"
 
-#include "dang-math/utils.h"
+#include "dang-math/global.h"
 
 #include "dang-utils/global.h"
 
