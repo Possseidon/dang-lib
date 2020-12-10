@@ -11,5 +11,3 @@ template <typename... TFunctions>
 Overloaded(TFunctions...) -> Overloaded<TFunctions...>;
 
 } // namespace dang::utils
-
-namespace dutils = dang::utils;

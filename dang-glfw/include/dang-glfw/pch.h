@@ -17,9 +17,13 @@
 
 #include "dang-gl/pch.h"
 
+#include "dang-utils/utils.h"
+
 #include "GLFW/glfw3.h"
 
 namespace fs = std::filesystem;
 
-namespace dang::glfw {}
+namespace dang::glfw {
+namespace dutils = dang::utils;
+}
 namespace dglfw = dang::glfw;

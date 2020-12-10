@@ -30,9 +30,13 @@
 
 #include "glad/glad.h"
 
+#include "dang-utils/utils.h"
+
 #include "png.h"
 
 namespace fs = std::filesystem;
 
-namespace dang::gl {}
+namespace dang::gl {
+namespace dutils = dang::utils;
+}
 namespace dgl = dang::gl;

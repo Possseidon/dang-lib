@@ -17,7 +17,11 @@
 #include <typeinfo>
 #include <variant>
 
+#include "dang-utils/utils.h"
+
 #include "lua.hpp"
 
-namespace dang::lua {}
+namespace dang::lua {
+namespace dutils = dang::utils;
+}
 namespace dlua = dang::lua;

@@ -318,6 +318,6 @@ private:
 namespace std {
 
 template <int Index>
-class is_placeholder<dutils::detail::Placeholder<Index>> : public integral_constant<int, Index> {};
+class is_placeholder<dang::utils::detail::Placeholder<Index>> : public integral_constant<int, Index> {};
 
 } // namespace std

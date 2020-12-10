@@ -633,22 +633,22 @@ namespace std {
 // Allow enum iteration in range based for loops
 // for (auto value : MyEnum{})
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dutils::EnumCountV<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
 constexpr auto begin(T)
 {
-    return dutils::EnumValues<T>.begin();
+    return dang::utils::EnumValues<T>.begin();
 }
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dutils::EnumCountV<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
 constexpr auto end(T)
 {
-    return dutils::EnumValues<T>.end();
+    return dang::utils::EnumValues<T>.end();
 }
 
 } // namespace std
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dutils::EnumCountV<T>>
-inline constexpr dutils::EnumSet<T> operator|(T lhs, T rhs)
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
+inline constexpr dang::utils::EnumSet<T> operator|(T lhs, T rhs)
 {
-    return dutils::EnumSet<T>{lhs, rhs};
+    return dang::utils::EnumSet<T>{lhs, rhs};
 }
