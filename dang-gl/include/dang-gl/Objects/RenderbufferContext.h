@@ -8,7 +8,7 @@
 
 namespace dang::gl {
 
-/// <summary>Specializes the context class for renderbuffer objects.</summary>
+/// @brief Specializes the context class for renderbuffer objects.
 template <>
 class ObjectContext<ObjectType::Renderbuffer> : public ObjectContextBase {
 public:
@@ -17,7 +17,7 @@ public:
 
     using ObjectContextBase::ObjectContextBase;
 
-    /// <summary>Binds the given renderbuffer handle, unless it is bound already.</summary>
+    /// @brief Binds the given renderbuffer handle, unless it is bound already.
     void bind(Handle handle)
     {
         if (bound_renderbuffer_ == handle)
@@ -26,7 +26,7 @@ public:
         bound_renderbuffer_ = handle;
     }
 
-    /// <summary>Resets the bound renderbuffer, if the given handle is currently bound.</summary>
+    /// @brief Resets the bound renderbuffer, if the given handle is currently bound.
     void reset(Handle handle)
     {
         if (bound_renderbuffer_ != handle)

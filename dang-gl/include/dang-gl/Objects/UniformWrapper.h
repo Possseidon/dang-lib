@@ -145,7 +145,7 @@ inline constexpr auto& glUniformMatrixv<4, 4, GLdouble> = glUniformMatrix4dv;
 
 } // namespace detail
 
-/// <summary>Wraps shader uniform access with a consistent interface.</summary>
+/// @brief Wraps shader uniform access with a consistent interface.
 template <typename T>
 struct UniformWrapper {
     static T get(ObjectHandle<ObjectType::Program> program, GLint location)
@@ -158,7 +158,7 @@ struct UniformWrapper {
     static void set(GLint location, T value) { detail::glUniform<1, T>(location, value); }
 };
 
-/// <summary>Specializes uniform access for GLboolean, using GLint.</summary>
+/// @brief Specializes uniform access for GLboolean, using GLint.
 template <>
 struct UniformWrapper<GLboolean> {
     static GLboolean get(ObjectHandle<ObjectType::Program> program, GLint location)
@@ -171,7 +171,7 @@ struct UniformWrapper<GLboolean> {
     static void set(GLint location, GLboolean value) { glUniform1i(location, static_cast<GLint>(value)); }
 };
 
-/// <summary>Specializes uniform access for vectors of any supported type and size.</summary>
+/// @brief Specializes uniform access for vectors of any supported type and size.
 template <typename T, std::size_t Dim>
 struct UniformWrapper<dmath::Vector<T, Dim>> {
     static dmath::Vector<T, Dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
@@ -187,7 +187,7 @@ struct UniformWrapper<dmath::Vector<T, Dim>> {
     }
 };
 
-/// <summary>Specializes uniform access for vectors of GLboolean and any supported size.</summary>
+/// @brief Specializes uniform access for vectors of GLboolean and any supported size.
 template <std::size_t Dim>
 struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
     static dmath::Vector<GLboolean, Dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
@@ -204,7 +204,7 @@ struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
     }
 };
 
-/// <summary>Specializes uniform access for matrices of any supported type and dimensions.</summary>
+/// @brief Specializes uniform access for matrices of any supported type and dimensions.
 template <typename T, std::size_t Cols, std::size_t Rows>
 struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
     static dmath::Matrix<T, Cols, Rows> get(ObjectHandle<ObjectType::Program> program, GLint location)

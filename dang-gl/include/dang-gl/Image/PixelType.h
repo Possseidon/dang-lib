@@ -7,7 +7,7 @@
 
 namespace dang::gl {
 
-/// <summary>The type of the components in a pixel, which also contains various non-byte aligned variants.</summary>
+/// @brief The type of the components in a pixel, which also contains various non-byte aligned variants.
 enum class PixelType {
     UNSIGNED_BYTE,
     BYTE,

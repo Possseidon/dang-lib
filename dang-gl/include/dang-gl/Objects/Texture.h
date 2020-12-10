@@ -148,10 +148,10 @@ Quote Khronos.org:
 
 */
 
-/// <summary>Serves as a base class for all texture classes.</summary>
+/// @brief Serves as a base class for all texture classes.
 class TextureBase : public Object<ObjectType::Texture> {
 public:
-    /// <summary>Resets the bound texture of the context, in case of the texture still being bound.</summary>
+    /// @brief Resets the bound texture of the context, in case of the texture still being bound.
     ~TextureBase()
     {
         if (*this)
@@ -161,7 +161,7 @@ public:
     TextureBase(const TextureBase&) = delete;
     TextureBase& operator=(const TextureBase&) = delete;
 
-    /// <summary>Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.</summary>
+    /// @brief Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.
     std::size_t bind() const
     {
         auto slot = this->objectContext().bind(target_, handle(), active_slot_);
@@ -169,7 +169,7 @@ public:
         return slot;
     }
 
-    /// <summary>If the texture is currently bound to a slot, makes that slot free for another texture to use.</summary>
+    /// @brief If the texture is currently bound to a slot, makes that slot free for another texture to use.
     void release() const
     {
         this->objectContext().release(target_, active_slot_);
@@ -177,7 +177,7 @@ public:
     }
 
 protected:
-    /// <summary>Initializes the texture base with the given texture handle, window and binding target.</summary>
+    /// @brief Initializes the texture base with the given texture handle, window and binding target.
     explicit TextureBase(TextureTarget target)
         : Object()
         , target_(target)
@@ -221,7 +221,7 @@ inline constexpr auto& glTexSubImage<2> = glTexSubImage2D;
 template <>
 inline constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 
-/// <summary>A base for all textures with template parameters for the dimension and texture target.</summary>
+/// @brief A base for all textures with template parameters for the dimension and texture target.
 template <std::size_t Dim, TextureTarget Target>
 class TextureBaseTyped : public TextureBase {
 public:
@@ -233,10 +233,10 @@ public:
     TextureBaseTyped(const TextureBaseTyped&) = delete;
     TextureBaseTyped& operator=(const TextureBaseTyped&) = delete;
 
-    /// <summary>Returns the size of the image along each axis.</summary>
+    /// @brief Returns the size of the image along each axis.
     dmath::svec<Dim> size() const { return size_; }
 
-    /// <summary>Modifies a part of the stored texture at the optional given offset and mipmap level.</summary>
+    /// @brief Modifies a part of the stored texture at the optional given offset and mipmap level.
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type>
     void modify(const Image<ImageDim, Format, Type>& image, dmath::svec<Dim> offset = {}, GLint mipmap_level = 0)
     {
@@ -244,7 +244,7 @@ public:
         subImage(std::make_index_sequence<Dim>(), image, offset, mipmap_level);
     }
 
-    /// <summary>Regenerates all mipmaps from the top level.</summary>
+    /// @brief Regenerates all mipmaps from the top level.
     void generateMipmap()
     {
         this->bind();
@@ -422,7 +422,7 @@ public:
     }
 
 protected:
-    /// <summary>Simply calls the base constructor with the templated texture target.</summary>
+    /// @brief Simply calls the base constructor with the templated texture target.
     TextureBaseTyped()
         : TextureBase(Target)
     {}
@@ -430,10 +430,10 @@ protected:
     TextureBaseTyped(TextureBaseTyped&&) = default;
     TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
 
-    /// <summary>Sets the internal size to the given value.</summary>
+    /// @brief Sets the internal size to the given value.
     void setSize(dmath::svec<Dim> size) { size_ = size; }
 
-    /// <summary>Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.</summary>
+    /// @brief Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.
     template <std::size_t ImageDim, PixelFormat Format, PixelType Type, std::size_t... Indices>
     void subImage(std::index_sequence<Indices...>,
                   const Image<ImageDim, Format, Type>& image,
@@ -477,15 +477,15 @@ private:
     TextureWrap wrap_r_ = TextureWrap::Repeat;
 };
 
-/// <summary>Base class for all regluar, non-multisampled textures.</summary>
+/// @brief Base class for all regluar, non-multisampled textures.
 template <std::size_t Dim, TextureTarget Target>
 class TextureBaseRegular : public TextureBaseTyped<Dim, Target> {
 public:
-    /// <summary>Creates an empty texture.</summary>
+    /// @brief Creates an empty texture.
     TextureBaseRegular() = default;
 
-    /// <summary>Initializes a new texture with the given size, optional mipmap level count and internal format.</summary>
-    /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
+    /// @brief Initializes a new texture with the given size, optional mipmap level count and internal format.
+    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
     explicit TextureBaseRegular(dmath::svec<Dim> size,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
                                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -494,9 +494,9 @@ public:
         generate(size, mipmap_levels, internal_format);
     }
 
-    /// <summary>Initializes a new texture with the given image data, optional mipmap level count and internal format.</summary>
-    /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
-    /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
+    /// @brief Initializes a new texture with the given image data, optional mipmap level count and internal format.
+    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
+    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
     template <PixelFormat Format, PixelType Type>
     explicit TextureBaseRegular(const Image<Dim, Format, Type>& image,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
@@ -511,8 +511,8 @@ public:
     TextureBaseRegular(const TextureBaseRegular&) = delete;
     TextureBaseRegular& operator=(const TextureBaseRegular&) = delete;
 
-    /// <summary>Generates storage for the specified size with optional mipmap level count and internal format.</summary>
-    /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
+    /// @brief Generates storage for the specified size with optional mipmap level count and internal format.
+    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
     void generate(dmath::svec<Dim> size,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -521,9 +521,9 @@ public:
         storage(std::make_index_sequence<Dim>(), size, mipmap_levels, internal_format);
     }
 
-    /// <summary>Generates texture storage and fills it with the provided image.</summary>
-    /// <param name="mipmap_levels">Defaults to generating a full mipmap down to 1x1.</param>
-    /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
+    /// @brief Generates texture storage and fills it with the provided image.
+    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
+    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
     template <PixelFormat Format, PixelType Type>
     void generate(const Image<Dim, Format, Type>& image,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
@@ -540,7 +540,7 @@ protected:
     TextureBaseRegular& operator=(TextureBaseRegular&&) = default;
 
 private:
-    /// <summary>Returns the biggest component of a given vector.</summary>
+    /// @brief Returns the biggest component of a given vector.
     template <std::size_t... Indices>
     static std::size_t maxSize(dmath::svec<Dim> size, std::index_sequence<Indices...>)
     {
@@ -549,7 +549,7 @@ private:
         return result;
     }
 
-    /// <summary>Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given size.</summary>
+    /// @brief Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given size.
     static std::size_t mipmapCount(std::size_t value)
     {
         // TODO: Use std::bit_width in C++20
@@ -559,13 +559,13 @@ private:
         return result;
     }
 
-    /// <summary>Returns the required count to generate a full mipmap down to 1x1 for the given size.</summary>
+    /// @brief Returns the required count to generate a full mipmap down to 1x1 for the given size.
     GLsizei maxMipmapLevelsFor(dmath::svec<Dim> size)
     {
         return static_cast<GLsizei>(mipmapCount(maxSize(size, std::make_index_sequence<Dim>())));
     }
 
-    /// <summary>Calls glTexStorage with the provided parameters and index sequence of the textures dimension.</summary>
+    /// @brief Calls glTexStorage with the provided parameters and index sequence of the textures dimension.
     template <std::size_t... Indices>
     void storage(std::index_sequence<Indices...>,
                  dmath::svec<Dim> size,
@@ -580,14 +580,14 @@ private:
     }
 };
 
-/// <summary>Base class for all multisampled textures.</summary>
+/// @brief Base class for all multisampled textures.
 template <std::size_t Dim, TextureTarget Target>
 class TextureBaseMultisample : public TextureBaseTyped<Dim, Target> {
 public:
-    /// <summary>Creates an empty multisampled texture.</summary>
+    /// @brief Creates an empty multisampled texture.
     TextureBaseMultisample() = default;
 
-    /// <summary>Initializes a new multisampled texture with the given size, sample count and optional internal format.</summary>
+    /// @brief Initializes a new multisampled texture with the given size, sample count and optional internal format.
     TextureBaseMultisample(dmath::svec<Dim> size,
                            GLsizei samples,
                            bool fixed_sample_locations = true,
@@ -597,8 +597,8 @@ public:
         generate(size, samples, internal_format);
     }
 
-    /// <summary>Initializes a new multisampled texture with the given image data, sample count and optional internal format.</summary>
-    /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
+    /// @brief Initializes a new multisampled texture with the given image data, sample count and optional internal format.
+    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
     template <PixelFormat Format, PixelType Type>
     explicit TextureBaseMultisample(const Image<Dim, Format, Type>& image,
                                     GLsizei samples,
@@ -614,7 +614,7 @@ public:
     TextureBaseMultisample(const TextureBaseMultisample&) = delete;
     TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
 
-    /// <summary>Generates storage for the specified size, samples and optional internal format.</summary>
+    /// @brief Generates storage for the specified size, samples and optional internal format.
     void generate(dmath::svec<Dim> size,
                   GLsizei samples,
                   bool fixed_sample_locations = true,
@@ -624,8 +624,8 @@ public:
         storageMultisample(std::make_index_sequence<Dim>(), size, samples, fixed_sample_locations, internal_format);
     }
 
-    /// <summary>Generates texture storage and fills it with the provided image.</summary>
-    /// <param name="internal_format">Defaults to being chosen, based on the format of the provided image.</param>
+    /// @brief Generates texture storage and fills it with the provided image.
+    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
     template <PixelFormat Format, PixelType Type>
     void generate(const Image<Dim, Format, Type>& image,
                   GLint samples,
@@ -643,7 +643,7 @@ protected:
     TextureBaseMultisample& operator=(TextureBaseMultisample&&) = default;
 
 private:
-    /// <summary>Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.</summary>
+    /// @brief Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.
     template <std::size_t... Indices>
     void storageMultisample(std::index_sequence<Indices...>,
                             dmath::svec<Dim> size,

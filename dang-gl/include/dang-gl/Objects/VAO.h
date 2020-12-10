@@ -13,7 +13,7 @@
 
 namespace dang::gl {
 
-/// <summary>A list of all supported modes on how to draw vertex data.</summary>
+/// @brief A list of all supported modes on how to draw vertex data.
 enum class BeginMode {
     Points,
     Lines,
@@ -42,7 +42,7 @@ struct EnumCount<dang::gl::BeginMode> : DefaultEnumCount<dang::gl::BeginMode> {}
 
 namespace dang::gl {
 
-/// <summary>Maps the different begin modes to their GL-Constants.</summary>
+/// @brief Maps the different begin modes to their GL-Constants.
 template <>
 inline constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {GL_POINTS,
                                                                                 GL_LINES,
@@ -57,7 +57,7 @@ inline constexpr dutils::EnumArray<BeginMode, GLenum> GLConstants<BeginMode> = {
                                                                                 GL_TRIANGLE_STRIP_ADJACENCY,
                                                                                 GL_PATCHES};
 
-/// <summary>A base class for all vertex array objects, which is not templated yet.</summary>
+/// @brief A base class for all vertex array objects, which is not templated yet.
 class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
 public:
     ~VAOBase() = default;
@@ -65,17 +65,17 @@ public:
     VAOBase(const VAOBase&) = delete;
     VAOBase& operator=(const VAOBase&) = delete;
 
-    /// <summary>The GL-Program associated with the VAO.</summary>
+    /// @brief The GL-Program associated with the VAO.
     Program& program() const;
 
-    /// <summary>Returns the current render mode, which is used in draw calls.</summary>
+    /// @brief Returns the current render mode, which is used in draw calls.
     BeginMode mode() const;
-    /// <summary>Although not always senseful, allows to modify the render mode after construction.</summary>
-    /// <remarks>Different render modes require very different data layouts, often making it impossible to use the same data with different modes.</remarks>
+    /// @brief Although not always senseful, allows to modify the render mode after construction.
+    /// @remark Different render modes require very different data layouts, often making it impossible to use the same data with different modes.
     void setMode(BeginMode mode);
 
 protected:
-    /// <summary>Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.</summary>
+    /// @brief Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
 
     VAOBase(VAOBase&&) = default;
@@ -86,12 +86,12 @@ private:
     BeginMode mode_;
 };
 
-/// <summary>A vertex array object, combining a GL-Program with a VBO and optional additional VBOs for instancing.</summary>
+/// @brief A vertex array object, combining a GL-Program with a VBO and optional additional VBOs for instancing.
 template <typename TData, typename... TInstanceData>
 class VAO : public VAOBase {
 public:
-    /// <summary>Creates a new VAO and binds it to the given GL-Program, VBO and potential additional VBOs for instancing.</summary>
-    /// <remarks>Various debug assertings check, that the GL-Program and VBOs match.</remarks>
+    /// @brief Creates a new VAO and binds it to the given GL-Program, VBO and potential additional VBOs for instancing.
+    /// @remark Various debug assertings check, that the GL-Program and VBOs match.
     VAO(Program& program,
         VBO<TData>& data_vbo,
         VBO<TInstanceData>&... instance_vbo,
@@ -111,13 +111,13 @@ public:
     VAO& operator=(const VAO&) = delete;
     VAO& operator=(VAO&&) = default;
 
-    /// <summary>Returns the instance count, which should match for all instance VBOs, checked by a debug assertion.</summary>
+    /// @brief Returns the instance count, which should match for all instance VBOs, checked by a debug assertion.
     GLsizei instanceCount() const
     {
         return instanceCountHelper(std::make_index_sequence<sizeof...(TInstanceData) - 1>());
     }
 
-    /// <summary>Draws the full content of the VBO, potentially using instanced rendering, if at least one instance VBO was specified.</summary>
+    /// @brief Draws the full content of the VBO, potentially using instanced rendering, if at least one instance VBO was specified.
     void draw() const
     {
         bind();
@@ -129,14 +129,14 @@ public:
     }
 
 private:
-    /// <summary>Returns the instance count of the VBO with the given index.</summary>
+    /// @brief Returns the instance count of the VBO with the given index.
     template <std::size_t VBOIndex>
     GLsizei instanceCountOf() const
     {
         return std::get<VBOIndex>(instance_vbos_)->count() * program().instancedAttributeOrder()[VBOIndex].divisor;
     }
 
-    /// <summary>Helper function for instance counting, which takes an index list of one less than the actual instance VBO count.</summary>
+    /// @brief Helper function for instance counting, which takes an index list of one less than the actual instance VBO count.
     template <std::size_t... Indices>
     GLsizei instanceCountHelper(std::index_sequence<Indices...>) const
     {
@@ -145,7 +145,7 @@ private:
         return instanceCountOf<0>();
     }
 
-    /// <summary>Enables all attributes for both data and specified instance VBOs.</summary>
+    /// @brief Enables all attributes for both data and specified instance VBOs.
     template <std::size_t... Indices>
     void enableAttributes(std::index_sequence<Indices...>)
     {
@@ -154,7 +154,7 @@ private:
         (enableAttributes(*std::get<Indices>(instance_vbos_), program().instancedAttributeOrder()[Indices]), ...);
     }
 
-    /// <summary>Enables attributes for the given VBO with the given attribute order.</summary>
+    /// @brief Enables attributes for the given VBO with the given attribute order.
     template <typename T>
     void enableAttributes(const VBO<T>& vbo, const AttributeOrder& attribute_order)
     {

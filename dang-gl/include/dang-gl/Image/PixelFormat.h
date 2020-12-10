@@ -8,7 +8,7 @@
 
 namespace dang::gl {
 
-/// <summary>Specifies, which components make up a pixel, containing red, green, blue, alpha, stencil and depth.</summary>
+/// @brief Specifies, which components make up a pixel, containing red, green, blue, alpha, stencil and depth.
 enum class PixelFormat {
     RED,
     RG,
@@ -42,7 +42,7 @@ struct EnumCount<dang::gl::PixelFormat> : DefaultEnumCount<dang::gl::PixelFormat
 
 namespace dang::gl {
 
-/// <summary>The GL-Constants for the pixel formats.</summary>
+/// @brief The GL-Constants for the pixel formats.
 template <>
 inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
                                                                                     GL_RG,
@@ -62,7 +62,7 @@ inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat>
                                                                                     GL_DEPTH_COMPONENT,
                                                                                     GL_DEPTH_STENCIL};
 
-/// <summary>Provides info about a pixel format, like its component count, which is necessary to find out the storage size.</summary>
+/// @brief Provides info about a pixel format, like its component count, which is necessary to find out the storage size.
 template <PixelFormat>
 struct PixelFormatInfo {};
 

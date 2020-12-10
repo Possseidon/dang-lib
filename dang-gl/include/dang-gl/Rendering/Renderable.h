@@ -13,18 +13,18 @@ using UniqueRenderable = std::unique_ptr<Renderable>;
 using SharedRenderable = std::shared_ptr<Renderable>;
 using WeakRenderable = std::weak_ptr<Renderable>;
 
-/// <summary>An abstract base class for any renderable object with an optional transformation.</summary>
+/// @brief An abstract base class for any renderable object with an optional transformation.
 class Renderable {
 public:
     virtual ~Renderable() = default;
 
-    /// <summary>Whether this object should be rendered or skipped.</summary>
+    /// @brief Whether this object should be rendered or skipped.
     virtual bool isVisible() const;
-    /// <summary>An optional transformation, describing where to render the object.</summary>
+    /// @brief An optional transformation, describing where to render the object.
     virtual SharedTransform transform() const;
-    /// <summary>Returns the GL-Program, which is used in the draw method, so that uniforms can be upated.</summary>
+    /// @brief Returns the GL-Program, which is used in the draw method, so that uniforms can be upated.
     virtual Program& program() const = 0;
-    /// <summary>Draws the object.</summary>
+    /// @brief Draws the object.
     virtual void draw() const = 0;
 };
 

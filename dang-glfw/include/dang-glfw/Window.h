@@ -200,12 +200,12 @@ using KeyEvent = dutils::Event<KeyInfo>;
 using ButtonEvent = dutils::Event<ButtonInfo>;
 using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
 
-/// <summary>Wraps the close to full capabilities of GLFW windows.</summary>
+/// @brief Wraps the close to full capabilities of GLFW windows.
 class Window {
 public:
-    /// <summary>Creates a new GLFW window and activates it.</summary>
+    /// @brief Creates a new GLFW window and activates it.
     Window(const WindowInfo& info = WindowInfo());
-    /// <summary>Destroys the GLFW window.</summary>
+    /// @brief Destroys the GLFW window.
     ~Window();
 
     Window(const Window&) = delete;
@@ -213,302 +213,302 @@ public:
     Window& operator=(const Window&) = delete;
     Window& operator=(Window&&) = delete;
 
-    /// <summary>Extracts a window from an existing handle, mainly used in GLFW callbacks.</summary>
+    /// @brief Extracts a window from an existing handle, mainly used in GLFW callbacks.
     static Window& fromUserPointer(GLFWwindow* window);
 
-    /// <summary>Returns the handle of the GLFW window.</summary>
+    /// @brief Returns the handle of the GLFW window.
     GLFWwindow* handle() const;
 
-    /// <summary>Returns the OpenGL context of this window.</summary>
+    /// @brief Returns the OpenGL context of this window.
     const dgl::Context& context() const;
-    /// <summary>Returns the OpenGL context of this window.</summary>
+    /// @brief Returns the OpenGL context of this window.
     dgl::Context& context();
 
     // TODO: C++20 use std::u8string
-    /// <summary>Returns the title of the window.</summary>
+    /// @brief Returns the title of the window.
     const std::string& title() const;
-    /// <summary>Sets the title of the window to the given string.</summary>
+    /// @brief Sets the title of the window to the given string.
     void setTitle(const std::string& title);
 
-    /// <summary>Returns the current position of the window on the virtual screen.</summary>
+    /// @brief Returns the current position of the window on the virtual screen.
     dmath::ivec2 pos() const;
-    /// <summary>Moves the window to the given position on the virtual screen.</summary>
+    /// @brief Moves the window to the given position on the virtual screen.
     void move(dmath::ivec2 new_pos);
 
-    /// <summary>Returns the size of the window.</summary>
+    /// @brief Returns the size of the window.
     dmath::ivec2 size() const;
-    /// <summary>Sets the window size to the given value.</summary>
+    /// @brief Sets the window size to the given value.
     void resize(dmath::ivec2 new_size);
 
-    /// <summary>Returns the size of the framebuffer in pixels.</summary>
+    /// @brief Returns the size of the framebuffer in pixels.
     dmath::ivec2 framebufferSize() const;
-    /// <summary>Returns the aspect (width/height) of the framebuffer.</summary>
+    /// @brief Returns the aspect (width/height) of the framebuffer.
     float aspect() const;
 
-    /// <summary>Returns the relative scale of the window, to accommodate for different monitor DPI settings.</summary>
+    /// @brief Returns the relative scale of the window, to accommodate for different monitor DPI settings.
     dmath::vec2 contentScale() const;
 
-    /// <summary>Whether the window is currently in fullscreen mode.</summary>
+    /// @brief Whether the window is currently in fullscreen mode.
     bool isFullscreen() const;
-    /// <summary>If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise returns null.</summary>
+    /// @brief If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise returns null.
     Monitor fullscreenMonitor() const;
-    /// <summary>Puts the window in fullscreen mode with optional supplied resolution and refresh rate.</summary>
+    /// @brief Puts the window in fullscreen mode with optional supplied resolution and refresh rate.
     void makeFullscreen(std::optional<dmath::ivec2> size = std::nullopt,
                         std::optional<int> refresh_rate = std::nullopt);
-    /// <summary>Puts the window in fullscreen mode on a specific monitor.</summary>
+    /// @brief Puts the window in fullscreen mode on a specific monitor.
     void makeFullscreen(Monitor monitor,
                         std::optional<dmath::ivec2> size = std::nullopt,
                         std::optional<int> refresh_rate = std::nullopt);
-    /// <summary>Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.</summary>
+    /// @brief Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.
     void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt,
                            std::optional<dmath::ivec2> size = std::nullopt);
 
-    /// <summary>Whether the user can resize the window.</summary>
+    /// @brief Whether the user can resize the window.
     bool isResizable() const;
-    /// <summary>Sets, whether the user should be able to freely resize the window to their needs.</summary>
+    /// @brief Sets, whether the user should be able to freely resize the window to their needs.
     void setResizable(bool resizable);
 
-    /// <summary>Returns the optional minimum width of the window.</summary>
+    /// @brief Returns the optional minimum width of the window.
     std::optional<int> minWidth() const;
-    /// <summary>Returns the optional minimum height of the window.</summary>
+    /// @brief Returns the optional minimum height of the window.
     std::optional<int> minHeight() const;
-    /// <summary>Returns the optional maximum width of the window.</summary>
+    /// @brief Returns the optional maximum width of the window.
     std::optional<int> maxWidth() const;
-    /// <summary>Returns the optional maximum height of the window.</summary>
+    /// @brief Returns the optional maximum height of the window.
     std::optional<int> maxHeight() const;
-    /// <summary>Sets all size limits of the window to the given optional values.</summary>
+    /// @brief Sets all size limits of the window to the given optional values.
     void setSizeLimits(std::optional<int> min_width,
                        std::optional<int> min_height,
                        std::optional<int> max_width,
                        std::optional<int> max_height);
-    /// <summary>Sets the minimum size of the window to the given optional values.</summary>
+    /// @brief Sets the minimum size of the window to the given optional values.
     void setMinSize(std::optional<int> min_width, std::optional<int> min_height);
-    /// <summary>Sets the maximum size of the window to the given optional values.</summary>
+    /// @brief Sets the maximum size of the window to the given optional values.
     void setMaxSize(std::optional<int> max_width, std::optional<int> max_height);
 
-    /// <summary>Returns the currently set optional width/height ratio to force the window into.</summary>
+    /// @brief Returns the currently set optional width/height ratio to force the window into.
     std::optional<dmath::ivec2> aspectRatio() const;
-    /// <summary>Sets the optional width/height ratio, which the the window should be forced into.</summary>
+    /// @brief Sets the optional width/height ratio, which the the window should be forced into.
     void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
-    /// <summary>Sets the width/height ratio of the window to the current framebuffer size, effectively freezing the current ratio.</summary>
+    /// @brief Sets the width/height ratio of the window to the current framebuffer size, effectively freezing the current ratio.
     void freezeAspectRatio();
 
-    /// <summary>Returns the opcacity of the window.</summary>
+    /// @brief Returns the opcacity of the window.
     float opacity() const;
-    /// <summary>Sets the opactity of the window.</summary>
+    /// @brief Sets the opactity of the window.
     void setOpacity(float new_opacity);
 
-    /// <summary>Whether the window is currently iconified/minimized.</summary>
+    /// @brief Whether the window is currently iconified/minimized.
     bool isIconified() const;
-    /// <summary>Iconifies/minimizes the window.</summary>
+    /// @brief Iconifies/minimizes the window.
     void iconify();
-    /// <summary>Whether a fullscreen window should iconify/minimize on lost focus.</summary>
+    /// @brief Whether a fullscreen window should iconify/minimize on lost focus.
     bool autoIconify() const;
-    /// <summary>Sets, whether a fullscreen window should iconify/minimize on lost focus.</summary>
+    /// @brief Sets, whether a fullscreen window should iconify/minimize on lost focus.
     void setAutoIconify(bool auto_iconify);
 
-    /// <summary>Whether the window is maximized.</summary>
+    /// @brief Whether the window is maximized.
     bool isMaximized() const;
-    /// <summary>Maximizes the window.</summary>
+    /// @brief Maximizes the window.
     void maximize();
 
-    /// <summary>Restores iconified or maximized windows.</summary>
+    /// @brief Restores iconified or maximized windows.
     void restore();
 
-    /// <summary>Whether the window is visible.</summary>
+    /// @brief Whether the window is visible.
     bool isVisible() const;
-    /// <summary>Hides the window, making it invisible.</summary>
+    /// @brief Hides the window, making it invisible.
     void hide();
-    /// <summary>Shows the window, making it visible again.</summary>
+    /// @brief Shows the window, making it visible again.
     void show();
 
-    /// <summary>Whether the window is currently focused.</summary>
+    /// @brief Whether the window is currently focused.
     bool isFocused() const;
-    /// <summary>Force the window to focus.</summary>
+    /// @brief Force the window to focus.
     void focus();
-    /// <summary>Whether the window should obtain focus when shown.</summary>
+    /// @brief Whether the window should obtain focus when shown.
     bool focusOnShow() const;
-    /// <summary>Sets, whether the window should obtain focus when shown.</summary>
+    /// @brief Sets, whether the window should obtain focus when shown.
     void setFocusOnShow(bool focus_on_show);
 
-    /// <summary>Requests for attention, usually resulting in the window blinking in the taskbar.</summary>
+    /// @brief Requests for attention, usually resulting in the window blinking in the taskbar.
     void requestAttention();
 
-    /// <summary>Whether the mouse is currently hovering over the content area of the window without being obstructed.</summary>
+    /// @brief Whether the mouse is currently hovering over the content area of the window without being obstructed.
     bool isHovered() const;
 
-    /// <summary>Whether the window is decorated with a title bar.</summary>
+    /// @brief Whether the window is decorated with a title bar.
     bool isDecorated() const;
-    /// <summary>Decorates or undecorates the window with a title bar.</summary>
+    /// @brief Decorates or undecorates the window with a title bar.
     void setDecorated(bool decorated);
 
-    /// <summary>Whether the window will always stay on top.</summary>
+    /// @brief Whether the window will always stay on top.
     bool isFloating() const;
-    /// <summary>Sets, whether the window should always stay on top.</summary>
+    /// @brief Sets, whether the window should always stay on top.
     void setFloating(bool floating);
 
-    /// <summary>Whether the window has a transparent framebuffer.</summary>
+    /// @brief Whether the window has a transparent framebuffer.
     bool transparentFramebuffer() const;
 
-    /// <summary>Returns the client API, with which the window was created.</summary>
+    /// @brief Returns the client API, with which the window was created.
     ClientAPI clientAPI() const;
-    /// <summary>Returns the context API, with which the window was created.</summary>
+    /// @brief Returns the context API, with which the window was created.
     ContextAPI contextAPI() const;
-    /// <summary>Returns the OpenGL version, with which the window was created.</summary>
+    /// @brief Returns the OpenGL version, with which the window was created.
     GLVersionFull glVersion() const;
-    /// <summary>Whether the window was created with OpenGL forward compatibility.</summary>
+    /// @brief Whether the window was created with OpenGL forward compatibility.
     bool forwardCompatible() const;
-    /// <summary>Whether the window was created with an OpenGL debug context.</summary>
+    /// @brief Whether the window was created with an OpenGL debug context.
     bool debugContext() const;
-    /// <summary>Whether the window was created with the core or compatibility profile.</summary>
+    /// @brief Whether the window was created with the core or compatibility profile.
     GLProfile glProfile() const;
-    /// <summary>Whether the OpenGL pipeline will be flushed before the active window changes.</summary>
+    /// @brief Whether the OpenGL pipeline will be flushed before the active window changes.
     ContextReleaseBehavior contextReleaseBehavior() const;
-    /// <summary>Whether the GLFW should trigger errors or cause undefined behavior instead.</summary>
+    /// @brief Whether the GLFW should trigger errors or cause undefined behavior instead.
     bool contextNoError() const;
-    /// <summary>Returns the robustness strategy, which the window was created with.</summary>
+    /// @brief Returns the robustness strategy, which the window was created with.
     ContextRobustness contextRobustness() const;
 
-    /// <summary>Returns the current clear mask, which is used at the beginning of a render call.</summary>
+    /// @brief Returns the current clear mask, which is used at the beginning of a render call.
     dgl::BufferMask clearMask() const;
-    /// <summary>Setst the clear mask, which is used at the beginning of a render call.</summary>
+    /// @brief Setst the clear mask, which is used at the beginning of a render call.
     void setClearMask(dgl::BufferMask mask);
 
-    /// <summary>Whether the window should call glFinish after SwapBuffers.</summary>
+    /// @brief Whether the window should call glFinish after SwapBuffers.
     bool finishAfterSwap() const;
-    /// <summary>Sets, whether the window should call glFinish after SwapBuffers.</summary>
+    /// @brief Sets, whether the window should call glFinish after SwapBuffers.
     void setFinishAfterSwap(bool finish_after_swap);
 
-    /// <summary>Adjusts the OpenGL viewport to current size of the framebuffer.</summary>
+    /// @brief Adjusts the OpenGL viewport to current size of the framebuffer.
     void adjustViewport();
-    /// <summary>Whether the OpenGL viewport is automatically adjusted, as the window gets resized.</summary>
+    /// @brief Whether the OpenGL viewport is automatically adjusted, as the window gets resized.
     bool autoAdjustViewport() const;
-    /// <summary>Sets, whether the OpenGL viewport should be automatically adjusted, as the window is resized.</summary>
+    /// @brief Sets, whether the OpenGL viewport should be automatically adjusted, as the window is resized.
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
     // TODO: C++20 use std::u8string
-    /// <summary>Returns a string of all typed characters since the last update.</summary>
+    /// @brief Returns a string of all typed characters since the last update.
     const std::string& textInput() const;
 
-    /// <summary>Whether the given key is currently pressed down.</summary>
-    /// <remarks>If sticky keys is active, keys will stay pressed until this function is called on it.</remarks>
+    /// @brief Whether the given key is currently pressed down.
+    /// @remark If sticky keys is active, keys will stay pressed until this function is called on it.
     bool isKeyDown(Key key) const;
-    /// <summary>Whether the given mouse button is currently pressed down.</summary>
-    /// <remarks>If sticky buttons is active, mouse buttons will stay pressed until this function is called on it.</remarks>
+    /// @brief Whether the given mouse button is currently pressed down.
+    /// @remark If sticky buttons is active, mouse buttons will stay pressed until this function is called on it.
     bool isButtonDown(Button button) const;
-    /// <summary>Returns the current position of the cursor, using the top left of the window as origin.</summary>
-    /// <remarks>If the cursor is disabled, the position is unbounded.</remarks>
+    /// @brief Returns the current position of the cursor, using the top left of the window as origin.
+    /// @remark If the cursor is disabled, the position is unbounded.
     dmath::dvec2 cursorPos() const;
-    /// <summary>Sets the cursor position to the given value, using the top left of the window as origin.</summary>
+    /// @brief Sets the cursor position to the given value, using the top left of the window as origin.
     void setCursorPos(dmath::dvec2 cursor_pos);
 
-    /// <summary>Whether the cursor is normal, hidden or disabled.</summary>
+    /// @brief Whether the cursor is normal, hidden or disabled.
     CursorMode cursorMode() const;
-    /// <summary>Sets, whether the cursor should be normal, hidden or disabled.</summary>
+    /// @brief Sets, whether the cursor should be normal, hidden or disabled.
     void setCursorMode(CursorMode cursor_mode);
 
-    /// <summary>Whether keys should stay pressed until isKeyDown is called on them.</summary>
+    /// @brief Whether keys should stay pressed until isKeyDown is called on them.
     bool stickyKeys() const;
-    /// <summary>Sets, whether keys should stay pressed until isKeyDown is called on them.</summary>
+    /// @brief Sets, whether keys should stay pressed until isKeyDown is called on them.
     void setStickyKeys(bool sticky_keys);
 
-    /// <summary>Whether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
+    /// @brief Whether mouse buttons should stay pressed until isButtonDown is called on them.
     bool stickyButtons() const;
-    /// <summary>Sets, whether mouse buttons should stay pressed until isButtonDown is called on them.</summary>
+    /// @brief Sets, whether mouse buttons should stay pressed until isButtonDown is called on them.
     void setStickyButtons(bool sticky_buttons);
 
-    /// <summary>Whether the state of caps- and scroll-lock should be included in key events.</summary>
+    /// @brief Whether the state of caps- and scroll-lock should be included in key events.
     bool lockKeyModifiers() const;
-    /// <summary>Sets, whether the state of caps- and scroll-lock should be included in key events.</summary>
+    /// @brief Sets, whether the state of caps- and scroll-lock should be included in key events.
     void setLockKeyModifiers(bool lock_key_modifiers);
 
-    /// <summary>For a disabled cursor returns, whether the mouse motion should be captured unscaled and unaccelerated.</summary>
+    /// @brief For a disabled cursor returns, whether the mouse motion should be captured unscaled and unaccelerated.
     bool rawMouseMotion() const;
-    /// <summary>For a disabled cursor sets, whether the mouse motion should be captured unscaled and unaccelerated.</summary>
+    /// @brief For a disabled cursor sets, whether the mouse motion should be captured unscaled and unaccelerated.
     void setRawMouseMotion(bool raw_mouse_motion);
-    /// <summary>Whether capturing raw mouse motion is supported by the system.</summary>
+    /// @brief Whether capturing raw mouse motion is supported by the system.
     static bool supportsRawMouseMotion();
 
-    /// <summary>Activates the OpenGL context of the window.</summary>
+    /// @brief Activates the OpenGL context of the window.
     void activate();
 
-    /// <summary>Activates and updates the window, also triggering the onUpdate event.</summary>
+    /// @brief Activates and updates the window, also triggering the onUpdate event.
     void update();
-    /// <summary>Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by the onRender event.</summary>
+    /// @brief Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by the onRender event.
     void render();
-    /// <summary>Polls window events and clears/updates the text input.</summary>
+    /// @brief Polls window events and clears/updates the text input.
     void pollEvents();
 
-    /// <summary>Executes a single update-render-poll step.</summary>
+    /// @brief Executes a single update-render-poll step.
     void step();
-    /// <summary>Runs update-render-poll steps until the window should close.</summary>
+    /// @brief Runs update-render-poll steps until the window should close.
     void run();
 
-    /// <summary>Whether the window should close.</summary>
+    /// @brief Whether the window should close.
     bool shouldClose() const;
 
-    /// <summary>Returns the current delta time to the last call to update.</summary>
+    /// @brief Returns the current delta time to the last call to update.
     float deltaTime() const;
-    /// <summary>Returns the FPS, which is smoothed out to accommodate for both low and high framerates.</summary>
+    /// @brief Returns the FPS, which is smoothed out to accommodate for both low and high framerates.
     float fps() const;
-    /// <summary>Sets the V-Sync mode of the window to the given value.</summary>
+    /// @brief Sets the V-Sync mode of the window to the given value.
     void setVSync(VSync vsync);
-    /// <summary>Activates the window and returns, whether the context supports adaptive V-Sync.</summary>
+    /// @brief Activates the window and returns, whether the context supports adaptive V-Sync.
     bool supportsAdaptiveVSync();
 
-    /// <summary>Called in the update method.</summary>
+    /// @brief Called in the update method.
     WindowEvent onUpdate;
-    /// <summary>Called by the render method inbetween clear and buffer swapping.</summary>
+    /// @brief Called by the render method inbetween clear and buffer swapping.
     WindowEvent onRender;
 
-    /// <summary>Triggered, when the user attempts to close the window.</summary>
+    /// @brief Triggered, when the user attempts to close the window.
     WindowEvent onClose;
-    /// <summary>Triggered, when the content scale of the window changes.</summary>
+    /// @brief Triggered, when the content scale of the window changes.
     WindowEvent onContentScale;
-    /// <summary>Triggered, when the window receives focus.</summary>
+    /// @brief Triggered, when the window receives focus.
     WindowEvent onFocus;
-    /// <summary>Triggered, when the window loses focus.</summary>
+    /// @brief Triggered, when the window loses focus.
     WindowEvent onUnfocus;
-    /// <summary>Triggered, when the window is iconified/minimized.</summary>
+    /// @brief Triggered, when the window is iconified/minimized.
     WindowEvent onIconify;
-    /// <summary>Triggered, when the window is restored from an iconified/minimized state.</summary>
+    /// @brief Triggered, when the window is restored from an iconified/minimized state.
     WindowEvent onUniconify;
-    /// <summary>Triggered, when the window is maximized.</summary>
+    /// @brief Triggered, when the window is maximized.
     WindowEvent onMaximize;
-    /// <summary>Triggered, when the window is restored from being maximized.</summary>
+    /// @brief Triggered, when the window is restored from being maximized.
     WindowEvent onUnmaximize;
-    /// <summary>Triggered, when the window is restored from being iconified or maximized.</summary>
+    /// @brief Triggered, when the window is restored from being iconified or maximized.
     WindowEvent onRestore;
-    /// <summary>Triggered, when the window is moved.</summary>
+    /// @brief Triggered, when the window is moved.
     WindowEvent onMove;
-    /// <summary>Triggered, when the window is resized.</summary>
+    /// @brief Triggered, when the window is resized.
     WindowEvent onResize;
-    /// <summary>Triggered, when the window framebuffer is resized.</summary>
+    /// @brief Triggered, when the window framebuffer is resized.
     WindowEvent onFramebufferResize;
 
-    /// <summary>Triggered, when the user types something on the keyboard, which can be queried using the textInput method.</summary>
+    /// @brief Triggered, when the user types something on the keyboard, which can be queried using the textInput method.
     WindowEvent onType;
-    /// <summary>Triggered, when the user presses, holds or releases a key on the keyboard.</summary>
+    /// @brief Triggered, when the user presses, holds or releases a key on the keyboard.
     KeyEvent onKey;
-    /// <summary>Triggered, when the mouse cursor enters the content area of the window.</summary>
+    /// @brief Triggered, when the mouse cursor enters the content area of the window.
     WindowEvent onCursorEnter;
-    /// <summary>Triggered, when the mouse cursor leaves the content area of the window.</summary>
+    /// @brief Triggered, when the mouse cursor leaves the content area of the window.
     WindowEvent onCursorLeave;
-    /// <summary>Triggered, when the mouse cursor moves across the content area of the window.</summary>
+    /// @brief Triggered, when the mouse cursor moves across the content area of the window.
     CursorMoveEvent onCursorMove;
-    /// <summary>Triggered, when the user drops files on the window.</summary>
+    /// @brief Triggered, when the user drops files on the window.
     DropPathsEvent onDropPaths;
-    /// <summary>Triggered, when the user presses or releases a mouse button.</summary>
+    /// @brief Triggered, when the user presses or releases a mouse button.
     ButtonEvent onButton;
-    /// <summary>Triggered, when the user scrolls the mouse wheel.</summary>
+    /// @brief Triggered, when the user scrolls the mouse wheel.
     ScrollEvent onScroll;
 
-    /// <summary>Triggered, if OpenGL debug output is enabled in the state.</summary>
-    /// <remarks>Enabling synchronous debug output is very useful for debugging.</remarks>
+    /// @brief Triggered, if OpenGL debug output is enabled in the state.
+    /// @remark Enabling synchronous debug output is very useful for debugging.
     GLDebugMessageEvent onGLDebugMessage;
 
 private:
-    /// <summary>Registers all GLFW callbacks.</summary>
+    /// @brief Registers all GLFW callbacks.
     void registerCallbacks();
 
     // GLFW callbacks
@@ -541,9 +541,9 @@ private:
                                               const GLchar* message,
                                               const void* user_param);
 
-    /// <summary>Updates the current delta time and FPS.</summary>
+    /// @brief Updates the current delta time and FPS.
     void updateDeltaTime();
-    /// <summary>Updates the window size limitations to the stored values.</summary>
+    /// @brief Updates the window size limitations to the stored values.
     void updateSizeLimits();
 
     GLFWwindow* handle_ = nullptr;

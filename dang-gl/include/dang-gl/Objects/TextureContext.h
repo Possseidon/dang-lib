@@ -8,7 +8,7 @@
 
 namespace dang::gl {
 
-/// <summary>An error related to textures.</summary>
+/// @brief An error related to textures.
 class TextureError : public std::runtime_error {
     using runtime_error::runtime_error;
 };
@@ -17,7 +17,7 @@ class TextureError : public std::runtime_error {
 // Possibly consider modification, to allow a texture to be bound for multiple slots, as the spec does technically allows this
 // -> This greatly complicates everything and might not be worth the cost (both run-time and possibly ease-of-use)
 
-/// <summary>Specializes the context class for texture objects.</summary>
+/// @brief Specializes the context class for texture objects.
 template <>
 class ObjectContext<ObjectType::Texture> : public ObjectContextBase {
 public:
@@ -26,14 +26,14 @@ public:
 
     using ObjectContextBase::ObjectContextBase;
 
-    /// <summary>Returns the currently active texture slot.</summary>
+    /// @brief Returns the currently active texture slot.
     std::size_t activeSlot();
-    /// <summary>Sets the currently active texture slot.</summary>
+    /// @brief Sets the currently active texture slot.
     void setActiveSlot(std::size_t slot);
 
-    /// <summary>Binds the texture to the first free slot and returns it or throws a TextureError, if all slots are occupied.</summary>
+    /// @brief Binds the texture to the first free slot and returns it or throws a TextureError, if all slots are occupied.
     std::size_t bind(TextureTarget target, Handle handle, std::optional<std::size_t> active_slot);
-    /// <summary>If the texture is currently bound to a slot, makes that slot free for another texture to use.</summary>
+    /// @brief If the texture is currently bound to a slot, makes that slot free for another texture to use.
     void release(TextureTarget target, std::optional<std::size_t> active_slot);
 
 private:

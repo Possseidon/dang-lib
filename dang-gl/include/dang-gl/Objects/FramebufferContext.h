@@ -8,7 +8,7 @@
 
 namespace dang::gl {
 
-/// <summary>Specializes the context class for framebuffer objects.</summary>
+/// @brief Specializes the context class for framebuffer objects.
 template <>
 class ObjectContext<ObjectType::Framebuffer> : public ObjectContextBase {
 public:
@@ -17,7 +17,7 @@ public:
 
     using ObjectContextBase::ObjectContextBase;
 
-    /// <summary>Binds the given buffer handle to the specified target, if it isn't bound already.</summary>
+    /// @brief Binds the given buffer handle to the specified target, if it isn't bound already.
     void bind(FramebufferTarget target, Handle handle)
     {
         switch (target) {
@@ -48,7 +48,7 @@ public:
         }
     }
 
-    /// <summary>Resets the bound buffer of the specified target, if the given handle is currently bound to it.</summary>
+    /// @brief Resets the bound buffer of the specified target, if the given handle is currently bound to it.
     void reset(Handle handle)
     {
         if (bound_draw_buffer_ == handle) {

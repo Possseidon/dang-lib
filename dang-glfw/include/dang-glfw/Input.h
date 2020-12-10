@@ -6,10 +6,10 @@
 
 namespace dang::glfw {
 
-/// <summary>Whether a mouse button has been pressed or released.</summary>
+/// @brief Whether a mouse button has been pressed or released.
 enum class ButtonAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, COUNT };
 
-/// <summary>A list of possible mouse buttons.</summary>
+/// @brief A list of possible mouse buttons.
 enum class Button : int {
     Left = GLFW_MOUSE_BUTTON_LEFT,
     Right = GLFW_MOUSE_BUTTON_RIGHT,
@@ -27,10 +27,10 @@ enum class Button : int {
     COUNT
 };
 
-/// <summary>Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.</summary>
+/// @brief Whether a keyboard key has been pressed, released or is held down, causing it to repeat in quick succession.
 enum class KeyAction : int { Release = GLFW_RELEASE, Press = GLFW_PRESS, Repeat = GLFW_REPEAT, COUNT };
 
-/// <summary>Modifier keys, which can be held down in key-combinations.</summary>
+/// @brief Modifier keys, which can be held down in key-combinations.
 enum class ModifierKey : int { Shift, Control, Alt, Super, CapsLock, NumLock, COUNT };
 
 } // namespace dang::glfw
@@ -62,7 +62,7 @@ static_assert(ModifierKeys::fromBits(GLFW_MOD_SUPER) == ModifierKey::Super);
 static_assert(ModifierKeys::fromBits(GLFW_MOD_CAPS_LOCK) == ModifierKey::CapsLock);
 static_assert(ModifierKeys::fromBits(GLFW_MOD_NUM_LOCK) == ModifierKey::NumLock);
 
-/// <summary>A list of all possible keyboard keys.</summary>
+/// @brief A list of all possible keyboard keys.
 enum class Key : int {
     Unknown = GLFW_KEY_UNKNOWN,
     Space = GLFW_KEY_SPACE,
@@ -200,20 +200,20 @@ enum class Key : int {
     Menu = GLFW_KEY_MENU
 };
 
-/// <summary>Wraps a key and an optional scancode.</summary>
+/// @brief Wraps a key and an optional scancode.
 class KeyData {
 public:
-    /// <summary>Initializes the key data with the given key and optional pre-supplied scancode.</summary>
+    /// @brief Initializes the key data with the given key and optional pre-supplied scancode.
     KeyData(Key key, int scancode = 0);
 
-    /// <summary>Returns the keyboard key.</summary>
+    /// @brief Returns the keyboard key.
     Key key() const;
-    /// <summary>Returns the scancode of the key attempting to query it, if it has not been supplied in the constuctor.</summary>
+    /// @brief Returns the scancode of the key attempting to query it, if it has not been supplied in the constuctor.
     int scancode();
-    /// <summary>Returns a displayable name for the key or an empty string.</summary>
+    /// @brief Returns a displayable name for the key or an empty string.
     std::string name() const;
 
-    /// <summary>Allows for implicit conversion to the key enum.</summary>
+    /// @brief Allows for implicit conversion to the key enum.
     operator Key() const;
 
 private:

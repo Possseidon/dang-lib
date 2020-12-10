@@ -6,12 +6,12 @@
 
 namespace dang::gl {
 
-/// <summary>Wraps OpenGL object creation, destruction and binding with a consistent interface.</summary>
+/// @brief Wraps OpenGL object creation, destruction and binding with a consistent interface.
 template <ObjectType Type>
 struct ObjectWrapper {
     using Handle = ObjectHandle<Type>;
 
-    /// <summary>Creates a new OpenGL object and returns its handle.</summary>
+    /// @brief Creates a new OpenGL object and returns its handle.
     static Handle create()
     {
         static_assert(detail::canExecute(detail::glGenObjects<Type>) ||
@@ -28,7 +28,7 @@ struct ObjectWrapper {
         }
     }
 
-    /// <summary>Destroys an OpenGL object with the given handle.</summary>
+    /// @brief Destroys an OpenGL object with the given handle.
     static void destroy(Handle handle)
     {
         static_assert(detail::canExecute(detail::glDeleteObjects<Type>) ||
@@ -44,14 +44,14 @@ struct ObjectWrapper {
         }
     }
 
-    /// <summary>Binds the given OpenGL object to the given binding target.</summary>
+    /// @brief Binds the given OpenGL object to the given binding target.
     template <typename Target = ObjectTarget<Type>>
     static void bind(Target target, Handle handle)
     {
         detail::glBindObject<Type>(toGLConstant(target), handle.unwrap());
     }
 
-    /// <summary>Binds the given OpenGL object.</summary>
+    /// @brief Binds the given OpenGL object.
     static void bind(Handle handle) { detail::glBindObject<Type>(handle.unwrap()); }
 };
 

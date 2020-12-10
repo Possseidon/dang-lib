@@ -6,7 +6,7 @@
 
 namespace dang::lua {
 
-/// <summary>Several functions that report errors in the API use the following status codes to indicate different kinds of errors or other conditions.</summary>
+/// @brief Several functions that report errors in the API use the following status codes to indicate different kinds of errors or other conditions.
 enum class Status {
     Ok = LUA_OK,               // No errors.
     RuntimeError = LUA_ERRRUN, // A runtime error.
@@ -17,7 +17,7 @@ enum class Status {
     FileError = LUA_ERRFILE           // A file-related error; e.g., it cannot open or read the file.
 };
 
-/// <summary>The various options, which can be performed using lua_gc.</summary>
+/// @brief The various options, which can be performed using lua_gc.
 enum class GCOption {
     Collect = LUA_GCCOLLECT, // Performs a full garbage-collection cycle.
     Stop = LUA_GCSTOP,       // Stops the garbage collector.
@@ -34,7 +34,7 @@ enum class GCOption {
         LUA_GCGEN, // gc(..., int minormul, int majormul); Changes the collector to generational mode with the given parameters and returns the previous mode.
 };
 
-/// <summary>Lua value types.</summary>
+/// @brief Lua value types.
 enum class Type {
     None = LUA_TNONE,
     Nil = LUA_TNIL,
@@ -50,7 +50,7 @@ enum class Type {
     COUNT = LUA_NUMTYPES
 };
 
-/// <summary>Possible operations for lua_arith.</summary>
+/// @brief Possible operations for lua_arith.
 enum class ArithOp {
     // binary (pop 2, push 1)
     Add = LUA_OPADD,
@@ -73,7 +73,7 @@ enum class ArithOp {
     COUNT
 };
 
-/// <summary>Possible operations for lua_compare.</summary>
+/// @brief Possible operations for lua_compare.
 enum class CompareOp {
     Equal = LUA_OPEQ,
     LessThan = LUA_OPLT,
@@ -82,10 +82,10 @@ enum class CompareOp {
     COUNT
 };
 
-/// <summary>A list of all Lua standard libraries.</summary>
+/// @brief A list of all Lua standard libraries.
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
-/// <summary>Wether to load Lua code only as text or binary, or accept both.</summary>
+/// @brief Wether to load Lua code only as text or binary, or accept both.
 enum class LoadMode { Default, Binary, Text, Both, COUNT };
 
 } // namespace dang::lua

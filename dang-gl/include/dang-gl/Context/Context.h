@@ -53,7 +53,7 @@ public:
     Event onResize;
 
 private:
-    /// <summary>Initializes the contexts for the different GL-Object types.</summary>
+    /// @brief Initializes the contexts for the different GL-Object types.
     template <ObjectType... Types>
     void createContexts(dutils::EnumSequence<ObjectType, Types...>);
 

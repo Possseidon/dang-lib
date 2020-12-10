@@ -11,14 +11,14 @@
 
 namespace dang::gl {
 
-/// <summary>Thrown by the PNGLoader if libpng reports any error.</summary>
+/// @brief Thrown by the PNGLoader if libpng reports any error.
 class PNGError : public std::runtime_error {
     using runtime_error::runtime_error;
 };
 
 class PNGLoader;
 
-/// <summary>A warning message with a reference to the associated PNGLoader.</summary>
+/// @brief A warning message with a reference to the associated PNGLoader.
 struct PNGWarningInfo {
     PNGLoader& image;
     std::string message;
@@ -26,14 +26,14 @@ struct PNGWarningInfo {
 
 using PNGWarningEvent = dutils::Event<PNGWarningInfo>;
 
-/// <summary>Capable of loading any PNG into a given format using libpng.</summary>
+/// @brief Capable of loading any PNG into a given format using libpng.
 class PNGLoader {
 public:
-    /// <summary>Creates a new PNG loader without an associated stream.</summary>
+    /// @brief Creates a new PNG loader without an associated stream.
     PNGLoader();
-    /// <summary>Immediately calls init with the given stream.</summary>
+    /// @brief Immediately calls init with the given stream.
     explicit PNGLoader(std::istream& stream);
-    /// <summary>Cleans up the libpng handles.</summary>
+    /// @brief Cleans up the libpng handles.
     ~PNGLoader();
 
     PNGLoader(const PNGLoader&) = delete;
@@ -41,43 +41,43 @@ public:
     PNGLoader& operator=(const PNGLoader&) = delete;
     PNGLoader& operator=(PNGLoader&&) = delete;
 
-    /// <summary>Initializes the info struct with various informations like width and height.</summary>
-    /// <remarks>The same stream is reused for a likely read call and must therefore life long enough.</remarks>
+    /// @brief Initializes the info struct with various informations like width and height.
+    /// @remark The same stream is reused for a likely read call and must therefore life long enough.
     void init(std::istream& stream);
 
-    /// <summary>After initialization, returns the width and height of the image.</summary>
+    /// @brief After initialization, returns the width and height of the image.
     dmath::svec2 size() const;
 
-    /// <summary>Converts the data into the specified format and returns a consecutive vector of pixels.</summary>
-    /// <remarks>Use the size method to query the width and height of the returned data.</remarks>
-    /// <param name="flip">Whether to flip the top and bottom of the PNG.</param>
+    /// @brief Converts the data into the specified format and returns a consecutive vector of pixels.
+    /// @remark Use the size method to query the width and height of the returned data.
+    /// @param flip Whether to flip the top and bottom of the PNG.
     template <PixelFormat Format = PixelFormat::RGBA>
     std::vector<Pixel<Format>> read(bool flip = false);
 
-    /// <summary>While errors throw an exception, warnings simply trigger this event.</summary>
+    /// @brief While errors throw an exception, warnings simply trigger this event.
     PNGWarningEvent onWarning;
 
 private:
-    /// <summary>Expands or strips the bit depth to exactly 8 bit, potentially disabling palette or adding an alpha channel in the process.</summary>
+    /// @brief Expands or strips the bit depth to exactly 8 bit, potentially disabling palette or adding an alpha channel in the process.
     void handleBitDepth();
-    /// <summary>Converts between gray and rgb values, depending on the given pixel format.</summary>
+    /// @brief Converts between gray and rgb values, depending on the given pixel format.
     template <PixelFormat Format>
     void handleGrayRGB();
-    /// <summary>Adds or strips the alpha channel, depending on the pixel format.</summary>
+    /// @brief Adds or strips the alpha channel, depending on the pixel format.
     template <PixelFormat Format>
     void handleAlpha();
-    /// <summary>Converts between RGB(A) to BGR(A), depending on the given pixel format.</summary>
+    /// @brief Converts between RGB(A) to BGR(A), depending on the given pixel format.
     template <PixelFormat Format>
     void handleBGR();
 
-    /// <summary>Called by libpng, when an unrecoverable error occurs.</summary>
+    /// @brief Called by libpng, when an unrecoverable error occurs.
     static void errorCallback(png_structp png_ptr, png_const_charp message);
-    /// <summary>Called by libpng for warning messages.</summary>
+    /// @brief Called by libpng for warning messages.
     static void warningCallback(png_structp png_ptr, png_const_charp message);
-    /// <summary>Called by libpng to read a chunk of data from the PNG file.</summary>
+    /// @brief Called by libpng to read a chunk of data from the PNG file.
     static void readCallback(png_structp png_ptr, png_bytep bytes, png_size_t size);
 
-    /// <summary>Used in initialization to check the libpng pointers.</summary>
+    /// @brief Used in initialization to check the libpng pointers.
     template <typename T>
     static T* initCheck(T* ptr)
     {
@@ -86,7 +86,7 @@ private:
         return ptr;
     }
 
-    /// <summary>Cleans up the libpng handles.</summary>
+    /// @brief Cleans up the libpng handles.
     void cleanup();
 
     png_structp png_ptr_ = nullptr;

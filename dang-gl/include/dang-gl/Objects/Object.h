@@ -8,14 +8,14 @@
 
 namespace dang::gl {
 
-/// <summary>Serves as a base class for all GL-Objects of the template specified type.</summary>
+/// @brief Serves as a base class for all GL-Objects of the template specified type.
 template <ObjectType Type>
 class Object {
 public:
     using Handle = ObjectHandle<Type>;
     using Wrapper = ObjectWrapper<Type>;
 
-    /// <summary>Destroys the GL-Object.</summary>
+    /// @brief Destroys the GL-Object.
     ~Object() { destroy(); }
 
     Object(const Object&) = delete;
@@ -30,16 +30,16 @@ public:
         context_ = nullptr;
     }
 
-    /// <summary>For valid objects, returns the associated GL-Context in form of a window.</summary>
+    /// @brief For valid objects, returns the associated GL-Context in form of a window.
     Context& context() const noexcept { return *context_; }
 
-    /// <summary>Returns the context for this object type.</summary>
+    /// @brief Returns the context for this object type.
     auto& objectContext() const { return context_->contextFor<Type>(); }
 
-    /// <summary>Returns the handle of the GL-Object or InvalidHandle for default constructed objects.</summary>
+    /// @brief Returns the handle of the GL-Object or InvalidHandle for default constructed objects.
     Handle handle() const noexcept { return handle_; }
 
-    /// <summary>Whether the object is valid.</summary>
+    /// @brief Whether the object is valid.
     explicit operator bool() const noexcept { return bool{handle_}; }
 
     void swap(Object& other) noexcept
@@ -52,7 +52,7 @@ public:
 
     friend void swap(Object& lhs, Object& rhs) noexcept { lhs.swap(rhs); }
 
-    /// <summary>Sets an optional label for the object, which is used in by OpenGL generated debug messages.</summary>
+    /// @brief Sets an optional label for the object, which is used in by OpenGL generated debug messages.
     void setLabel(std::optional<std::string> label)
     {
         label_ = std::move(label);
@@ -63,7 +63,7 @@ public:
             glObjectLabel(toGLConstant(Type), handle_.unwrap(), 0, nullptr);
     }
 
-    /// <summary>Returns the label used in OpenGL generated debug messages.</summary>
+    /// @brief Returns the label used in OpenGL generated debug messages.
     const std::optional<std::string>& label() const { return label_; }
 
 protected:
@@ -97,11 +97,11 @@ private:
     std::optional<std::string> label_;
 };
 
-/// <summary>A base class for GL-Objects, which can be bound without a target.</summary>
+/// @brief A base class for GL-Objects, which can be bound without a target.
 template <ObjectType Type>
 class ObjectBindable : public Object<Type> {
 public:
-    /// <summary>Resets the bound object in the context if the object is still bound.</summary>
+    /// @brief Resets the bound object in the context if the object is still bound.
     ~ObjectBindable()
     {
         if (*this)
@@ -111,7 +111,7 @@ public:
     ObjectBindable(const ObjectBindable&) = delete;
     ObjectBindable& operator=(const ObjectBindable&) = delete;
 
-    /// <summary>Binds the object.</summary>
+    /// @brief Binds the object.
     void bind() const { this->objectContext().bind(this->handle()); }
 
 protected:

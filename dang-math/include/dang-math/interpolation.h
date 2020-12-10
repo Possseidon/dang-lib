@@ -5,7 +5,7 @@
 
 namespace dang::math {
 
-/// <summary>Linearly interpolates between two values.</summary>
+/// @brief Linearly interpolates between two values.
 template <typename T, typename TFactor>
 constexpr T interpolate(const T& from, const T& to, TFactor factor)
 {
@@ -14,28 +14,28 @@ constexpr T interpolate(const T& from, const T& to, TFactor factor)
 
 namespace interp {
 
-/// <summary>Simple identity function.</summary>
+/// @brief Simple identity function.
 auto linear = [](auto x) { return x; };
 
-/// <summary>Starts slow, ends fast.</summary>
+/// @brief Starts slow, ends fast.
 auto quadratic = [](auto x) { return x * x; };
-/// <summary>Starts fast, ends slow.</summary>
+/// @brief Starts fast, ends slow.
 auto inv_quadratic = [](auto x) { return x * (2 - x); };
-/// <summary>Starts slow, ends slow.</summary>
+/// @brief Starts slow, ends slow.
 auto cubic = [](auto x) { return x * x * (3 - 2 * x); };
 
-/// <summary>True exponential interpolation, quadratic is faster and usually sufficient.</summary>
+/// @brief True exponential interpolation, quadratic is faster and usually sufficient.
 auto exp = [](auto x) { return x * std::exp(x) / std::exp(1); };
-/// <summary>True inverse-exponential interpolation, inv_quadratic is faster and usually sufficient.</summary>
+/// @brief True inverse-exponential interpolation, inv_quadratic is faster and usually sufficient.
 auto inv_exp = [](auto x) { return 1 - exp(1 - x); };
-/// <summary>True cosine interpolation, cubic is faster and usually sufficient.</summary>
+/// @brief True cosine interpolation, cubic is faster and usually sufficient.
 auto cosine = [](auto x) { return (1 - std::cos(x * pi_v<decltype(x)>)) / 2; };
 
-/// <summary>Alias for cubic.</summary>
+/// @brief Alias for cubic.
 auto smooth = cubic;
-/// <summary>Alias for quadtratic.</summary>
+/// @brief Alias for quadtratic.
 auto smooth_start = quadratic;
-/// <summary>Alias for inv_quadtratic.</summary>
+/// @brief Alias for inv_quadtratic.
 auto smooth_end = inv_quadratic;
 
 } // namespace interp

@@ -5,8 +5,8 @@
 
 namespace dang::gl {
 
-/// <summary>A list of all data types, which can be used in GLSL.</summary>
-/// <remarks>Not using GLConstants, as this also has to be querried, which is faster this way.</remarks>
+/// @brief A list of all data types, which can be used in GLSL.
+/// @remark Not using GLConstants, as this also has to be querried, which is faster this way.
 enum class DataType {
     None = 0,
 
@@ -130,7 +130,7 @@ enum class DataType {
     AtomicUInt = GL_UNSIGNED_INT_ATOMIC_COUNTER
 };
 
-/// <summary>Returns the base data type of the given type being one of: None, Float, Double, Int, UInt or Bool.</summary>
+/// @brief Returns the base data type of the given type being one of: None, Float, Double, Int, UInt or Bool.
 constexpr DataType getBaseDataType(DataType type)
 {
     switch (type) {
@@ -265,7 +265,7 @@ constexpr DataType getBaseDataType(DataType type)
     }
 }
 
-/// <summary>Returns the size in bytes of the given data type.</summary>
+/// @brief Returns the size in bytes of the given data type.
 constexpr GLsizei getDataTypeSize(DataType type)
 {
     switch (type) {
@@ -428,7 +428,7 @@ constexpr GLsizei getDataTypeSize(DataType type)
     }
 }
 
-/// <summary>Returns the component count of a given data type, being the vector component count or matrix-rows, where matrices are column-major.</summary>
+/// @brief Returns the component count of a given data type, being the vector component count or matrix-rows, where matrices are column-major.
 constexpr GLsizei getDataTypeComponentCount(DataType type)
 {
     switch (type) {
@@ -476,7 +476,7 @@ constexpr GLsizei getDataTypeComponentCount(DataType type)
     }
 }
 
-/// <summary>Returns the column count for the given type, which is 1 for all non-matrix types, where matrices are column-major.</summary>
+/// @brief Returns the column count for the given type, which is 1 for all non-matrix types, where matrices are column-major.
 constexpr GLsizei getDataTypeColumnCount(DataType type)
 {
     switch (type) {

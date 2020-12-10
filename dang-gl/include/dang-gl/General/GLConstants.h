@@ -4,11 +4,11 @@
 
 namespace dang::gl {
 
-/// <summary>Maps from enum types to the actual GLenum constants, used in OpenGL function calls.</summary>
+/// @brief Maps from enum types to the actual GLenum constants, used in OpenGL function calls.
 template <typename T>
 inline constexpr auto GLConstants = nullptr;
 
-/// <summary>Same as GLConstants, but allows for automatic type deduction.</summary>
+/// @brief Same as GLConstants, but allows for automatic type deduction.
 template <typename T>
 constexpr auto toGLConstant(T value)
 {

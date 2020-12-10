@@ -7,7 +7,7 @@
 
 namespace dang::gl {
 
-/// <summary>A list of all OpenGL objects, which can be created, some with multiple targets.</summary>
+/// @brief A list of all OpenGL objects, which can be created, some with multiple targets.
 enum class ObjectType {
     Buffer,
     Shader,
@@ -24,7 +24,7 @@ enum class ObjectType {
     COUNT
 };
 
-/// <summary>The different buffer targets, which can be specified in glBindBuffer.</summary>
+/// @brief The different buffer targets, which can be specified in glBindBuffer.
 enum class BufferTarget {
     ArrayBuffer,
     AtomicCounterBuffer,
@@ -44,7 +44,7 @@ enum class BufferTarget {
     COUNT
 };
 
-/// <summary>The different texture targets, which can be specified in glBindTexture.</summary>
+/// @brief The different texture targets, which can be specified in glBindTexture.
 enum class TextureTarget {
     Texture1D,
     Texture1DArray,
@@ -59,11 +59,9 @@ enum class TextureTarget {
     COUNT
 };
 
-/// <summary>The different framebuffer targets, which can be specified in glBindFramebuffer.</summary>
-/// <remarks>
-/// <para>- "Framebuffer" means both draw AND read framebuffers.</para>
-/// <para>- If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.</para>
-/// </remarks>
+/// @brief The different framebuffer targets, which can be specified in glBindFramebuffer.
+/// @remark "Framebuffer" means both draw AND read framebuffers.</para>
+/// @remark If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.</para>
 enum class FramebufferTarget {
     Framebuffer,
     DrawFramebuffer,
@@ -72,8 +70,8 @@ enum class FramebufferTarget {
     COUNT
 };
 
-/// <summary>The different renderbuffer targets, which can be specified in glBindRenderbuffer.</summary>
-/// <remarks>Currently the only "option" is simply GL_RENDERBUFFER.</remarks>
+/// @brief The different renderbuffer targets, which can be specified in glBindRenderbuffer.
+/// @remark Currently the only "option" is simply GL_RENDERBUFFER.
 enum class RenderbufferTarget {
     Renderbuffer,
 
@@ -103,7 +101,7 @@ struct EnumCount<dang::gl::RenderbufferTarget> : DefaultEnumCount<dang::gl::Rend
 
 namespace dang::gl {
 
-/// <summary>The GL-Constants for object types, which is mainly used to query the currently bound object.</summary>
+/// @brief The GL-Constants for object types, which is mainly used to query the currently bound object.
 template <>
 inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
                                                                                   GL_SHADER,
@@ -117,7 +115,7 @@ inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> =
                                                                                   GL_RENDERBUFFER,
                                                                                   GL_FRAMEBUFFER};
 
-/// <summary>Maps from buffer targets to their respective constants, which need to be supplied to the glBindBuffer function.</summary>
+/// @brief Maps from buffer targets to their respective constants, which need to be supplied to the glBindBuffer function.
 template <>
 inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarget> = {GL_ARRAY_BUFFER,
                                                                                       GL_ATOMIC_COUNTER_BUFFER,
@@ -134,7 +132,7 @@ inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarge
                                                                                       GL_TRANSFORM_FEEDBACK_BUFFER,
                                                                                       GL_UNIFORM_BUFFER};
 
-/// <summary>Maps from texture targets to their respective constants, which need to be supplied to the glBindTexture function.</summary>
+/// @brief Maps from texture targets to their respective constants, which need to be supplied to the glBindTexture function.
 template <>
 inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTarget> = {GL_TEXTURE_1D,
                                                                                         GL_TEXTURE_1D_ARRAY,
@@ -146,12 +144,12 @@ inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTar
                                                                                         GL_TEXTURE_CUBE_MAP,
                                                                                         GL_TEXTURE_RECTANGLE};
 
-/// <summary>Maps from framebuffer targets to their respective constants, which need to be supplied to the glBindFramebuffer function.</summary>
+/// @brief Maps from framebuffer targets to their respective constants, which need to be supplied to the glBindFramebuffer function.
 template <>
 inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> GLConstants<FramebufferTarget> = {
     GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER};
 
-/// <summary>Maps from renderbuffer targets to their respective constants, which need to be supplied to the glBindRenderbuffer function.</summary>
+/// @brief Maps from renderbuffer targets to their respective constants, which need to be supplied to the glBindRenderbuffer function.
 template <>
 inline constexpr dutils::EnumArray<RenderbufferTarget, GLenum> GLConstants<RenderbufferTarget> = {GL_RENDERBUFFER};
 
@@ -186,8 +184,8 @@ struct TargetSelector<ObjectType::Framebuffer> {
 
 } // namespace detail
 
-/// <summary>Maps to the different enums for the various binding targets of the template specified object type.</summary>
-/// <remarks>Not all bindable objects support multiple targets.</remarks>
+/// @brief Maps to the different enums for the various binding targets of the template specified object type.
+/// @remark Not all bindable objects support multiple targets.
 template <ObjectType Type>
 using ObjectTarget = typename detail::TargetSelector<Type>::Type;
 
@@ -276,7 +274,7 @@ inline constexpr auto& glBindObject<ObjectType::Renderbuffer> = glBindRenderbuff
 template <>
 inline constexpr auto& glBindObject<ObjectType::Framebuffer> = glBindFramebuffer;
 
-/// <summary>Whether the given function does not exist and is still a nullptr.</summary>
+/// @brief Whether the given function does not exist and is still a nullptr.
 template <typename T>
 constexpr bool canExecute(const T&)
 {

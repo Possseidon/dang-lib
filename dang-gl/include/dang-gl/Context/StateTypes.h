@@ -8,7 +8,7 @@
 
 namespace dang::gl {
 
-/// <summary>The source factor, used for the blending function.</summary>
+/// @brief The source factor, used for the blending function.
 enum class BlendFactorSrc {
     Zero,
     One,
@@ -29,7 +29,7 @@ enum class BlendFactorSrc {
     COUNT
 };
 
-/// <summary>The destination factor, used for the blending function.</summary>
+/// @brief The destination factor, used for the blending function.
 enum class BlendFactorDst {
     Zero,
     One,
@@ -49,7 +49,7 @@ enum class BlendFactorDst {
     COUNT
 };
 
-/// <summary>Used by functions to compare values.</summary>
+/// @brief Used by functions to compare values.
 enum class CompareFunc {
     Never,
     Less,
@@ -63,7 +63,7 @@ enum class CompareFunc {
     COUNT
 };
 
-/// <summary>Which face to hide/cull.</summary>
+/// @brief Which face to hide/cull.
 enum class CullFaceMode {
     Front,
     Back,
@@ -72,7 +72,7 @@ enum class CullFaceMode {
     COUNT
 };
 
-/// <summary>A list of all binary operations of boolean algebra.</summary>
+/// @brief A list of all binary operations of boolean algebra.
 enum class LogicOp {
     Clear,
     Set,
@@ -94,7 +94,7 @@ enum class LogicOp {
     COUNT
 };
 
-/// <summary>Specifies the side of a polygon.</summary>
+/// @brief Specifies the side of a polygon.
 enum class PolygonSide {
     Front,
     Back,
@@ -102,7 +102,7 @@ enum class PolygonSide {
     COUNT
 };
 
-/// <summary>Specfies, whether polygons should render full faces, the outline or just corner points.</summary>
+/// @brief Specfies, whether polygons should render full faces, the outline or just corner points.
 enum class PolygonMode {
     Point,
     Line,
@@ -111,7 +111,7 @@ enum class PolygonMode {
     COUNT
 };
 
-/// <summary>Actions, which can be performed on the stencil buffer.</summary>
+/// @brief Actions, which can be performed on the stencil buffer.
 enum class StencilAction {
     Keep,
     Zero,
@@ -230,7 +230,7 @@ template <>
 inline constexpr dutils::EnumArray<StencilAction, GLenum> GLConstants<StencilAction> = {
     GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_INCR_WRAP, GL_DECR, GL_DECR_WRAP, GL_INVERT};
 
-/// <summary>Combines blending source and destination factors into a single type.</summary>
+/// @brief Combines blending source and destination factors into a single type.
 struct BlendFactor {
     BlendFactorSrc src;
     BlendFactorDst dst;
@@ -241,7 +241,7 @@ struct BlendFactor {
     std::tuple<GLenum, GLenum> toTuple() const;
 };
 
-/// <summary>Which polygon mode to use for a template specified polygon side.</summary>
+/// @brief Which polygon mode to use for a template specified polygon side.
 template <PolygonSide Side>
 struct PolygonSideMode {
     PolygonMode mode;
@@ -259,7 +259,7 @@ struct PolygonSideMode {
     }
 };
 
-/// <summary>Polygon offset, consisting of a factor and units value.</summary>
+/// @brief Polygon offset, consisting of a factor and units value.
 struct PolygonOffset {
     GLfloat factor;
     GLfloat units;
@@ -270,7 +270,7 @@ struct PolygonOffset {
     std::tuple<GLfloat, GLfloat> toTuple() const;
 };
 
-/// <summary>A sample coverage, consisting of a clamped value and an invert flag.</summary>
+/// @brief A sample coverage, consisting of a clamped value and an invert flag.
 struct SampleCoverage {
     GLclampf value;
     GLboolean invert;
@@ -281,7 +281,7 @@ struct SampleCoverage {
     std::tuple<GLclampf, GLboolean> toTuple() const;
 };
 
-/// <summary>Two-dimensional integer bounds for a scissor-test.</summary>
+/// @brief Two-dimensional integer bounds for a scissor-test.
 struct Scissor {
     ibounds2 bounds;
 
@@ -291,7 +291,7 @@ struct Scissor {
     std::tuple<GLint, GLint, GLsizei, GLsizei> toTuple() const;
 };
 
-/// <summary>The full parameter-set to change the stencil function with reference value and bit mask.</summary>
+/// @brief The full parameter-set to change the stencil function with reference value and bit mask.
 struct StencilFunc {
     CompareFunc func;
     GLint ref;
@@ -303,7 +303,7 @@ struct StencilFunc {
     std::tuple<GLenum, GLint, GLuint> toTuple() const;
 };
 
-/// <summary>A set of stencil actions, which should be executed for different checks.</summary>
+/// @brief A set of stencil actions, which should be executed for different checks.
 struct StencilOp {
     StencilAction sfail;
     StencilAction dpfail;

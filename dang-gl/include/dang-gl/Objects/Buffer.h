@@ -12,11 +12,11 @@ namespace dang::gl {
 // TODO: Move a lot of VBO functionality in here
 // TODO: Lock mapped buffers again
 
-/// <summary>An OpenGL buffer for a template specified target.</summary>
+/// @brief An OpenGL buffer for a template specified target.
 template <BufferTarget Target>
 class BufferBase : public Object<ObjectType::Buffer> {
 public:
-    /// <summary>Resets the bound buffer of the context, in case of the buffer still being bound.</summary>
+    /// @brief Resets the bound buffer of the context, in case of the buffer still being bound.
     ~BufferBase()
     {
         if (*this)
@@ -26,7 +26,7 @@ public:
     BufferBase(const BufferBase&) = delete;
     BufferBase& operator=(const BufferBase&) = delete;
 
-    /// <summary>Binds the buffer to the correct target.</summary>
+    /// @brief Binds the buffer to the correct target.
     void bind() const { objectContext().bind(Target, handle()); }
 
 protected:

@@ -11,13 +11,13 @@ namespace dang::lua {
 // Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and it doesn't hurt)
 class State;
 
-/// <summary>The amount of stack slots auxiliary library functions are allowed to use before they call checkstack themselves.</summary>
-/// <remarks>This information can only be found in the documentation, there does not seem to be any constant for this defined.</remarks>
+/// @brief The amount of stack slots auxiliary library functions are allowed to use before they call checkstack themselves.
+/// @remark This information can only be found in the documentation, there does not seem to be any constant for this defined.
 constexpr int auxiliary_required_pushable = 4;
 
 // --- Utility Structs ---
 
-/// <summary>Wraps allocation function and optional userdata, which is always passed to this function.</summary>
+/// @brief Wraps allocation function and optional userdata, which is always passed to this function.
 struct Allocator {
     Allocator(lua_Alloc function, void* userdata = nullptr)
         : function(function)
@@ -30,17 +30,17 @@ struct Allocator {
 
 // --- Reference ---
 
-/// <summary>Wraps a reference to a Lua value, that lives in the registry table.</summary>
-/// <remarks>Uses luaL_ref and luaL_unref from the auxiliary library.</remarks>
+/// @brief Wraps a reference to a Lua value, that lives in the registry table.
+/// @remark Uses luaL_ref and luaL_unref from the auxiliary library.
 class Reference {
 public:
     friend class State;
     friend struct Convert<Reference>;
 
-    /// <summary>Default constructs a reference with LUA_NOREF and a nullptr state.</summary>
+    /// @brief Default constructs a reference with LUA_NOREF and a nullptr state.
     Reference() = default;
 
-    /// <summary>Removes the reference from the registry table.</summary>
+    /// @brief Removes the reference from the registry table.
     ~Reference()
     {
         // Quote: If ref is LUA_NOREF or LUA_REFNIL, luaL_unref does nothing.
@@ -75,13 +75,13 @@ public:
     friend void swap(Reference& lhs, Reference& rhs) noexcept { lhs.swap(rhs); }
 
 private:
-    /// <summary>Turns the top of the stack into a reference, popping the value in the process.</summary>
+    /// @brief Turns the top of the stack into a reference, popping the value in the process.
     explicit Reference(lua_State* state)
         : state_(state)
         , ref_(luaL_ref(state, LUA_REGISTRYINDEX))
     {}
 
-    /// <summary>Pushes the referenced value on the stack.</summary>
+    /// @brief Pushes the referenced value on the stack.
     void push() const { lua_rawgeti(state_, LUA_REGISTRYINDEX, ref_); }
 
     lua_State* state_ = nullptr;
@@ -90,7 +90,7 @@ private:
 
 // UniqueReference not necessary. Reference is very cheap to move on its own.
 
-/// <summary>Allows for easy sharing of the same reference.</summary>
+/// @brief Allows for easy sharing of the same reference.
 using SharedReference = std::shared_ptr<Reference>;
 using WeakReference = std::weak_ptr<Reference>;
 
@@ -148,7 +148,7 @@ namespace detail {
 
 // --- Signature Information ---
 
-/// <summary>Meant to be used as a base class to provide information about the signature of functions.</summary>
+/// @brief Meant to be used as a base class to provide information about the signature of functions.
 template <typename TRet, typename... TArgs>
 struct SignatureInfoBase {
     template <typename TArg>
@@ -160,10 +160,8 @@ struct SignatureInfoBase {
     static constexpr bool AnyStateArgs = ((std::is_same_v<TArgs, State&> || IsAnyIndex<TArgs>::value) || ...);
 
 protected:
-    /// <summary>
-    /// <para>Calculates the index of the next argument from the given index list of all previous arguments.</para>
-    /// <para>An empty index sequence {} will give "1", an index sequence {0} will give "1" plus the size of the first argument, etc...</para>
-    /// </summary>
+    /// @brief Calculates the index of the next argument from the given index list of all previous arguments.
+    /// @remark An empty index sequence {} will give "1", an index sequence {0} will give "1" plus the size of the first argument, etc...
     template <std::size_t... Indices>
     static constexpr int indexOffset(std::index_sequence<Indices...>)
     {
@@ -173,20 +171,20 @@ protected:
     }
 };
 
-/// <summary>Provides information about a function signature and the means to convert arguments of a Lua C-Function into actual C++ values.</summary>
-/// <remarks>Argument conversion relies on the Convert template.</remarks>
+/// @brief Provides information about a function signature and the means to convert arguments of a Lua C-Function into actual C++ values.
+/// @remark Argument conversion relies on the Convert template.
 template <typename TFunc>
 struct SignatureInfo;
 
 template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
-    /// <summary>Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.</summary>
+    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.
     static auto convertArguments(State& state)
     {
         return convertArgumentsHelper(state, std::index_sequence_for<TArgs...>{});
     }
 
-    /// <summary>Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.</summary>
+    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.
     static auto convertArgumentsRaw(lua_State* state)
     {
         return convertArgumentsRawHelper(state, std::index_sequence_for<TArgs...>{});
@@ -195,14 +193,14 @@ struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
 private:
     using Base = SignatureInfoBase<TRet, TArgs...>;
 
-    /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
+    /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... Indices>
     static typename Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<Indices...>)
     {
         return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<Indices>{}))...};
     }
 
-    /// <summary>Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.</summary>
+    /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... Indices>
     static typename Base::Arguments convertArgumentsRawHelper(lua_State* state, std::index_sequence<Indices...>)
     {
@@ -248,8 +246,8 @@ struct SignatureInfo<TRet (TClass::*)(TArgs...) const noexcept> : SignatureInfo<
 
 // --- Index Iterator ---
 
-/// <summary>Provides iteration functionality for the Lua stack and upvalues.</summary>
-/// <remarks>Basically just wraps "Index" (which is cheap to copy anyways) with iterator functionality.</remarks>
+/// @brief Provides iteration functionality for the Lua stack and upvalues.
+/// @remark Basically just wraps "Index" (which is cheap to copy anyways) with iterator functionality.
 template <typename TIndex>
 class IndexIterator {
 public:
@@ -309,35 +307,35 @@ private:
 
 // --- Index Implementations ---
 
-/// <summary>Tag to signify that the given indices should be used as is.</summary>
+/// @brief Tag to signify that the given indices should be used as is.
 struct DirectInit {};
 
-/// <summary>Serves as a base for all index wrappers.</summary>
+/// @brief Serves as a base for all index wrappers.
 template <typename TState>
 class IndexImplBase {
 public:
-    /// <summary>Returns the associated Lua state.</summary>
+    /// @brief Returns the associated Lua state.
     TState& state() const { return *state_; }
 
 protected:
-    /// <summary>Default constructible for the sake of simplifying the iterator wrapper.</summary>
+    /// @brief Default constructible for the sake of simplifying the iterator wrapper.
     IndexImplBase() = default;
 
-    /// <summary>Associates the given Lua state with the index.</summary>
+    /// @brief Associates the given Lua state with the index.
     explicit IndexImplBase(TState& state)
         : state_(&state)
     {}
 
-    /// <summary>Applies an offset to the given index.</summary>
-    /// <remarks>Note: Stack indices grow positive, while upvalues grow negative.</remarks>
+    /// @brief Applies an offset to the given index.
+    /// @remark Note: Stack indices grow positive, while upvalues grow negative.
     static int applyOffset(int index, int offset)
     {
         assert(index < LUA_REGISTRYINDEX || index >= 1);
         return index >= 0 ? index + offset : index - offset;
     }
 
-    /// <summary>The difference between two indices.</summary>
-    /// <remarks>See applyOffset for why this is necessary.</remarks>
+    /// @brief The difference between two indices.
+    /// @remark See applyOffset for why this is necessary.
     static int indexDiff(int first, int last)
     {
         assert(first < LUA_REGISTRYINDEX || first >= 1);
@@ -348,15 +346,15 @@ private:
     TState* state_ = nullptr;
 };
 
-/// <summary>The general implementation for the various types of Lua stack index positions.</summary>
+/// @brief The general implementation for the various types of Lua stack index positions.
 template <typename TState, typename TIndex>
 class IndexImpl : public IndexImplBase<TState> {
 public:
-    /// <summary>Default constructible for sake of simplifying iterator implementation.</summary>
-    /// <remarks>Index defaults to 0, which is not a valid index. (Indices start at 1)</remarks>
+    /// @brief Default constructible for sake of simplifying iterator implementation.
+    /// @remark Index defaults to 0, which is not a valid index. (Indices start at 1)
     IndexImpl() = default;
 
-    /// <summary>Directly initializes to the given index.</summary>
+    /// @brief Directly initializes to the given index.
     IndexImpl(DirectInit, TState& state, int index)
         : IndexImplBase<TState>(state)
         , index_(index)
@@ -366,121 +364,121 @@ public:
 
     // --- Index ---
 
-    /// <summary>The stored index.</summary>
+    /// @brief The stored index.
     int index() const { return index_; }
 
-    /// <summary>Same as index().</summary>
-    /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
+    /// @brief Same as index().
+    /// @remark Merely for compatibility with StackIndices and StackIndexRange.
     int first() const { return index(); }
 
-    /// <summary>Same as index().</summary>
-    /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
+    /// @brief Same as index().
+    /// @remark Merely for compatibility with StackIndices and StackIndexRange.
     int last() const { return index(); }
 
-    /// <summary>Returns 1.</summary>
-    /// <remarks>Merely for compatibility with StackIndices and StackIndexRange.</remarks>
+    /// @brief Returns 1.
+    /// @remark Merely for compatibility with StackIndices and StackIndexRange.
     constexpr int size() const { return 1; }
 
-    /// <summary>Returns another index, which is offset by a given amount.</summary>
-    /// <remarks>See: applyOffset</remarks>
+    /// @brief Returns another index, which is offset by a given amount.
+    /// @remark See: applyOffset
     auto offset(int offset) const { return TIndex(DirectInit{}, this->state(), this->applyOffset(index_, offset)); }
 
-    /// <summary>Returns the difference to another index.</summary>
-    /// <remarks>See: indexDiff</remarks>
+    /// @brief Returns the difference to another index.
+    /// @remark See: indexDiff
     int diff(TIndex other) const { return this->indexDiff(index_, other.index_); }
 
     // --- Index Properties ---
 
-    /// <summary>Whether the index is a position on the Lua stack.</summary>
+    /// @brief Whether the index is a position on the Lua stack.
     bool isStack() const { return this->state().isStack(index()); }
 
-    /// <summary>Whether the index is a pseudo index (upvalue or registry).</summary>
+    /// @brief Whether the index is a pseudo index (upvalue or registry).
     bool isPseudo() const { return this->state().isPseudo(index()); }
 
-    /// <summary>Whether the index is an upvalue.</summary>
+    /// @brief Whether the index is an upvalue.
     bool isUpvalue() const { return this->state().isUpvalue(index()); }
 
-    /// <summary>Whether the index is the index for the registry table.</summary>
+    /// @brief Whether the index is the index for the registry table.
     bool isRegistry() const { return this->state().isRegistry(index()); }
 
-    /// <summary>Wether the index (plus an optional offset) is at the bottom of the stack.</summary>
+    /// @brief Wether the index (plus an optional offset) is at the bottom of the stack.
     bool isBottom(int offset = 0) const { return this->state().isIndexBottom(index(), offset); }
 
-    /// <summary>Wether the index (plus an optional offset) is at the top of the stack.</summary>
+    /// @brief Wether the index (plus an optional offset) is at the top of the stack.
     bool isTop(int offset = 0) const { return this->state().isIndexTop(index(), offset); }
 
-    /// <summary>Returns the (zero-based) offset from the bottom of the stack.</summary>
+    /// @brief Returns the (zero-based) offset from the bottom of the stack.
     int offsetFromBottom() const { return this->state().indexOffsetFromBottom(index()); }
 
-    /// <summary>Returns the (zero-based) offset from the top of the stack.</summary>
+    /// @brief Returns the (zero-based) offset from the top of the stack.
     int offsetFromTop() const { return this->state().indexOffsetFromTop(index()); }
 
     // --- Stack Queries ---
 
-    /// <summary>Returns the type of the element.</summary>
+    /// @brief Returns the type of the element.
     Type type() const { return this->state().type(index()); }
 
-    /// <summary>Returns the name of the element's type.</summary>
+    /// @brief Returns the name of the element's type.
     std::string_view typeName() const { return this->state().typeName(index()); }
 
-    /// <summary>Whether the index is not valid.</summary>
+    /// @brief Whether the index is not valid.
     bool isNone() const { return this->state().isNone(index()); }
 
-    /// <summary>Whether the element is nil.</summary>
+    /// @brief Whether the element is nil.
     bool isNil() const { return this->state().isNil(index()); }
 
-    /// <summary>Whether the index is not valid or the element is nil.</summary>
+    /// @brief Whether the index is not valid or the element is nil.
     bool isNoneOrNil() const { return this->state().isNoneOrNil(index()); }
 
-    /// <summary>Whether the element is a boolean.</summary>
+    /// @brief Whether the element is a boolean.
     bool isBoolean() const { return this->state().isBoolean(index()); }
 
-    /// <summary>Whether the element is light userdata.</summary>
+    /// @brief Whether the element is light userdata.
     bool isLightUserdata() const { return this->state().isLightUserdata(index()); }
 
-    /// <summary>Whether the element is a number or a string convertible to a number.</summary>
+    /// @brief Whether the element is a number or a string convertible to a number.
     bool isNumber() const { return this->state().isNumber(index()); }
 
-    /// <summary>Whether the element is an integer or a string convertible to an integer.</summary>
+    /// @brief Whether the element is an integer or a string convertible to an integer.
     bool isInteger() const { return this->state().isInteger(index()); }
 
-    /// <summary>Whether the element is a string or a number (which is always convertible to a string).</summary>
+    /// @brief Whether the element is a string or a number (which is always convertible to a string).
     bool isString() const { return this->state().isString(index()); }
 
-    /// <summary>Whether the element is a table.</summary>
+    /// @brief Whether the element is a table.
     bool isTable() const { return this->state().isTable(index()); }
 
-    /// <summary>Whether the element is a function (either C or Lua).</summary>
+    /// @brief Whether the element is a function (either C or Lua).
     bool isFunction() const { return this->state().isFunction(index()); }
 
-    /// <summary>Whether the element is a C function.</summary>
+    /// @brief Whether the element is a C function.
     bool isCFunction() const { return this->state().isCFunction(index()); }
 
-    /// <summary>Whether the element is full or light userdata.</summary>
+    /// @brief Whether the element is full or light userdata.
     bool isUserdata() const { return this->state().isUserdata(index()); }
 
-    /// <summary>Whether the element is a thread.</summary>
+    /// @brief Whether the element is a thread.
     bool isThread() const { return this->state().isThread(index()); }
 
     // --- Conversion ---
 
-    /// <summary>Uses the Convert template to convert the element.</summary>
-    /// <remarks>Returns an optional, which is std::nullopt if the conversion failed.</remarks>
+    /// @brief Uses the Convert template to convert the element.
+    /// @remark Returns an optional, which is std::nullopt if the conversion failed.
     template <typename T>
     auto to()
     {
         return this->state().template to<T>(index());
     }
 
-    /// <summary>Treats the element as a function argument and uses the Convert template to convert it.</summary>
-    /// <remarks>Raises a Lua (argument) error if the conversion failed.</remarks>
+    /// @brief Treats the element as a function argument and uses the Convert template to convert it.
+    /// @remark Raises a Lua (argument) error if the conversion failed.
     template <typename T>
     decltype(auto) check()
     {
         return this->state().template check<T>(index());
     }
 
-    /// <summary>Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".</summary>
+    /// @brief Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".
     explicit operator bool() { return check<bool>(); }
 
     // --- Error ---
@@ -501,43 +499,43 @@ public:
 
     // --- Calling ---
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
-    /// <remarks>Also supports LUA_MULTRET.</remarks>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a fixed number of results.
+    /// @remark Also supports LUA_MULTRET.
     template <int Results = 0, typename... TArgs>
     auto call(TArgs&&... args) const
     {
         return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a specified number of results.
     template <typename... TArgs>
     auto callReturning(int results, TArgs&&... args) const
     {
         return this->state().callReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) const
     {
         return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const
     {
         return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) const
     {
         return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) const
     {
@@ -546,8 +544,8 @@ public:
 
     // --- Operations ---
 
-    /// <summary>Replaces the element with another value.</summary>
-    /// <remarks>This is what one might expect from the assignment operator, yet the assignment operator only changes the index itself, not its element.</remarks>
+    /// @brief Replaces the element with another value.
+    /// @remark This is what one might expect from the assignment operator, yet the assignment operator only changes the index itself, not its element.
     template <typename T>
     auto& replace(T&& value) const
     {
@@ -561,103 +559,103 @@ public:
         return *this;
     }
 
-    /// <summary>Performs integer division with another value. (// in Lua)</summary>
+    /// @brief Performs integer division with another value. (// in Lua)
     template <typename T>
     auto idiv(T&& other) const
     {
         return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
+    /// @brief Raises the element to the power of another value. (^ in Lua)
     template <typename T>
     auto pow(T&& other) const
     {
         return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
+    /// @brief Performs binary xor with another value. (~ in Lua)
     template <typename T>
     auto bxor(T&& other) const
     {
         return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Pushes the length of the element on the stack.</summary>
-    /// <remarks>This can invoke the __len meta-method and therefore doesn't necessarily return an integer.</remarks>
+    /// @brief Pushes the length of the element on the stack.
+    /// @remark This can invoke the __len meta-method and therefore doesn't necessarily return an integer.
     auto pushLength() const { return this->state().pushLength(index()); }
 
-    /// <summary>Returns the length of the element.</summary>
-    /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return an integer.</remarks>
+    /// @brief Returns the length of the element.
+    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return an integer.
     auto length() const { return this->state().length(index()); }
 
-    /// <summary>Returns the raw length of the value, which does not invoke meta-method.</summary>
+    /// @brief Returns the raw length of the value, which does not invoke meta-method.
     auto rawLength() const { return this->state().rawLength(index()); }
 
     // --- Table Access ---
 
-    /// <summary>Queries the element like a table with the given key, returning both the type and the pushed value.</summary>
-    /// <remarks>Can invoke the __index meta-method.</remarks>
+    /// @brief Queries the element like a table with the given key, returning both the type and the pushed value.
+    /// @remark Can invoke the __index meta-method.
     template <typename TKey>
     auto getTableWithType(TKey&& key)
     {
         return this->state().getTableWithType(*this, std::forward<TKey>(key));
     }
 
-    /// <summary>Queries the element like a table with the given key, returning the pushed value.</summary>
-    /// <remarks>Can invoke the __index meta-method.</remarks>
+    /// @brief Queries the element like a table with the given key, returning the pushed value.
+    /// @remark Can invoke the __index meta-method.
     template <typename TKey>
     auto getTable(TKey&& key)
     {
         return this->state().getTable(*this, std::forward<TKey>(key));
     }
 
-    /// <summary>Convenience for table access, however it can only be used to query and not to set.</summary>
+    /// @brief Convenience for table access, however it can only be used to query and not to set.
     template <typename TKey>
     auto operator[](TKey&& key)
     {
         return this->state().getTable(*this, std::forward<TKey>(key));
     }
 
-    /// <summary>Sets a key of the element like a table to the given value.</summary>
-    /// <remarks>Can invoke the __newindex meta-method.</remarks>
+    /// @brief Sets a key of the element like a table to the given value.
+    /// @remark Can invoke the __newindex meta-method.
     template <typename TKey, typename TValue>
     void setTable(TKey&& key, TValue&& value)
     {
         this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
-    /// <summary>Similar to getTableWithType, but does not invoke meta-methods.</summary>
+    /// @brief Similar to getTableWithType, but does not invoke meta-methods.
     template <typename TKey>
     auto rawGetTableWithType(TKey&& key)
     {
         return this->state().rawGetTableWithType(*this, std::forward<TKey>(key));
     }
 
-    /// <summary>Similar to getTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to getTable, but does not invoke meta-methods.
     template <typename TKey>
     auto rawGetTable(TKey&& key)
     {
         return this->state().rawGetTable(*this, std::forward<TKey>(key));
     }
 
-    /// <summary>Similar to setTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to setTable, but does not invoke meta-methods.
     template <typename TKey, typename TValue>
     void rawSetTable(TKey&& key, TValue&& value)
     {
         this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
-    /// <summary>Returns the metatable of the element or std::nullopt if it doesn't have one.</summary>
+    /// @brief Returns the metatable of the element or std::nullopt if it doesn't have one.
     auto getMetatable() { return this->state().getMetatable(index()); }
 
-    /// <summary>Sets the metatable of the element to the specified table; or nil to remove it.</summary>
+    /// @brief Sets the metatable of the element to the specified table; or nil to remove it.
     template <typename TMetatable>
     auto setMetatable(TMetatable&& metatable)
     {
         this->state().setMetatable(index(), std::forward<TMetatable>(metatable));
     }
 
-    /// <summary>Returns the next key-value-pair of the table or nothing, if the table has been exhausted.</summary>
+    /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
     auto next(TKey&& key)
     {
@@ -666,31 +664,31 @@ public:
 
     // --- Formatting ---
 
-    /// <summary>Converts the element to a string in a reasonable format using luaL_tolstring.</summary>
+    /// @brief Converts the element to a string in a reasonable format using luaL_tolstring.
     std::string format() const { return this->state().format(index()); }
 
-    /// <summary>Prints the element to the stream using the format function.</summary>
+    /// @brief Prints the element to the stream using the format function.
     friend std::ostream& operator<<(std::ostream& stream, const IndexImpl& index) { return stream << index.format(); }
 
     // --- Reference ---
 
-    /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
+    /// @brief Stores the element as a reference in the registry table and returns a wrapper.
     auto ref() { return this->state().ref(*this); }
 
 private:
     int index_ = 0;
 };
 
-/// <summary>The basic implementation for a compile-time fixed size range of indices.</summary>
+/// @brief The basic implementation for a compile-time fixed size range of indices.
 template <typename TState, int Count>
 class IndicesImpl : public IndexImplBase<TState> {
 public:
     static_assert(Count >= 0, "Indices must have a non-negative count.");
 
-    /// <summary>Default constructible to stay consistent with Index.</summary>
+    /// @brief Default constructible to stay consistent with Index.
     IndicesImpl() = default;
 
-    /// <summary>Directly initializes the starting index with the given value.</summary>
+    /// @brief Directly initializes the starting index with the given value.
     IndicesImpl(DirectInit, TState& state, int first)
         : IndexImplBase<TState>(state)
         , first_(first)
@@ -698,24 +696,24 @@ public:
         assert(first < LUA_REGISTRYINDEX || first >= 1);
     }
 
-    /// <summary>Returns the first index of the range.</summary>
+    /// @brief Returns the first index of the range.
     int first() const { return first_; }
 
-    /// <summary>Returns the size of the range.</summary>
+    /// @brief Returns the size of the range.
     constexpr int size() const { return Count; }
 
 private:
     int first_ = 0;
 };
 
-/// <summary>The basic implementation for a range of indices.</summary>
+/// @brief The basic implementation for a range of indices.
 template <typename TState>
 class IndexRangeImpl : public IndexImplBase<TState> {
 public:
-    /// <summary>Default constructible to stay consistent with Index.</summary>
+    /// @brief Default constructible to stay consistent with Index.
     IndexRangeImpl() = default;
 
-    /// <summary>Directly initializes the starting index with the given values.</summary>
+    /// @brief Directly initializes the starting index with the given values.
     IndexRangeImpl(DirectInit, TState& state, int first, int count)
         : IndexImplBase<TState>(state)
         , first_(first)
@@ -725,10 +723,10 @@ public:
         assert(count >= 0);
     }
 
-    /// <summary>Returns the first index of the range.</summary>
+    /// @brief Returns the first index of the range.
     int first() const { return first_; }
 
-    /// <summary>Returns the size of the range.</summary>
+    /// @brief Returns the size of the range.
     int size() const { return count_; }
 
 private:
@@ -736,40 +734,40 @@ private:
     int count_ = 0;
 };
 
-/// <summary>The general implementation for a range of indices.</summary>
-/// <remarks>If Size is -1, uses IndexRangeImpl as base class, otherwise uses IndicesImpl.</remarks>
+/// @brief The general implementation for a range of indices.
+/// @remark If Size is -1, uses IndexRangeImpl as base class, otherwise uses IndicesImpl.
 template <typename TState, typename TIndex, int Size>
 class MultiIndexImpl : public std::conditional_t<Size != -1, IndicesImpl<TState, Size>, IndexRangeImpl<TState>> {
 public:
     // Using base constructor
     using std::conditional_t<Size != -1, IndicesImpl<TState, Size>, IndexRangeImpl<TState>>::conditional_t;
 
-    /// <summary>Returns the last index of the range.</summary>
+    /// @brief Returns the last index of the range.
     int last() const { return this->applyOffset(this->first(), this->size() - 1); }
 
-    /// <summary>Returns a single index at the given zero-based (!) offset.</summary>
+    /// @brief Returns a single index at the given zero-based (!) offset.
     auto operator[](int offset) const
     {
         return TIndex(DirectInit{}, this->state(), this->applyOffset(this->first(), offset));
     }
 
-    /// <summary>Returns an iterator to the first element.</summary>
+    /// @brief Returns an iterator to the first element.
     auto begin() { return IndexIterator<TIndex>((*this)[0]); }
 
-    /// <summary>Returns an iterator to one after the last element.</summary>
+    /// @brief Returns an iterator to one after the last element.
     auto end() { return IndexIterator<TIndex>((*this)[this->size()]); }
 
     // --- Index Properties ---
 
-    /// <summary>Whether the range starts at the bottom of the stack.</summary>
+    /// @brief Whether the range starts at the bottom of the stack.
     bool isBottom(int offset = 0) const { return this->state().isIndexBottom(this->first(), offset); }
 
-    /// <summary>Whether the range ends at the top of the stack.</summary>
+    /// @brief Whether the range ends at the top of the stack.
     bool isTop(int offset = 0) const { return this->state().isIndexTop(this->last(), offset); }
 
     // --- Formatting ---
 
-    /// <summary>Prints all indices to the stream, separated by comma (and space).</summary>
+    /// @brief Prints all indices to the stream, separated by comma (and space).
     friend std::ostream& operator<<(std::ostream& stream, const MultiIndexImpl& indices)
     {
         int size = indices.size();
@@ -784,16 +782,16 @@ public:
 
 // --- Index Wrappers ---
 
-/// <summary>Results can be consumed by other operations if they are also rvalues.</summary>
+/// @brief Results can be consumed by other operations if they are also rvalues.
 enum class StackIndexType { Reference, Result };
 
-/// <summary>Wraps any index on the Lua stack.</summary>
+/// @brief Wraps any index on the Lua stack.
 template <typename TState, StackIndexType Type>
 class StackIndex : public IndexImpl<TState, StackIndex<TState, StackIndexType::Reference>> {
 public:
     using IndexImpl<TState, StackIndex<TState, StackIndexType::Reference>>::IndexImpl;
 
-    /// <summary>Takes any stack index.</summary>
+    /// @brief Takes any stack index.
     StackIndex(TState& state, int index)
         : IndexImpl<TState, StackIndex<TState, StackIndexType::Reference>>(
               DirectInit{}, state, state.absStackIndex(index))
@@ -801,10 +799,10 @@ public:
         assert(index > LUA_REGISTRYINDEX);
     }
 
-    /// <summary>Returns a result index, for which rvalues can be consumed by some functions.</summary>
+    /// @brief Returns a result index, for which rvalues can be consumed by some functions.
     auto asResult() { return StackIndex<TState, StackIndexType::Result>(DirectInit{}, this->state(), this->index()); }
 
-    /// <summary>Pops the value if it lies at the top of the stack.</summary>
+    /// @brief Pops the value if it lies at the top of the stack.
     void popIfTop()
     {
         if (this->isTop())
@@ -813,16 +811,16 @@ public:
 
     // --- Calling ---
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
-    /// <remarks>Also supports LUA_MULTRET.</remarks>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a fixed number of results.
+    /// @remark Also supports LUA_MULTRET.
     template <int Results = 0, typename... TArgs>
     auto call(TArgs&&... args) const&
     {
         return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a fixed number of results.</summary>
-    /// <remarks>Also supports LUA_MULTRET.</remarks>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a fixed number of results.
+    /// @remark Also supports LUA_MULTRET.
     template <int Results = 0, typename... TArgs>
     auto call(TArgs&&... args) &&
     {
@@ -832,14 +830,14 @@ public:
             return this->state().template call<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a specified number of results.
     template <typename... TArgs>
     auto callReturning(int results, TArgs&&... args) const&
     {
         return this->state().callReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning a specified number of results.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning a specified number of results.
     template <typename... TArgs>
     auto callReturning(int results, TArgs&&... args) &&
     {
@@ -849,14 +847,14 @@ public:
             return this->state().callReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) const&
     {
         return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.</summary>
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) &&
     {
@@ -866,14 +864,14 @@ public:
             return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const&
     {
         return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) &&
     {
@@ -883,14 +881,14 @@ public:
             return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) const&
     {
         return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) &&
     {
@@ -900,14 +898,14 @@ public:
             return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) const&
     {
         return this->state().pcallMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).</summary>
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) &&
     {
@@ -919,14 +917,14 @@ public:
 
     // --- Operations ---
 
-    /// <summary>Performs integer division with another value. (// in Lua)</summary>
+    /// @brief Performs integer division with another value. (// in Lua)
     template <typename T>
     auto idiv(T&& other) const&
     {
         return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Performs integer division with another value. (// in Lua)</summary>
+    /// @brief Performs integer division with another value. (// in Lua)
     template <typename T>
     auto idiv(T&& other) &&
     {
@@ -936,14 +934,14 @@ public:
             return this->state().template arith<ArithOp::IDiv>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
+    /// @brief Raises the element to the power of another value. (^ in Lua)
     template <typename T>
     auto pow(T&& other) const&
     {
         return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Raises the element to the power of another value. (^ in Lua)</summary>
+    /// @brief Raises the element to the power of another value. (^ in Lua)
     template <typename T>
     auto pow(T&& other) &&
     {
@@ -953,14 +951,14 @@ public:
             return this->state().template arith<ArithOp::Pow>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
+    /// @brief Performs binary xor with another value. (~ in Lua)
     template <typename T>
     auto bxor(T&& other) const&
     {
         return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Performs binary xor with another value. (~ in Lua)</summary>
+    /// @brief Performs binary xor with another value. (~ in Lua)
     template <typename T>
     auto bxor(T&& other) &&
     {
@@ -970,12 +968,12 @@ public:
             return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
-    /// <summary>Returns the length of the element using luaL_len.</summary>
-    /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.</remarks>
+    /// @brief Returns the length of the element using luaL_len.
+    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.
     auto length() const& { return this->state().length(this->index()); }
 
-    /// <summary>Returns the length of the element using luaL_len.</summary>
-    /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.</remarks>
+    /// @brief Returns the length of the element using luaL_len.
+    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.
     auto length() &&
     {
         auto result = this->state().length(this->index());
@@ -984,10 +982,10 @@ public:
         return result;
     }
 
-    /// <summary>Returns the raw length of the value, which does not invoke meta-methods.</summary>
+    /// @brief Returns the raw length of the value, which does not invoke meta-methods.
     auto rawLength() const& { return this->state().rawLength(this->index()); }
 
-    /// <summary>Returns the raw length of the value, which does not invoke meta-methods.</summary>
+    /// @brief Returns the raw length of the value, which does not invoke meta-methods.
     auto rawLength() &&
     {
         auto result = this->state().rawLength(this->index());
@@ -998,16 +996,16 @@ public:
 
     // --- Table Access ---
 
-    /// <summary>Sets a key of the element like a table to the given value.</summary>
-    /// <remarks>Can invoke the __newindex meta-method.</remarks>
+    /// @brief Sets a key of the element like a table to the given value.
+    /// @remark Can invoke the __newindex meta-method.
     template <typename TKey, typename TValue>
     void setTable(TKey&& key, TValue&& value) const&
     {
         this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
-    /// <summary>Sets a key of the element like a table to the given value.</summary>
-    /// <remarks>Can invoke the __newindex meta-method.</remarks>
+    /// @brief Sets a key of the element like a table to the given value.
+    /// @remark Can invoke the __newindex meta-method.
     template <typename TKey, typename TValue>
     void setTable(TKey&& key, TValue&& value) &&
     {
@@ -1017,14 +1015,14 @@ public:
             popIfTop();
     }
 
-    /// <summary>Similar to setTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to setTable, but does not invoke meta-methods.
     template <typename TKey, typename TValue>
     void rawSetTable(TKey&& key, TValue&& value) const&
     {
         this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
-    /// <summary>Similar to setTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to setTable, but does not invoke meta-methods.
     template <typename TKey, typename TValue>
     void rawSetTable(TKey&& key, TValue&& value) &&
     {
@@ -1036,10 +1034,10 @@ public:
 
     // --- Reference ---
 
-    /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
+    /// @brief Stores the element as a reference in the registry table and returns a wrapper.
     auto ref() & { return this->state().ref(*this); }
 
-    /// <summary>Stores the element as a reference in the registry table and returns a wrapper.</summary>
+    /// @brief Stores the element as a reference in the registry table and returns a wrapper.
     auto ref() &&
     {
         if constexpr (Type == StackIndexType::Result)
@@ -1050,7 +1048,7 @@ public:
 
     // --- Formatting ---
 
-    /// <summary>Prints the element to the stream using the format function.</summary>
+    /// @brief Prints the element to the stream using the format function.
     friend std::ostream& operator<<(std::ostream& stream, StackIndex&& index)
     {
         stream << index;
@@ -1060,25 +1058,25 @@ public:
     }
 };
 
-/// <summary>Wraps the registry pseudo index.</summary>
+/// @brief Wraps the registry pseudo index.
 template <typename TState>
 class RegistryIndex : public IndexImpl<TState, RegistryIndex<TState>> {
 public:
     using IndexImpl<TState, RegistryIndex<TState>>::IndexImpl;
 
-    /// <summary>Implicitly assumes the registry index.</summary>
+    /// @brief Implicitly assumes the registry index.
     RegistryIndex(TState& state)
         : IndexImpl<TState, RegistryIndex<TState>>(DirectInit{}, state, LUA_REGISTRYINDEX)
     {}
 };
 
-/// <summary>Wraps an upvalue index.</summary>
+/// @brief Wraps an upvalue index.
 template <typename TState>
 class UpvalueIndex : public IndexImpl<TState, UpvalueIndex<TState>> {
 public:
     using IndexImpl<TState, UpvalueIndex<TState>>::IndexImpl;
 
-    /// <summary>Converts the 1-based index into an upvalue-index.</summary>
+    /// @brief Converts the 1-based index into an upvalue-index.
     UpvalueIndex(TState& state, int index)
         : IndexImpl<TState, UpvalueIndex<TState>>(DirectInit{}, state, lua_upvalueindex(index))
     {
@@ -1088,13 +1086,13 @@ public:
 
 // --- Indices Wrappers ---
 
-/// <summary>Wraps a compile-time fixed size range of stack indices.</summary>
+/// @brief Wraps a compile-time fixed size range of stack indices.
 template <typename TState, int Count, StackIndexType Type>
 class StackIndices : public MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, Count> {
 public:
     using MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, Count>::MultiIndexImpl;
 
-    /// <summary>Takes any stack index to start the range at.</summary>
+    /// @brief Takes any stack index to start the range at.
     StackIndices(TState& state, int first)
         : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, Count>(
               DirectInit{}, state, state.absStackIndex(first))
@@ -1102,7 +1100,7 @@ public:
         assert(first > LUA_REGISTRYINDEX);
     }
 
-    /// <summary>Returns result indices, for which rvalues can be consumed by some functions.</summary>
+    /// @brief Returns result indices, for which rvalues can be consumed by some functions.
     auto asResults()
     {
         return StackIndices<TState, Count, StackIndexType::Result>(DirectInit{}, this->state(), this->first());
@@ -1110,7 +1108,7 @@ public:
 
     // --- Formatting ---
 
-    /// <summary>Prints all indices to the stream, separated by comma (and space).</summary>
+    /// @brief Prints all indices to the stream, separated by comma (and space).
     friend std::ostream& operator<<(std::ostream& stream, StackIndices&& indices)
     {
         static_assert(Type == StackIndexType::Result);
@@ -1121,13 +1119,13 @@ public:
     }
 };
 
-/// <summary>Wraps a compile-time fixed size range of upvalues.</summary>
+/// @brief Wraps a compile-time fixed size range of upvalues.
 template <typename TState, int Count>
 class UpvalueIndices : public MultiIndexImpl<TState, UpvalueIndex<TState>, Count> {
 public:
     using MultiIndexImpl<TState, UpvalueIndex<TState>, Count>::MultiIndexImpl;
 
-    /// <summary>Converts the 1-based index into an upvalue index, to start the range at.</summary>
+    /// @brief Converts the 1-based index into an upvalue index, to start the range at.
     UpvalueIndices(TState& state, int first)
         : MultiIndexImpl<TState, UpvalueIndex<TState>, Count>(DirectInit{}, state, lua_upvalueindex(first))
     {
@@ -1137,13 +1135,13 @@ public:
 
 // --- Index Range Wrappers ---
 
-/// <summary>Wraps a range stack indices.</summary>
+/// @brief Wraps a range stack indices.
 template <typename TState, StackIndexType Type>
 class StackIndexRange : public MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, -1> {
 public:
     using MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, -1>::MultiIndexImpl;
 
-    /// <summary>Takes any stack index to start the range at.</summary>
+    /// @brief Takes any stack index to start the range at.
     StackIndexRange(TState& state, int first, int count)
         : MultiIndexImpl<TState, StackIndex<TState, StackIndexType::Reference>, -1>(
               DirectInit{}, state, state.absStackIndex(first), count)
@@ -1151,7 +1149,7 @@ public:
         assert(first > LUA_REGISTRYINDEX);
     }
 
-    /// <summary>Returns result indices, for which rvalues can be consumed by some functions.</summary>
+    /// @brief Returns result indices, for which rvalues can be consumed by some functions.
     auto asResults()
     {
         return StackIndexRange<TState, StackIndexType::Result>(
@@ -1160,7 +1158,7 @@ public:
 
     // --- Formatting ---
 
-    /// <summary>Prints all indices to the stream, separated by comma (and space).</summary>
+    /// @brief Prints all indices to the stream, separated by comma (and space).
     friend std::ostream& operator<<(std::ostream& stream, StackIndexRange&& index_range)
     {
         static_assert(Type == StackIndexType::Result);
@@ -1171,13 +1169,13 @@ public:
     }
 };
 
-/// <summary>Wraps a range of upvalues.</summary>
+/// @brief Wraps a range of upvalues.
 template <typename TState>
 class UpvalueIndexRange : public MultiIndexImpl<TState, UpvalueIndex<TState>, -1> {
 public:
     using MultiIndexImpl<TState, UpvalueIndex<TState>, -1>::MultiIndexImpl;
 
-    /// <summary>Converts the 1-based index into an upvalue index, to start the range at.</summary>
+    /// @brief Converts the 1-based index into an upvalue index, to start the range at.
     UpvalueIndexRange(TState& state, int first, int count)
         : MultiIndexImpl<TState, UpvalueIndex<TState>, -1>(DirectInit{}, state, lua_upvalueindex(first), count)
     {
@@ -1273,11 +1271,11 @@ using VarArgs = StackIndexRangeResult;
 
 // --- State ---
 
-/// <summary>Wraps the template supplied function into a Lua function in an almost cost-free way.</summary>
+/// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
 template <auto Func>
 inline int wrap(lua_State* state);
 
-/// <summary>Returns a luaL_Reg with the wrapped template supplied function and given name.</summary>
+/// @brief Returns a luaL_Reg with the wrapped template supplied function and given name.
 template <auto Func>
 inline constexpr luaL_Reg reg(const char* name);
 
@@ -1327,13 +1325,13 @@ struct LoadInfo {
     LoadMode mode;
 };
 
-/// <summary>Wraps a Lua state or thread.</summary>
+/// @brief Wraps a Lua state or thread.
 class State {
 public:
     friend class OwnedState;
     friend class ScopedStack;
 
-    /// <summary>Mainly used to construct from a C function parameter.</summary>
+    /// @brief Mainly used to construct from a C function parameter.
     State(lua_State* state)
         : state_(state)
     {}
@@ -1357,40 +1355,40 @@ public:
 
     // --- State Conversion ---
 
-    /// <summary>Returns the wrapped Lua state.</summary>
+    /// @brief Returns the wrapped Lua state.
     lua_State* state() const { return state_; }
 
-    /// <summary>Returns the wrapped Lua state.</summary>
+    /// @brief Returns the wrapped Lua state.
     operator lua_State*() const { return state_; }
 
     // --- State Properties ---
 
-    /// <summary>Returns the version number of this Lua state.</summary>
+    /// @brief Returns the version number of this Lua state.
     auto version() const { return lua_version(state_); }
 
-    /// <summary>Checks whether the code making the call and the Lua library being called are using the same version of Lua and the same numeric types.</summary>
+    /// @brief Checks whether the code making the call and the Lua library being called are using the same version of Lua and the same numeric types.
     void checkVersion() const
     {
         assertPushableAuxiliary();
         luaL_checkversion(state_);
     }
 
-    /// <summary>Returns the current status of the thread.</summary>
+    /// @brief Returns the current status of the thread.
     auto status() const { return static_cast<Status>(lua_status(state_)); }
 
-    /// <summary>Whether the thread can yield.</summary>
+    /// @brief Whether the thread can yield.
     bool isYieldable() const { return lua_isyieldable(state_); }
 
-    /// <summary>Replaces the panic function with the given function, returning the old one.</summary>
+    /// @brief Replaces the panic function with the given function, returning the old one.
     auto replacePanicFunction(lua_CFunction panic_function) { return lua_atpanic(state_, panic_function); }
 
     // TODO: Somehow make this more typesafe.
-    /// <summary>Returns a reference to a pointer that can be used freely.</summary>
+    /// @brief Returns a reference to a pointer that can be used freely.
     void*& extraspace() { return *static_cast<void**>(lua_getextraspace(state_)); }
 
     // --- Allocator ---
 
-    /// <summary>Returns the current allocation function and associated userdata pointer.</summary>
+    /// @brief Returns the current allocation function and associated userdata pointer.
     auto getAllocator() const
     {
         void* userdata;
@@ -1398,39 +1396,39 @@ public:
         return Allocator{allocator, userdata};
     }
 
-    /// <summary>Sets a new allocation function and an optionally associated userdata pointer.</summary>
+    /// @brief Sets a new allocation function and an optionally associated userdata pointer.
     void setAllocator(Allocator allocator) { lua_setallocf(state_, allocator.function, allocator.userdata); }
 
     // --- Garbage Collector ---
 
-    /// <summary>Performs a full garbage-collection cycle.</summary>
+    /// @brief Performs a full garbage-collection cycle.
     void gcCollect() { gc(GCOption::Collect); }
 
-    /// <summary>Stops the garbage collector.</summary>
+    /// @brief Stops the garbage collector.
     void gcStop() { gc(GCOption::Stop); }
 
-    /// <summary>Restarts the garbage collector.</summary>
+    /// @brief Restarts the garbage collector.
     void gcRestart() { gc(GCOption::Restart); }
 
-    /// <summary>Returns the current amount of memory (in Kbytes) in use by Lua.</summary>
+    /// @brief Returns the current amount of memory (in Kbytes) in use by Lua.
     int gcCount() const { return gc(GCOption::Count); }
 
-    /// <summary>Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.</summary>
+    /// @brief Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.
     int gcCountBytes() const { return gc(GCOption::CountBytes); }
 
-    /// <summary>Performs an incremental step of garbage collection, corresponding to the allocation of stepsize Kbytes.</summary>
+    /// @brief Performs an incremental step of garbage collection, corresponding to the allocation of stepsize Kbytes.
     void gcStep(int stepsize) { gc(GCOption::Step, stepsize); }
 
-    /// <summary>Whether the collector is running (i.e., not stopped).</summary>
+    /// @brief Whether the collector is running (i.e., not stopped).
     bool gcIsRunning() const { return gc(GCOption::IsRunning); }
 
-    /// <summary>Changes the collector to incremental mode with the given parameters and returns the previous mode.</summary>
+    /// @brief Changes the collector to incremental mode with the given parameters and returns the previous mode.
     auto gcIncremental(int pause, int stepmul, int stepsize)
     {
         return static_cast<GCOption>(gc(GCOption::Incremental, pause, stepmul, stepsize));
     }
 
-    /// <summary>Changes the collector to generational mode with the given parameters and returns the previous mode.</summary>
+    /// @brief Changes the collector to generational mode with the given parameters and returns the previous mode.
     auto gcGenerational(int minormul, int majormul)
     {
         return static_cast<GCOption>(gc(GCOption::Generational, minormul, majormul));
@@ -1438,48 +1436,48 @@ public:
 
     // --- Index Wrapping ---
 
-    /// <summary>Returns a wrapper to a stack index.</summary>
+    /// @brief Returns a wrapper to a stack index.
     StackIndex stackIndex(int index) { return {*this, index}; }
 
-    /// <summary>Returns a wrapper to a stack index.</summary>
+    /// @brief Returns a wrapper to a stack index.
     ConstStackIndex stackIndex(int index) const { return {*this, index}; }
 
-    /// <summary>Returns a wrapper to the registry pseudo index.</summary>
+    /// @brief Returns a wrapper to the registry pseudo index.
     RegistryIndex registry() { return {*this}; }
 
-    /// <summary>Returns a wrapper to the registry pseudo index.</summary>
+    /// @brief Returns a wrapper to the registry pseudo index.
     ConstRegistryIndex registry() const { return {*this}; }
 
-    /// <summary>Converts a 1-based index into an upvalue index and returns a wrapper to it.</summary>
+    /// @brief Converts a 1-based index into an upvalue index and returns a wrapper to it.
     UpvalueIndex upvalue(int index) { return {*this, index}; }
 
-    /// <summary>Converts a 1-based index into an upvalue index and returns a wrapper to it.</summary>
+    /// @brief Converts a 1-based index into an upvalue index and returns a wrapper to it.
     ConstUpvalueIndex upvalue(int index) const { return {*this, index}; }
 
     // --- Indices Wrapping ---
 
-    /// <summary>Returns a wrapper to a compile-time fixed range of stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed range of stack indices.
     template <int Count>
     StackIndices<Count> stackIndices(int first)
     {
         return {*this, first};
     }
 
-    /// <summary>Returns a wrapper to a compile-time fixed range of stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed range of stack indices.
     template <int Count>
     ConstStackIndices<Count> stackIndices(int first) const
     {
         return {*this, first};
     }
 
-    /// <summary>Returns a wrapper to a compile-time fixed range of upvalues.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed range of upvalues.
     template <int Count>
     UpvalueIndices<Count> upvalueIndices(int first)
     {
         return {*this, first};
     }
 
-    /// <summary>Returns a wrapper to a compile-time fixed range of upvalues.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed range of upvalues.
     template <int Count>
     ConstUpvalueIndices<Count> upvalueIndices(int first) const
     {
@@ -1488,208 +1486,208 @@ public:
 
     // --- Index Range Wrapping ---
 
-    /// <summary>Returns a wrapper to a range of stack indices.</summary>
+    /// @brief Returns a wrapper to a range of stack indices.
     StackIndexRange stackIndexRange(int first, int count) { return {*this, first, count}; }
 
-    /// <summary>Returns a wrapper to a range of stack indices.</summary>
+    /// @brief Returns a wrapper to a range of stack indices.
     ConstStackIndexRange stackIndexRange(int first, int count) const { return {*this, first, count}; }
 
-    /// <summary>Returns a wrapper to a range of upvalues.</summary>
+    /// @brief Returns a wrapper to a range of upvalues.
     UpvalueIndexRange upvalueIndexRange(int first, int count) { return {*this, first, count}; }
 
-    /// <summary>Returns a wrapper to a range of upvalues.</summary>
+    /// @brief Returns a wrapper to a range of upvalues.
     ConstUpvalueIndexRange upvalueIndexRange(int first, int count) const { return {*this, first, count}; }
 
     // --- Top and Bottom Wrapping ---
 
-    /// <summary>Returns a wrapper to the first stack index.</summary>
+    /// @brief Returns a wrapper to the first stack index.
     auto bottom() { return stackIndex(1); }
 
-    /// <summary>Returns a wrapper to the first stack index.</summary>
+    /// @brief Returns a wrapper to the first stack index.
     auto bottom() const { return stackIndex(1); }
 
-    /// <summary>Returns a wrapper to a compile-time fixed size range of the first stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed size range of the first stack indices.
     template <int Count>
     auto bottom()
     {
         return stackIndices<Count>(1);
     }
 
-    /// <summary>Returns a wrapper to a compile-time fixed size range of the first stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed size range of the first stack indices.
     template <int Count>
     auto bottom() const
     {
         return stackIndices<Count>(1);
     }
 
-    /// <summary>Returns a wrapper to a range of the first stack indices.</summary>
+    /// @brief Returns a wrapper to a range of the first stack indices.
     auto bottom(int count) { return stackIndexRange(1, count); }
 
-    /// <summary>Returns a wrapper to a range of the first stack indices.</summary>
+    /// @brief Returns a wrapper to a range of the first stack indices.
     auto bottom(int count) const { return stackIndexRange(1, count); }
 
-    /// <summary>Returns a wrapper to the last stack index.</summary>
+    /// @brief Returns a wrapper to the last stack index.
     auto top() { return stackIndex(size()); }
 
-    /// <summary>Returns a wrapper to the last stack index.</summary>
+    /// @brief Returns a wrapper to the last stack index.
     auto top() const { return stackIndex(size()); }
 
-    /// <summary>Returns a wrapper to a compile-time fixed size range of the last stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed size range of the last stack indices.
     template <int Count>
     auto top()
     {
         return stackIndices<Count>(size() - Count + 1);
     }
 
-    /// <summary>Returns a wrapper to a compile-time fixed size range of the last stack indices.</summary>
+    /// @brief Returns a wrapper to a compile-time fixed size range of the last stack indices.
     template <int Count>
     auto top() const
     {
         return stackIndices<Count>(size() - Count + 1);
     }
 
-    /// <summary>Returns a wrapper to a range of the last stack indices.</summary>
+    /// @brief Returns a wrapper to a range of the last stack indices.
     auto top(int count) { return stackIndexRange(size() - count + 1, count); }
 
-    /// <summary>Returns a wrapper to a range of the last stack indices.</summary>
+    /// @brief Returns a wrapper to a range of the last stack indices.
     auto top(int count) const { return stackIndexRange(size() - count + 1, count); }
 
     // --- Index Properties ---
 
-    /// <summary>Whether the given index is a stack index.</summary>
+    /// @brief Whether the given index is a stack index.
     static constexpr bool isStack(int index) { return index > LUA_REGISTRYINDEX; }
 
-    /// <summary>Whether the given index is a pseudo index.</summary>
+    /// @brief Whether the given index is a pseudo index.
     static constexpr bool isPseudo(int index) { return index <= LUA_REGISTRYINDEX; }
 
-    /// <summary>Whether the given index is an upvalue index.</summary>
+    /// @brief Whether the given index is an upvalue index.
     static constexpr bool isUpvalue(int index) { return index < LUA_REGISTRYINDEX; }
 
-    /// <summary>Whether the given index is the registry index.</summary>
+    /// @brief Whether the given index is the registry index.
     static constexpr bool isRegistry(int index) { return index == LUA_REGISTRYINDEX; }
 
-    /// <summary>Whether the given index is the first stack index or "offset" above it.</summary>
+    /// @brief Whether the given index is the first stack index or "offset" above it.
     bool isIndexBottom(int index, int offset = 0) const
     {
         assert(offset >= 0);
         return index == 1 + offset;
     }
 
-    /// <summary>Whether the given index is the last stack index or "offset" below it.</summary>
+    /// @brief Whether the given index is the last stack index or "offset" below it.
     bool isIndexTop(int index, int offset = 0) const
     {
         assert(offset >= 0);
         return index == size() - offset;
     }
 
-    /// <summary>Returns how many positions the given stack index is above the first index.</summary>
+    /// @brief Returns how many positions the given stack index is above the first index.
     int indexOffsetFromBottom(int index) const { return index - 1; }
 
-    /// <summary>Returns how many positions the given stack index is below the last index.</summary>
+    /// @brief Returns how many positions the given stack index is below the last index.
     int indexOffsetFromTop(int index) const { return size() - index; }
 
-    /// <summary>Turns negative stack indices into positive ones, leaving pseudo indices as is.</summary>
+    /// @brief Turns negative stack indices into positive ones, leaving pseudo indices as is.
     int absIndex(int index) const { return index > LUA_REGISTRYINDEX && index < 0 ? size() + index + 1 : index; }
 
-    /// <summary>Turns negative stack indices into positive ones, but does not working with pseudo indices.</summary>
+    /// @brief Turns negative stack indices into positive ones, but does not working with pseudo indices.
     int absStackIndex(int index) const { return index < 0 ? size() + index + 1 : index; }
 
     // --- Stack Queries ---
 
-    /// <summary>The (cached) size of the stack, which is also the top index, as indices start at 1.</summary>
+    /// @brief The (cached) size of the stack, which is also the top index, as indices start at 1.
     int size() const { return top_; }
 
-    /// <summary>Returns the type of the element at the given index.</summary>
+    /// @brief Returns the type of the element at the given index.
     Type type(int index) const { return static_cast<Type>(lua_type(state_, index)); }
 
-    /// <summary>Returns the type name of the element at the given index.</summary>
+    /// @brief Returns the type name of the element at the given index.
     std::string_view typeName(int index) const { return luaL_typename(state_, index); }
 
-    /// <summary>Whether the index is not valid.</summary>
+    /// @brief Whether the index is not valid.
     bool isNone(int index) const
     {
         assertAcceptable(index);
         return lua_isnone(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is nil.</summary>
+    /// @brief Whether the element at the given index is nil.
     bool isNil(int index) const
     {
         assertAcceptable(index);
         return lua_isnil(state_, index);
     }
 
-    /// <summary>Whether the index is not valid or its element is nil.</summary>
+    /// @brief Whether the index is not valid or its element is nil.
     bool isNoneOrNil(int index) const
     {
         assertAcceptable(index);
         return lua_isnoneornil(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a boolean.</summary>
+    /// @brief Whether the element at the given index is a boolean.
     bool isBoolean(int index) const
     {
         assertAcceptable(index);
         return lua_isboolean(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is light userdata.</summary>
+    /// @brief Whether the element at the given index is light userdata.
     bool isLightUserdata(int index) const
     {
         assertAcceptable(index);
         return lua_islightuserdata(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a number or a string convertible to a number.</summary>
+    /// @brief Whether the element at the given index is a number or a string convertible to a number.
     bool isNumber(int index) const
     {
         assertAcceptable(index);
         return lua_isnumber(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is an integer or a string convertible to an integer.</summary>
+    /// @brief Whether the element at the given index is an integer or a string convertible to an integer.
     bool isInteger(int index) const
     {
         assertAcceptable(index);
         return lua_isinteger(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a string or a number (which is always convertible to a string).</summary>
+    /// @brief Whether the element at the given index is a string or a number (which is always convertible to a string).
     bool isString(int index) const
     {
         assertAcceptable(index);
         return lua_isstring(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a table.</summary>
+    /// @brief Whether the element at the given index is a table.
     bool isTable(int index) const
     {
         assertAcceptable(index);
         return lua_istable(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a function (either C or Lua).</summary>
+    /// @brief Whether the element at the given index is a function (either C or Lua).
     bool isFunction(int index) const
     {
         assertAcceptable(index);
         return lua_isfunction(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a C function.</summary>
+    /// @brief Whether the element at the given index is a C function.
     bool isCFunction(int index) const
     {
         assertAcceptable(index);
         return lua_iscfunction(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is full or light userdata.</summary>
+    /// @brief Whether the element at the given index is full or light userdata.
     bool isUserdata(int index) const
     {
         assertAcceptable(index);
         return lua_isuserdata(state_, index);
     }
 
-    /// <summary>Whether the element at the given index is a thread.</summary>
+    /// @brief Whether the element at the given index is a thread.
     bool isThread(int index) const
     {
         assertAcceptable(index);
@@ -1701,16 +1699,16 @@ public:
     // TODO: These are not const because of automatic number to string conversion...
     //       Possibly add const overloads that don't to this conversion.
 
-    /// <summary>Uses the Convert template to convert the element at the given index.</summary>
-    /// <remarks>Returns an optional, which is std::nullopt if the conversion failed.</remarks>
+    /// @brief Uses the Convert template to convert the element at the given index.
+    /// @remark Returns an optional, which is std::nullopt if the conversion failed.
     template <typename T>
     auto to(int index)
     {
         return Convert<T>::at(state_, index);
     }
 
-    /// <summary>Treats the element at the given index as a function argument and uses the Convert template to convert it.</summary>
-    /// <remarks>Raises a Lua (argument) error if the conversion failed.</remarks>
+    /// @brief Treats the element at the given index as a function argument and uses the Convert template to convert it.
+    /// @remark Raises a Lua (argument) error if the conversion failed.
     template <typename T>
     decltype(auto) check(int index)
     {
@@ -1719,30 +1717,30 @@ public:
 
     // --- Stack Maintenance ---
 
-    /// <summary>Asserts, whether the given positive index is currently acceptable without checking the stack.</summary>
+    /// @brief Asserts, whether the given positive index is currently acceptable without checking the stack.
     void assertAcceptable([[maybe_unused]] int index) const { assert(index >= 1 && index - size() <= pushable_); }
 
-    /// <summary>Ensures, that the given positive index is going to be acceptable and returns false if it can't.</summary>
+    /// @brief Ensures, that the given positive index is going to be acceptable and returns false if it can't.
     bool checkAcceptable(int index) const
     {
         assert(index >= 1);
         return checkPushable(index - size());
     }
 
-    /// <summary>Ensures, that the given positive index is going to be acceptable and raises a Lua error if it can't.</summary>
+    /// @brief Ensures, that the given positive index is going to be acceptable and raises a Lua error if it can't.
     void ensureAcceptable(int index, const char* error_message = nullptr) const
     {
         assert(index >= 1);
         ensurePushable(index - size(), error_message);
     }
 
-    /// <summary>Asserts, whether it is possible to push a given number of elements without checking the stack.</summary>
+    /// @brief Asserts, whether it is possible to push a given number of elements without checking the stack.
     void assertPushable([[maybe_unused]] int count = 1) const { assert(count <= pushable_); }
 
-    /// <summary>Asserts, whether it is possible to call an auxiliary function with the current stack.</summary>
+    /// @brief Asserts, whether it is possible to call an auxiliary function with the current stack.
     void assertPushableAuxiliary() const { assertPushable(auxiliary_required_pushable); }
 
-    /// <summary>Trys to ensure, that it is possible to push a given number of values, returning false if it can't.</summary>
+    /// @brief Trys to ensure, that it is possible to push a given number of values, returning false if it can't.
     bool checkPushable(int count = 1) const
     {
         if (!lua_checkstack(state_, count))
@@ -1753,10 +1751,10 @@ public:
         return true;
     }
 
-    /// <summary>Trys to ensures, that an auxiliary library function can be called, retunring false if it can't.</summary>
+    /// @brief Trys to ensures, that an auxiliary library function can be called, retunring false if it can't.
     bool checkPushableAuxiliary() const { return checkPushable(auxiliary_required_pushable); }
 
-    /// <summary>Ensures, that it is possible to push a given number of values, raising a Lua error if it can't.</summary>
+    /// @brief Ensures, that it is possible to push a given number of values, raising a Lua error if it can't.
     void ensurePushable(int count = 1, const char* error_message = nullptr) const
     {
         luaL_checkstack(state_, count, error_message);
@@ -1765,12 +1763,12 @@ public:
 #endif
     }
 
-    /// <summary>Ensures, that an auxiliary library function can be called, returning false if it can't.</summary>
+    /// @brief Ensures, that an auxiliary library function can be called, returning false if it can't.
     void ensurePushableAuxiliary() const { ensurePushable(auxiliary_required_pushable); }
 
     // --- Push and Pop ---
 
-    /// <summary>Pushes nil values up to the given positive index.</summary>
+    /// @brief Pushes nil values up to the given positive index.
     void padWithNil(int index)
     {
         assert(index >= 1);
@@ -1781,15 +1779,15 @@ public:
         notifyPush(index - current_top);
     }
 
-    /// <summary>Pops a given number of elements from the stack.</summary>
+    /// @brief Pops a given number of elements from the stack.
     void pop(int count = 1)
     {
         lua_pop(state_, count);
         notifyPush(-count);
     }
 
-    /// <summary>Uses the Convert template to push all given values on the stack and returns a wrapper to them.</summary>
-    /// <remarks>Automatically ignores all rvalue stack indices if possible.</remarks>
+    /// @brief Uses the Convert template to push all given values on the stack and returns a wrapper to them.
+    /// @remark Automatically ignores all rvalue stack indices if possible.
     template <typename... TValues>
     auto push(TValues&&... values)
     {
@@ -1808,24 +1806,24 @@ public:
         }
     }
 
-    /// <summary>Pushes each tuple element on the stack.</summary>
+    /// @brief Pushes each tuple element on the stack.
     template <typename... TValues>
     auto push(const std::tuple<TValues...>& tuple)
     {
         return pushTupleValues(tuple, std::index_sequence_for<TValues...>{});
     }
 
-    /// <summary>Pushes each tuple element on the stack.</summary>
+    /// @brief Pushes each tuple element on the stack.
     template <typename... TValues>
     auto push(std::tuple<TValues...>&& tuple)
     {
         return pushTupleValues(std::move(tuple), std::index_sequence_for<TValues...>{});
     }
 
-    /// <summary>Pushes nil on the stack.</summary>
+    /// @brief Pushes nil on the stack.
     auto pushNil() { return push(nullptr); }
 
-    /// <summary>Pushes a newly created table with optional hints for the size of its array and record parts.</summary>
+    /// @brief Pushes a newly created table with optional hints for the size of its array and record parts.
     auto pushTable(int array_hint = 0, int record_hint = 0)
     {
         lua_createtable(state_, array_hint, record_hint);
@@ -1833,7 +1831,7 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Pushes a newly created thread on the stack.</summary>
+    /// @brief Pushes a newly created thread on the stack.
     auto pushThread()
     {
         State thread = lua_newthread(state_);
@@ -1841,7 +1839,7 @@ public:
         return std::tuple{std::move(thread), top().asResult()};
     }
 
-    /// <summary>Pushes an in-place constructed object with the given parameters.</summary>
+    /// @brief Pushes an in-place constructed object with the given parameters.
     template <typename T, typename... TArgs>
     auto pushNew(TArgs&&... args)
     {
@@ -1865,7 +1863,7 @@ public:
         }
     }
 
-    /// <summary>Pushes a function or closure with an arbitrary number of upvalues on the stack.</summary>
+    /// @brief Pushes a function or closure with an arbitrary number of upvalues on the stack.
     template <typename... TUpvalues>
     auto pushFunction(lua_CFunction func, TUpvalues&&... upvalues)
     {
@@ -1875,15 +1873,15 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Pushes a template specified function or closure with an arbitrary number of upvalues on the stack.</summary>
+    /// @brief Pushes a template specified function or closure with an arbitrary number of upvalues on the stack.
     template <auto Function, typename... TUpvalues>
     auto pushFunction(TUpvalues&&... upvalues)
     {
         return pushFunction(wrap<Function>, std::forward<TUpvalues>(upvalues)...);
     }
 
-    /// <summary>Turns the function-like object into a std::function and pushes a wrapped closure onto the stack.</summary>
-    /// <remarks>The first upvalue is used to store the function object itself.</remarks>
+    /// @brief Turns the function-like object into a std::function and pushes a wrapped closure onto the stack.
+    /// @remark The first upvalue is used to store the function object itself.
     template <typename TFunc, typename... TUpvalues>
     auto pushFunction(TFunc&& func, TUpvalues&&... upvalues)
     {
@@ -1892,7 +1890,7 @@ public:
             wrappedFunction<decltype(wrapped_func)>, std::move(wrapped_func), std::forward<TUpvalues>(upvalues)...);
     }
 
-    /// <summary>Pushes the global table on the stack.</summary>
+    /// @brief Pushes the global table on the stack.
     auto pushGlobalTable()
     {
         lua_pushglobaltable(state_);
@@ -1900,14 +1898,14 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Same as push, recommended to use for temporaries in expressions.</summary>
+    /// @brief Same as push, recommended to use for temporaries in expressions.
     template <typename... TValues>
     auto operator()(TValues&&... values)
     {
         return push(std::forward<TValues>(values)...);
     }
 
-    /// <summary>Replaces the given positive index with a single value.</summary>
+    /// @brief Replaces the given positive index with a single value.
     template <typename TIndex, typename TValue>
     void replace(TIndex&& index, TValue&& value)
     {
@@ -1955,7 +1953,7 @@ public:
 
     // --- Compiling ---
 
-    /// <summary>Compiles the given code and returns a the compilation status and depending on this either the function or error message.</summary>
+    /// @brief Compiles the given code and returns a the compilation status and depending on this either the function or error message.
     auto load(const LoadInfo& info)
     {
         assertPushableAuxiliary();
@@ -1970,7 +1968,7 @@ public:
 
     // --- Calling ---
 
-    /// <summary>Calls the given function with the supplied arguments and returns a template specified number of results.</summary>
+    /// @brief Calls the given function with the supplied arguments and returns a template specified number of results.
     template <int Results = 0, typename TFunc, typename... TArgs>
     auto call(TFunc&& func, TArgs&&... args)
     {
@@ -1997,14 +1995,14 @@ public:
         }
     }
 
-    /// <summary>Calls the given function with the supplied arguments and returns all results.</summary>
+    /// @brief Calls the given function with the supplied arguments and returns all results.
     template <typename TFunc, typename... TArgs>
     auto callMultRet(TFunc&& func, TArgs&&... args)
     {
         return call<LUA_MULTRET>(std::forward<TFunc>(func), std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the given function with the supplied arguments and returns a specified number of results.</summary>
+    /// @brief Calls the given function with the supplied arguments and returns a specified number of results.
     template <typename TFunc, typename... TArgs>
     auto callReturning(int results, TFunc&& func, TArgs&&... args)
     {
@@ -2019,7 +2017,7 @@ public:
         return top(results).asResults();
     }
 
-    /// <summary>Calls the given function with the supplied arguments in protected mode and returns the status and a template specified number of results.</summary>
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a template specified number of results.
     template <int Results = 0, typename TFunc, typename... TArgs>
     auto pcall(TFunc&& func, TArgs&&... args)
     {
@@ -2057,14 +2055,14 @@ public:
         }
     }
 
-    /// <summary>Calls the given function with the supplied arguments in protected mode and returns the status and all results.</summary>
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and all results.
     template <typename TFunc, typename... TArgs>
     auto pcallMultRet(TFunc&& func, TArgs&&... args)
     {
         return pcall<LUA_MULTRET>(std::forward<TFunc>(func), std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Calls the given function with the supplied arguments in protected mode and returns the status and a specfied number of results.</summary>
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a specfied number of results.
     template <typename TFunc, typename... TArgs>
     auto pcallReturning(int results, TFunc&& func, TArgs&&... args)
     {
@@ -2134,8 +2132,8 @@ public:
 
     // --- Operations ---
 
-    /// <summary>Performs a unary operation on the given operand.</summary>
-    /// <remarks>Asserts, that the given operation is actually unary.</remarks>
+    /// @brief Performs a unary operation on the given operand.
+    /// @remark Asserts, that the given operation is actually unary.
     template <typename T>
     auto unary(ArithOp operation, T&& operand)
     {
@@ -2147,8 +2145,8 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Performs a binary operation on the two given operands.</summary>
-    /// <remarks>Asserts, that the given operation is not unary.</remarks>
+    /// @brief Performs a binary operation on the two given operands.
+    /// @remark Asserts, that the given operation is not unary.
     template <typename TLeft, typename TRight>
     auto binary(ArithOp operation, TLeft&& lhs, TRight&& rhs)
     {
@@ -2161,7 +2159,7 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Performs a compile-time known operation on the operand(s).</summary>
+    /// @brief Performs a compile-time known operation on the operand(s).
     template <ArithOp Operation, typename... TArgs>
     auto arith(TArgs&&... args)
     {
@@ -2178,7 +2176,7 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Compares the two operands with a given operation.</summary>
+    /// @brief Compares the two operands with a given operation.
     template <typename TLeft, typename TRight>
     bool compare(CompareOp operation, TLeft&& lhs, TRight&& rhs) const
     {
@@ -2217,8 +2215,8 @@ public:
         }
     }
 
-    /// <summary>Concatenates all given values.</summary>
-    /// <remarks>Returns an empty string if no arguments are given and the value itself if only one value is provided.</remarks>
+    /// @brief Concatenates all given values.
+    /// @remark Returns an empty string if no arguments are given and the value itself if only one value is provided.
     template <typename... TValues>
     auto concat(TValues&&... values)
     {
@@ -2228,8 +2226,8 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Pushes the length of the element at the given index on the stack.</summary>
-    /// <remarks>This can invoke the __len meta-method and therefore doesn't necessarily return an integer.</remarks>
+    /// @brief Pushes the length of the element at the given index on the stack.
+    /// @remark This can invoke the __len meta-method and therefore doesn't necessarily return an integer.
     auto pushLength(int index)
     {
         lua_len(state_, index);
@@ -2237,21 +2235,21 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Returns the length of the element at the given index.</summary>
-    /// <remarks>This can invoke the __len meta-method and raises an error if that doesn't return an integer.</remarks>
+    /// @brief Returns the length of the element at the given index.
+    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return an integer.
     auto length(int index) const
     {
         assertPushableAuxiliary();
         return luaL_len(state_, index);
     }
 
-    /// <summary>Returns the raw length of the value, which does not invoke meta-method.</summary>
+    /// @brief Returns the raw length of the value, which does not invoke meta-method.
     auto rawLength(int index) const { return lua_rawlen(state_, index); }
 
     // --- Table Access ---
 
-    /// <summary>Queries the table with the given key, returning both the type and the pushed value.</summary>
-    /// <remarks>Can invoke the __index meta-method.</remarks>
+    /// @brief Queries the table with the given key, returning both the type and the pushed value.
+    /// @remark Can invoke the __index meta-method.
     template <typename TTable, typename TKey>
     auto getTableWithType(TTable& table, TKey&& key)
     {
@@ -2287,8 +2285,8 @@ public:
         }
     }
 
-    /// <summary>Queries the table with the given key, returning the pushed value.</summary>
-    /// <remarks>Can invoke the __index meta-method.</remarks>
+    /// @brief Queries the table with the given key, returning the pushed value.
+    /// @remark Can invoke the __index meta-method.
     template <typename TTable, typename TKey>
     auto getTable(TTable& table, TKey&& key)
     {
@@ -2296,8 +2294,8 @@ public:
         return index;
     }
 
-    /// <summary>Sets a key of the table to the given value.</summary>
-    /// <remarks>Can invoke the __newindex meta-method.</remarks>
+    /// @brief Sets a key of the table to the given value.
+    /// @remark Can invoke the __newindex meta-method.
     template <typename TTable, typename TKey, typename TValue>
     void setTable(TTable& table, TKey&& key, TValue&& value)
     {
@@ -2330,7 +2328,7 @@ public:
         }
     }
 
-    /// <summary>Similar to getTableWithType, but does not invoke meta-methods.</summary>
+    /// @brief Similar to getTableWithType, but does not invoke meta-methods.
     template <typename TTable, typename TKey>
     auto rawGetTableWithType(TTable& table, TKey&& key)
     {
@@ -2362,7 +2360,7 @@ public:
         }
     }
 
-    /// <summary>Similar to getTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to getTable, but does not invoke meta-methods.
     template <typename TTable, typename TKey>
     auto rawGetTable(TTable& table, TKey&& key)
     {
@@ -2370,7 +2368,7 @@ public:
         return index;
     }
 
-    /// <summary>Similar to setTable, but does not invoke meta-methods.</summary>
+    /// @brief Similar to setTable, but does not invoke meta-methods.
     template <typename TTable, typename TKey, typename TValue>
     void rawSetTable(TTable& table, TKey&& key, TValue&& value)
     {
@@ -2424,7 +2422,7 @@ public:
         return result;
     }
 
-    /// <summary>Sets a new value in the global table.</summary>
+    /// @brief Sets a new value in the global table.
     template <typename TKey, typename TValue>
     void setGlobal(TKey&& key, TValue&& value)
     {
@@ -2443,7 +2441,7 @@ public:
         }
     }
 
-    /// <summary>Returns the metatable of the element at the given index or std::nullopt if it doesn't have one.</summary>
+    /// @brief Returns the metatable of the element at the given index or std::nullopt if it doesn't have one.
     std::optional<StackIndexResult> getMetatable(int index)
     {
         if (lua_getmetatable(state_, index)) {
@@ -2453,7 +2451,7 @@ public:
         return std::nullopt;
     }
 
-    /// <summary>Sets the metatable of the element at the given index to the specified table; or nil to remove it.</summary>
+    /// @brief Sets the metatable of the element at the given index to the specified table; or nil to remove it.
     template <typename TMetatable>
     void setMetatable(int index, TMetatable&& metatable)
     {
@@ -2462,7 +2460,7 @@ public:
         notifyPush(-1);
     }
 
-    /// <summary>Returns the next key-value-pair of the table or nothing, if the table has been exhausted.</summary>
+    /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
     auto next(int table_index, TKey&& key)
     {
@@ -2477,7 +2475,7 @@ public:
 
     // --- Formatting ---
 
-    /// <summary>Converts the element at the given index to a string in a reasonable format using luaL_tolstring.</summary>
+    /// @brief Converts the element at the given index to a string in a reasonable format using luaL_tolstring.
     std::string format(int index) const
     {
         std::size_t length;
@@ -2488,7 +2486,7 @@ public:
     }
 
     /*
-    /// <summary>This version can be used by the debugger, as it returns references to up to 1024 formatted strings per thread.</summary>
+    /// @brief This version can be used by the debugger, as it returns references to up to 1024 formatted strings per thread.
     const std::string& formatDebug(int index) const
     {
         thread_local std::size_t current = 0;
@@ -2502,7 +2500,7 @@ public:
 
     // --- Libraries ---
 
-    /// <summary>Opens a single standard library.</summary>
+    /// @brief Opens a single standard library.
     void openLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
@@ -2510,7 +2508,7 @@ public:
         lua_pop(state_, 1);
     }
 
-    /// <summary>Pushes a single standard library on the stack and returns a wrapper to it.</summary>
+    /// @brief Pushes a single standard library on the stack and returns a wrapper to it.
     auto pushLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
@@ -2519,14 +2517,14 @@ public:
         return top().asResult();
     }
 
-    /// <summary>Opens all Lua standard libraries.</summary>
+    /// @brief Opens all Lua standard libraries.
     void openLibs()
     {
         assertPushableAuxiliary();
         luaL_openlibs(state_);
     }
 
-    /// <summary>Opens a library with the given name, using the specified function and optionally makes it global.</summary>
+    /// @brief Opens a library with the given name, using the specified function and optionally makes it global.
     void require(const char* name, lua_CFunction open_function, bool global = false)
     {
         assertPushableAuxiliary();
@@ -2540,7 +2538,7 @@ public:
         require(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
-    /// <summary>Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it and optionally makes it global.</summary>
+    /// @brief Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it and optionally makes it global.
     auto pushRequire(const char* name, lua_CFunction open_function, bool global = false)
     {
         assertPushableAuxiliary();
@@ -2555,7 +2553,7 @@ public:
         return pushRequire(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
-    /// <summary>Registers a function with a given name in the global table.</summary>
+    /// @brief Registers a function with a given name in the global table.
     template <typename TFunc, typename... TUpvalues>
     void registerGlobal(const char* name, TFunc&& func, TUpvalues&&... upvalues)
     {
@@ -2564,14 +2562,14 @@ public:
         notifyPush(-1);
     }
 
-    /// <summary>Registers a function with a given name in the global table.</summary>
+    /// @brief Registers a function with a given name in the global table.
     template <typename TFunc, typename... TUpvalues>
     void registerGlobal(const std::string& name, TFunc&& func, TUpvalues&&... upvalues)
     {
         registerGlobal(name.c_str(), std::forward<TFunc>(func), std::forward<TUpvalues>(upvalues)...);
     }
 
-    /// <summary>Registers a template specified function with a given name in the global table.</summary>
+    /// @brief Registers a template specified function with a given name in the global table.
     template <auto Func, typename... TUpvalues>
     void registerGlobal(const char* name, TUpvalues&&... upvalues)
     {
@@ -2580,7 +2578,7 @@ public:
         notifyPush(-1);
     }
 
-    /// <summary>Registers a template specified function with a given name in the global table.</summary>
+    /// @brief Registers a template specified function with a given name in the global table.
     template <auto Func, typename... TUpvalues>
     void registerGlobal(const std::string& name, TUpvalues&&... upvalues)
     {
@@ -2589,7 +2587,7 @@ public:
 
     // --- Function Wrapping ---
 
-    /// <summary>Updates the internally stored top value to allow "wrap" to pad parameters with nil.</summary>
+    /// @brief Updates the internally stored top value to allow "wrap" to pad parameters with nil.
     void maxFuncArg(int index)
     {
         if (top_ < index)
@@ -2598,7 +2596,7 @@ public:
 
     // --- Reference ---
 
-    /// <summary>Stores the value as a reference in the registry table and returns a wrapper.</summary>
+    /// @brief Stores the value as a reference in the registry table and returns a wrapper.
     template <typename T>
     Reference ref(T&& value)
     {
@@ -2609,14 +2607,14 @@ public:
     }
 
 private:
-    /// <summary>Helper function for lua_gc which is const, since some options are, in fact, const.</summary>
+    /// @brief Helper function for lua_gc which is const, since some options are, in fact, const.
     template <typename... TArgs>
     int gc(GCOption option, TArgs&&... args) const
     {
         return lua_gc(state_, static_cast<int>(option), std::forward<TArgs>(args)...);
     }
 
-    /// <summary>After some values got pushed (or popped) this function has to be called.</summary>
+    /// @brief After some values got pushed (or popped) this function has to be called.
     void notifyPush(int count = 1)
     {
         assertPushable(count);
@@ -2626,8 +2624,8 @@ private:
 #endif
     }
 
-    /// <summary>Uses the Convert template to push all given values on the stack.</summary>
-    /// <remarks>Automatically ignores all rvalue stack indices if possible.</remarks>
+    /// @brief Uses the Convert template to push all given values on the stack.
+    /// @remark Automatically ignores all rvalue stack indices if possible.
     template <typename TFirst, typename... TRest>
     void pushHelper(TFirst&& first, TRest&&... rest)
     {
@@ -2646,28 +2644,28 @@ private:
         (pushValue(std::forward<TRest>(rest)), ...);
     }
 
-    /// <summary>Uses the Convert template to push all given values on the stack.</summary>
-    /// <remarks>Automatically ignores all rvalue stack indices if possible.</remarks>
+    /// @brief Uses the Convert template to push all given values on the stack.
+    /// @remark Automatically ignores all rvalue stack indices if possible.
     void pushHelper()
     {
         // push nothing
     }
 
-    /// <summary>Pushes all elements of the tuple in order.</summary>
+    /// @brief Pushes all elements of the tuple in order.
     template <typename... TValues, std::size_t... Indices>
     auto pushTupleValues(const std::tuple<TValues...>& tuple, std::index_sequence<Indices...>)
     {
         return push(std::get<Indices>(tuple)...);
     }
 
-    /// <summary>Pushes all elements of the tuple in order.</summary>
+    /// @brief Pushes all elements of the tuple in order.
     template <typename... TValues, std::size_t... Indices>
     auto pushTupleValues(std::tuple<TValues...>&& tuple, std::index_sequence<Indices...>)
     {
         return push(std::move(std::get<Indices>(tuple))...);
     }
 
-    /// <summary>Counts how many elements can be skipped because they are rvalue stack indices at the correct position.</summary>
+    /// @brief Counts how many elements can be skipped because they are rvalue stack indices at the correct position.
     template <typename TFirst, typename... TRest>
     void countSkipped(int& skipped, int& top_offset, [[maybe_unused]] TFirst&& first, [[maybe_unused]] TRest&&... rest)
     {
@@ -2680,27 +2678,27 @@ private:
         }
     }
 
-    /// <summary>Counts how many elements can be skipped because they are rvalue stack indices at the correct position.</summary>
+    /// @brief Counts how many elements can be skipped because they are rvalue stack indices at the correct position.
     void countSkipped(int&, int&)
     {
         // nothing
     }
 
-    /// <summary>Skips a given amount of arguments and pushes the rest.</summary>
+    /// @brief Skips a given amount of arguments and pushes the rest.
     template <typename... TArgs>
     void pushWithSkip(std::size_t skip, TArgs&&... args)
     {
         pushWithSkipHelper(skip, std::index_sequence_for<TArgs...>(), std::forward<TArgs>(args)...);
     }
 
-    /// <summary>Actual implementation of pushWithSkip using an index sequence.</summary>
+    /// @brief Actual implementation of pushWithSkip using an index sequence.
     template <std::size_t... Indices, typename... TArgs>
     void pushWithSkipHelper(std::size_t skip, std::index_sequence<Indices...>, TArgs&&... args)
     {
         ((Indices >= skip ? pushValue(std::forward<TArgs>(args)) : (void)0), ...);
     }
 
-    /// <summary>Simply pushes a single value on the stack.</summary>
+    /// @brief Simply pushes a single value on the stack.
     template <typename T>
     void pushValue(T&& value)
     {
@@ -2718,7 +2716,7 @@ private:
         }
     }
 
-    /// <summary>A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the called closure.</summary>
+    /// @brief A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the called closure.
     template <typename Func>
     static int wrappedFunction(lua_State* state)
     {
@@ -2814,11 +2812,11 @@ inline constexpr luaL_Reg reg(const char* name)
     return {name, wrap<Func>};
 }
 
-/// <summary>A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.</summary>
+/// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
 class OwnedState : public State {
 public:
-    /// <summary>Creates a new Lua state, by default opening the standard libraries and using the auxiliary allocation and panic function.</summary>
-    /// <remarks>A custom allocation function can be supplied and userdata is used solely as extra parameter to that function.</remarks>
+    /// @brief Creates a new Lua state, by default opening the standard libraries and using the auxiliary allocation and panic function.
+    /// @remark A custom allocation function can be supplied and userdata is used solely as extra parameter to that function.
     OwnedState(bool open_libs = true, lua_Alloc allocator = nullptr, void* userdata = nullptr)
         : State(allocator ? lua_newstate(allocator, userdata) : luaL_newstate())
     {
@@ -2826,7 +2824,7 @@ public:
             openLibs();
     }
 
-    /// <summary>Closes the Lua state if it is not already closed.</summary>
+    /// @brief Closes the Lua state if it is not already closed.
     ~OwnedState() { close(); }
 
     OwnedState(const OwnedState&) = delete;
@@ -2855,10 +2853,10 @@ public:
         return *this;
     }
 
-    /// <summary>Whether the state as been closed manually.</summary>
+    /// @brief Whether the state as been closed manually.
     bool closed() { return state_ == nullptr; }
 
-    /// <summary>Closes the Lua state manually, can be called multiple times.</summary>
+    /// @brief Closes the Lua state manually, can be called multiple times.
     void close()
     {
         if (closed())
@@ -2868,16 +2866,16 @@ public:
     }
 };
 
-/// <summary>Used to automatically pop any pushed elements at the end of the scope.</summary>
+/// @brief Used to automatically pop any pushed elements at the end of the scope.
 class ScopedStack {
 public:
-    /// <summary>Constructs a scoped stack for the given stack.</summary>
+    /// @brief Constructs a scoped stack for the given stack.
     ScopedStack(State& state)
         : state_(state)
         , initially_pushed_(state.top_)
     {}
 
-    /// <summary>Resets the top to the initial one, effectively popping all leftover elements.</summary>
+    /// @brief Resets the top to the initial one, effectively popping all leftover elements.
     ~ScopedStack()
     {
         // accidentally popped values cannot be recreated and would simply be filled with nil
@@ -3091,7 +3089,7 @@ struct Convert<detail::UpvalueIndexRange<TState>> : detail::ConvertIndexRange {}
 
 // --- Utility ---
 
-/// <summary>Function object that checks Lua arguments for a certain type.</summary>
+/// @brief Function object that checks Lua arguments for a certain type.
 template <typename T>
 struct ArgCheck {
     template <typename TArg>
@@ -3101,7 +3099,7 @@ struct ArgCheck {
     }
 };
 
-/// <summary>Function object that converts Lua values into an optional of the given type.</summary>
+/// @brief Function object that converts Lua values into an optional of the given type.
 template <typename T>
 struct ValueTo {
     template <typename TIndex>
@@ -3113,7 +3111,7 @@ struct ValueTo {
 
 namespace detail {
 
-/// <summary>Requires either of the two arguments to be an index and returns the associated state.</summary>
+/// @brief Requires either of the two arguments to be an index and returns the associated state.
 template <typename TLeft, typename TRight>
 inline auto& stateOf(TLeft& lhs, TRight& rhs)
 {
@@ -3123,11 +3121,11 @@ inline auto& stateOf(TLeft& lhs, TRight& rhs)
         return rhs.state();
 }
 
-/// <summary>Whether any of the type parameters is an index.</summary>
+/// @brief Whether any of the type parameters is an index.
 template <typename... TArgs>
 using AnyIndex = std::disjunction<IsIndex<std::decay_t<TArgs>>...>;
 
-/// <summary>Enable-if wrapper to check for any index and results in StackIndexResult.</summary>
+/// @brief Enable-if wrapper to check for any index and results in StackIndexResult.
 template <typename... TArgs>
 using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, StackIndexResult>;
 

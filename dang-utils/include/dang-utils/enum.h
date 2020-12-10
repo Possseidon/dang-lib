@@ -11,24 +11,24 @@
 
 namespace dang::utils {
 
-/// <summary>An integral constant converting the given enum value to its underlying type.</summary>
+/// @brief An integral constant converting the given enum value to its underlying type.
 template <auto Value>
 struct UnderlyingValue
     : std::integral_constant<std::underlying_type_t<decltype(Value)>,
                              static_cast<std::underlying_type_t<decltype(Value)>>(Value)> {};
 
-/// <summary>Simply uses T::COUNT.</summary>
+/// @brief Simply uses T::COUNT.
 template <typename T>
 struct DefaultEnumCount : UnderlyingValue<T::COUNT> {};
 
-/// <summary>Can be specialized to allow for iteration, usage in EnumArray and Flags.</summary>
+/// @brief Can be specialized to allow for iteration, usage in EnumArray and Flags.
 template <typename T>
 struct EnumCount {};
 
 template <typename T>
 inline constexpr auto EnumCountV = EnumCount<T>::value;
 
-/// <summary>Returns a std::array of all enum values, given that the enum has EnumCount specialized.</summary>
+/// @brief Returns a std::array of all enum values, given that the enum has EnumCount specialized.
 template <typename T>
 inline constexpr std::array<T, EnumCountV<T>> getEnumValues()
 {
@@ -38,11 +38,11 @@ inline constexpr std::array<T, EnumCountV<T>> getEnumValues()
     return result;
 }
 
-/// <summary>An array of all enum values, given that the enum has EnumCount specialized.</summary>
+/// @brief An array of all enum values, given that the enum has EnumCount specialized.
 template <typename T>
 inline constexpr auto EnumValues = getEnumValues<T>();
 
-/// <summary>A wrapper around std::array, allowing the use of an enum as index, if EnumCount is specialized for it.</summary>
+/// @brief A wrapper around std::array, allowing the use of an enum as index, if EnumCount is specialized for it.
 template <typename TEnum, typename TValue>
 struct EnumArray : std::array<TValue, EnumCountV<TEnum>> {
     using Base = std::array<TValue, EnumCountV<TEnum>>;
@@ -601,7 +601,7 @@ private:
     std::array<Word, WordCount> words_{};
 };
 
-/// <summary>Used in the same fashion as std::index_sequence.</summary>
+/// @brief Used in the same fashion as std::index_sequence.
 template <typename T, T... Values>
 struct EnumSequence {
     static_assert(std::is_enum_v<T>, "Enum sequence requires enumeration type.");
@@ -609,7 +609,7 @@ struct EnumSequence {
 
 namespace detail {
 
-/// <summary>Helper function to create an enum sequences from a given integer sequence.</summary>
+/// @brief Helper function to create an enum sequences from a given integer sequence.
 template <typename T, std::underlying_type_t<T>... Indices>
 constexpr auto makeEnumSequenceHelper(std::integer_sequence<std::underlying_type_t<T>, Indices...>)
 {
@@ -618,7 +618,7 @@ constexpr auto makeEnumSequenceHelper(std::integer_sequence<std::underlying_type
 
 } // namespace detail
 
-/// <summary>Used in the same fashion as std::make_index_sequence.</summary>
+/// @brief Used in the same fashion as std::make_index_sequence.
 template <typename T>
 constexpr auto makeEnumSequence()
 {

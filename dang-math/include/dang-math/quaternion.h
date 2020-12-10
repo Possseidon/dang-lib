@@ -7,39 +7,37 @@
 
 namespace dang::math {
 
-/// <summary>A quaternion, which usually represents an arbitrary rotation in three-dimensional space.</summary>
-/// <remarks>
-/// <para>The rotation is expressed using an axis (vector/xyz) and a rotation distance (scalar/w).</para>
-/// <para>The quaternion needs to be normalized, before applying it (using multiplication).</para>
-/// </remarks>
+/// @brief A quaternion, which usually represents an arbitrary rotation in three-dimensional space.
+/// @remark The rotation is expressed using an axis (vector/xyz) and a rotation distance (scalar/w).
+/// @remark The quaternion needs to be normalized, before applying it (using multiplication).
 template <typename T>
 struct Quaternion : private Vector<T, 4> {
     using Base = Vector<T, 4>;
 
-    /// <summary>Initializes the quaternion to the zero quaternion, which cannot be normalized or used directly.</summary>
+    /// @brief Initializes the quaternion to the zero quaternion, which cannot be normalized or used directly.
     constexpr Quaternion()
         : Base()
     {}
-    /// <summary>Initializes the quaternion from a four-dimensional vector.</summary>
+    /// @brief Initializes the quaternion from a four-dimensional vector.
     constexpr Quaternion(const Base& vector)
         : Base(vector)
     {}
-    /// <summary>Initializes the quaternion from scalar and vector without normalization.</summary>
+    /// @brief Initializes the quaternion from scalar and vector without normalization.
     constexpr Quaternion(T scalar, const Vector<T, 3>& vector)
         : Quaternion(Base(vector, scalar))
     {}
-    /// <summary>Initializes the quaternion from w-scalar and xyz-vector without normalization.</summary>
+    /// @brief Initializes the quaternion from w-scalar and xyz-vector without normalization.
     constexpr Quaternion(T w, T x, T y, T z)
         : Quaternion(Base(x, y, z, w))
     {}
 
-    /// <summary>Returns the zero-quaternion, which cannot be normalized or used directly.</summary>
+    /// @brief Returns the zero-quaternion, which cannot be normalized or used directly.
     static constexpr Quaternion zero() { return Quaternion(0, 0, 0, 0); }
 
-    /// <summary>Returns the identity-quaternion, which is normalized and, when applied, does not do anything.</summary>
+    /// @brief Returns the identity-quaternion, which is normalized and, when applied, does not do anything.
     static constexpr Quaternion identity() { return Quaternion(1, 0, 0, 0); }
 
-    /// <summary>Returns a quaternion from the given rotation, specified as rotation-axis and angle in radians.</summary>
+    /// @brief Returns a quaternion from the given rotation, specified as rotation-axis and angle in radians.
     static constexpr Quaternion fromAxisRad(const Vector<T, 3>& normal, T radians)
     {
         radians /= 2;
@@ -48,13 +46,13 @@ struct Quaternion : private Vector<T, 4> {
             std::cos(radians), normal.x() * sin_radians, normal.y() * sin_radians, normal.z() * sin_radians);
     }
 
-    /// <summary>Returns a quaternion from the given rotation, specified as rotation-axis and angle in degrees.</summary>
+    /// @brief Returns a quaternion from the given rotation, specified as rotation-axis and angle in degrees.
     static constexpr Quaternion fromAxis(const Vector<T, 3>& normal, T degrees)
     {
         return fromAxisRad(normal, radians(degrees));
     }
 
-    /// <summary>Returns a quaternion with all euler angles in radians applied in the given order.</summary>
+    /// @brief Returns a quaternion with all euler angles in radians applied in the given order.
     template <std::size_t AngleCount>
     static constexpr Quaternion fromEulerRad(const Vector<T, AngleCount>& radians,
                                              const std::array<Axis3, AngleCount>& order)
@@ -65,7 +63,7 @@ struct Quaternion : private Vector<T, 4> {
         return result;
     }
 
-    /// <summary>Returns a quaternion with all euler angles in degrees applied in the given order.</summary>
+    /// @brief Returns a quaternion with all euler angles in degrees applied in the given order.
     template <std::size_t AngleCount>
     static constexpr Quaternion fromEuler(const Vector<T, AngleCount>& degrees,
                                           const std::array<Axis3, AngleCount>& order)
@@ -73,63 +71,63 @@ struct Quaternion : private Vector<T, 4> {
         return fromEulerRad(degrees.radians(), order);
     }
 
-    /// <summary>Returns a quaternion with all euler angles in radians applied in YXZ-order.</summary>
+    /// @brief Returns a quaternion with all euler angles in radians applied in YXZ-order.
     static constexpr Quaternion fromEulerRad(const Vector<T, 3>& radians)
     {
         return fromEulerRad(radians, {Axis3::Y, Axis3::X, Axis3::Z});
     }
 
-    /// <summary>Returns a quaternion with all euler angles in degrees applied in YXZ-order.</summary>
+    /// @brief Returns a quaternion with all euler angles in degrees applied in YXZ-order.
     static constexpr Quaternion fromEuler(const Vector<T, 3>& degrees) { return fromEulerRad(degrees.radians()); }
 
-    /// <summary>Returns a quaternion with all euler angles in radians applied in YX-order.</summary>
+    /// @brief Returns a quaternion with all euler angles in radians applied in YX-order.
     static constexpr Quaternion fromEulerRad(const Vector<T, 2>& radians)
     {
         return fromEulerRad(radians, {Axis3::Y, Axis3::X});
     }
 
-    /// <summary>Returns a quaternion with all euler angles in degrees applied in YX-order.</summary>
+    /// @brief Returns a quaternion with all euler angles in degrees applied in YX-order.
     static constexpr Quaternion fromEuler(const Vector<T, 2>& degrees) { return fromEulerRad(degrees.radians()); }
 
-    /// <summary>Returns the scalar/w part of the quaternion.</summary>
+    /// @brief Returns the scalar/w part of the quaternion.
     constexpr T scalar() const { return Base::w(); }
-    /// <summary>Returns the scalar/w part of the quaternion.</summary>
+    /// @brief Returns the scalar/w part of the quaternion.
     constexpr T w() const { return Base::w(); }
 
-    /// <summary>Returns the vector/xyz part of the quaternion.</summary>
+    /// @brief Returns the vector/xyz part of the quaternion.
     constexpr Vector<T, 3> vector() const { return Base::xyz(); };
-    /// <summary>Returns the vector x-part of the quaternion.</summary>
+    /// @brief Returns the vector x-part of the quaternion.
     constexpr T x() const { return Base::x(); }
-    /// <summary>Returns the vector y-part of the quaternion.</summary>
+    /// @brief Returns the vector y-part of the quaternion.
     constexpr T y() const { return Base::y(); }
-    /// <summary>Returns the vector z-part of the quaternion.</summary>
+    /// @brief Returns the vector z-part of the quaternion.
     constexpr T z() const { return Base::z(); }
 
     using Base::dot;
     using Base::sqrdot;
 
-    /// <summary>Returns the normalized quaternion, which can safely be applied using multiplication.</summary>
+    /// @brief Returns the normalized quaternion, which can safely be applied using multiplication.
     constexpr Quaternion normalize() const { return Base::normalize(); }
 
-    /// <summary>Returns the magnitude of the quaternion, which is simply the length of the xyzw-vector.</summary>
+    /// @brief Returns the magnitude of the quaternion, which is simply the length of the xyzw-vector.
     constexpr T magnitude() const { return Base::length(); }
 
-    /// <summary>Returns the conjugate of the quaternion, which simply has the vector-part negated.</summary>
+    /// @brief Returns the conjugate of the quaternion, which simply has the vector-part negated.
     constexpr Quaternion conjugate() const { return Quaternion(scalar(), -vector()); }
 
-    /// <summary>Returns the inverse of the quaternion, assuming it is normalized, for which it simply calculates the conjugate.</summary>
+    /// @brief Returns the inverse of the quaternion, assuming it is normalized, for which it simply calculates the conjugate.
     constexpr Quaternion inverseFast() const { return conjugate(); }
 
-    /// <summary>Returns the inverse of the quaternion, even if the quaternion is not normalized.</summary>
+    /// @brief Returns the inverse of the quaternion, even if the quaternion is not normalized.
     constexpr Quaternion inverseSafe() const { return conjugate() / Base::sqrdot(); }
 
-    /// <summary>Converts the quaternion into a simple xyzw-vector.</summary>
+    /// @brief Converts the quaternion into a simple xyzw-vector.
     constexpr const Vector<T, 4>& asVector() const { return *this; }
 
-    /// <summary>Converts the quaternion into a simple xyzw-vector.</summary>
+    /// @brief Converts the quaternion into a simple xyzw-vector.
     constexpr Vector<T, 4>& asVector() { return *this; }
 
-    /// <summary>Converts the quaternion into a rotation-matrix and returns it.</summary>
+    /// @brief Converts the quaternion into a rotation-matrix and returns it.
     constexpr Matrix<T, 3> toMatrix() const
     {
         const T& w = this->w();
@@ -142,31 +140,31 @@ struct Quaternion : private Vector<T, 4> {
              {T(2) * x * z + T(2) * y * w, T(2) * y * z - T(2) * x * w, T(1) - T(2) * x * x - T(2) * y * y}});
     }
 
-    /// <summary>Returns the quaternion itself.</summary>
+    /// @brief Returns the quaternion itself.
     constexpr Quaternion operator+() const { return *this; }
 
-    /// <summary>Returns the quaternion with both scalar and vector negated.</summary>
+    /// @brief Returns the quaternion with both scalar and vector negated.
     constexpr Quaternion operator-() const { return Base::operator-(); }
 
-    /// <summary>Adds both quaternions component-wise.</summary>
+    /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs)
     {
         return Base(lhs) + Base(rhs);
     }
 
-    /// <summary>Adds both quaternions component-wise.</summary>
+    /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion& operator+=(Quaternion& lhs, const Quaternion& rhs) { return lhs = lhs + rhs; }
 
-    /// <summary>Adds both quaternions component-wise.</summary>
+    /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs)
     {
         return Base(lhs) - Base(rhs);
     }
 
-    /// <summary>Adds both quaternions component-wise.</summary>
+    /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion& operator-=(Quaternion& lhs, const Quaternion& rhs) { return lhs = lhs - rhs; }
 
-    /// <summary>Combines the transformation of both quaternions.</summary>
+    /// @brief Combines the transformation of both quaternions.
     friend constexpr Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs)
     {
         return Quaternion((lhs.w() * rhs.w() - lhs.x() * rhs.x() - lhs.y() * rhs.y() - lhs.z() * rhs.z()),
@@ -175,19 +173,19 @@ struct Quaternion : private Vector<T, 4> {
                           (lhs.w() * rhs.z() + lhs.x() * rhs.y() - lhs.y() * rhs.x() + lhs.z() * rhs.w()));
     }
 
-    /// <summary>Combines the transformation of rhs onto lhs.</summary>
+    /// @brief Combines the transformation of rhs onto lhs.
     friend constexpr Quaternion& operator*=(Quaternion& lhs, const Quaternion& rhs) { return lhs = lhs * rhs; }
 
-    /// <summary>Combines the transformation of lhs with the inverse of rhs.</summary>
+    /// @brief Combines the transformation of lhs with the inverse of rhs.
     friend constexpr Quaternion operator/(const Quaternion& lhs, const Quaternion& rhs)
     {
         return lhs * rhs.inverseSafe();
     }
 
-    /// <summary>Combines the transformation of the inverse of rhs onto lhs.</summary>
+    /// @brief Combines the transformation of the inverse of rhs onto lhs.
     friend constexpr Quaternion& operator/=(Quaternion& lhs, const Quaternion& rhs) { return lhs = lhs / rhs; }
 
-    /// <summary>Applies the quaternion transformation to the given vector.</summary>
+    /// @brief Applies the quaternion transformation to the given vector.
     friend constexpr Vector<T, 3> operator*(const Quaternion& quaternion, const Vector<T, 3>& vector)
     {
         Vector<T, 3> u = quaternion.vector();
@@ -195,49 +193,49 @@ struct Quaternion : private Vector<T, 4> {
         return vector + T(2) * ((quaternion.scalar() * uv) + u.cross(uv));
     }
 
-    /// <summary>Applies the transformation of the conjuagted quaternion to the given vector.</summary>
+    /// @brief Applies the transformation of the conjuagted quaternion to the given vector.
     friend constexpr Vector<T, 3> operator*(const Vector<T, 3>& vector, const Quaternion& quaternion)
     {
         return quaternion.conjugate() * vector;
     }
 
-    /// <summary>Applies the transformation of the conjuagted quaternion onto the given vector.</summary>
+    /// @brief Applies the transformation of the conjuagted quaternion onto the given vector.
     friend constexpr Vector<T, 3>& operator*=(Vector<T, 3>& vector, const Quaternion& quaternion)
     {
         return vector = vector * quaternion;
     }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion operator*(const Quaternion& quaternion, T factor) { return Base(quaternion) * factor; }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion operator*(T factor, const Quaternion& quaternion) { return Base(quaternion) * factor; }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion& operator*=(Quaternion& quaternion, T factor)
     {
         return quaternion = quaternion * factor;
     }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion operator/(const Quaternion& quaternion, T factor) { return Base(quaternion) / factor; }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion operator/(T factor, const Quaternion& quaternion) { return factor / Base(quaternion); }
 
-    /// <summary>Scales the whole quaternion with the given factor.</summary>
+    /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion& operator/=(Quaternion& quaternion, T factor)
     {
         return quaternion = quaternion / factor;
     }
 
-    /// <summary>Returns true, if both quaternions are identical.</summary>
+    /// @brief Returns true, if both quaternions are identical.
     friend constexpr bool operator==(const Quaternion& lhs, const Quaternion& rhs)
     {
         return Base::operator==(lhs, rhs);
     }
 
-    /// <summary>Returns true, if the quaternions differ.</summary>
+    /// @brief Returns true, if the quaternions differ.
     friend constexpr bool operator!=(const Quaternion& lhs, const Quaternion& rhs)
     {
         return Base::operator!=(lhs, rhs);
@@ -249,7 +247,7 @@ struct Quaternion : private Vector<T, 4> {
         bool requires_normalization;
     };
 
-    /// <summary>Helper for slerp, which returns source and target factor and whether the result needs to be normalized.</summary>
+    /// @brief Helper for slerp, which returns source and target factor and whether the result needs to be normalized.
     constexpr SlerpResult slerpHelper(Quaternion target, T factor)
     {
         // Following article was used as a base:
@@ -284,8 +282,8 @@ struct Quaternion : private Vector<T, 4> {
         return {source_factor, target_sign * target_factor, requires_normalization};
     }
 
-    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.</summary>
-    /// <remarks>Both quaternions should be normalized for correct results.</remarks>
+    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.
+    /// @remark Both quaternions should be normalized for correct results.
     constexpr Quaternion slerp(Quaternion target, T factor)
     {
         auto slerp_result = slerpHelper(target, factor);
@@ -296,47 +294,47 @@ struct Quaternion : private Vector<T, 4> {
     }
 };
 
-/// <summary>A dual-quaternion, which can represent both rotation (real) and translation (dual).</summary>
+/// @brief A dual-quaternion, which can represent both rotation (real) and translation (dual).
 template <typename T>
 struct DualQuaternion {
-    /// <summary>The real-part (rotation) of the dual-quaternion.</summary>
+    /// @brief The real-part (rotation) of the dual-quaternion.
     Quaternion<T> real;
-    /// <summary>The dual-part (translation) of the dual-quaternion.</summary>
+    /// @brief The dual-part (translation) of the dual-quaternion.
     Quaternion<T> dual;
 
-    /// <summary>Initializes the dual-quaternion with the identity rotation and zero translation.</summary>
+    /// @brief Initializes the dual-quaternion with the identity rotation and zero translation.
     constexpr DualQuaternion()
         : real(Quaternion<T>::identity())
         , dual(Quaternion<T>::zero())
     {}
 
-    /// <summary>Initializes the dual-quaternion with the given rotation and translation quaternions.</summary>
-    /// <remarks>The translation is optional and defaults to zero.</remarks>
+    /// @brief Initializes the dual-quaternion with the given rotation and translation quaternions.
+    /// @remark The translation is optional and defaults to zero.
     explicit constexpr DualQuaternion(const Quaternion<T>& real, const Quaternion<T>& dual = Quaternion<T>::zero())
         : real(real)
         , dual(dual)
     {}
 
-    /// <summary>Initializes the dual-quaternion with the given translation quaternion (and identity rotation).</summary>
-    /// <remarks>The vector does NOT describe the actual translation, but is instead copied unmodified into the dual part.</remarks>
+    /// @brief Initializes the dual-quaternion with the given translation quaternion (and identity rotation).
+    /// @remark The vector does NOT describe the actual translation, but is instead copied unmodified into the dual part.
     explicit constexpr DualQuaternion(const Vector<T, 3>& dual)
         : real(Quaternion<T>::identity())
         , dual(T(), dual)
     {}
 
-    /// <summary>Returns a dual-quaternion from the given rotation, specified as rotation-axis and angle in radians.</summary>
+    /// @brief Returns a dual-quaternion from the given rotation, specified as rotation-axis and angle in radians.
     static constexpr DualQuaternion fromAxisRad(const Vector<T, 3>& normal, T radians)
     {
         return Quaternion<T>::fromAxisRad(normal, radians);
     }
 
-    /// <summary>Returns a dual-quaternion from the given rotation, specified as rotation-axis and angle in degrees.</summary>
+    /// @brief Returns a dual-quaternion from the given rotation, specified as rotation-axis and angle in degrees.
     static constexpr DualQuaternion fromAxis(const Vector<T, 3>& normal, T degrees)
     {
         return DualQuaternion(Quaternion<T>::fromAxis(normal, degrees));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in the given order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in radians applied in the given order.
     template <std::size_t AngleCount>
     static constexpr DualQuaternion fromEulerRad(const Vector<T, AngleCount>& radians,
                                                  const std::array<Axis3, AngleCount>& order)
@@ -344,7 +342,7 @@ struct DualQuaternion {
         return DualQuaternion(Quaternion<T>::fromEulerRad<AngleCount>(radians, order));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in the given order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in degrees applied in the given order.
     template <std::size_t AngleCount>
     static constexpr DualQuaternion fromEuler(const Vector<T, AngleCount>& degrees,
                                               const std::array<Axis3, AngleCount>& order)
@@ -352,86 +350,86 @@ struct DualQuaternion {
         return DualQuaternion(Quaternion<T>::fromEuler<AngleCount>(degrees, order));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YXZ-order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in radians applied in YXZ-order.
     static constexpr DualQuaternion fromEulerRadYXZ(const Vector<T, 3>& radians)
     {
         return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YXZ-order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in degrees applied in YXZ-order.
     static constexpr DualQuaternion fromEulerYXZ(const Vector<T, 3>& degrees)
     {
         return DualQuaternion(Quaternion<T>::fromEuler(degrees));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in radians applied in YX-order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in radians applied in YX-order.
     static constexpr DualQuaternion fromEulerRadYX(const Vector<T, 2>& radians)
     {
         return DualQuaternion(Quaternion<T>::fromEulerRad(radians));
     }
 
-    /// <summary>Returns a dual-quaternion with all euler angles in degrees applied in YX-order.</summary>
+    /// @brief Returns a dual-quaternion with all euler angles in degrees applied in YX-order.
     static constexpr DualQuaternion fromEulerYX(const Vector<T, 2>& degrees)
     {
         return DualQuaternion(Quaternion<T>::fromEuler(degrees));
     }
 
-    /// <summary>Returns a dual-quaternion from the given translation vector.</summary>
+    /// @brief Returns a dual-quaternion from the given translation vector.
     static constexpr DualQuaternion fromTranslation(const Vector<T, 3>& offset)
     {
         return DualQuaternion(Quaternion<T>::identity(), Vector<T, 4>(offset / T(2), 0));
     }
 
-    /// <summary>Returns the quaternion conjugate by calculating the conjugate for both real and dual part.</summary>
+    /// @brief Returns the quaternion conjugate by calculating the conjugate for both real and dual part.
     constexpr DualQuaternion quatConjugate() const { return DualQuaternion(real.conjugate(), dual.conjugate()); }
 
-    /// <summary>Returns the dual conjugate by negating the dual part.</summary>
+    /// @brief Returns the dual conjugate by negating the dual part.
     constexpr DualQuaternion dualConjugate() const { return DualQuaternion(real, -dual); }
 
-    /// <summary>Returns the full conjugate of the dual-quaternion, which is a combination of both quat and dual conjugates.</summary>
+    /// @brief Returns the full conjugate of the dual-quaternion, which is a combination of both quat and dual conjugates.
     constexpr DualQuaternion conjugate() const { return DualQuaternion(real.conjugate(), -dual.conjugate()); }
 
-    /// <summary>Returns the rotation quaternion, which is simply an alias for the real-part.</summary>
+    /// @brief Returns the rotation quaternion, which is simply an alias for the real-part.
     constexpr Quaternion<T> rotation() const { return real; }
 
-    /// <summary>Returns the translation of the dual-quaternion.</summary>
+    /// @brief Returns the translation of the dual-quaternion.
     constexpr Vector<T, 3> translation() const { return T(2) * (dual * real.conjugate()).vector(); }
 
-    /// <summary>Returns the normalized dual-quaternion by normalizing the real-part and applying the same factor to the dual-part.</summary>
+    /// @brief Returns the normalized dual-quaternion by normalizing the real-part and applying the same factor to the dual-part.
     constexpr DualQuaternion normalize() const { return *this / real.magnitude(); }
 
-    /// <summary>Returns the dot product between the real-parts of the dual-quaternions.</summary>
+    /// @brief Returns the dot product between the real-parts of the dual-quaternions.
     constexpr Quaternion<T> dot(const DualQuaternion& other) const { return real.dot(other.real); }
 
-    /// <summary>Returns the inverse of the dual-quaternion, assuming it is normalized, for which it simply calculates the conjugate for both parts.</summary>
+    /// @brief Returns the inverse of the dual-quaternion, assuming it is normalized, for which it simply calculates the conjugate for both parts.
     constexpr DualQuaternion inverseFast() const { return quatConjugate(); }
 
-    /// <summary>Returns the inverse of the dual-quaternion, even if the dual-quaternion is not normalized.</summary>
+    /// @brief Returns the inverse of the dual-quaternion, even if the dual-quaternion is not normalized.
     constexpr DualQuaternion inverseSafe() const
     {
         Quaternion<T> realInverse = real.inverseSafe();
         return DualQuaternion(realInverse, -realInverse * dual * realInverse);
     }
 
-    /// <summary>Rotates the dual-quaternion around the given rotation-axis and angle in radians.</summary>
+    /// @brief Rotates the dual-quaternion around the given rotation-axis and angle in radians.
     constexpr DualQuaternion rotateRad(const Vector<T, 3>& normal, T radians) const
     {
         return *this * fromAxisRad(normal, radians);
     }
 
-    /// <summary>Rotates the dual-quaternion around the given rotation-axis and angle in degrees.</summary>
+    /// @brief Rotates the dual-quaternion around the given rotation-axis and angle in degrees.
     constexpr DualQuaternion rotate(const Vector<T, 3>& normal, T degrees) const
     {
         return *this * fromAxis(normal, degrees);
     }
 
-    /// <summary>Translates the dual-quaternion by the given offset.</summary>
+    /// @brief Translates the dual-quaternion by the given offset.
     constexpr DualQuaternion translate(const Vector<T, 3>& offset) const { return *this * fromTranslation(offset); }
 
-    /// <summary>Converts the dual-quaternion into a 2x4 matrix with real and dual parts.</summary>
+    /// @brief Converts the dual-quaternion into a 2x4 matrix with real and dual parts.
     constexpr Matrix<T, 2, 4> toMatrix2x4() const { return Matrix<T, 2, 4>({real.asVector(), dual.asVector()}); }
 
-    /// <summary>Converts the dual-quaternion into a full 4x4 transformation-matrix and returns it.</summary>
+    /// @brief Converts the dual-quaternion into a full 4x4 transformation-matrix and returns it.
     constexpr Matrix<T, 4> toMatrix() const
     {
         Matrix<T, 4> result;
@@ -440,13 +438,13 @@ struct DualQuaternion {
         return result;
     }
 
-    /// <summary>Returns the dual-quaternion itself.</summary>
+    /// @brief Returns the dual-quaternion itself.
     constexpr DualQuaternion operator+() const { return *this; }
 
-    /// <summary>Returns the dual-quaternion with both real and dual parts negated.</summary>
+    /// @brief Returns the dual-quaternion with both real and dual parts negated.
     constexpr DualQuaternion operator-() const { return DualQuaternion(-real, -dual); }
 
-    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    /// @brief Scales the whole dual-quaternion with the given factor.
     friend constexpr DualQuaternion& operator*=(DualQuaternion& dualquaternion, T factor)
     {
         dualquaternion.real *= factor;
@@ -454,19 +452,19 @@ struct DualQuaternion {
         return dualquaternion;
     }
 
-    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    /// @brief Scales the whole dual-quaternion with the given factor.
     friend constexpr DualQuaternion operator*(DualQuaternion dualquaternion, T factor)
     {
         return dualquaternion *= factor;
     }
 
-    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    /// @brief Scales the whole dual-quaternion with the given factor.
     friend constexpr DualQuaternion operator*(T factor, DualQuaternion dualquaternion)
     {
         return dualquaternion *= factor;
     }
 
-    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    /// @brief Scales the whole dual-quaternion with the given factor.
     friend constexpr DualQuaternion& operator/=(DualQuaternion& dualquaternion, T factor)
     {
         dualquaternion.real /= factor;
@@ -474,13 +472,13 @@ struct DualQuaternion {
         return dualquaternion;
     }
 
-    /// <summary>Scales the whole dual-quaternion with the given factor.</summary>
+    /// @brief Scales the whole dual-quaternion with the given factor.
     friend constexpr DualQuaternion operator/(DualQuaternion dualquaternion, T factor)
     {
         return dualquaternion /= factor;
     }
 
-    /// <summary>Adds both dual-quaternions component-wise.</summary>
+    /// @brief Adds both dual-quaternions component-wise.
     friend constexpr DualQuaternion& operator+=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
         lhs.real += rhs.real;
@@ -488,10 +486,10 @@ struct DualQuaternion {
         return lhs;
     }
 
-    /// <summary>Adds both dual-quaternions component-wise.</summary>
+    /// @brief Adds both dual-quaternions component-wise.
     friend constexpr DualQuaternion operator+(DualQuaternion lhs, const DualQuaternion& rhs) { return lhs += rhs; }
 
-    /// <summary>Subtracts the dual-quaternions component-wise.</summary>
+    /// @brief Subtracts the dual-quaternions component-wise.
     friend constexpr DualQuaternion& operator-=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
         lhs.real -= rhs.real;
@@ -499,38 +497,38 @@ struct DualQuaternion {
         return lhs;
     }
 
-    /// <summary>Subtracts the dual-quaternions component-wise.</summary>
+    /// @brief Subtracts the dual-quaternions component-wise.
     friend constexpr DualQuaternion operator-(DualQuaternion lhs, const DualQuaternion& rhs) { return lhs -= rhs; }
 
-    /// <summary>Combines the transformation of both quaternions.</summary>
+    /// @brief Combines the transformation of both quaternions.
     friend constexpr DualQuaternion operator*(const DualQuaternion& lhs, const DualQuaternion& rhs)
     {
         return DualQuaternion(rhs.real * lhs.real, rhs.dual * lhs.real + rhs.real * lhs.dual);
     }
 
-    /// <summary>Combines the transformation of rhs onto lhs.</summary>
+    /// @brief Combines the transformation of rhs onto lhs.
     friend constexpr DualQuaternion& operator*=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
         return lhs = lhs * rhs;
     }
 
-    /// <summary>Combines the transformation of the inverse of rhs onto lhs.</summary>
+    /// @brief Combines the transformation of the inverse of rhs onto lhs.
     friend constexpr DualQuaternion& operator/=(DualQuaternion& lhs, const DualQuaternion& rhs)
     {
         return lhs *= rhs.inverseSafe();
     }
 
-    /// <summary>Combines the transformation of lhs with the inverse of rhs.</summary>
+    /// @brief Combines the transformation of lhs with the inverse of rhs.
     friend constexpr DualQuaternion operator/(DualQuaternion lhs, const DualQuaternion& rhs) { return lhs /= rhs; }
 
-    /// <summary>Applies the quaternion transformation to the given vector.</summary>
+    /// @brief Applies the quaternion transformation to the given vector.
     friend constexpr Vector<T, 3> operator*(const DualQuaternion& dualquaternion, const Vector<T, 3>& vector)
     {
         return (dualquaternion.conjugate() * DualQuaternion(vector) * dualquaternion).dual.vector();
     }
 
-    /// <summary>Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.</summary>
-    /// <remarks>Both quaternions should be normalized for correct results.</remarks>
+    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.
+    /// @remark Both quaternions should be normalized for correct results.
     constexpr DualQuaternion slerp(DualQuaternion target, T factor)
     {
         auto slerp_result = real.slerpHelper(target.real, factor);

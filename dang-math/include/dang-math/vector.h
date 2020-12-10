@@ -7,21 +7,19 @@ namespace dang::math {
 
 // TODO: C++20 Replace SFINAE/static_assert with requires
 
-/// <summary>A vector of the templated type and dimension, using std::array as base.</summary>
+/// @brief A vector of the templated type and dimension, using std::array as base.
 template <typename T, std::size_t Dim>
 struct Vector : std::array<T, Dim> {
     using Base = std::array<T, Dim>;
 
-    /// <summary>Initializes all values with default values.</summary>
+    /// @brief Initializes all values with default values.
     constexpr Vector()
         : Base()
     {}
 
-    /// <summary>Implicit conversion between scalars and a vector containing said scalar for each component.</summary>
-    /// <remarks>
-    /// Being implicit greatly simplifies operator overloading, however GLSL does not provide this implicit conversion.
-    /// GLSL only allows this conversion when used in conjunction with an actual mathematical operations.
-    /// </remarks>
+    /// @brief Implicit conversion between scalars and a vector containing said scalar for each component.
+    /// @remark Being implicit greatly simplifies operator overloading, however GLSL does not provide this implicit conversion.
+    /// @remark GLSL only allows this conversion when used in conjunction with an actual mathematical operations.
     constexpr Vector(T value)
         : Base()
     {
@@ -29,39 +27,37 @@ struct Vector : std::array<T, Dim> {
             (*this)[i] = value;
     }
 
-    /// <summary>Initializes x and y with the given values.</summary>
+    /// @brief Initializes x and y with the given values.
     constexpr Vector(T x, T y)
         : Base{x, y}
     {
         static_assert(Dim == 2);
     }
 
-    /// <summary>Initializes x, y and z with the given values.</summary>
+    /// @brief Initializes x, y and z with the given values.
     constexpr Vector(T x, T y, T z)
         : Base{x, y, z}
     {
         static_assert(Dim == 3);
     }
 
-    /// <summary>Initializes x, y, z and w with the given values.</summary>
+    /// @brief Initializes x, y, z and w with the given values.
     constexpr Vector(T x, T y, T z, T w)
         : Base{x, y, z, w}
     {
         static_assert(Dim == 4);
     }
 
-    /// <summary>Converts a three-dimensional into a four-dimensional vector with the given value for w.</summary>
-    /// <remarks>
-    /// GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to implement in C++.
-    /// Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
-    /// </remarks>
+    /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
+    /// @remark GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to implement in C++.
+    /// @remark Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
     constexpr Vector(Vector<T, 3> vector, T w)
         : Base{vector[0], vector[1], vector[2], w}
     {
         static_assert(Dim == 4);
     }
 
-    /// <summary>Allows explicit conversion between vector of same size but different types.</summary>
+    /// @brief Allows explicit conversion between vector of same size but different types.
     template <typename TFrom>
     explicit constexpr Vector(const Vector<TFrom, Dim>& other)
         : Vector()
@@ -70,14 +66,14 @@ struct Vector : std::array<T, Dim> {
             (*this)[i] = static_cast<T>(other[i]);
     }
 
-    /// <summary>Allows for conversion from single-value vectors to their respective value type.</summary>
+    /// @brief Allows for conversion from single-value vectors to their respective value type.
     explicit constexpr operator T()
     {
         static_assert(Dim == 1);
         return (*this)[0];
     }
 
-    /// <summary>Returns the sum of all components.</summary>
+    /// @brief Returns the sum of all components.
     constexpr auto sum() const
     {
         static_assert(!std::is_same_v<T, bool>);
@@ -87,7 +83,7 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Returns the product of all components.</summary>
+    /// @brief Returns the product of all components.
     constexpr auto product() const
     {
         static_assert(!std::is_same_v<T, bool>);
@@ -97,7 +93,7 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Returns the dot-product with the given vector.</summary>
+    /// @brief Returns the dot-product with the given vector.
     constexpr auto dot(const Vector& other) const
     {
         static_assert(!std::is_same_v<T, bool>);
@@ -107,7 +103,7 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Returns the dot-product with the vector itself.</summary>
+    /// @brief Returns the dot-product with the vector itself.
     constexpr auto sqrdot() const
     {
         static_assert(!std::is_same_v<T, bool>);
@@ -117,144 +113,144 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Returns the length of the vector.</summary>
-    /// <remarks>In GLSL vec3(0).length() returns the component count.</remarks>
+    /// @brief Returns the length of the vector.
+    /// @remark In GLSL vec3(0).length() returns the component count.
     constexpr auto length() const
     {
         static_assert(std::is_floating_point_v<T>);
         return std::sqrt(sqrdot());
     }
 
-    /// <summary>Returns a normalized version of the vector.</summary>
+    /// @brief Returns a normalized version of the vector.
     constexpr auto normalize() const
     {
         static_assert(std::is_floating_point_v<T>);
         return (*this) / length();
     }
 
-    /// <summary>Returns a new vector, which points from the vector to the given vector.</summary>
+    /// @brief Returns a new vector, which points from the vector to the given vector.
     constexpr auto vectorTo(const Vector& other) const
     {
         static_assert(!std::is_same_v<T, bool>);
         return other - *this;
     }
 
-    /// <summary>Returns the distance to the given vector.</summary>
+    /// @brief Returns the distance to the given vector.
     constexpr auto distanceTo(const Vector& other) const
     {
         static_assert(std::is_floating_point_v<T>);
         return (other - *this).length();
     }
 
-    /// <summary>Returns the cosine of the angle to the given vector.</summary>
+    /// @brief Returns the cosine of the angle to the given vector.
     constexpr auto cosAngleTo(const Vector& other) const
     {
         static_assert(std::is_floating_point_v<T>);
         return std::clamp(dot(other) / (length() * other.length()), T{-1}, T{1});
     }
 
-    /// <summary>Returns the angle to the given vector in radians.</summary>
+    /// @brief Returns the angle to the given vector in radians.
     constexpr auto radiansTo(const Vector& other) const
     {
         static_assert(std::is_floating_point_v<T>);
         return std::acos(cosAngleTo(other));
     }
 
-    /// <summary>Returns the angle to the given vector in degrees.</summary>
+    /// @brief Returns the angle to the given vector in degrees.
     constexpr auto degreesTo(const Vector& other) const
     {
         static_assert(std::is_floating_point_v<T>);
         return dang::math::degrees(radiansTo(other));
     }
 
-    /// <summary>Converts every component from degrees into radians.</summary>
+    /// @brief Converts every component from degrees into radians.
     constexpr auto radians() const
     {
         static_assert(std::is_floating_point_v<T>);
         return variadicOp(dang::math::radians<T>);
     }
 
-    /// <summary>Converts every component from radians into degrees.</summary>
+    /// @brief Converts every component from radians into degrees.
     constexpr auto degrees() const
     {
         static_assert(std::is_floating_point_v<T>);
         return variadicOp(dang::math::degrees<T>);
     }
 
-    /// <summary>Returns the vector with each component being positive.</summary>
+    /// @brief Returns the vector with each component being positive.
     constexpr auto abs() const
     {
         static_assert(std::is_signed_v<T>);
         return variadicOp([](T a) { return a < T{0} ? -a : a; });
     }
 
-    /// <summary>Returns the vector with each component rounded down.</summary>
+    /// @brief Returns the vector with each component rounded down.
     constexpr auto floor() const
     {
         static_assert(std::is_floating_point_v<T>);
         return variadicOp([](T a) { return std::floor(a); });
     }
 
-    /// <summary>Returns the vector with each component rounded up.</summary>
+    /// @brief Returns the vector with each component rounded up.
     constexpr auto ceil() const
     {
         static_assert(std::is_floating_point_v<T>);
         return variadicOp([](T a) { return std::ceil(a); });
     }
 
-    /// <summary>Returns a vector, only taking the smaller components of both vectors.</summary>
+    /// @brief Returns a vector, only taking the smaller components of both vectors.
     constexpr auto min(const Vector& other) const
     {
         static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b) { return std::min(a, b); }, other);
     }
 
-    /// <summary>Returns a vector, only taking the larger components of both vectors.</summary>
+    /// @brief Returns a vector, only taking the larger components of both vectors.
     constexpr auto max(const Vector& other) const
     {
         static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b) { return std::max(a, b); }, other);
     }
 
-    /// <summary>Returns a vector, for which each component is clamped between low and high.</summary>
+    /// @brief Returns a vector, for which each component is clamped between low and high.
     constexpr auto clamp(const Vector& low, const Vector& high) const
     {
         static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b, T c) { return std::clamp(a, b, c); }, low, high);
     }
 
-    /// <summary>Reflects the vector on the given plane normal.</summary>
+    /// @brief Reflects the vector on the given plane normal.
     constexpr auto reflect(const Vector& normal) const
     {
         static_assert(!std::is_same_v<T, bool>);
         return *this - 2 * dot(normal) * normal;
     }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto lessThan(const Vector& other) const { return variadicOp(std::less{}, other); }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto lessThanEqual(const Vector& other) const { return variadicOp(std::less_equal{}, other); }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto greaterThan(const Vector& other) const { return variadicOp(std::greater{}, other); }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto greaterThanEqual(const Vector& other) const { return variadicOp(std::greater_equal{}, other); }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto equal(const Vector& other) const { return variadicOp(std::equal_to{}, other); }
 
-    /// <summary>Component-wise comparison, returning a bvec.</summary>
+    /// @brief Component-wise comparison, returning a bvec.
     constexpr auto notEqual(const Vector& other) const { return variadicOp(std::not_equal_to{}, other); }
 
-    /// <summary>Provided as constexpr, as std::array does not.</summary>
+    /// @brief Provided as constexpr, as std::array does not.
     constexpr auto operator==(const Vector& other) const { return equal(other).all(); }
 
-    /// <summary>Provided as constexpr, as std::array does not.</summary>
+    /// @brief Provided as constexpr, as std::array does not.
     constexpr auto operator!=(const Vector& other) const { return notEqual(other).any(); }
 
-    /// <summary>Whether all components satisfy a given predicate.</summary>
+    /// @brief Whether all components satisfy a given predicate.
     constexpr auto all() const
     {
         static_assert(std::is_same_v<T, bool>);
@@ -264,7 +260,7 @@ struct Vector : std::array<T, Dim> {
         return true;
     }
 
-    /// <summary>Whether any component satisfies a given predicate.</summary>
+    /// @brief Whether any component satisfies a given predicate.
     constexpr auto any() const
     {
         static_assert(std::is_same_v<T, bool>);
@@ -274,7 +270,7 @@ struct Vector : std::array<T, Dim> {
         return false;
     }
 
-    /// <summary>Whether no component satisfies a given predicate.</summary>
+    /// @brief Whether no component satisfies a given predicate.
     constexpr auto none() const
     {
         static_assert(std::is_same_v<T, bool>);
@@ -284,106 +280,106 @@ struct Vector : std::array<T, Dim> {
         return true;
     }
 
-    /// <summary>Inverts each component.</summary>
-    /// <remarks>Known as "not" in GLSL, which cannot be used in C++.</remarks>
+    /// @brief Inverts each component.
+    /// @remark Known as "not" in GLSL, which cannot be used in C++.
     constexpr auto invert() const
     {
         static_assert(std::is_same_v<T, bool>);
         return variadicOp(std::logical_not{});
     }
 
-    /// <summary>Simply returns the vector.</summary>
+    /// @brief Simply returns the vector.
     constexpr auto operator+() const
     {
         static_assert(!std::is_same_v<T, bool>);
         return *this;
     }
 
-    /// <summary>Returns the vector with each component negated.</summary>
+    /// @brief Returns the vector with each component negated.
     constexpr auto operator-() const
     {
         static_assert(std::is_signed_v<T>);
         return variadicOp(std::negate{});
     }
 
-    /// <summary>Component-wise addition of two vectors.</summary>
+    /// @brief Component-wise addition of two vectors.
     friend constexpr auto operator+(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::plus{}, rhs);
     }
 
-    /// <summary>Component-wise addition of two vectors.</summary>
+    /// @brief Component-wise addition of two vectors.
     constexpr auto& operator+=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::plus{}, other);
     }
 
-    /// <summary>Component-wise subtraction of two vectors.</summary>
+    /// @brief Component-wise subtraction of two vectors.
     friend constexpr auto operator-(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::minus{}, rhs);
     }
 
-    /// <summary>Component-wise subtraction of two vectors.</summary>
+    /// @brief Component-wise subtraction of two vectors.
     constexpr auto& operator-=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::minus{}, other);
     }
 
-    /// <summary>Component-wise multiplication of two vectors.</summary>
+    /// @brief Component-wise multiplication of two vectors.
     friend constexpr auto operator*(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::multiplies{}, rhs);
     }
 
-    /// <summary>Component-wise multiplication of two vectors.</summary>
+    /// @brief Component-wise multiplication of two vectors.
     constexpr auto& operator*=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::multiplies{}, other);
     }
 
-    /// <summary>Component-wise division of two vectors.</summary>
+    /// @brief Component-wise division of two vectors.
     friend constexpr auto operator/(const Vector& lhs, const Vector& rhs)
     {
         static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::divides{}, rhs);
     }
 
-    /// <summary>Component-wise division of two vectors.</summary>
+    /// @brief Component-wise division of two vectors.
     constexpr auto& operator/=(const Vector& other)
     {
         static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::divides{}, other);
     }
 
-    /// <summary>Returns a swizzle of the given components.</summary>
+    /// @brief Returns a swizzle of the given components.
     template <std::size_t... Indices>
     constexpr auto swizzle() const
     {
         return Vector<T, sizeof...(Indices)>{std::get<Indices>(*this)...};
     }
 
-    /// <summary>Sets a swizzle for the given components.</summary>
+    /// @brief Sets a swizzle for the given components.
     template <std::size_t... Indices, std::size_t... OtherIndices>
     constexpr void setSwizzleHelper(Vector<T, sizeof...(Indices)> vector, std::index_sequence<OtherIndices...>)
     {
         ((std::get<Indices>(*this) = std::get<OtherIndices>(vector)), ...);
     }
 
-    /// <summary>Sets a swizzle for the given components.</summary>
+    /// @brief Sets a swizzle for the given components.
     template <std::size_t... Indices>
     constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
     {
         setSwizzleHelper<Indices...>(vector, std::make_index_sequence<sizeof...(Indices)>());
     }
 
-    /// <summary>Performs an operation on each component using an arbitrary number of other vectors.</summary>
+    /// @brief Performs an operation on each component using an arbitrary number of other vectors.
     template <typename TOperation, typename... TVectors>
     constexpr auto variadicOp(TOperation operation, const TVectors&... vectors) const
     {
@@ -393,7 +389,7 @@ struct Vector : std::array<T, Dim> {
         return result;
     }
 
-    /// <summary>Performs an operation with another vector and assigns the result to itself.</summary>
+    /// @brief Performs an operation with another vector and assigns the result to itself.
     template <typename TOperation>
     constexpr auto& assignmentOp(TOperation operation, const Vector& other)
     {
@@ -402,10 +398,10 @@ struct Vector : std::array<T, Dim> {
         return *this;
     }
 
-    /// <summary>Returns a string representing the vector in the form [x, y, z].</summary>
+    /// @brief Returns a string representing the vector in the form [x, y, z].
     auto format() const { return (std::stringstream() << *this).str(); }
 
-    /// <summary>Appends a string representation of the vector in the form [x, y, z] to the stream.</summary>
+    /// @brief Appends a string representation of the vector in the form [x, y, z] to the stream.
     friend auto& operator<<(std::ostream& stream, const Vector& vector)
     {
         auto old_flags = stream.flags();
@@ -425,14 +421,14 @@ struct Vector : std::array<T, Dim> {
 
     // --- Vector<T, 1> ---
 
-    /// <summary>The x-component of the vector.</summary>
+    /// @brief The x-component of the vector.
     constexpr auto& x()
     {
         static_assert(Dim >= 1 && Dim <= 4);
         return (*this)[0];
     }
 
-    /// <summary>The x-component of the vector.</summary>
+    /// @brief The x-component of the vector.
     constexpr auto x() const
     {
         static_assert(Dim >= 1 && Dim <= 4);
@@ -441,22 +437,22 @@ struct Vector : std::array<T, Dim> {
 
     // --- Vector<T, 2> ---
 
-    /// <summary>The y-component of the vector.</summary>
+    /// @brief The y-component of the vector.
     constexpr auto& y()
     {
         static_assert(Dim >= 2 && Dim <= 4);
         return (*this)[1];
     }
 
-    /// <summary>The y-component of the vector.</summary>
+    /// @brief The y-component of the vector.
     constexpr auto y() const
     {
         static_assert(Dim >= 1 && Dim <= 4);
         return (*this)[1];
     }
 
-    /// <summary>Creates a vector from the given slope, which is NOT normalized.</summary>
-    /// <remarks>The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.</remarks>
+    /// @brief Creates a vector from the given slope, which is NOT normalized.
+    /// @remark The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.
     static constexpr auto fromSlope(std::optional<T> slope)
     {
         static_assert(Dim == 2);
@@ -464,8 +460,8 @@ struct Vector : std::array<T, Dim> {
         return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
     }
 
-    /// <summary>Creates a normalized vector of the given angle in radians.</summary>
-    /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
+    /// @brief Creates a normalized vector of the given angle in radians.
+    /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromRadians(T radians)
     {
         static_assert(Dim == 2);
@@ -473,8 +469,8 @@ struct Vector : std::array<T, Dim> {
         return Vector<T, 2>{std::cos(radians), std::sin(radians)};
     }
 
-    /// <summary>Creates a normalized vector of the given angle in degrees.</summary>
-    /// <remarks>Zero points to positive x, while an increase rotates counter-clockwise.</remarks>
+    /// @brief Creates a normalized vector of the given angle in degrees.
+    /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromDegrees(T degrees)
     {
         static_assert(Dim == 2);
@@ -482,7 +478,7 @@ struct Vector : std::array<T, Dim> {
         return fromRadians(dang::math::radians(degrees));
     }
 
-    /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>
+    /// @brief Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.
     constexpr auto cross() const
     {
         static_assert(Dim == 2);
@@ -490,8 +486,8 @@ struct Vector : std::array<T, Dim> {
         return Vector<T, 2>{-y(), x()};
     }
 
-    /// <summary>Returns the two-dimensional cross-product with the given vector.</summary>
-    /// <remarks>Equivalent to <c>x1 * y2 - y1 * x2</c></remarks>
+    /// @brief Returns the two-dimensional cross-product with the given vector.
+    /// @remark Equivalent to <c>x1 * y2 - y1 * x2</c>
     constexpr auto cross(const Vector<T, 2>& other) const
     {
         static_assert(Dim == 2);
@@ -499,7 +495,7 @@ struct Vector : std::array<T, Dim> {
         return x() * other.y() - y() * other.x();
     }
 
-    /// <summary>Returns the slope of the vector or std::nullopt if infinite.</summary>
+    /// @brief Returns the slope of the vector or std::nullopt if infinite.
     constexpr std::optional<T> slope() const
     {
         static_assert(Dim == 2);
@@ -511,21 +507,21 @@ struct Vector : std::array<T, Dim> {
 
     // --- Vector<T, 3> ---
 
-    /// <summary>The z-component of the vector.</summary>
+    /// @brief The z-component of the vector.
     constexpr auto& z()
     {
         static_assert(Dim >= 3 && Dim <= 4);
         return (*this)[2];
     }
 
-    /// <summary>The z-component of the vector.</summary>
+    /// @brief The z-component of the vector.
     constexpr auto z() const
     {
         static_assert(Dim >= 3 && Dim <= 4);
         return (*this)[2];
     }
 
-    /// <summary>Returns the cross-product with the given vector.</summary>
+    /// @brief Returns the cross-product with the given vector.
     constexpr auto cross(const Vector<T, 3>& other) const
     {
         static_assert(Dim == 3);
@@ -537,14 +533,14 @@ struct Vector : std::array<T, Dim> {
 
     // --- Vector<T, 4> ---
 
-    /// <summary>The w-component of the vector.</summary>
+    /// @brief The w-component of the vector.
     constexpr auto& w()
     {
         static_assert(Dim == 4);
         return (*this)[3];
     }
 
-    /// <summary>The w-component of the vector.</summary>
+    /// @brief The w-component of the vector.
     constexpr auto w() const
     {
         static_assert(Dim == 4);

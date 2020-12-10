@@ -9,8 +9,8 @@
 
 namespace dang::gl {
 
-/// <summary>Usage hints for how a VBO is going to be used.</summary>
-/// <remarks>DynamicDraw is usually the best choice.</remarks>
+/// @brief Usage hints for how a VBO is going to be used.
+/// @remark DynamicDraw is usually the best choice.
 enum class BufferUsageHint {
     StreamDraw,
     StreamRead,
@@ -36,7 +36,7 @@ struct EnumCount<dang::gl::BufferUsageHint> : DefaultEnumCount<dang::gl::BufferU
 
 namespace dang::gl {
 
-/// <summary>Maps the various buffer usage hints to their GL-Constants.</summary>
+/// @brief Maps the various buffer usage hints to their GL-Constants.
 template <>
 inline constexpr dutils::EnumArray<BufferUsageHint, GLenum> GLConstants<BufferUsageHint> = {GL_STREAM_DRAW,
                                                                                             GL_STREAM_READ,
@@ -48,7 +48,7 @@ inline constexpr dutils::EnumArray<BufferUsageHint, GLenum> GLConstants<BufferUs
                                                                                             GL_DYNAMIC_READ,
                                                                                             GL_DYNAMIC_COPY};
 
-/// <summary>Thrown, when a VBO is locked (e.g. it is mapped) and cannot be rebound.</summary>
+/// @brief Thrown, when a VBO is locked (e.g. it is mapped) and cannot be rebound.
 class VBOBindError : public std::runtime_error {
     using runtime_error::runtime_error;
 };
@@ -56,11 +56,11 @@ class VBOBindError : public std::runtime_error {
 template <typename T>
 class VBO;
 
-/// <summary>Provides a random access container interface to a mapped VBO.</summary>
+/// @brief Provides a random access container interface to a mapped VBO.
 template <typename T>
 class VBOMapping {
 public:
-    /// <summary>An iterator, allowing random access to mapped VBO data.</summary>
+    /// @brief An iterator, allowing random access to mapped VBO data.
     class iterator {
     public:
         using iterator_category = std::random_access_iterator_tag;
@@ -138,14 +138,14 @@ public:
         T* position_ = nullptr;
     };
 
-    /// <summary>Maps and locks the given VBO to stay bound, as only one VBO can be mapped at any given time.</summary>
+    /// @brief Maps and locks the given VBO to stay bound, as only one VBO can be mapped at any given time.
     VBOMapping(VBO<T>& vbo)
         : vbo_(vbo)
     {
         data_ = static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
     }
 
-    /// <summary>Unmaps and unlocks the VBO again.</summary>
+    /// @brief Unmaps and unlocks the VBO again.
     ~VBOMapping() { glUnmapBuffer(GL_ARRAY_BUFFER); }
 
     VBOMapping(const VBOMapping&) = delete;
@@ -153,16 +153,16 @@ public:
     VBOMapping& operator=(const VBOMapping&) = delete;
     VBOMapping& operator=(VBOMapping&&) = delete;
 
-    /// <summary>Returns the element count of the VBO.</summary>
+    /// @brief Returns the element count of the VBO.
     std::size_t size() const { return vbo_.count(); }
 
-    /// <summary>Returns the element count of the VBO.</summary>
+    /// @brief Returns the element count of the VBO.
     std::size_t max_size() const { return vbo_.count(); }
 
-    /// <summary>Returns an iterator to the first element of the mapped data.</summary>
+    /// @brief Returns an iterator to the first element of the mapped data.
     iterator begin() noexcept { return iterator(data_); }
 
-    /// <summary>Returns an iterator to one after the last element of the mapped data.</summary>
+    /// @brief Returns an iterator to one after the last element of the mapped data.
     iterator end() noexcept { return iterator(data_ + size()); }
 
 private:
@@ -171,7 +171,7 @@ private:
     T* data_;
 };
 
-/// <summary>A vertex buffer object for a given data struct.</summary>
+/// @brief A vertex buffer object for a given data struct.
 template <typename T>
 class VBO : public BufferBase<BufferTarget::ArrayBuffer> {
 public:
@@ -185,10 +185,10 @@ public:
     VBO& operator=(const VBO&) = delete;
     VBO& operator=(VBO&&) = default;
 
-    /// <summary>Returns the element count of the buffer.</summary>
+    /// @brief Returns the element count of the buffer.
     GLsizei count() const { return count_; }
 
-    /// <summary>Creates new data from the given element count and data pointer.</summary>
+    /// @brief Creates new data from the given element count and data pointer.
     void generate(GLsizei count, const T* data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         bind();
@@ -196,34 +196,34 @@ public:
         glBufferData(GL_ARRAY_BUFFER, count * sizeof(T), data, toGLConstant(usage));
     }
 
-    /// <summary>Creates new uninitialized data for a given number of elements.</summary>
+    /// @brief Creates new uninitialized data for a given number of elements.
     void generate(GLsizei count, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(count, nullptr, usage);
     }
 
-    /// <summary>Creates new uninitialized data for a given number of elements.</summary>
+    /// @brief Creates new uninitialized data for a given number of elements.
     template <std::size_t Count>
     void generate(BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(Count, usage);
     }
 
-    /// <summary>Creates new data from the given initializer list.</summary>
+    /// @brief Creates new data from the given initializer list.
     void generate(std::initializer_list<T> data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
         generate(static_cast<GLsizei>(data.size()), data.begin(), usage);
     }
 
-    /// <summary>Creates new data from the given std::vector.</summary>
+    /// @brief Creates new data from the given std::vector.
     void generate(const std::vector<T>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
         generate(static_cast<GLsizei>(data.size()), data.data(), usage);
     }
 
-    /// <summary>Creates new data from the given std::vector iterator.</summary>
+    /// @brief Creates new data from the given std::vector iterator.
     void generate(typename std::vector<T>::const_iterator begin,
                   typename std::vector<T>::const_iterator end,
                   BufferUsageHint usage = BufferUsageHint::DynamicDraw)
@@ -233,21 +233,21 @@ public:
         generate(static_cast<GLsizei>(count), &*begin, usage);
     }
 
-    /// <summary>Creates new data from the given C-Style array.</summary>
+    /// @brief Creates new data from the given C-Style array.
     template <GLsizei Size>
     void generate(const T (&data)[Size], BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(Size, data, usage);
     }
 
-    /// <summary>Creates new data from the given std::array.</summary>
+    /// @brief Creates new data from the given std::array.
     template <GLsizei Size>
     void generate(const std::array<T, Size>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         generate(Size, data.data(), usage);
     }
 
-    /// <summary>Creates new data from the given std::array iterator.</summary>
+    /// @brief Creates new data from the given std::array iterator.
     template <GLsizei Size>
     void generate(typename std::array<T, Size>::const_iterator begin,
                   typename std::array<T, Size>::const_iterator end,
@@ -258,28 +258,28 @@ public:
         generate(static_cast<GLsizei>(count), &*begin, usage);
     }
 
-    /// <summary>Modifies the existing buffer at the given range with the given data pointer.</summary>
+    /// @brief Modifies the existing buffer at the given range with the given data pointer.
     void modify(GLsizei offset, GLsizei count, const T* data)
     {
         bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(T), count * sizeof(T), data);
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given initializer list.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given initializer list.
     void modify(GLsizei offset, std::initializer_list<T> data)
     {
         assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
         modify(offset, static_cast<GLsizei>(data.size()), data.begin());
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given std::vector.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given std::vector.
     void modify(GLsizei offset, const std::vector<T>& data)
     {
         assert(data.size() <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
         modify(offset, static_cast<GLsizei>(data.size()), data.data());
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given std::vector iterators.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given std::vector iterators.
     void modify(GLsizei offset,
                 typename std::vector<T>::const_iterator begin,
                 typename std::vector<T>::const_iterator end)
@@ -289,21 +289,21 @@ public:
         modify(offset, static_cast<GLsizei>(count), &*begin);
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given C-Style array.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given C-Style array.
     template <GLsizei Size>
     void modify(GLsizei offset, const T (&data)[Size])
     {
         modify(offset, Size, data);
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given std::array.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given std::array.
     template <GLsizei Size>
     void modify(GLsizei offset, const std::array<T, Size>& data)
     {
         modify(offset, Size, data.data());
     }
 
-    /// <summary>Modifies the existing buffer at the given position with the given std::array iterators.</summary>
+    /// @brief Modifies the existing buffer at the given position with the given std::array iterators.
     template <GLsizei Size>
     void modify(GLsizei offset,
                 typename std::array<T, Size>::const_iterator begin,
@@ -314,7 +314,7 @@ public:
         modify(offset, static_cast<GLsizei>(count), &*begin);
     }
 
-    /// <summary>Maps the buffer and returns a container-like wrapper to the mapping.</summary>
+    /// @brief Maps the buffer and returns a container-like wrapper to the mapping.
     VBOMapping<T> map() { return VBOMapping<T>(*this); }
 
 private:

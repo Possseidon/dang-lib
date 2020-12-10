@@ -9,22 +9,22 @@ namespace dang::gl {
 
 class Context;
 
-/// <summary>The base for the context classes for the different GL-Object types.</summary>
+/// @brief The base for the context classes for the different GL-Object types.
 class ObjectContextBase {
 public:
-    /// <summary>Initializes the object context with the given window context.</summary>
+    /// @brief Initializes the object context with the given window context.
     explicit ObjectContextBase(Context& context);
-    /// <summary>Virtual destructor, as the window stores them in an array.</summary>
+    /// @brief Virtual destructor, as the window stores them in an array.
     virtual ~ObjectContextBase() = default;
 
-    /// <summary>Returns the associated window.</summary>
+    /// @brief Returns the associated window.
     Context& context() const;
 
 private:
     Context& context_;
 };
 
-/// <summary>Can be used as base class, when no multiple binding targets are required for the given object type.</summary>
+/// @brief Can be used as base class, when no multiple binding targets are required for the given object type.
 template <ObjectType Type>
 class ObjectContextBindable : public ObjectContextBase {
 public:
@@ -33,7 +33,7 @@ public:
 
     using ObjectContextBase::ObjectContextBase;
 
-    /// <summary>Binds the GL-Object with the given handle, unless it is already bound.</summary>
+    /// @brief Binds the GL-Object with the given handle, unless it is already bound.
     void bind(Handle handle)
     {
         if (bound_object_ == handle)
@@ -42,7 +42,7 @@ public:
         bound_object_ = handle;
     }
 
-    /// <summary>Resets the bound GL-Object, if the given handle is currently bound.</summary>
+    /// @brief Resets the bound GL-Object, if the given handle is currently bound.
     void reset(Handle handle)
     {
         if (bound_object_ != handle)
@@ -55,7 +55,7 @@ private:
     Handle bound_object_;
 };
 
-/// <summary>The different context classes, which should be specialized for the various types.</summary>
+/// @brief The different context classes, which should be specialized for the various types.
 template <ObjectType Type>
 class ObjectContext : public ObjectContextBase {
     using ObjectContextBase::ObjectContextBase;

@@ -7,7 +7,7 @@
 
 namespace dang::gl {
 
-/// <summary>Formats, for how OpenGL stores its pixel data.</summary>
+/// @brief Formats, for how OpenGL stores its pixel data.
 enum class PixelInternalFormat {
     // base formats
     DEPTH_COMPONENT,
@@ -116,7 +116,7 @@ struct EnumCount<dang::gl::PixelInternalFormat> : DefaultEnumCount<dang::gl::Pix
 
 namespace dang::gl {
 
-/// <summary>GL-Constants for internal pixel formats.</summary>
+/// @brief GL-Constants for internal pixel formats.
 template <>
 inline constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {
     // base formats
