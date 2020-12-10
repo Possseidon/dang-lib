@@ -4,6 +4,8 @@
 #include "dang-lua/Types.h"
 #include "dang-lua/global.h"
 
+#include "dang-utils/utils.h"
+
 namespace dang::lua {
 
 // Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and it doesn't hurt)
