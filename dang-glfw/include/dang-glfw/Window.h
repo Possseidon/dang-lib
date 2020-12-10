@@ -55,34 +55,6 @@ enum class VSync { Disabled = 0, Enabled = 1, Adaptive = -1 };
 
 enum class CursorMode { Normal = GLFW_CURSOR_NORMAL, Hidden = GLFW_CURSOR_HIDDEN, Disabled = GLFW_CURSOR_DISABLED };
 
-enum class GLDebugSource {
-    API = GL_DEBUG_SOURCE_API,
-    WindowSystem = GL_DEBUG_SOURCE_WINDOW_SYSTEM,
-    ShaderCompiler = GL_DEBUG_SOURCE_SHADER_COMPILER,
-    ThirdParty = GL_DEBUG_SOURCE_THIRD_PARTY,
-    Application = GL_DEBUG_SOURCE_APPLICATION,
-    Other = GL_DEBUG_SOURCE_OTHER
-};
-
-enum class GLDebugType {
-    Error = GL_DEBUG_TYPE_ERROR,
-    DeprecatedBehaviour = GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR,
-    UndefinedBehaviour = GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR,
-    Portability = GL_DEBUG_TYPE_PORTABILITY,
-    Performance = GL_DEBUG_TYPE_PERFORMANCE,
-    Other = GL_DEBUG_TYPE_OTHER,
-    Marker = GL_DEBUG_TYPE_MARKER,
-    PushGroup = GL_DEBUG_TYPE_PUSH_GROUP,
-    PopGroup = GL_DEBUG_TYPE_POP_GROUP
-};
-
-enum class GLDebugSeverity {
-    Notification = GL_DEBUG_SEVERITY_NOTIFICATION,
-    Low = GL_DEBUG_SEVERITY_LOW,
-    Medium = GL_DEBUG_SEVERITY_MEDIUM,
-    High = GL_DEBUG_SEVERITY_HIGH
-};
-
 class Window;
 
 struct WindowInfo {
@@ -184,21 +156,12 @@ struct KeyInfo : WindowEventInfo {
     ModifierKeys mods;
 };
 
-struct GLDebugMessageInfo : WindowEventInfo {
-    GLDebugSource source;
-    GLDebugType type;
-    GLuint id;
-    GLDebugSeverity severity;
-    std::string message;
-};
-
 using WindowEvent = dutils::Event<Window>;
 using CursorMoveEvent = dutils::Event<CursorMoveInfo>;
 using ScrollEvent = dutils::Event<ScrollInfo>;
 using DropPathsEvent = dutils::Event<DropPathsInfo>;
 using KeyEvent = dutils::Event<KeyInfo>;
 using ButtonEvent = dutils::Event<ButtonInfo>;
-using GLDebugMessageEvent = dutils::Event<GLDebugMessageInfo>;
 
 /// @brief Wraps the close to full capabilities of GLFW windows.
 class Window {
@@ -508,10 +471,6 @@ public:
     /// @brief Triggered, when the user scrolls the mouse wheel.
     ScrollEvent onScroll;
 
-    /// @brief Triggered, if OpenGL debug output is enabled in the state.
-    /// @remark Enabling synchronous debug output is very useful for debugging.
-    GLDebugMessageEvent onGLDebugMessage;
-
 private:
     /// @brief Registers all GLFW callbacks.
     void registerCallbacks();
@@ -535,16 +494,6 @@ private:
     static void windowPosCallback(GLFWwindow* window_handle, int xpos, int ypos);
     static void windowRefreshCallback(GLFWwindow* window_handle);
     static void windowSizeCallback(GLFWwindow* window_handle, int width, int height);
-
-    // OpenGL callbacks
-
-    static void APIENTRY debugMessageCallback(GLenum source,
-                                              GLenum type,
-                                              GLuint id,
-                                              GLenum severity,
-                                              GLsizei length,
-                                              const GLchar* message,
-                                              const void* user_param);
 
     /// @brief Updates the current delta time and FPS.
     void updateDeltaTime();

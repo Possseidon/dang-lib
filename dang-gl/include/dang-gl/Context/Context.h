@@ -10,6 +10,47 @@
 
 namespace dang::gl {
 
+class Context;
+
+enum class DebugSource {
+    API = GL_DEBUG_SOURCE_API,
+    WindowSystem = GL_DEBUG_SOURCE_WINDOW_SYSTEM,
+    ShaderCompiler = GL_DEBUG_SOURCE_SHADER_COMPILER,
+    ThirdParty = GL_DEBUG_SOURCE_THIRD_PARTY,
+    Application = GL_DEBUG_SOURCE_APPLICATION,
+    Other = GL_DEBUG_SOURCE_OTHER
+};
+
+enum class DebugType {
+    Error = GL_DEBUG_TYPE_ERROR,
+    DeprecatedBehaviour = GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR,
+    UndefinedBehaviour = GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR,
+    Portability = GL_DEBUG_TYPE_PORTABILITY,
+    Performance = GL_DEBUG_TYPE_PERFORMANCE,
+    Other = GL_DEBUG_TYPE_OTHER,
+    Marker = GL_DEBUG_TYPE_MARKER,
+    PushGroup = GL_DEBUG_TYPE_PUSH_GROUP,
+    PopGroup = GL_DEBUG_TYPE_POP_GROUP
+};
+
+enum class DebugSeverity {
+    Notification = GL_DEBUG_SEVERITY_NOTIFICATION,
+    Low = GL_DEBUG_SEVERITY_LOW,
+    Medium = GL_DEBUG_SEVERITY_MEDIUM,
+    High = GL_DEBUG_SEVERITY_HIGH
+};
+
+struct DebugMessageInfo {
+    Context& context;
+    DebugSource source;
+    DebugType type;
+    GLuint id;
+    DebugSeverity severity;
+    std::string message;
+};
+
+using DebugMessageEvent = dutils::Event<DebugMessageInfo>;
+
 class Context {
 public:
     using Event = dutils::Event<Context>;
@@ -52,10 +93,22 @@ public:
 
     Event onResize;
 
+    /// @brief Triggered, if OpenGL debug output is enabled in the state.
+    /// @remark Enabling synchronous debug output is very useful for debugging.
+    DebugMessageEvent onGLDebugMessage;
+
 private:
     /// @brief Initializes the contexts for the different GL-Object types.
     template <ObjectType... Types>
     void createContexts(dutils::EnumSequence<ObjectType, Types...>);
+
+    static void APIENTRY debugMessageCallback(GLenum source,
+                                              GLenum type,
+                                              GLuint id,
+                                              GLenum severity,
+                                              GLsizei length,
+                                              const GLchar* message,
+                                              const void* user_param);
 
     State state_;
     dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;

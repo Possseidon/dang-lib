@@ -462,9 +462,6 @@ void Window::registerCallbacks()
     glfwSetWindowPosCallback(handle_, windowPosCallback);
     glfwSetWindowRefreshCallback(handle_, windowRefreshCallback);
     glfwSetWindowSizeCallback(handle_, windowSizeCallback);
-
-    activate();
-    glDebugMessageCallback(debugMessageCallback, this);
 }
 
 void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
@@ -592,23 +589,6 @@ void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
 {
     Window& window = Window::fromUserPointer(window_handle);
     window.onResize(window);
-}
-
-void Window::debugMessageCallback(GLenum source,
-                                  GLenum type,
-                                  GLuint id,
-                                  GLenum severity,
-                                  GLsizei length,
-                                  const GLchar* message,
-                                  const void* user_param)
-{
-    Window& window = *static_cast<Window*>(const_cast<void*>(user_param));
-    window.onGLDebugMessage({window,
-                             static_cast<GLDebugSource>(source),
-                             static_cast<GLDebugType>(type),
-                             id,
-                             static_cast<GLDebugSeverity>(severity),
-                             std::string(message, message + length)});
 }
 
 void Window::updateDeltaTime()
