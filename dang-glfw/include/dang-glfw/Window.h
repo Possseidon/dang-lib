@@ -5,6 +5,7 @@
 
 #include "dang-glfw/Input.h"
 #include "dang-glfw/Monitor.h"
+#include "dang-glfw/global.h"
 
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"

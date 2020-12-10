@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-glfw/global.h"
+
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"
 

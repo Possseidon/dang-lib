@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "GLFW.h"
 
 #include "dang-gl/Context/Context.h"

@@ -5,7 +5,6 @@ add_library(${PROJECT_NAME}
     src/GLFW.cpp
     src/Input.cpp
     src/Monitor.cpp
-    src/pch.cpp
     src/Window.cpp
 )
 

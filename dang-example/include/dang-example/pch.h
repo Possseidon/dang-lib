@@ -4,7 +4,7 @@
 
 #include "dang-gl/global.h"
 
-#include "dang-glfw/pch.h"
+#include "dang-glfw/global.h"
 
 #include "dang-lua/utils.h"
 

@@ -23,9 +23,9 @@
 
 #include "GLFW/glfw3.h"
 
-namespace fs = std::filesystem;
-
 namespace dang::glfw {
+
+namespace fs = std::filesystem;
 
 namespace dgl = dang::gl;
 namespace dmath = dang::math;

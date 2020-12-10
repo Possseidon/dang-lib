@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Input.h"
 
 namespace dang::glfw {
