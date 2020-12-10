@@ -8,6 +8,18 @@ target_link_libraries(${PROJECT_NAME}
     dang-utils
 )
 
+target_precompile_headers(${PROJECT_NAME}
+  INTERFACE
+    <algorithm>
+    <array>
+    <functional>
+    <iostream>
+    <numeric>
+    <optional>
+    <sstream>
+    <type_traits>
+)
+
 target_include_directories(${PROJECT_NAME}
     INTERFACE include
 )

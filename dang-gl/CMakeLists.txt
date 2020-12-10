@@ -16,6 +16,37 @@ add_library(${PROJECT_NAME}
     src/Rendering/Renderable.cpp
 )
 
+target_precompile_headers(${PROJECT_NAME}
+  PUBLIC
+    <algorithm>
+    <array>
+    <cassert>
+    <cmath>
+    <cstddef>
+    <cstdint>
+    <filesystem>
+    <fstream>
+    <functional>
+    <initializer_list>
+    <iostream>
+    <istream>
+    <iterator>
+    <limits>
+    <map>
+    <memory>
+    <optional>
+    <regex>
+    <set>
+    <sstream>
+    <stack>
+    <stdexcept>
+    <string>
+    <tuple>
+    <type_traits>
+    <utility>
+    <vector>
+)
+
 find_package(glad CONFIG REQUIRED)
 find_package(libpng CONFIG REQUIRED)
 

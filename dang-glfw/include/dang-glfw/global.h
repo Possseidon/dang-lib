@@ -1,20 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <codecvt>
-#include <cstdint>
-#include <cstdlib>
-#include <filesystem>
-#include <iostream>
-#include <locale>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <tuple>
-#include <vector>
-
 #include "dang-gl/global.h"
 
 #include "dang-math/global.h"

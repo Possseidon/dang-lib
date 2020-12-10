@@ -8,6 +8,24 @@ add_library(${PROJECT_NAME}
     src/Window.cpp
 )
 
+target_precompile_headers(${PROJECT_NAME}
+  PUBLIC
+    <algorithm>
+    <cmath>
+    <codecvt>
+    <cstdint>
+    <cstdlib>
+    <filesystem>
+    <iostream>
+    <locale>
+    <optional>
+    <sstream>
+    <stdexcept>
+    <string>
+    <tuple>
+    <vector>
+)
+
 if(MSVC)
   target_compile_definitions(${PROJECT_NAME} 
     PUBLIC
