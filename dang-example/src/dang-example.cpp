@@ -1,6 +1,6 @@
-#include "pch.h"
-
 #include "dang-glfw/Window.h"
+
+#include "global.h"
 
 int main()
 {

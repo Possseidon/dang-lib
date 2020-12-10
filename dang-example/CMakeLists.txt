@@ -3,7 +3,11 @@ project(dang-example)
 
 add_executable(${PROJECT_NAME}
     src/dang-example.cpp
-    src/pch.cpp
+)
+
+target_precompile_headers(${PROJECT_NAME}
+  PRIVATE
+    <iostream>
 )
 
 target_link_libraries(${PROJECT_NAME}
