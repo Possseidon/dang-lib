@@ -6,7 +6,7 @@
 
 #include "dang-glfw/global.h"
 
-#include "dang-lua/utils.h"
+#include "dang-lua/global.h"
 
 #include "dang-math/global.h"
 

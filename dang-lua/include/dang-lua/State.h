@@ -2,7 +2,7 @@
 
 #include "dang-lua/Convert.h"
 #include "dang-lua/Types.h"
-#include "dang-lua/utils.h"
+#include "dang-lua/global.h"
 
 namespace dang::lua {
 

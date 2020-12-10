@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dang-lua/utils.h"
+#include "dang-lua/global.h"
 
 #include "dang-utils/enum.h"
 
