@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 #define META_INTF_ABSTRACT(name)                                                                                       \
 protected:                                                                                                             \

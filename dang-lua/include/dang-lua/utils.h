@@ -17,7 +17,7 @@
 #include <typeinfo>
 #include <variant>
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 #include "lua.hpp"
 

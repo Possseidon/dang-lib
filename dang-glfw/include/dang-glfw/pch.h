@@ -19,7 +19,7 @@
 
 #include "dang-math/utils.h"
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 #include "GLFW/glfw3.h"
 

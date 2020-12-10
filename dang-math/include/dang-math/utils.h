@@ -9,7 +9,7 @@
 #include <sstream>
 #include <type_traits>
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 namespace dang::math {
 

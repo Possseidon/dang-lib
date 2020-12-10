@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 namespace dang::utils {
 

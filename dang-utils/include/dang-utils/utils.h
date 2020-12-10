@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-utils/global.h"
+
 namespace dang::utils {
 
 template <typename... TFunctions>

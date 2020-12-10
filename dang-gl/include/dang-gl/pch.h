@@ -32,7 +32,7 @@
 
 #include "dang-math/utils.h"
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 #include "png.h"
 

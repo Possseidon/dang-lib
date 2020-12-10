@@ -10,7 +10,7 @@
 
 #include "dang-math/utils.h"
 
-#include "dang-utils/utils.h"
+#include "dang-utils/global.h"
 
 namespace dgl = dang::gl;
 namespace dglfw = dang::glfw;
