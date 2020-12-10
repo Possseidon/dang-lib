@@ -163,21 +163,21 @@ struct Vector : std::array<T, Dim> {
     constexpr auto degreesTo(const Vector& other) const
     {
         static_assert(std::is_floating_point_v<T>);
-        return dmath::degrees(radiansTo(other));
+        return dang::math::degrees(radiansTo(other));
     }
 
     /// <summary>Converts every component from degrees into radians.</summary>
     constexpr auto radians() const
     {
         static_assert(std::is_floating_point_v<T>);
-        return variadicOp(dmath::radians<T>);
+        return variadicOp(dang::math::radians<T>);
     }
 
     /// <summary>Converts every component from radians into degrees.</summary>
     constexpr auto degrees() const
     {
         static_assert(std::is_floating_point_v<T>);
-        return variadicOp(dmath::degrees<T>);
+        return variadicOp(dang::math::degrees<T>);
     }
 
     /// <summary>Returns the vector with each component being positive.</summary>
@@ -478,7 +478,7 @@ struct Vector : std::array<T, Dim> {
     {
         static_assert(Dim == 2);
         static_assert(std::is_floating_point_v<T>);
-        return fromRadians(dmath::radians(degrees));
+        return fromRadians(dang::math::radians(degrees));
     }
 
     /// <summary>Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.</summary>

@@ -17,6 +17,8 @@
 
 #include "dang-gl/pch.h"
 
+#include "dang-math/utils.h"
+
 #include "dang-utils/utils.h"
 
 #include "GLFW/glfw3.h"
@@ -24,6 +26,10 @@
 namespace fs = std::filesystem;
 
 namespace dang::glfw {
+
+namespace dmath = dang::math;
 namespace dutils = dang::utils;
-}
+
+} // namespace dang::glfw
+
 namespace dglfw = dang::glfw;

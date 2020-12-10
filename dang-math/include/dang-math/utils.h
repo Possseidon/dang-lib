@@ -35,5 +35,3 @@ constexpr T radians(T value)
 }
 
 } // namespace dang::math
-
-namespace dmath = dang::math;

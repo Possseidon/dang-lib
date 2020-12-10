@@ -8,25 +8,25 @@
 namespace dang::lua {
 
 template <typename T, std::size_t Dim>
-struct ClassInfo<dmath::Vector<T, Dim>> {
-    using Vector = dmath::Vector<T, Dim>;
+struct ClassInfo<dang::math::Vector<T, Dim>> {
+    using Vector = dang::math::Vector<T, Dim>;
     using VectorOrScalar = std::variant<Vector, T>;
 
-    using Swizzled = std::variant<T, dmath::Vector<T, 2>, dmath::Vector<T, 3>, dmath::Vector<T, 4>>;
+    using Swizzled = std::variant<T, dang::math::Vector<T, 2>, dang::math::Vector<T, 3>, dang::math::Vector<T, 4>>;
     using Key = std::variant<std::size_t, std::string_view>;
 
-    using MultiplyType =
-        std::variant<T, Vector, dmath::Matrix<T, 2, Dim>, dmath::Matrix<T, 3, Dim>, dmath::Matrix<T, 4, Dim>>;
+    using MultiplyType = std::
+        variant<T, Vector, dang::math::Matrix<T, 2, Dim>, dang::math::Matrix<T, 3, Dim>, dang::math::Matrix<T, 4, Dim>>;
     using MultiplyResult = std::variant<T,
-                                        dmath::Vector<T, 2>,
-                                        dmath::Vector<T, 3>,
-                                        dmath::Vector<T, 4>,
-                                        dmath::Matrix<T, 2, Dim>,
-                                        dmath::Matrix<T, 3, Dim>,
-                                        dmath::Matrix<T, 4, Dim>>;
+                                        dang::math::Vector<T, 2>,
+                                        dang::math::Vector<T, 3>,
+                                        dang::math::Vector<T, 4>,
+                                        dang::math::Matrix<T, 2, Dim>,
+                                        dang::math::Matrix<T, 3, Dim>,
+                                        dang::math::Matrix<T, 4, Dim>>;
 
-    using DivideType = std::variant<T, Vector, dmath::Matrix<T, Dim>>;
-    using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dmath::Matrix<T, Dim>>>;
+    using DivideType = std::variant<T, Vector, dang::math::Matrix<T, Dim>>;
+    using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, Dim>>>;
 
     inline static const std::string base_name = [] {
         using namespace std::literals;
@@ -264,7 +264,7 @@ private:
             if constexpr (sizeof...(TSwizzles) == 1)
                 return vector[*std::get<0>(indices)];
             else
-                return dmath::Vector<T, sizeof...(TSwizzles)>(vector[*std::get<Indices>(indices)]...);
+                return dang::math::Vector<T, sizeof...(TSwizzles)>(vector[*std::get<Indices>(indices)]...);
         }
 
         template <typename... TSwizzles>
@@ -314,7 +314,7 @@ private:
             }
 
             if constexpr (sizeof...(TSwizzles) > 1) {
-                if (auto opt_values = std::get_if<dmath::Vector<T, sizeof...(TSwizzles)>>(&value)) {
+                if (auto opt_values = std::get_if<dang::math::Vector<T, sizeof...(TSwizzles)>>(&value)) {
                     ((vector[*std::get<Indices>(indices)] = (*opt_values)[Indices]), ...);
                     return;
                 }
@@ -361,42 +361,42 @@ private:
 };
 
 template <typename T, std::size_t Dim>
-const char* ClassName<dmath::Vector<T, Dim>> = ClassInfo<dmath::Vector<T, Dim>>::name.c_str();
+const char* ClassName<dang::math::Vector<T, Dim>> = ClassInfo<dang::math::Vector<T, Dim>>::name.c_str();
 
 template <typename T, std::size_t Dim>
-const char* ClassNameRef<dmath::Vector<T, Dim>> = ClassInfo<dmath::Vector<T, Dim>>::ref_name.c_str();
+const char* ClassNameRef<dang::math::Vector<T, Dim>> = ClassInfo<dang::math::Vector<T, Dim>>::ref_name.c_str();
 
 template <typename T, std::size_t Cols, std::size_t Rows>
-struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
-    using Matrix = dmath::Matrix<T, Cols, Rows>;
+struct ClassInfo<dang::math::Matrix<T, Cols, Rows>> {
+    using Matrix = dang::math::Matrix<T, Cols, Rows>;
     using MatrixOrScalar = std::variant<Matrix, T>;
-    using IndexOrPos = std::variant<std::size_t, dmath::svec2>;
-    using IndexResult = std::variant<std::monostate, T, dmath::Vector<T, Rows>>;
+    using IndexOrPos = std::variant<std::size_t, dang::math::svec2>;
+    using IndexResult = std::variant<std::monostate, T, dang::math::Vector<T, Rows>>;
 
     using MultiplyType = std::variant<T,
-                                      dmath::Vector<T, Cols>,
-                                      dmath::Matrix<T, 2, Cols>,
-                                      dmath::Matrix<T, 3, Cols>,
-                                      dmath::Matrix<T, 4, Cols>>;
+                                      dang::math::Vector<T, Cols>,
+                                      dang::math::Matrix<T, 2, Cols>,
+                                      dang::math::Matrix<T, 3, Cols>,
+                                      dang::math::Matrix<T, 4, Cols>>;
     using MultiplyResult = std::variant<T,
-                                        dmath::Vector<T, 2>,
-                                        dmath::Vector<T, 3>,
-                                        dmath::Vector<T, 4>,
-                                        dmath::Matrix<T, 2>,
-                                        dmath::Matrix<T, 2, 3>,
-                                        dmath::Matrix<T, 2, 4>,
-                                        dmath::Matrix<T, 3, 2>,
-                                        dmath::Matrix<T, 3>,
-                                        dmath::Matrix<T, 3, 4>,
-                                        dmath::Matrix<T, 4, 2>,
-                                        dmath::Matrix<T, 4, 3>,
-                                        dmath::Matrix<T, 4>>;
+                                        dang::math::Vector<T, 2>,
+                                        dang::math::Vector<T, 3>,
+                                        dang::math::Vector<T, 4>,
+                                        dang::math::Matrix<T, 2>,
+                                        dang::math::Matrix<T, 2, 3>,
+                                        dang::math::Matrix<T, 2, 4>,
+                                        dang::math::Matrix<T, 3, 2>,
+                                        dang::math::Matrix<T, 3>,
+                                        dang::math::Matrix<T, 3, 4>,
+                                        dang::math::Matrix<T, 4, 2>,
+                                        dang::math::Matrix<T, 4, 3>,
+                                        dang::math::Matrix<T, 4>>;
 
-    using DivideType = std::variant<T, dmath::Matrix<T, Cols>>;
+    using DivideType = std::variant<T, dang::math::Matrix<T, Cols>>;
     using DivideResult =
         std::conditional_t<Cols == Rows,
                            std::variant<T, std::optional<Matrix>>,
-                           std::variant<T, std::optional<Matrix>, std::optional<dmath::Matrix<T, Cols>>>>;
+                           std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, Cols>>>>;
 
     inline static const std::string base_name = [] {
         using namespace std::literals;
@@ -415,7 +415,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
     static constexpr auto table()
     {
         constexpr auto set = +[](Matrix& mat, Args<Cols> values) {
-            std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dmath::Vector<T, Rows>>{});
+            std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, Rows>>{});
         };
 
         constexpr auto copy = +[](const Matrix& mat) { return mat; };
@@ -436,7 +436,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
             return mat.cofactor(col - 1, row - 1);
         };
 
-        constexpr auto cofactor = +[](State& lua, const Matrix& mat, dmath::svec2 pos) {
+        constexpr auto cofactor = +[](State& lua, const Matrix& mat, dang::math::svec2 pos) {
             checkRange(lua, pos, 2, 2);
             return mat.cofactor(pos);
         };
@@ -474,13 +474,13 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
             result.push_back(reg<&Matrix::inverse>("inverse"));
 
             constexpr auto solve_col =
-                +[](State& lua, Matrix& mat, std::size_t col, const dmath::Vector<T, Cols>& vec) {
+                +[](State& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, Cols>& vec) {
                     checkColumn(lua, col, 2);
                     return mat.solveCol(col - 1, vec);
                 };
             result.push_back(reg<solve_col>("solveCol"));
 
-            constexpr auto solve = +[](Matrix& mat, const dmath::Vector<T, Cols>& vec) { return mat.solve(vec); };
+            constexpr auto solve = +[](Matrix& mat, const dang::math::Vector<T, Cols>& vec) { return mat.solve(vec); };
             result.push_back(reg<solve>("solve"));
         }
         return result;
@@ -549,7 +549,7 @@ struct ClassInfo<dmath::Matrix<T, Cols, Rows>> {
                 return Matrix(values[0].check<T>());
             if (values.size() == Cols * Rows) {
                 Matrix result;
-                dmath::sbounds2 bounds{{Cols, Rows}};
+                dang::math::sbounds2 bounds{{Cols, Rows}};
                 for (const auto& [col, row] : bounds)
                     result(col, row) = values[static_cast<int>(col * Rows + row)].check<T>();
                 return result;
@@ -575,7 +575,7 @@ private:
     static bool columnInRange(std::size_t col) { return col >= 1 && col <= Cols; }
     static bool rowInRange(std::size_t row) { return row >= 1 && row <= Rows; }
     static bool inRange(std::size_t col, std::size_t row) { return columnInRange(col) && rowInRange(row); }
-    static bool inRange(dmath::svec2 pos) { return inRange(pos.x(), pos.y()); }
+    static bool inRange(dang::math::svec2 pos) { return inRange(pos.x(), pos.y()); }
 
     static void checkColumn(State& lua, std::size_t col, int arg)
     {
@@ -595,7 +595,7 @@ private:
         checkRow(lua, row, row_arg);
     }
 
-    static void checkRange(State& lua, dmath::svec2 pos, int col_arg, int row_arg)
+    static void checkRange(State& lua, dang::math::svec2 pos, int col_arg, int row_arg)
     {
         checkRange(lua, pos.x(), pos.y(), col_arg, row_arg);
     }
@@ -610,7 +610,7 @@ private:
             return {};
         }
 
-        IndexResult operator()(dmath::svec2 pos) const
+        IndexResult operator()(dang::math::svec2 pos) const
         {
             if (pos.greaterThanEqual(1).all() && pos.lessThanEqual({Cols, Rows}).all())
                 return matrix[pos - 1];
@@ -626,10 +626,10 @@ private:
         void operator()(std::size_t col)
         {
             checkColumn(lua, col, 2);
-            matrix[col - 1] = value.check<dmath::Vector<T, Rows>>();
+            matrix[col - 1] = value.check<dang::math::Vector<T, Rows>>();
         }
 
-        void operator()(dmath::svec2 pos)
+        void operator()(dang::math::svec2 pos)
         {
             checkRange(lua, pos, 2, 2);
             matrix[pos - 1] = value.check<T>();
@@ -638,9 +638,10 @@ private:
 };
 
 template <typename T, std::size_t Cols, std::size_t Rows>
-const char* ClassName<dmath::Matrix<T, Cols, Rows>> = ClassInfo<dmath::Matrix<T, Cols, Rows>>::name.c_str();
+const char* ClassName<dang::math::Matrix<T, Cols, Rows>> = ClassInfo<dang::math::Matrix<T, Cols, Rows>>::name.c_str();
 
 template <typename T, std::size_t Cols, std::size_t Rows>
-const char* ClassNameRef<dmath::Matrix<T, Cols, Rows>> = ClassInfo<dmath::Matrix<T, Cols, Rows>>::ref_name.c_str();
+const char* ClassNameRef<dang::math::Matrix<T, Cols, Rows>> =
+    ClassInfo<dang::math::Matrix<T, Cols, Rows>>::ref_name.c_str();
 
 } // namespace dang::lua

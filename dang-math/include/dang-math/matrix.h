@@ -91,10 +91,10 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     using Base::operator[];
 
     /// <summary>Returns a reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr auto& operator[](const dmath::svec2& pos) { return (*this)(pos.x(), pos.y()); }
+    constexpr auto& operator[](const svec2& pos) { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a const reference to the value at the given position. (x = col, y = row)</summary>
-    constexpr const auto& operator[](const dmath::svec2& pos) const { return (*this)(pos.x(), pos.y()); }
+    constexpr const auto& operator[](const svec2& pos) const { return (*this)(pos.x(), pos.y()); }
 
     /// <summary>Returns a reference to the value at the given column/row.</summary>
     constexpr auto& operator()(std::size_t col, std::size_t row) { return (*this)[col][row]; }
@@ -106,7 +106,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     constexpr auto transpose() const
     {
         Matrix<T, Rows, Cols> result;
-        dmath::sbounds2 bounds{{Cols, Rows}};
+        sbounds2 bounds{{Cols, Rows}};
         for (auto [x, y] : bounds)
             result(y, x) = (*this)(x, y);
         return result;
@@ -122,7 +122,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the minor at the given position. (x = col, y = row)</summary>
     /// <remarks>The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.</remarks>
-    constexpr auto minor(const dmath::svec2& pos) const
+    constexpr auto minor(const svec2& pos) const
     {
         static_assert(Cols > 0 && Rows > 0);
         Matrix<T, Cols - 1, Rows - 1> result;
@@ -152,7 +152,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
 
     /// <summary>Returns the cofactor at the given position. (x = col, y = row)</summary>
     /// <remarks>The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.</remarks>
-    constexpr auto cofactor(const dmath::svec2& pos) const
+    constexpr auto cofactor(const svec2& pos) const
     {
         static_assert(Cols > 0 && Rows > 0);
         const T factor = T{1} - ((pos.x() + pos.y()) & 1) * 2;
@@ -164,7 +164,7 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     {
         Matrix result;
         if constexpr (Cols > 0 && Rows > 0) {
-            dmath::sbounds2 bounds{{Cols, Rows}};
+            sbounds2 bounds{{Cols, Rows}};
             for (const auto& pos : bounds)
                 result[pos] = cofactor(pos);
         }

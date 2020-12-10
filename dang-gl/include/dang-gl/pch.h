@@ -30,6 +30,8 @@
 
 #include "glad/glad.h"
 
+#include "dang-math/utils.h"
+
 #include "dang-utils/utils.h"
 
 #include "png.h"
@@ -37,6 +39,10 @@
 namespace fs = std::filesystem;
 
 namespace dang::gl {
+
+namespace dmath = dang::math;
 namespace dutils = dang::utils;
-}
+
+} // namespace dang::gl
+
 namespace dgl = dang::gl;
