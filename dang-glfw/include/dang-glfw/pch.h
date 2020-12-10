@@ -32,5 +32,3 @@ namespace dmath = dang::math;
 namespace dutils = dang::utils;
 
 } // namespace dang::glfw
-
-namespace dglfw = dang::glfw;
