@@ -3,6 +3,7 @@
 #include "dang-gl/Context/State.h"
 #include "dang-gl/Objects/ObjectContext.h"
 #include "dang-gl/Objects/ObjectType.h"
+#include "dang-gl/global.h"
 
 #include "dang-utils/enum.h"
 #include "dang-utils/event.h"

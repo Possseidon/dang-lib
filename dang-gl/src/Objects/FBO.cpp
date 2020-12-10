@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Objects/FBO.h"
 
 namespace dang::gl {

@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Math/Transform.h"
 
 namespace dang::gl {

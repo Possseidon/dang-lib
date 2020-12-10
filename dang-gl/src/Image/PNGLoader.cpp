@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Image/PNGLoader.h"
 
 namespace dang::gl {

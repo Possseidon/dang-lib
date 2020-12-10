@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-gl/global.h"
+
 namespace dang::gl {
 
 /// <summary>Wraps the bitfield representing the three buffers of framebuffer objects.</summary>

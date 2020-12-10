@@ -4,6 +4,7 @@
 #include "dang-gl/Objects/ObjectHandle.h"
 #include "dang-gl/Objects/ObjectType.h"
 #include "dang-gl/Objects/ObjectWrapper.h"
+#include "dang-gl/global.h"
 
 namespace dang::gl {
 

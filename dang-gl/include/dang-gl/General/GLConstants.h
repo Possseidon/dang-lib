@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-gl/global.h"
+
 namespace dang::gl {
 
 /// <summary>Maps from enum types to the actual GLenum constants, used in OpenGL function calls.</summary>

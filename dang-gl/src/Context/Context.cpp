@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Context/Context.h"
 
 // Context specializations:

@@ -2,6 +2,7 @@
 
 #include "dang-gl/Context/StateTypes.h"
 #include "dang-gl/Math/MathTypes.h"
+#include "dang-gl/global.h"
 
 #include "dang-math/vector.h"
 

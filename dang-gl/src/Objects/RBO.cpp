@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Objects/RBO.h"
 
 namespace dang::gl {

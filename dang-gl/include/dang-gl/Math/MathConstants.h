@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-gl/global.h"
+
 #include "dang-math/enums.h"
 #include "dang-math/geometry.h"
 #include "dang-math/matrix.h"

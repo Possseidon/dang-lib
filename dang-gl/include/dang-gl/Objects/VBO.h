@@ -3,6 +3,7 @@
 #include "dang-gl/General/GLConstants.h"
 #include "dang-gl/Objects/Buffer.h"
 #include "dang-gl/Objects/ObjectType.h"
+#include "dang-gl/global.h"
 
 #include "dang-utils/enum.h"
 

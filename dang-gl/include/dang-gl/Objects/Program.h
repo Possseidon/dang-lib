@@ -8,6 +8,7 @@
 #include "dang-gl/Objects/ProgramContext.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Objects/UniformWrapper.h"
+#include "dang-gl/global.h"
 
 #include "dang-utils/enum.h"
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-gl/Math/Transform.h"
+#include "dang-gl/global.h"
 
 namespace dang::gl {
 

@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Context/StateTypes.h"
 
 namespace dang::gl {

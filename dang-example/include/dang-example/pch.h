@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "dang-gl/pch.h"
+#include "dang-gl/global.h"
 
 #include "dang-glfw/pch.h"
 

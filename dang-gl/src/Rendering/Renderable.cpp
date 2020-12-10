@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Rendering/Renderable.h"
 
 namespace dang::gl {

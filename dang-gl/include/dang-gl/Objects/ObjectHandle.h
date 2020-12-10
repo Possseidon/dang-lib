@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-gl/Objects/ObjectType.h"
+#include "dang-gl/global.h"
 
 namespace dang::gl {
 

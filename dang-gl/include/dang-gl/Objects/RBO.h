@@ -5,6 +5,7 @@
 #include "dang-gl/Objects/Object.h"
 #include "dang-gl/Objects/ObjectType.h"
 #include "dang-gl/Objects/RenderbufferContext.h"
+#include "dang-gl/global.h"
 
 namespace dang::gl {
 

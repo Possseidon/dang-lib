@@ -9,6 +9,7 @@
 #include "dang-gl/Objects/ObjectType.h"
 #include "dang-gl/Objects/ObjectWrapper.h"
 #include "dang-gl/Objects/RBO.h"
+#include "dang-gl/global.h"
 
 #include "dang-utils/enum.h"
 

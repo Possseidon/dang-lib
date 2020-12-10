@@ -4,6 +4,7 @@
 #include "dang-gl/Image/Pixel.h"
 #include "dang-gl/Image/PixelFormat.h"
 #include "dang-gl/Image/PixelType.h"
+#include "dang-gl/global.h"
 
 namespace dang::gl {
 

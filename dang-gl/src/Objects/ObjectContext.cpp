@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Objects/ObjectContext.h"
 
 namespace dang::gl {

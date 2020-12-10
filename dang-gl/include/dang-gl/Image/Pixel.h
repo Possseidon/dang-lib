@@ -2,6 +2,7 @@
 
 #include "dang-gl/Image/PixelFormat.h"
 #include "dang-gl/Image/PixelType.h"
+#include "dang-gl/global.h"
 
 #include "dang-math/vector.h"
 

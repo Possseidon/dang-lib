@@ -14,7 +14,6 @@ add_library(${PROJECT_NAME}
     src/Objects/VAO.cpp
     src/Rendering/Camera.cpp
     src/Rendering/Renderable.cpp
-    src/pch.cpp
 )
 
 find_package(glad CONFIG REQUIRED)

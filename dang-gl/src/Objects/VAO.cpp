@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Objects/VAO.h"
 
 namespace dang::gl {

@@ -36,9 +36,9 @@
 
 #include "png.h"
 
-namespace fs = std::filesystem;
-
 namespace dang::gl {
+
+namespace fs = std::filesystem;
 
 namespace dmath = dang::math;
 namespace dutils = dang::utils;
