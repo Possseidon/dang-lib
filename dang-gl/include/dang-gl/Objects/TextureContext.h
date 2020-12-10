@@ -14,7 +14,8 @@ class TextureError : public std::runtime_error {
 };
 
 // This current implementation is easy to use, but only allows a texture to be bound to a single slot
-// Possibly consider modification, to allow a texture to be bound for multiple slots, as the spec does technically allows this
+// Possibly consider modification, to allow a texture to be bound for multiple slots, as the spec does technically
+// allows this
 // -> This greatly complicates everything and might not be worth the cost (both run-time and possibly ease-of-use)
 
 /// @brief Specializes the context class for texture objects.
@@ -31,7 +32,8 @@ public:
     /// @brief Sets the currently active texture slot.
     void setActiveSlot(std::size_t slot);
 
-    /// @brief Binds the texture to the first free slot and returns it or throws a TextureError, if all slots are occupied.
+    /// @brief Binds the texture to the first free slot and returns it or throws a TextureError, if all slots are
+    /// occupied.
     std::size_t bind(TextureTarget target, Handle handle, std::optional<std::size_t> active_slot);
     /// @brief If the texture is currently bound to a slot, makes that slot free for another texture to use.
     void release(TextureTarget target, std::optional<std::size_t> active_slot);

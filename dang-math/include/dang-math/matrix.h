@@ -113,7 +113,8 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// @brief Returns the minor at the given column/row.
-    /// @remark A minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.
+    /// @remark A minor is exactly one column and one row smaller than the original, as the specified column and row are
+    /// removed from the matrix.
     constexpr auto minor(std::size_t col, std::size_t row) const
     {
         static_assert(Cols > 0 && Rows > 0);
@@ -121,7 +122,8 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// @brief Returns the minor at the given position. (x = col, y = row)
-    /// @remark The minor is exactly one column and one row smaller than the original, as the specified column and row are removed from the matrix.
+    /// @remark The minor is exactly one column and one row smaller than the original, as the specified column and row
+    /// are removed from the matrix.
     constexpr auto minor(const svec2& pos) const
     {
         static_assert(Cols > 0 && Rows > 0);
@@ -143,7 +145,8 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
     }
 
     /// @brief Returns the cofactor at the given column/row.
-    /// @remark The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is odd.
+    /// @remark The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is
+    /// odd.
     constexpr auto cofactor(std::size_t col, std::size_t row) const
     {
         static_assert(Cols > 0 && Rows > 0);
@@ -314,7 +317,8 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
         }
     }
 
-    /// @brief Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.
+    /// @brief Solves a single column of the matrix, when seen as a linear equation in combination with the given
+    /// vector.
     /// @remark
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
@@ -346,7 +350,8 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
         }
     }
 
-    /// @brief Solves a single column of the matrix, when seen as a linear equation in combination with the given vector.
+    /// @brief Solves a single column of the matrix, when seen as a linear equation in combination with the given
+    /// vector.
     /// @remark
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
@@ -612,13 +617,15 @@ struct Matrix : std::array<Vector<T, Rows>, Cols> {
         return Vector<T, Rows>{matrix * Matrix<T, 1, Cols>{vector}};
     }
 
-    /// @brief Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a single-column matrix.
+    /// @brief Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a
+    /// single-column matrix.
     friend constexpr auto operator*(const Vector<T, Rows>& vector, const Matrix& matrix)
     {
         return matrix.transpose() * vector;
     }
 
-    /// @brief Performs a matrix-multiplication between the inverse of the matrix and the given vector, seen as a single-column matrix.
+    /// @brief Performs a matrix-multiplication between the inverse of the matrix and the given vector, seen as a
+    /// single-column matrix.
     friend constexpr std::optional<Vector<T, Rows>> operator/(const Vector<T, Rows>& vector, const Matrix& matrix)
     {
         static_assert(Cols == Rows);

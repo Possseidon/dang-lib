@@ -250,7 +250,8 @@ public:
 
     /// @brief Whether the window is currently in fullscreen mode.
     bool isFullscreen() const;
-    /// @brief If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise returns null.
+    /// @brief If the window is in fullscreen mode, returns the monitor, which the window is displayed on, otherwise
+    /// returns null.
     Monitor fullscreenMonitor() const;
     /// @brief Puts the window in fullscreen mode with optional supplied resolution and refresh rate.
     void makeFullscreen(std::optional<dmath::ivec2> size = std::nullopt,
@@ -259,7 +260,8 @@ public:
     void makeFullscreen(Monitor monitor,
                         std::optional<dmath::ivec2> size = std::nullopt,
                         std::optional<int> refresh_rate = std::nullopt);
-    /// @brief Restores the window from fullscreen mode, defaulting to the original position and size, before the fullscreen was activated.
+    /// @brief Restores the window from fullscreen mode, defaulting to the original position and size, before the
+    /// fullscreen was activated.
     void restoreFullscreen(std::optional<dmath::ivec2> pos = std::nullopt,
                            std::optional<dmath::ivec2> size = std::nullopt);
 
@@ -290,7 +292,8 @@ public:
     std::optional<dmath::ivec2> aspectRatio() const;
     /// @brief Sets the optional width/height ratio, which the the window should be forced into.
     void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
-    /// @brief Sets the width/height ratio of the window to the current framebuffer size, effectively freezing the current ratio.
+    /// @brief Sets the width/height ratio of the window to the current framebuffer size, effectively freezing the
+    /// current ratio.
     void freezeAspectRatio();
 
     /// @brief Returns the opcacity of the window.
@@ -434,7 +437,8 @@ public:
 
     /// @brief Activates and updates the window, also triggering the onUpdate event.
     void update();
-    /// @brief Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by the onRender event.
+    /// @brief Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by
+    /// the onRender event.
     void render();
     /// @brief Polls window events and clears/updates the text input.
     void pollEvents();
@@ -486,7 +490,8 @@ public:
     /// @brief Triggered, when the window framebuffer is resized.
     WindowEvent onFramebufferResize;
 
-    /// @brief Triggered, when the user types something on the keyboard, which can be queried using the textInput method.
+    /// @brief Triggered, when the user types something on the keyboard, which can be queried using the textInput
+    /// method.
     WindowEvent onType;
     /// @brief Triggered, when the user presses, holds or releases a key on the keyboard.
     KeyEvent onKey;

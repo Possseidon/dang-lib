@@ -34,7 +34,8 @@ struct Spat;
 
 namespace detail {
 
-/// @brief Used as a base for axis-sytems, consisting of one support vector and an arbitrary amount of direction vectors.
+/// @brief Used as a base for axis-sytems, consisting of one support vector and an arbitrary amount of direction
+/// vectors.
 template <typename T, std::size_t Dim, std::size_t AxisCount>
 struct AxisSystemBase {
     Vector<T, Dim> support;
@@ -64,7 +65,8 @@ struct AxisSystemBase {
         return Spat<T, Dim>(support, {directions[index1], directions[index2], directions[index3]});
     }
 
-    /// @brief Returns a point in the axis-system by multiplying the factor onto the directions and adding the support vector onto it.
+    /// @brief Returns a point in the axis-system by multiplying the factor onto the directions and adding the support
+    /// vector onto it.
     constexpr Vector<T, Dim> operator[](const Vector<T, AxisCount>& factor) const
     {
         return support + directions * factor;

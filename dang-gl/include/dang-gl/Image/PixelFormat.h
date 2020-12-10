@@ -62,7 +62,8 @@ inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat>
                                                                                     GL_DEPTH_COMPONENT,
                                                                                     GL_DEPTH_STENCIL};
 
-/// @brief Provides info about a pixel format, like its component count, which is necessary to find out the storage size.
+/// @brief Provides info about a pixel format, like its component count, which is necessary to find out the storage
+/// size.
 template <PixelFormat>
 struct PixelFormatInfo {};
 

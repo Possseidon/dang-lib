@@ -43,7 +43,8 @@ public:
     /// @brief Returns the current gamma ramp of the monitor or throws an error on failure.
     const GammaRamp& gammaRamp() const;
 
-    /// @brief Returns the current video mode of the monitor, which depends on whether a fullscreen window is present or throws an error on failure.
+    /// @brief Returns the current video mode of the monitor, which depends on whether a fullscreen window is present or
+    /// throws an error on failure.
     const VideoMode& videoMode() const;
     /// @brief Returns a list of all by the monitor supported video modes or an empty list in case of errors.
     std::vector<VideoMode> videoModes() const;

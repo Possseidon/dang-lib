@@ -241,7 +241,8 @@ struct Convert {
         }
     }
 
-    /// @brief Returns a reference to the value at the given argument stack position and raises an argument error on failure.
+    /// @brief Returns a reference to the value at the given argument stack position and raises an argument error on
+    /// failure.
     static auto check(lua_State* state, int arg) -> std::conditional_t<std::is_class_v<T>, T&, T>
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
@@ -266,7 +267,8 @@ struct Convert {
         return 0;
     }
 
-    /// @brief __index, which first checks the original index table, and then tries to call the customized __index method.
+    /// @brief __index, which first checks the original index table, and then tries to call the customized __index
+    /// method.
     static int customIndex(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
@@ -536,7 +538,8 @@ struct ConvertIntegral {
         return isnum && checkRange(value);
     }
 
-    /// @brief Whether the value at the given stack position is an integer or a string convertible to an integer and fits the C++ integral type.
+    /// @brief Whether the value at the given stack position is an integer or a string convertible to an integer and
+    /// fits the C++ integral type.
     static bool isValid(lua_State* state, int pos)
     {
         int isnum;
@@ -609,7 +612,8 @@ struct Convert<std::string> {
     /// @brief Whether the value at the given stack position is a string or a number.
     static bool isValid(lua_State* state, int pos) { return lua_isstring(state, pos); }
 
-    /// @brief Checks, whether the given argument stack position is a string or number and returns std::nullopt on failure.
+    /// @brief Checks, whether the given argument stack position is a string or number and returns std::nullopt on
+    /// failure.
     /// @remark Numbers are actually converted to a string in place.
     static std::optional<std::string> at(lua_State* state, int pos)
     {
@@ -654,7 +658,8 @@ struct Convert<std::string_view> {
     /// @brief Whether the value at the given stack position is a string or a number.
     static bool isValid(lua_State* state, int pos) { return lua_isstring(state, pos); }
 
-    /// @brief Checks, whether the given argument stack position is a string or number and returns std::nullopt on failure.
+    /// @brief Checks, whether the given argument stack position is a string or number and returns std::nullopt on
+    /// failure.
     /// @remark Numbers are actually converted to a string in place.
     static std::optional<std::string_view> at(lua_State* state, int pos)
     {
@@ -941,7 +946,8 @@ struct Convert<std::variant<TOptions...>> {
     /// @brief Whether at least one option is valid.
     static constexpr bool isValid(lua_State* state, int pos) { return (Convert<TOptions>::isValid(state, pos) || ...); }
 
-    /// @brief Returns the first type that does not return std::nullopt or returns std::nullopt itself if none was found.
+    /// @brief Returns the first type that does not return std::nullopt or returns std::nullopt itself if none was
+    /// found.
     static std::optional<Variant> at(lua_State* state, int pos)
     {
         return atHelper(state, pos, TypeList<TOptions...>());
@@ -954,8 +960,8 @@ struct Convert<std::variant<TOptions...>> {
         if (value)
             return *value;
 
-        // Generate a similar message to the official (unfortunately internal) luaL_typeerror() function in the Lua source code:
-        // https://www.lua.org/source/5.4/lauxlib.c.html#luaL_typeerror
+        // Generate a similar message to the official (unfortunately internal) luaL_typeerror() function in the Lua
+        // source code: https://www.lua.org/source/5.4/lauxlib.c.html#luaL_typeerror
         std::string error = getPushTypename() + " expected, got ";
         if (luaL_getmetafield(state, arg, "__name") == LUA_TSTRING)
             error += lua_tostring(state, -1);

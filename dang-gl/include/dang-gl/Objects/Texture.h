@@ -161,7 +161,8 @@ public:
     TextureBase(const TextureBase&) = delete;
     TextureBase& operator=(const TextureBase&) = delete;
 
-    /// @brief Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are occupied.
+    /// @brief Binds the texture to the first free slot and returns its index or throws a TextureError, if all slots are
+    /// occupied.
     std::size_t bind() const
     {
         auto slot = this->objectContext().bind(target_, handle(), active_slot_);
@@ -549,7 +550,8 @@ private:
         return result;
     }
 
-    /// @brief Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given size.
+    /// @brief Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given
+    /// size.
     static std::size_t mipmapCount(std::size_t value)
     {
         // TODO: Use std::bit_width in C++20
@@ -597,7 +599,8 @@ public:
         generate(size, samples, internal_format);
     }
 
-    /// @brief Initializes a new multisampled texture with the given image data, sample count and optional internal format.
+    /// @brief Initializes a new multisampled texture with the given image data, sample count and optional internal
+    /// format.
     /// @param internal_format Defaults to being chosen, based on the format of the provided image.
     template <PixelFormat Format, PixelType Type>
     explicit TextureBaseMultisample(const Image<Dim, Format, Type>& image,

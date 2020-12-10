@@ -65,7 +65,8 @@ private:
     /// @brief Terminates GLFW.
     ~GLFW();
 
-    /// @brief Initializes glad, if it is not initialized yet, and can only be called, once a window/context has been created.
+    /// @brief Initializes glad, if it is not initialized yet, and can only be called, once a window/context has been
+    /// created.
     void initializeGlad();
     /// @brief Initializes the wrappers for both monitor-list and primary monitor.
     void initializeMonitors();

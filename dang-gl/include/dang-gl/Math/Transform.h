@@ -39,17 +39,21 @@ public:
     SharedTransform parent() const;
     /// @brief Checks, if the chain of parents contains the given transform.
     bool parentChainContains(const Transform& transform) const;
-    /// @brief UNSAFE! Forces the parent of this transform to the given transform, without checking for potential cycles.
+    /// @brief UNSAFE! Forces the parent of this transform to the given transform, without checking for potential
+    /// cycles.
     /// @remark A cycle will cause an immediate stack overflow, from recursively calling parent change events.
     void forceParent(const SharedTransform& parent);
-    /// @brief Tries to set the parent of this transform to the given transform and returns false if it would introduce a cycle.
+    /// @brief Tries to set the parent of this transform to the given transform and returns false if it would introduce
+    /// a cycle.
     bool trySetParent(const SharedTransform& parent);
-    /// @brief Tries to set the parent of this transform to the given transform and throws a TransformCycleError if it would introduce a cycle.
+    /// @brief Tries to set the parent of this transform to the given transform and throws a TransformCycleError if it
+    /// would introduce a cycle.
     void setParent(const SharedTransform& parent);
     /// @brief Removes the current parent, which is the same as setting the parent to nullptr.
     void resetParent();
 
-    /// @brief Triggered, when the full transformation changes, because either the own transformation or that of any parent changed.
+    /// @brief Triggered, when the full transformation changes, because either the own transformation or that of any
+    /// parent changed.
     Event onChange;
     /// @brief Triggered, when the parent of this transform changed.
     Event onParentChange;

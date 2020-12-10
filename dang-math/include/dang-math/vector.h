@@ -18,7 +18,8 @@ struct Vector : std::array<T, Dim> {
     {}
 
     /// @brief Implicit conversion between scalars and a vector containing said scalar for each component.
-    /// @remark Being implicit greatly simplifies operator overloading, however GLSL does not provide this implicit conversion.
+    /// @remark Being implicit greatly simplifies operator overloading, however GLSL does not provide this implicit
+    /// conversion.
     /// @remark GLSL only allows this conversion when used in conjunction with an actual mathematical operations.
     constexpr Vector(T value)
         : Base()
@@ -49,7 +50,8 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
-    /// @remark GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to implement in C++.
+    /// @remark GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to
+    /// implement in C++.
     /// @remark Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
     constexpr Vector(Vector<T, 3> vector, T w)
         : Base{vector[0], vector[1], vector[2], w}
@@ -452,7 +454,8 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// @brief Creates a vector from the given slope, which is NOT normalized.
-    /// @remark The x-component is always one except if std::nullopt is given, which returns a vertical vector of length one.
+    /// @remark The x-component is always one except if std::nullopt is given, which returns a vertical vector of length
+    /// one.
     static constexpr auto fromSlope(std::optional<T> slope)
     {
         static_assert(Dim == 2);
@@ -478,7 +481,8 @@ struct Vector : std::array<T, Dim> {
         return fromRadians(dang::math::radians(degrees));
     }
 
-    /// @brief Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new x.
+    /// @brief Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new
+    /// x.
     constexpr auto cross() const
     {
         static_assert(Dim == 2);

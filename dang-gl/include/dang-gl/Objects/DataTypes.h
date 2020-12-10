@@ -428,7 +428,8 @@ constexpr GLsizei getDataTypeSize(DataType type)
     }
 }
 
-/// @brief Returns the component count of a given data type, being the vector component count or matrix-rows, where matrices are column-major.
+/// @brief Returns the component count of a given data type, being the vector component count or matrix-rows, where
+/// matrices are column-major.
 constexpr GLsizei getDataTypeComponentCount(DataType type)
 {
     switch (type) {
@@ -476,7 +477,8 @@ constexpr GLsizei getDataTypeComponentCount(DataType type)
     }
 }
 
-/// @brief Returns the column count for the given type, which is 1 for all non-matrix types, where matrices are column-major.
+/// @brief Returns the column count for the given type, which is 1 for all non-matrix types, where matrices are
+/// column-major.
 constexpr GLsizei getDataTypeColumnCount(DataType type)
 {
     switch (type) {

@@ -115,7 +115,8 @@ struct Quaternion : private Vector<T, 4> {
     /// @brief Returns the conjugate of the quaternion, which simply has the vector-part negated.
     constexpr Quaternion conjugate() const { return Quaternion(scalar(), -vector()); }
 
-    /// @brief Returns the inverse of the quaternion, assuming it is normalized, for which it simply calculates the conjugate.
+    /// @brief Returns the inverse of the quaternion, assuming it is normalized, for which it simply calculates the
+    /// conjugate.
     constexpr Quaternion inverseFast() const { return conjugate(); }
 
     /// @brief Returns the inverse of the quaternion, even if the quaternion is not normalized.
@@ -282,7 +283,8 @@ struct Quaternion : private Vector<T, 4> {
         return {source_factor, target_sign * target_factor, requires_normalization};
     }
 
-    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.
+    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear
+    /// interpolation.
     /// @remark Both quaternions should be normalized for correct results.
     constexpr Quaternion slerp(Quaternion target, T factor)
     {
@@ -316,7 +318,8 @@ struct DualQuaternion {
     {}
 
     /// @brief Initializes the dual-quaternion with the given translation quaternion (and identity rotation).
-    /// @remark The vector does NOT describe the actual translation, but is instead copied unmodified into the dual part.
+    /// @remark The vector does NOT describe the actual translation, but is instead copied unmodified into the dual
+    /// part.
     explicit constexpr DualQuaternion(const Vector<T, 3>& dual)
         : real(Quaternion<T>::identity())
         , dual(T(), dual)
@@ -386,7 +389,8 @@ struct DualQuaternion {
     /// @brief Returns the dual conjugate by negating the dual part.
     constexpr DualQuaternion dualConjugate() const { return DualQuaternion(real, -dual); }
 
-    /// @brief Returns the full conjugate of the dual-quaternion, which is a combination of both quat and dual conjugates.
+    /// @brief Returns the full conjugate of the dual-quaternion, which is a combination of both quat and dual
+    /// conjugates.
     constexpr DualQuaternion conjugate() const { return DualQuaternion(real.conjugate(), -dual.conjugate()); }
 
     /// @brief Returns the rotation quaternion, which is simply an alias for the real-part.
@@ -395,13 +399,15 @@ struct DualQuaternion {
     /// @brief Returns the translation of the dual-quaternion.
     constexpr Vector<T, 3> translation() const { return T(2) * (dual * real.conjugate()).vector(); }
 
-    /// @brief Returns the normalized dual-quaternion by normalizing the real-part and applying the same factor to the dual-part.
+    /// @brief Returns the normalized dual-quaternion by normalizing the real-part and applying the same factor to the
+    /// dual-part.
     constexpr DualQuaternion normalize() const { return *this / real.magnitude(); }
 
     /// @brief Returns the dot product between the real-parts of the dual-quaternions.
     constexpr Quaternion<T> dot(const DualQuaternion& other) const { return real.dot(other.real); }
 
-    /// @brief Returns the inverse of the dual-quaternion, assuming it is normalized, for which it simply calculates the conjugate for both parts.
+    /// @brief Returns the inverse of the dual-quaternion, assuming it is normalized, for which it simply calculates the
+    /// conjugate for both parts.
     constexpr DualQuaternion inverseFast() const { return quatConjugate(); }
 
     /// @brief Returns the inverse of the dual-quaternion, even if the dual-quaternion is not normalized.
@@ -527,7 +533,8 @@ struct DualQuaternion {
         return (dualquaternion.conjugate() * DualQuaternion(vector) * dualquaternion).dual.vector();
     }
 
-    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear interpolation.
+    /// @brief Performs a spherical interpolation, which has constant velocity, compared to a regular linear
+    /// interpolation.
     /// @remark Both quaternions should be normalized for correct results.
     constexpr DualQuaternion slerp(DualQuaternion target, T factor)
     {

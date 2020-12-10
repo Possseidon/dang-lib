@@ -58,7 +58,8 @@ public:
     PNGWarningEvent onWarning;
 
 private:
-    /// @brief Expands or strips the bit depth to exactly 8 bit, potentially disabling palette or adding an alpha channel in the process.
+    /// @brief Expands or strips the bit depth to exactly 8 bit, potentially disabling palette or adding an alpha
+    /// channel in the process.
     void handleBitDepth();
     /// @brief Converts between gray and rgb values, depending on the given pixel format.
     template <PixelFormat Format>
@@ -97,7 +98,8 @@ private:
 
     dmath::svec2 size_;
 
-    // png_read_update_info can only be called once after the first call, so we have to keep track of modifications ourself
+    // png_read_update_info can only be called once after the first call, so we have to keep track of modifications
+    // ourself
     png_byte color_type_ = 0;
     png_byte bit_depth_ = 0;
 };

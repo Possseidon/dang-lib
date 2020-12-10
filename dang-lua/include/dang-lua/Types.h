@@ -6,7 +6,8 @@
 
 namespace dang::lua {
 
-/// @brief Several functions that report errors in the API use the following status codes to indicate different kinds of errors or other conditions.
+/// @brief Several functions that report errors in the API use the following status codes to indicate different kinds of
+/// errors or other conditions.
 enum class Status {
     Ok = LUA_OK,               // No errors.
     RuntimeError = LUA_ERRRUN, // A runtime error.
@@ -24,14 +25,14 @@ enum class GCOption {
     Restart = LUA_GCRESTART, // Restarts the garbage collector.
     Count = LUA_GCCOUNT,     // Returns the current amount of memory (in Kbytes) in use by Lua.
     CountBytes =
-        LUA_GCCOUNTB, // Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.
-    Step =
-        LUA_GCSTEP, // gc(..., int stepsize); Performs an incremental step of garbage collection, corresponding to the allocation of stepsize Kbytes.
+        LUA_GCCOUNTB,  // Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.
+    Step = LUA_GCSTEP, // gc(..., int stepsize); Performs an incremental step of garbage collection, corresponding to
+                       // the allocation of stepsize Kbytes.
     IsRunning = LUA_GCISRUNNING, // Returns a boolean that tells whether the collector is running (i.e., not stopped).
-    Incremental =
-        LUA_GCINC, // gc(..., int pause, int stepmul, int stepsize); Changes the collector to incremental mode with the given parameters and returns the previous mode.
-    Generational =
-        LUA_GCGEN, // gc(..., int minormul, int majormul); Changes the collector to generational mode with the given parameters and returns the previous mode.
+    Incremental = LUA_GCINC, // gc(..., int pause, int stepmul, int stepsize); Changes the collector to incremental mode
+                             // with the given parameters and returns the previous mode.
+    Generational = LUA_GCGEN, // gc(..., int minormul, int majormul); Changes the collector to generational mode with
+                              // the given parameters and returns the previous mode.
 };
 
 /// @brief Lua value types.

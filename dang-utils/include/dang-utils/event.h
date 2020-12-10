@@ -49,7 +49,8 @@ private:
 
 public:
     /// @brief Allows subscribing to events using either a lambda or a pointer to a member function.
-    /// @remark The subscription is automatically removed from the event, once the subscription object itself is destroyed.
+    /// @remark The subscription is automatically removed from the event, once the subscription object itself is
+    /// destroyed.
     class Subscription {
     private:
         /// @brief Hidden/different to allow for a working parameter deduction of handler.

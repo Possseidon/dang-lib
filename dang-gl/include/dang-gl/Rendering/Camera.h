@@ -10,7 +10,8 @@
 
 namespace dang::gl {
 
-/// @brief The different cached transform (quaternion, not matrix) types of a camera, namely model, view and a combined model-view.
+/// @brief The different cached transform (quaternion, not matrix) types of a camera, namely model, view and a combined
+/// model-view.
 /// @remark The projection uses a matrix and is therefore handled separately.
 enum class CameraTransformType { Model, View, ModelView, COUNT };
 
@@ -98,7 +99,8 @@ private:
     bounds1 clip_;
 };
 
-/// @brief An orthogonal projection provider with simple 3D clipping bounds, defaulting to [-1, 1] on all axes, while the actual clipping planes also have the aspect applied.
+/// @brief An orthogonal projection provider with simple 3D clipping bounds, defaulting to [-1, 1] on all axes, while
+/// the actual clipping planes also have the aspect applied.
 class OrthoProjection : public ProjectionProvider {
 public:
     static constexpr bounds3 DefaultClip = {-1.0f, 1.0f};

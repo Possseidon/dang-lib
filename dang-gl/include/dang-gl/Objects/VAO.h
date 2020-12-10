@@ -71,11 +71,13 @@ public:
     /// @brief Returns the current render mode, which is used in draw calls.
     BeginMode mode() const;
     /// @brief Although not always senseful, allows to modify the render mode after construction.
-    /// @remark Different render modes require very different data layouts, often making it impossible to use the same data with different modes.
+    /// @remark Different render modes require very different data layouts, often making it impossible to use the same
+    /// data with different modes.
     void setMode(BeginMode mode);
 
 protected:
-    /// @brief Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most commonly used "triangles" mode.
+    /// @brief Initializes the VAO base with the given GL-Program and optional render mode, which defaults to the most
+    /// commonly used "triangles" mode.
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
 
     VAOBase(VAOBase&&) = default;
@@ -117,7 +119,8 @@ public:
         return instanceCountHelper(std::make_index_sequence<sizeof...(TInstanceData) - 1>());
     }
 
-    /// @brief Draws the full content of the VBO, potentially using instanced rendering, if at least one instance VBO was specified.
+    /// @brief Draws the full content of the VBO, potentially using instanced rendering, if at least one instance VBO
+    /// was specified.
     void draw() const
     {
         bind();
@@ -136,7 +139,8 @@ private:
         return std::get<VBOIndex>(instance_vbos_)->count() * program().instancedAttributeOrder()[VBOIndex].divisor;
     }
 
-    /// @brief Helper function for instance counting, which takes an index list of one less than the actual instance VBO count.
+    /// @brief Helper function for instance counting, which takes an index list of one less than the actual instance VBO
+    /// count.
     template <std::size_t... Indices>
     GLsizei instanceCountHelper(std::index_sequence<Indices...>) const
     {

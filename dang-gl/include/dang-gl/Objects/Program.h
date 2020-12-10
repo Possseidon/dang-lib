@@ -93,7 +93,8 @@ public:
     using runtime_error::runtime_error;
 };
 
-/// @brief Thrown, when the specified shader attributes do not match the shader source, possibly because they got optimized away.
+/// @brief Thrown, when the specified shader attributes do not match the shader source, possibly because they got
+/// optimized away.
 class ShaderAttributeError : public std::runtime_error {
 public:
     using runtime_error::runtime_error;
@@ -280,9 +281,11 @@ private:
     /// @brief Performs various cleanup, which is possible after linking.
     void postLinkCleanup();
 
-    /// @brief Throws ShaderCompilationError if the shader could not compile or writes to std::cerr, in case of success but an existing info log.
+    /// @brief Throws ShaderCompilationError if the shader could not compile or writes to std::cerr, in case of success
+    /// but an existing info log.
     void checkShaderStatusAndInfoLog(Handle shader_handle, ShaderType type);
-    /// @brief Throws ShaderLinkError if the program could not link or writes to std::cerr, in case of success but an existing info log.
+    /// @brief Throws ShaderLinkError if the program could not link or writes to std::cerr, in case of success but an
+    /// existing info log.
     void checkLinkStatusAndInfoLog();
 
     /// @brief Queries all attributes after the program has been linked successfully.

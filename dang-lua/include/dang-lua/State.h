@@ -8,11 +8,14 @@
 
 namespace dang::lua {
 
-// Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and it doesn't hurt)
+// Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and
+// it doesn't hurt)
 class State;
 
-/// @brief The amount of stack slots auxiliary library functions are allowed to use before they call checkstack themselves.
-/// @remark This information can only be found in the documentation, there does not seem to be any constant for this defined.
+/// @brief The amount of stack slots auxiliary library functions are allowed to use before they call checkstack
+/// themselves.
+/// @remark This information can only be found in the documentation, there does not seem to be any constant for this
+/// defined.
 constexpr int auxiliary_required_pushable = 4;
 
 // --- Utility Structs ---
@@ -161,7 +164,8 @@ struct SignatureInfoBase {
 
 protected:
     /// @brief Calculates the index of the next argument from the given index list of all previous arguments.
-    /// @remark An empty index sequence {} will give "1", an index sequence {0} will give "1" plus the size of the first argument, etc...
+    /// @remark An empty index sequence {} will give "1", an index sequence {0} will give "1" plus the size of the first
+    /// argument, etc...
     template <std::size_t... Indices>
     static constexpr int indexOffset(std::index_sequence<Indices...>)
     {
@@ -171,20 +175,23 @@ protected:
     }
 };
 
-/// @brief Provides information about a function signature and the means to convert arguments of a Lua C-Function into actual C++ values.
+/// @brief Provides information about a function signature and the means to convert arguments of a Lua C-Function into
+/// actual C++ values.
 /// @remark Argument conversion relies on the Convert template.
 template <typename TFunc>
 struct SignatureInfo;
 
 template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
-    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.
+    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these
+    /// arguments.
     static auto convertArguments(State& state)
     {
         return convertArgumentsHelper(state, std::index_sequence_for<TArgs...>{});
     }
 
-    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these arguments.
+    /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these
+    /// arguments.
     static auto convertArgumentsRaw(lua_State* state)
     {
         return convertArgumentsRawHelper(state, std::index_sequence_for<TArgs...>{});
@@ -514,28 +521,32 @@ public:
         return this->state().callReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET
+    /// internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) const
     {
         return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const
     {
         return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) const
     {
         return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) const
     {
@@ -545,7 +556,8 @@ public:
     // --- Operations ---
 
     /// @brief Replaces the element with another value.
-    /// @remark This is what one might expect from the assignment operator, yet the assignment operator only changes the index itself, not its element.
+    /// @remark This is what one might expect from the assignment operator, yet the assignment operator only changes the
+    /// index itself, not its element.
     template <typename T>
     auto& replace(T&& value) const
     {
@@ -847,14 +859,16 @@ public:
             return this->state().callReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET
+    /// internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) const&
     {
         return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET internally.
+    /// @brief Calls the element with an arbitrary number of arguments, returning all results using LUA_MULTRET
+    /// internally.
     template <typename... TArgs>
     auto operator()(TArgs&&... args) &&
     {
@@ -864,14 +878,16 @@ public:
             return this->state().callMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) const&
     {
         return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <int Results = 0, typename... TArgs>
     auto pcall(TArgs&&... args) &&
     {
@@ -881,14 +897,16 @@ public:
             return this->state().template pcall<Results>(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) const&
     {
         return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallReturning(int results, TArgs&&... args) &&
     {
@@ -898,14 +916,16 @@ public:
             return this->state().pcallReturning(results, *this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) const&
     {
         return this->state().pcallMultRet(*this, std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be the error itself).
+    /// @brief Calls the element in protected mode, returning a tuple of Status and the actual result (which can also be
+    /// the error itself).
     template <typename... TArgs>
     auto pcallMultRet(TArgs&&... args) &&
     {
@@ -1366,7 +1386,8 @@ public:
     /// @brief Returns the version number of this Lua state.
     auto version() const { return lua_version(state_); }
 
-    /// @brief Checks whether the code making the call and the Lua library being called are using the same version of Lua and the same numeric types.
+    /// @brief Checks whether the code making the call and the Lua library being called are using the same version of
+    /// Lua and the same numeric types.
     void checkVersion() const
     {
         assertPushableAuxiliary();
@@ -1953,7 +1974,8 @@ public:
 
     // --- Compiling ---
 
-    /// @brief Compiles the given code and returns a the compilation status and depending on this either the function or error message.
+    /// @brief Compiles the given code and returns a the compilation status and depending on this either the function or
+    /// error message.
     auto load(const LoadInfo& info)
     {
         assertPushableAuxiliary();
@@ -2017,7 +2039,8 @@ public:
         return top(results).asResults();
     }
 
-    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a template specified number of results.
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a
+    /// template specified number of results.
     template <int Results = 0, typename TFunc, typename... TArgs>
     auto pcall(TFunc&& func, TArgs&&... args)
     {
@@ -2055,14 +2078,16 @@ public:
         }
     }
 
-    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and all results.
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and all
+    /// results.
     template <typename TFunc, typename... TArgs>
     auto pcallMultRet(TFunc&& func, TArgs&&... args)
     {
         return pcall<LUA_MULTRET>(std::forward<TFunc>(func), std::forward<TArgs>(args)...);
     }
 
-    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a specfied number of results.
+    /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a
+    /// specfied number of results.
     template <typename TFunc, typename... TArgs>
     auto pcallReturning(int results, TFunc&& func, TArgs&&... args)
     {
@@ -2486,8 +2511,8 @@ public:
     }
 
     /*
-    /// @brief This version can be used by the debugger, as it returns references to up to 1024 formatted strings per thread.
-    const std::string& formatDebug(int index) const
+    /// @brief This version can be used by the debugger, as it returns references to up to 1024 formatted strings per
+    thread. const std::string& formatDebug(int index) const
     {
         thread_local std::size_t current = 0;
         thread_local std::vector<std::string> results(1024);
@@ -2538,7 +2563,8 @@ public:
         require(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
-    /// @brief Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it and optionally makes it global.
+    /// @brief Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it
+    /// and optionally makes it global.
     auto pushRequire(const char* name, lua_CFunction open_function, bool global = false)
     {
         assertPushableAuxiliary();
@@ -2716,7 +2742,8 @@ private:
         }
     }
 
-    /// @brief A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the called closure.
+    /// @brief A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the
+    /// called closure.
     template <typename Func>
     static int wrappedFunction(lua_State* state)
     {
@@ -2815,8 +2842,10 @@ inline constexpr luaL_Reg reg(const char* name)
 /// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
 class OwnedState : public State {
 public:
-    /// @brief Creates a new Lua state, by default opening the standard libraries and using the auxiliary allocation and panic function.
-    /// @remark A custom allocation function can be supplied and userdata is used solely as extra parameter to that function.
+    /// @brief Creates a new Lua state, by default opening the standard libraries and using the auxiliary allocation and
+    /// panic function.
+    /// @remark A custom allocation function can be supplied and userdata is used solely as extra parameter to that
+    /// function.
     OwnedState(bool open_libs = true, lua_Alloc allocator = nullptr, void* userdata = nullptr)
         : State(allocator ? lua_newstate(allocator, userdata) : luaL_newstate())
     {
@@ -3198,7 +3227,8 @@ inline auto operator|(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLe
 template <typename TLeft, typename TRight>
 inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs),
+std::forward<TRight>(rhs));
 }
 */
 

@@ -6,7 +6,8 @@
 
 #include "dang-math/vector.h"
 
-// TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I think?)
+// TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I
+// think?)
 //       Backup still needs to be polymorphic, as they get stored in a vector
 
 namespace dang::gl {
@@ -39,7 +40,8 @@ protected:
 template <typename T>
 class StateProperty : public StatePropertyBase {
 public:
-    /// @brief Initializes the property with the given state and an optional default value, which default to the actual default value of the type.
+    /// @brief Initializes the property with the given state and an optional default value, which default to the actual
+    /// default value of the type.
     /// @remark The supplied default value should match the actual default value of the OpenGL state.
     StateProperty(State& state, const T& default_value = T())
         : StatePropertyBase(state)
@@ -109,7 +111,8 @@ protected:
     }
 };
 
-/// @brief A state property, which calls a template supplied function with a single enum, arithmetic value or struct with a toTuple method.
+/// @brief A state property, which calls a template supplied function with a single enum, arithmetic value or struct
+/// with a toTuple method.
 template <auto Func, typename T>
 class StateFunc : public StateProperty<T> {
 public:
@@ -135,7 +138,8 @@ protected:
     }
 };
 
-/// @brief A state property, which calls the template supplied function with each vector component as a separate parameter.
+/// @brief A state property, which calls the template supplied function with each vector component as a separate
+/// parameter.
 template <auto Func, typename T, std::size_t Dim>
 class StateVector : public StateProperty<dmath::Vector<T, Dim>> {
 public:
@@ -270,7 +274,8 @@ private:
     State& state_;
 };
 
-/// @brief Wraps the full state of an OpenGL context and supports efficient push/pop semantics, to temporarily modify a set of states.
+/// @brief Wraps the full state of an OpenGL context and supports efficient push/pop semantics, to temporarily modify a
+/// set of states.
 class State {
 private:
     // Must be initialized before the properties
