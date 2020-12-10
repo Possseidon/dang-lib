@@ -1,9 +1,8 @@
 #pragma once
 
-#include "utils.h"
-
-#include "bounds.h"
-#include "vector.h"
+#include "dang-math/bounds.h"
+#include "dang-math/utils.h"
+#include "dang-math/vector.h"
 
 namespace dang::math {
 

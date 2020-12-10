@@ -1,15 +1,15 @@
 #pragma once
 
-#include "dang-gl/BufferMask.h"
-#include "dang-gl/Context.h"
+#include "dang-gl/Context/Context.h"
+#include "dang-gl/Objects/BufferMask.h"
+
+#include "dang-glfw/Input.h"
+#include "dang-glfw/Monitor.h"
 
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"
 
 #include "dang-utils/event.h"
-
-#include "Input.h"
-#include "Monitor.h"
 
 namespace dang::glfw {
 

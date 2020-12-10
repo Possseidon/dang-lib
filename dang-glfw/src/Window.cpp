@@ -2,7 +2,7 @@
 
 #include "Window.h"
 
-#include "dang-gl/FBO.h"
+#include "dang-gl/Objects/FBO.h"
 
 #include "GLFW.h"
 

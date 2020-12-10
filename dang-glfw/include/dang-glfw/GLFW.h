@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dang-utils/event.h"
+#include "dang-glfw/Monitor.h"
 
-#include "Monitor.h"
+#include "dang-utils/event.h"
 
 namespace dang::glfw {
 

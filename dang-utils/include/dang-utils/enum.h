@@ -1,13 +1,13 @@
 #pragma once
 
-#include "utils.h"
-
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <optional>
 #include <type_traits>
 #include <utility>
+
+#include "dang-utils/utils.h"
 
 namespace dang::utils {
 

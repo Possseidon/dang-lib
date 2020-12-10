@@ -1,11 +1,10 @@
 #pragma once
 
-#include "utils.h"
+#include "dang-math/enums.h"
+#include "dang-math/utils.h"
+#include "dang-math/vector.h"
 
 #include "dang-utils/enum.h"
-
-#include "enums.h"
-#include "vector.h"
 
 namespace dang::math {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.h"
+#include "dang-math/utils.h"
 
 #include "dang-utils/enum.h"
 

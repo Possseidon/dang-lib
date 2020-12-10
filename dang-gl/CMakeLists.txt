@@ -2,19 +2,19 @@ cmake_minimum_required(VERSION 3.18)
 project(dang-gl)
 
 add_library(${PROJECT_NAME}
-    src/Camera.cpp
-    src/Context.cpp
-    src/FBO.cpp
-    src/ObjectContext.cpp
+    src/Context/Context.cpp
+    src/Context/State.cpp
+    src/Context/StateTypes.cpp
+    src/Image/PNGLoader.cpp
+    src/Math/Transform.cpp
+    src/Objects/FBO.cpp
+    src/Objects/ObjectContext.cpp
+    src/Objects/Program.cpp
+    src/Objects/RBO.cpp
+    src/Objects/VAO.cpp
+    src/Rendering/Camera.cpp
+    src/Rendering/Renderable.cpp
     src/pch.cpp
-    src/PNGLoader.cpp
-    src/Program.cpp
-    src/RBO.cpp
-    src/Renderable.cpp
-    src/State.cpp
-    src/StateTypes.cpp
-    src/Transform.cpp
-    src/VAO.cpp
 )
 
 find_package(glad CONFIG REQUIRED)

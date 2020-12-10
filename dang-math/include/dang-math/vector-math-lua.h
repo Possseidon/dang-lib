@@ -2,8 +2,8 @@
 
 #include "dang-lua/State.h"
 
-#include "matrix.h"
-#include "vector.h"
+#include "dang-math/matrix.h"
+#include "dang-math/vector.h"
 
 namespace dang::lua {
 

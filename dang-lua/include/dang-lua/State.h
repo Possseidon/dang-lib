@@ -1,9 +1,8 @@
 #pragma once
 
-#include "utils.h"
-
-#include "Convert.h"
-#include "Types.h"
+#include "dang-lua/Convert.h"
+#include "dang-lua/Types.h"
+#include "dang-lua/utils.h"
 
 namespace dang::lua {
 
