@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(dang-example)
+project(dang-example CXX)
 
 add_executable(${PROJECT_NAME}
     src/dang-example.cpp

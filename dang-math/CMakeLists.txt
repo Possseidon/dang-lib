@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(dang-math)
+project(dang-math CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
 

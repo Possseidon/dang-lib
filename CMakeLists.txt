@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(dang-lib)
+project(dang-lib CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
