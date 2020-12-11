@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-gl)
 
+find_package(glad CONFIG REQUIRED)
+find_package(libpng CONFIG REQUIRED)
+
 add_library(${PROJECT_NAME}
     src/Context/Context.cpp
     src/Context/State.cpp
@@ -46,9 +49,6 @@ target_precompile_headers(${PROJECT_NAME}
     <utility>
     <vector>
 )
-
-find_package(glad CONFIG REQUIRED)
-find_package(libpng CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC

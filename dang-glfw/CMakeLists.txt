@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-glfw)
 
+find_package(glfw3 CONFIG REQUIRED)
+
 add_library(${PROJECT_NAME}
     src/GLFW.cpp
     src/Input.cpp
@@ -32,8 +34,6 @@ if(MSVC)
       _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
   )
 endif()
-
-find_package(glfw3 CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC

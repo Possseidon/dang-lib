@@ -21,5 +21,6 @@ target_precompile_headers(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    INTERFACE include
+  INTERFACE
+    include
 )
