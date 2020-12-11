@@ -7,3 +7,7 @@ target_include_directories(${PROJECT_NAME}
   INTERFACE
     include
 )
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
