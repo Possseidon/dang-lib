@@ -626,28 +626,31 @@ constexpr auto makeEnumSequence()
         std::make_integer_sequence<std::underlying_type_t<T>, static_cast<std::underlying_type_t<T>>(T::COUNT)>());
 }
 
-} // namespace dang::utils
-
-namespace std {
-
 // Allow enum iteration in range based for loops
-// for (auto value : MyEnum{})
+// for (auto value : dutils::enumerate<MyEnum>)
+// begin and end rely on ADL!
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
-constexpr auto begin(T)
+template <typename T>
+struct Enumerate {};
+
+template <typename T>
+inline constexpr Enumerate<T> enumerate;
+
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
+inline constexpr auto begin(Enumerate<T>)
 {
     return dang::utils::EnumValues<T>.begin();
 }
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
-constexpr auto end(T)
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
+inline constexpr auto end(Enumerate<T>)
 {
     return dang::utils::EnumValues<T>.end();
 }
 
-} // namespace std
+} // namespace dang::utils
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, auto = dang::utils::EnumCountV<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
 inline constexpr dang::utils::EnumSet<T> operator|(T lhs, T rhs)
 {
     return dang::utils::EnumSet<T>{lhs, rhs};
