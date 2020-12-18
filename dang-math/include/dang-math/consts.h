@@ -129,4 +129,33 @@ inline constexpr auto FacingFlipped1 = FacingFlipped<1>;
 inline constexpr auto FacingFlipped2 = FacingFlipped<2>;
 inline constexpr auto FacingFlipped3 = FacingFlipped<3>;
 
+// --- FacingCorners
+
+template <std::size_t Dim>
+inline constexpr auto FacingCorners = nullptr;
+
+template <>
+inline constexpr dutils::EnumArray<Facing1, Corners1> FacingCorners<1> = {Corners1{Corner1::Left},
+                                                                          Corners1{Corner1::Right}};
+
+template <>
+inline constexpr dutils::EnumArray<Facing2, Corners2> FacingCorners<2> = {
+    Corners2{Corner2::LeftBottom, Corner2::LeftTop},
+    Corners2{Corner2::RightBottom, Corner2::RightTop},
+    Corners2{Corner2::LeftBottom, Corner2::RightBottom},
+    Corners2{Corner2::LeftTop, Corner2::RightTop}};
+
+template <>
+inline constexpr dutils::EnumArray<Facing3, Corners3> FacingCorners<3> = {
+    Corners3{Corner3::LeftBottomBack, Corner3::LeftTopBack, Corner3::LeftBottomFront, Corner3::LeftTopFront},
+    Corners3{Corner3::RightBottomBack, Corner3::RightTopBack, Corner3::RightBottomFront, Corner3::RightTopFront},
+    Corners3{Corner3::LeftBottomBack, Corner3::RightBottomBack, Corner3::LeftBottomFront, Corner3::RightBottomFront},
+    Corners3{Corner3::LeftTopBack, Corner3::RightTopBack, Corner3::LeftTopFront, Corner3::RightTopFront},
+    Corners3{Corner3::LeftBottomBack, Corner3::RightBottomBack, Corner3::LeftTopBack, Corner3::RightTopBack},
+    Corners3{Corner3::LeftBottomFront, Corner3::RightBottomFront, Corner3::LeftTopFront, Corner3::RightTopFront}};
+
+inline constexpr auto FacingCorners1 = FacingCorners<1>;
+inline constexpr auto FacingCorners2 = FacingCorners<2>;
+inline constexpr auto FacingCorners3 = FacingCorners<3>;
+
 } // namespace dang::math
