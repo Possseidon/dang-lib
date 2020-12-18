@@ -560,7 +560,7 @@ private:
     {
         int count = 0;
         while (word) {
-            word >>= 1;
+            word = static_cast<Word>(word >> 1);
             count++;
         }
         return WordBits - count;
@@ -571,7 +571,7 @@ private:
     {
         int count = 0;
         while (word) {
-            word <<= 1;
+            word = static_cast<Word>(word << 1);
             count++;
         }
         return WordBits - count;
