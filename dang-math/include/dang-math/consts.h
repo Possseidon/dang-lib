@@ -90,6 +90,25 @@ inline constexpr auto AxisFacing1 = AxisFacing<1>;
 inline constexpr auto AxisFacing2 = AxisFacing<2>;
 inline constexpr auto AxisFacing3 = AxisFacing<3>;
 
+// --- FacingAxis
+
+template <std::size_t Dim>
+inline constexpr auto FacingAxis = nullptr;
+
+template <>
+inline constexpr dutils::EnumArray<Facing1, Axis1> FacingAxis<1> = {Axis1::X, Axis1::X};
+
+template <>
+inline constexpr dutils::EnumArray<Facing2, Axis2> FacingAxis<2> = {Axis2::X, Axis2::X, Axis2::Y, Axis2::Y};
+
+template <>
+inline constexpr dutils::EnumArray<Facing3, Axis3> FacingAxis<3> = {
+    Axis3::X, Axis3::X, Axis3::Y, Axis3::Y, Axis3::Z, Axis3::Z};
+
+inline constexpr auto FacingAxis1 = FacingAxis<1>;
+inline constexpr auto FacingAxis2 = FacingAxis<2>;
+inline constexpr auto FacingAxis3 = FacingAxis<3>;
+
 // --- FacingFlipped
 
 template <std::size_t Dim>
