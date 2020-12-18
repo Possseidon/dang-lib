@@ -109,7 +109,9 @@ namespace dang::math {
 namespace detail {
 
 template <std::size_t Dim>
-struct AxisSelector {};
+struct AxisSelector {
+    enum Type {};
+};
 
 template <>
 struct AxisSelector<1> {
@@ -127,7 +129,9 @@ struct AxisSelector<3> {
 };
 
 template <std::size_t Dim>
-struct CornerSelector {};
+struct CornerSelector {
+    enum Type {};
+};
 
 template <>
 struct CornerSelector<1> {
@@ -145,7 +149,9 @@ struct CornerSelector<3> {
 };
 
 template <std::size_t Dim>
-struct EdgeSelector {};
+struct EdgeSelector {
+    enum Type {};
+};
 
 template <>
 struct EdgeSelector<2> {
@@ -158,7 +164,9 @@ struct EdgeSelector<3> {
 };
 
 template <std::size_t Dim>
-struct FacingSelector {};
+struct FacingSelector {
+    enum Type {};
+};
 
 template <>
 struct FacingSelector<1> {
