@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-math/enums.h"
 #include "dang-math/global.h"
 #include "dang-math/utils.h"
 
@@ -74,6 +75,11 @@ struct Vector : std::array<T, Dim> {
         static_assert(Dim == 1);
         return (*this)[0];
     }
+
+    using Base::operator[];
+
+    constexpr T& operator[](Axis<Dim> axis) { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T operator[](Axis<Dim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
 
     /// @brief Returns the sum of all components.
     constexpr auto sum() const
