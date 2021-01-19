@@ -167,6 +167,56 @@ struct PlaneBase : AxisSystemBase<T, Dim, 2> {
         auto dyp = this->directions[1].dot(point);
         return Vector<T, 2>(dys * dxp - dxy * dyp, dxs * dyp - dxy * dxp) / div;
     }
+
+    /// @brief Returns one of the four quad points of the plane.
+    constexpr Vector<T, Dim> quadPoint(std::size_t index)
+    {
+        switch (index) {
+        case 0:
+            return this->support;
+        case 1:
+            return this->support + this->directions[0];
+        case 2:
+            return this->support + this->directions[0] + this->directions[1];
+        case 3:
+            return this->support + this->directions[1];
+        }
+        assert(false);
+        return {};
+    }
+
+    /// @brief Returns one of the three triangle points of the plane.
+    constexpr Vector<T, Dim> trianglePoint(std::size_t index)
+    {
+        switch (index) {
+        case 0:
+            return this->support;
+        case 1:
+            return this->support + this->directions[0];
+        case 2:
+            return this->support + this->directions[1];
+        }
+        assert(false);
+        return {};
+    }
+
+    /// @brief Returns one of the three inner angles in radians.
+    constexpr T innerRadians(std::size_t index)
+    {
+        switch (index) {
+        case 0:
+            return this->directions[0].radiansTo(this->directions[1]);
+        case 1:
+            return trianglePoint(1).vectorTo(trianglePoint(2)).radiansTo(-this->directions[0]);
+        case 2:
+            return trianglePoint(2).vectorTo(trianglePoint(1)).radiansTo(-this->directions[1]);
+        }
+        assert(false);
+        return {};
+    }
+
+    /// @brief Returns one of the three inner angles in degrees.
+    constexpr T innerDegrees(std::size_t index) { return degrees(innerRadians(index)); }
 };
 
 /// @brief Used as a base for spats, consisting of one support and three direction vectors.
