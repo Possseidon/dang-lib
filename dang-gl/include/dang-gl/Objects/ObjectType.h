@@ -83,19 +83,19 @@ enum class RenderbufferTarget {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::ObjectType> : DefaultEnumCount<dang::gl::ObjectType> {};
+struct enum_count<dang::gl::ObjectType> : default_enum_count<dang::gl::ObjectType> {};
 
 template <>
-struct EnumCount<dang::gl::BufferTarget> : DefaultEnumCount<dang::gl::BufferTarget> {};
+struct enum_count<dang::gl::BufferTarget> : default_enum_count<dang::gl::BufferTarget> {};
 
 template <>
-struct EnumCount<dang::gl::TextureTarget> : DefaultEnumCount<dang::gl::TextureTarget> {};
+struct enum_count<dang::gl::TextureTarget> : default_enum_count<dang::gl::TextureTarget> {};
 
 template <>
-struct EnumCount<dang::gl::FramebufferTarget> : DefaultEnumCount<dang::gl::FramebufferTarget> {};
+struct enum_count<dang::gl::FramebufferTarget> : default_enum_count<dang::gl::FramebufferTarget> {};
 
 template <>
-struct EnumCount<dang::gl::RenderbufferTarget> : DefaultEnumCount<dang::gl::RenderbufferTarget> {};
+struct enum_count<dang::gl::RenderbufferTarget> : default_enum_count<dang::gl::RenderbufferTarget> {};
 
 } // namespace dang::utils
 

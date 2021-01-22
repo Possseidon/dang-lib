@@ -38,16 +38,16 @@ enum class ModifierKey : int { Shift, Control, Alt, Super, CapsLock, NumLock, CO
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::glfw::ButtonAction> : DefaultEnumCount<dang::glfw::ButtonAction> {};
+struct enum_count<dang::glfw::ButtonAction> : default_enum_count<dang::glfw::ButtonAction> {};
 
 template <>
-struct EnumCount<dang::glfw::Button> : DefaultEnumCount<dang::glfw::Button> {};
+struct enum_count<dang::glfw::Button> : default_enum_count<dang::glfw::Button> {};
 
 template <>
-struct EnumCount<dang::glfw::KeyAction> : DefaultEnumCount<dang::glfw::KeyAction> {};
+struct enum_count<dang::glfw::KeyAction> : default_enum_count<dang::glfw::KeyAction> {};
 
 template <>
-struct EnumCount<dang::glfw::ModifierKey> : DefaultEnumCount<dang::glfw::ModifierKey> {};
+struct enum_count<dang::glfw::ModifierKey> : default_enum_count<dang::glfw::ModifierKey> {};
 
 } // namespace dang::utils
 

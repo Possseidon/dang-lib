@@ -20,7 +20,7 @@ enum class CameraTransformType { Model, View, ModelView, COUNT };
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::CameraTransformType> : DefaultEnumCount<dang::gl::CameraTransformType> {};
+struct enum_count<dang::gl::CameraTransformType> : default_enum_count<dang::gl::CameraTransformType> {};
 
 } // namespace dang::utils
 

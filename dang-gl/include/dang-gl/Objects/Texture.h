@@ -82,22 +82,22 @@ enum class TextureWrap {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::TextureDepthStencilMode> : DefaultEnumCount<dang::gl::TextureDepthStencilMode> {};
+struct enum_count<dang::gl::TextureDepthStencilMode> : default_enum_count<dang::gl::TextureDepthStencilMode> {};
 
 template <>
-struct EnumCount<dang::gl::TextureMagFilter> : DefaultEnumCount<dang::gl::TextureMagFilter> {};
+struct enum_count<dang::gl::TextureMagFilter> : default_enum_count<dang::gl::TextureMagFilter> {};
 
 template <>
-struct EnumCount<dang::gl::TextureMinFilter> : DefaultEnumCount<dang::gl::TextureMinFilter> {};
+struct enum_count<dang::gl::TextureMinFilter> : default_enum_count<dang::gl::TextureMinFilter> {};
 
 template <>
-struct EnumCount<dang::gl::TextureCompareFunc> : DefaultEnumCount<dang::gl::TextureCompareFunc> {};
+struct enum_count<dang::gl::TextureCompareFunc> : default_enum_count<dang::gl::TextureCompareFunc> {};
 
 template <>
-struct EnumCount<dang::gl::TextureSwizzle> : DefaultEnumCount<dang::gl::TextureSwizzle> {};
+struct enum_count<dang::gl::TextureSwizzle> : default_enum_count<dang::gl::TextureSwizzle> {};
 
 template <>
-struct EnumCount<dang::gl::TextureWrap> : DefaultEnumCount<dang::gl::TextureWrap> {};
+struct enum_count<dang::gl::TextureWrap> : default_enum_count<dang::gl::TextureWrap> {};
 
 } // namespace dang::utils
 

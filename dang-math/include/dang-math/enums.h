@@ -70,37 +70,37 @@ enum class Facing3 { None = -1, Left, Right, Up, Down, Back, Front, COUNT };
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::math::Axis1> : DefaultEnumCount<dang::math::Axis1> {};
+struct enum_count<dang::math::Axis1> : default_enum_count<dang::math::Axis1> {};
 
 template <>
-struct EnumCount<dang::math::Axis2> : DefaultEnumCount<dang::math::Axis2> {};
+struct enum_count<dang::math::Axis2> : default_enum_count<dang::math::Axis2> {};
 
 template <>
-struct EnumCount<dang::math::Axis3> : DefaultEnumCount<dang::math::Axis3> {};
+struct enum_count<dang::math::Axis3> : default_enum_count<dang::math::Axis3> {};
 
 template <>
-struct EnumCount<dang::math::Corner1> : DefaultEnumCount<dang::math::Corner1> {};
+struct enum_count<dang::math::Corner1> : default_enum_count<dang::math::Corner1> {};
 
 template <>
-struct EnumCount<dang::math::Corner2> : DefaultEnumCount<dang::math::Corner2> {};
+struct enum_count<dang::math::Corner2> : default_enum_count<dang::math::Corner2> {};
 
 template <>
-struct EnumCount<dang::math::Corner3> : DefaultEnumCount<dang::math::Corner3> {};
+struct enum_count<dang::math::Corner3> : default_enum_count<dang::math::Corner3> {};
 
 template <>
-struct EnumCount<dang::math::Edge2> : DefaultEnumCount<dang::math::Edge2> {};
+struct enum_count<dang::math::Edge2> : default_enum_count<dang::math::Edge2> {};
 
 template <>
-struct EnumCount<dang::math::Edge3> : DefaultEnumCount<dang::math::Edge3> {};
+struct enum_count<dang::math::Edge3> : default_enum_count<dang::math::Edge3> {};
 
 template <>
-struct EnumCount<dang::math::Facing1> : DefaultEnumCount<dang::math::Facing1> {};
+struct enum_count<dang::math::Facing1> : default_enum_count<dang::math::Facing1> {};
 
 template <>
-struct EnumCount<dang::math::Facing2> : DefaultEnumCount<dang::math::Facing2> {};
+struct enum_count<dang::math::Facing2> : default_enum_count<dang::math::Facing2> {};
 
 template <>
-struct EnumCount<dang::math::Facing3> : DefaultEnumCount<dang::math::Facing3> {};
+struct enum_count<dang::math::Facing3> : default_enum_count<dang::math::Facing3> {};
 
 } // namespace dang::utils
 

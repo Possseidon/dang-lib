@@ -36,7 +36,7 @@ enum class PixelFormat {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::PixelFormat> : DefaultEnumCount<dang::gl::PixelFormat> {};
+struct enum_count<dang::gl::PixelFormat> : default_enum_count<dang::gl::PixelFormat> {};
 
 } // namespace dang::utils
 

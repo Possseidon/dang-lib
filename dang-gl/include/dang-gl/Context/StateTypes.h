@@ -130,28 +130,28 @@ enum class StencilAction {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::BlendFactorSrc> : DefaultEnumCount<dang::gl::BlendFactorSrc> {};
+struct enum_count<dang::gl::BlendFactorSrc> : default_enum_count<dang::gl::BlendFactorSrc> {};
 
 template <>
-struct EnumCount<dang::gl::BlendFactorDst> : DefaultEnumCount<dang::gl::BlendFactorDst> {};
+struct enum_count<dang::gl::BlendFactorDst> : default_enum_count<dang::gl::BlendFactorDst> {};
 
 template <>
-struct EnumCount<dang::gl::CompareFunc> : DefaultEnumCount<dang::gl::CompareFunc> {};
+struct enum_count<dang::gl::CompareFunc> : default_enum_count<dang::gl::CompareFunc> {};
 
 template <>
-struct EnumCount<dang::gl::CullFaceMode> : DefaultEnumCount<dang::gl::CullFaceMode> {};
+struct enum_count<dang::gl::CullFaceMode> : default_enum_count<dang::gl::CullFaceMode> {};
 
 template <>
-struct EnumCount<dang::gl::LogicOp> : DefaultEnumCount<dang::gl::LogicOp> {};
+struct enum_count<dang::gl::LogicOp> : default_enum_count<dang::gl::LogicOp> {};
 
 template <>
-struct EnumCount<dang::gl::PolygonSide> : DefaultEnumCount<dang::gl::PolygonSide> {};
+struct enum_count<dang::gl::PolygonSide> : default_enum_count<dang::gl::PolygonSide> {};
 
 template <>
-struct EnumCount<dang::gl::PolygonMode> : DefaultEnumCount<dang::gl::PolygonMode> {};
+struct enum_count<dang::gl::PolygonMode> : default_enum_count<dang::gl::PolygonMode> {};
 
 template <>
-struct EnumCount<dang::gl::StencilAction> : DefaultEnumCount<dang::gl::StencilAction> {};
+struct enum_count<dang::gl::StencilAction> : default_enum_count<dang::gl::StencilAction> {};
 
 } // namespace dang::utils
 

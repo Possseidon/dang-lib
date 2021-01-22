@@ -31,7 +31,7 @@ enum class ShaderType {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::ShaderType> : DefaultEnumCount<dang::gl::ShaderType> {};
+struct enum_count<dang::gl::ShaderType> : default_enum_count<dang::gl::ShaderType> {};
 
 } // namespace dang::utils
 

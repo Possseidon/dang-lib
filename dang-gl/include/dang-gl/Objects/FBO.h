@@ -29,7 +29,7 @@ enum class BlitFilter {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::BlitFilter> : DefaultEnumCount<dang::gl::BlitFilter> {};
+struct enum_count<dang::gl::BlitFilter> : default_enum_count<dang::gl::BlitFilter> {};
 
 } // namespace dang::utils
 

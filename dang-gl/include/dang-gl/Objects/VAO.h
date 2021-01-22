@@ -36,7 +36,7 @@ enum class BeginMode {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::BeginMode> : DefaultEnumCount<dang::gl::BeginMode> {};
+struct enum_count<dang::gl::BeginMode> : default_enum_count<dang::gl::BeginMode> {};
 
 } // namespace dang::utils
 

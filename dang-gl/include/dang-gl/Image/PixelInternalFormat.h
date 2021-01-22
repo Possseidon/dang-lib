@@ -110,7 +110,7 @@ enum class PixelInternalFormat {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::PixelInternalFormat> : DefaultEnumCount<dang::gl::PixelInternalFormat> {};
+struct enum_count<dang::gl::PixelInternalFormat> : default_enum_count<dang::gl::PixelInternalFormat> {};
 
 } // namespace dang::utils
 

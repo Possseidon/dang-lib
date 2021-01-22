@@ -14,7 +14,7 @@ enum class LineSide { Left, Hit, Right, COUNT };
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::math::LineSide> : DefaultEnumCount<dang::math::LineSide> {};
+struct enum_count<dang::math::LineSide> : default_enum_count<dang::math::LineSide> {};
 
 } // namespace dang::utils
 

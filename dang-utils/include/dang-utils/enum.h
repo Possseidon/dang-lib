@@ -12,40 +12,40 @@
 namespace dang::utils {
 
 /// @brief An integral constant converting the given enum value to its underlying type.
-template <auto Value>
-struct UnderlyingValue
-    : std::integral_constant<std::underlying_type_t<decltype(Value)>,
-                             static_cast<std::underlying_type_t<decltype(Value)>>(Value)> {};
+template <auto V>
+struct underlying_value
+    : std::integral_constant<std::underlying_type_t<decltype(V)>, static_cast<std::underlying_type_t<decltype(V)>>(V)> {
+};
 
 /// @brief Simply uses T::COUNT.
 template <typename T>
-struct DefaultEnumCount : UnderlyingValue<T::COUNT> {};
+struct default_enum_count : underlying_value<T::COUNT> {};
 
 /// @brief Can be specialized to allow for iteration, usage in EnumArray and Flags.
 template <typename T>
-struct EnumCount {};
+struct enum_count {};
 
 template <typename T>
-inline constexpr auto EnumCountV = EnumCount<T>::value;
+inline constexpr auto enum_count_v = enum_count<T>::value;
 
-/// @brief Returns a std::array of all enum values, given that the enum has EnumCount specialized.
+/// @brief Returns a std::array of all enum values, given that the enum has enum_count specialized.
 template <typename T>
-inline constexpr std::array<T, EnumCountV<T>> getEnumValues()
+inline constexpr std::array<T, enum_count_v<T>> getEnumValues()
 {
-    std::array<T, EnumCountV<T>> result{};
-    for (std::underlying_type_t<T> i = 0; i < EnumCountV<T>; i++)
+    std::array<T, enum_count_v<T>> result{};
+    for (std::underlying_type_t<T> i = 0; i < enum_count_v<T>; i++)
         result[i] = static_cast<T>(i);
     return result;
 }
 
-/// @brief An array of all enum values, given that the enum has EnumCount specialized.
+/// @brief An array of all enum values, given that the enum has enum_count specialized.
 template <typename T>
-inline constexpr auto EnumValues = getEnumValues<T>();
+inline constexpr auto enum_values = getEnumValues<T>();
 
-/// @brief A wrapper around std::array, allowing the use of an enum as index, if EnumCount is specialized for it.
+/// @brief A wrapper around std::array, allowing the use of an enum as index, if enum_count is specialized for it.
 template <typename TEnum, typename TValue>
-struct EnumArray : std::array<TValue, EnumCountV<TEnum>> {
-    using Base = std::array<TValue, EnumCountV<TEnum>>;
+struct EnumArray : std::array<TValue, enum_count_v<TEnum>> {
+    using Base = std::array<TValue, enum_count_v<TEnum>>;
 
     constexpr TValue& operator[](TEnum pos) noexcept
     {
@@ -67,19 +67,21 @@ enum class EnumSetIteration { Forward, Bidirectional };
 struct All {};
 inline constexpr All all;
 
-template <typename T, EnumSetIteration Iteration = EnumSetIteration::Forward>
+template <typename T, EnumSetIteration VIteration = EnumSetIteration::Forward>
 class EnumSet {
 public:
-    static constexpr std::size_t Size = EnumCountV<T>;
+    static constexpr std::size_t enum_count = enum_count_v<T>;
 
-    using Word = std::conditional_t<
-        Size <= 8,
-        std::uint8_t,
-        std::conditional_t<Size <= 16, std::uint16_t, std::conditional_t<Size <= 32, std::uint32_t, std::uint64_t>>>;
+    using Word =
+        std::conditional_t<enum_count <= 8,
+                           std::uint8_t,
+                           std::conditional_t<enum_count <= 16,
+                                              std::uint16_t,
+                                              std::conditional_t<enum_count <= 32, std::uint32_t, std::uint64_t>>>;
 
-    static constexpr std::size_t WordBits = sizeof(Word) * CHAR_BIT;
-    static constexpr std::size_t WordCount = (Size + WordBits - 1) / WordBits;
-    static constexpr std::size_t PaddingBits = WordCount * WordBits - Size;
+    static constexpr std::size_t word_bits = sizeof(Word) * CHAR_BIT;
+    static constexpr std::size_t word_count = (enum_count + word_bits - 1) / word_bits;
+    static constexpr std::size_t padding_bits = word_count * word_bits - enum_count;
 
     class iterator_base {
     public:
@@ -178,7 +180,7 @@ public:
         {
             assert(this->value_);
             do {
-                if (this->value_ == static_cast<T>(EnumCountV<T> - 1)) {
+                if (this->value_ == static_cast<T>(enum_count_v<T> - 1)) {
                     this->value_ = std::nullopt;
                     break;
                 }
@@ -197,7 +199,7 @@ public:
         constexpr bidirectional_iterator& operator--()
         {
             if (!this->value_)
-                this->value_ = static_cast<T>(EnumCountV<T> - 1);
+                this->value_ = static_cast<T>(enum_count_v<T> - 1);
             while (!set_[*this->value_])
                 this->value_ = static_cast<T>(static_cast<std::underlying_type_t<T>>(*this->value_) - 1);
             return *this;
@@ -214,13 +216,13 @@ public:
         EnumSet set_;
     };
 
-    using Iterator =
-        std::conditional_t<Iteration == EnumSetIteration::Forward, forward_iterator, bidirectional_iterator>;
+    using iterator =
+        std::conditional_t<VIteration == EnumSetIteration::Forward, forward_iterator, bidirectional_iterator>;
 
     EnumSet() = default;
 
-    template <EnumSetIteration OtherIteration>
-    constexpr EnumSet(const EnumSet<T, OtherIteration>& other)
+    template <EnumSetIteration VOtherIteration>
+    constexpr EnumSet(const EnumSet<T, VOtherIteration>& other)
         : words_(other.words())
     {}
 
@@ -244,7 +246,7 @@ public:
     template <typename TIntegral>
     static constexpr EnumSet fromBits(TIntegral bits)
     {
-        static_assert(WordCount == 1);
+        static_assert(word_count == 1);
         static_assert(std::is_integral_v<TIntegral>);
         EnumSet result;
         result.words_[0] = static_cast<Word>(bits);
@@ -364,7 +366,7 @@ public:
 
     constexpr EnumSet& operator|=(const EnumSet& other)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             words_[i] |= other.words_[i];
         return *this;
     }
@@ -375,7 +377,7 @@ public:
 
     constexpr EnumSet& operator&=(const EnumSet& other)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             words_[i] &= other.words_[i];
         return *this;
     }
@@ -386,7 +388,7 @@ public:
 
     constexpr EnumSet& operator^=(const EnumSet& other)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             words_[i] ^= other.words_[i];
         return *this;
     }
@@ -398,7 +400,7 @@ public:
 
     constexpr EnumSet& operator-=(const EnumSet& other)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             words_[i] &= static_cast<Word>(~other.words_[i]);
         return *this;
     }
@@ -409,19 +411,19 @@ public:
 
     // --- container operations
 
-    constexpr Iterator begin() const { return Iterator(*this); }
+    constexpr iterator begin() const { return iterator(*this); }
 
-    constexpr Iterator end() const
+    constexpr iterator end() const
     {
-        if constexpr (Iteration == EnumSetIteration::Forward)
-            return Iterator();
+        if constexpr (VIteration == EnumSetIteration::Forward)
+            return iterator();
         else
-            return Iterator(*this, std::nullopt);
+            return iterator(*this, std::nullopt);
     }
 
     constexpr auto empty() const { return none(); }
     constexpr auto size() const { return count(); }
-    constexpr auto max_size() const { return Size; }
+    constexpr auto max_size() const { return enum_count; }
 
     constexpr void clear() { reset(); }
 
@@ -457,7 +459,7 @@ public:
 
     friend constexpr bool operator==(const EnumSet& lhs, const EnumSet& rhs)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             if (lhs.words_[i] != rhs.words_[i])
                 return false;
         return true;
@@ -467,7 +469,7 @@ public:
 
     friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs)
     {
-        for (std::size_t i = 0; i < WordCount; i++)
+        for (std::size_t i = 0; i < word_count; i++)
             if (lhs.words_[i] >= rhs.words_[i])
                 return false;
         return true;
@@ -481,8 +483,8 @@ public:
 
     constexpr std::optional<T> first() const
     {
-        static_assert(WordCount > 0);
-        if constexpr (WordCount == 1) {
+        static_assert(word_count > 0);
+        if constexpr (word_count == 1) {
             if (words_[0] != Word{})
                 return static_cast<T>(countr_zero(words_[0]));
         }
@@ -491,7 +493,7 @@ public:
             for (auto word : words_) {
                 if (word != Word{})
                     return static_cast<T>(result + countr_zero(word));
-                result += WordBits;
+                result += word_bits;
             }
         }
         return std::nullopt;
@@ -499,17 +501,17 @@ public:
 
     constexpr std::optional<T> last() const
     {
-        static_assert(WordCount > 0);
-        if constexpr (WordCount == 1) {
+        static_assert(word_count > 0);
+        if constexpr (word_count == 1) {
             if (words_[0] != Word{})
-                return static_cast<T>(WordBits - countl_zero(words_[0]) - 1);
+                return static_cast<T>(word_bits - countl_zero(words_[0]) - 1);
         }
         else {
-            std::underlying_type_t<T> result = WordBits * WordCount;
+            std::underlying_type_t<T> result = word_bits * word_count;
             for (auto iter = words_.rbegin(); iter != words_.rend(); ++iter) {
                 if (*iter != Word{})
                     return static_cast<T>(result - countl_zero(*iter) - 1);
-                result -= WordBits;
+                result -= word_bits;
             }
         }
         return std::nullopt;
@@ -517,13 +519,13 @@ public:
 
     constexpr Word& word()
     {
-        static_assert(WordCount == 1);
+        static_assert(word_count == 1);
         return words_[0];
     }
 
     constexpr Word word() const
     {
-        static_assert(WordCount == 1);
+        static_assert(word_count == 1);
         return words_[0];
     }
 
@@ -533,7 +535,7 @@ public:
     template <typename TIntegral>
     constexpr TIntegral toBits() const
     {
-        static_assert(WordCount == 1);
+        static_assert(word_count == 1);
         static_assert(std::is_integral_v<TIntegral>);
         static_assert(sizeof(TIntegral) >= sizeof(Word));
         return static_cast<TIntegral>(words_[0]);
@@ -552,7 +554,7 @@ private:
         word -= (word >> 1) & m1;
         word = (word & m2) + ((word >> 2) & m2);
         word = (word + (word >> 4)) & m4;
-        return static_cast<int>(static_cast<Word>(word * h01) >> (WordBits - 8));
+        return static_cast<int>(static_cast<Word>(word * h01) >> (word_bits - 8));
     }
 
     // TODO: C++20 replace with std::countl_zero
@@ -563,7 +565,7 @@ private:
             word = static_cast<Word>(word >> 1);
             count++;
         }
-        return WordBits - count;
+        return word_bits - count;
     }
 
     // TODO: C++20 replace with std::countr_zero
@@ -574,31 +576,31 @@ private:
             word = static_cast<Word>(word << 1);
             count++;
         }
-        return WordBits - count;
+        return word_bits - count;
     }
 
-    static constexpr std::size_t wordIndex(T value) { return static_cast<std::size_t>(value) / WordBits; }
+    static constexpr std::size_t wordIndex(T value) { return static_cast<std::size_t>(value) / word_bits; }
 
     static constexpr std::size_t wordOffset(T value)
     {
-        return static_cast<std::size_t>(value) - wordIndex(value) * WordBits;
+        return static_cast<std::size_t>(value) - wordIndex(value) * word_bits;
     }
 
     constexpr void trim()
     {
-        if constexpr (PaddingBits > 0)
-            words_.back() &= static_cast<Word>(static_cast<Word>(~Word{}) >> PaddingBits);
+        if constexpr (padding_bits > 0)
+            words_.back() &= static_cast<Word>(static_cast<Word>(~Word{}) >> padding_bits);
     }
 
     constexpr bool trimmed() const
     {
-        if constexpr (PaddingBits > 0)
-            return (words_.back() & (static_cast<Word>(static_cast<Word>(~Word{}) << (WordBits - PaddingBits)))) == 0;
+        if constexpr (padding_bits > 0)
+            return (words_.back() & (static_cast<Word>(static_cast<Word>(~Word{}) << (word_bits - padding_bits)))) == 0;
         else
             return true;
     }
 
-    std::array<Word, WordCount> words_{};
+    std::array<Word, word_count> words_{};
 };
 
 /// @brief Used in the same fashion as std::index_sequence.
@@ -636,21 +638,21 @@ struct Enumerate {};
 template <typename T>
 inline constexpr Enumerate<T> enumerate;
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::enum_count<T>>
 inline constexpr auto begin(Enumerate<T>)
 {
-    return dang::utils::EnumValues<T>.begin();
+    return dang::utils::enum_values<T>.begin();
 }
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::enum_count<T>>
 inline constexpr auto end(Enumerate<T>)
 {
-    return dang::utils::EnumValues<T>.end();
+    return dang::utils::enum_values<T>.end();
 }
 
 } // namespace dang::utils
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::EnumCount<T>>
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>, typename = dang::utils::enum_count<T>>
 inline constexpr dang::utils::EnumSet<T> operator|(T lhs, T rhs)
 {
     return dang::utils::EnumSet<T>{lhs, rhs};

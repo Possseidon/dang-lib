@@ -30,7 +30,7 @@ enum class BufferUsageHint {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::BufferUsageHint> : DefaultEnumCount<dang::gl::BufferUsageHint> {};
+struct enum_count<dang::gl::BufferUsageHint> : default_enum_count<dang::gl::BufferUsageHint> {};
 
 } // namespace dang::utils
 

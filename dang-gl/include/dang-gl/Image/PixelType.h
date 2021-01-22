@@ -47,7 +47,7 @@ enum class PixelType {
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::gl::PixelType> : DefaultEnumCount<dang::gl::PixelType> {};
+struct enum_count<dang::gl::PixelType> : default_enum_count<dang::gl::PixelType> {};
 
 } // namespace dang::utils
 

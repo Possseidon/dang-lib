@@ -94,19 +94,19 @@ enum class LoadMode { Default, Binary, Text, Both, COUNT };
 namespace dang::utils {
 
 template <>
-struct EnumCount<dang::lua::Type> : DefaultEnumCount<dang::lua::Type> {};
+struct enum_count<dang::lua::Type> : default_enum_count<dang::lua::Type> {};
 
 template <>
-struct EnumCount<dang::lua::ArithOp> : DefaultEnumCount<dang::lua::ArithOp> {};
+struct enum_count<dang::lua::ArithOp> : default_enum_count<dang::lua::ArithOp> {};
 
 template <>
-struct EnumCount<dang::lua::CompareOp> : DefaultEnumCount<dang::lua::CompareOp> {};
+struct enum_count<dang::lua::CompareOp> : default_enum_count<dang::lua::CompareOp> {};
 
 template <>
-struct EnumCount<dang::lua::StandardLibrary> : DefaultEnumCount<dang::lua::StandardLibrary> {};
+struct enum_count<dang::lua::StandardLibrary> : default_enum_count<dang::lua::StandardLibrary> {};
 
 template <>
-struct EnumCount<dang::lua::LoadMode> : DefaultEnumCount<dang::lua::LoadMode> {};
+struct enum_count<dang::lua::LoadMode> : default_enum_count<dang::lua::LoadMode> {};
 
 } // namespace dang::utils
 
