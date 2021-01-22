@@ -59,7 +59,7 @@ struct Quaternion : private Vector<T, 4> {
     {
         Quaternion result = Quaternion::identity();
         for (std::size_t i = 0; i < AngleCount; i++)
-            result *= fromAxisRad(static_cast<Vector<T, 3>>(AxisVector3[order[i]]), radians[i]);
+            result *= fromAxisRad(static_cast<Vector<T, 3>>(axis_vector_3[order[i]]), radians[i]);
         return result;
     }
 

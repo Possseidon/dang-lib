@@ -86,12 +86,12 @@ public:
         {}
 
         constexpr PlanePoint(Corner3 corner, vec3 direction)
-            : PlanePoint(vec3{CornerVector3[corner]}, direction, corner)
+            : PlanePoint(vec3{corner_vector_3[corner]}, direction, corner)
         {}
 
         constexpr PlanePoint(Corner3 corner, Axis3 axis)
         {
-            ivec3 pos = CornerVector3[corner];
+            ivec3 pos = corner_vector_3[corner];
             ivec3 dir;
             dir[axis] = 1 - pos[axis] * 2;
             *this = PlanePoint{vec3{pos}, vec3{dir}, corner};
@@ -160,17 +160,17 @@ private:
 
     static constexpr auto generateLines(Corners3 corners)
     {
-        auto count_windings = [](Corner3 corner) { return CornerVector3[corner].sum() % 2 == 0; };
+        auto count_windings = [](Corner3 corner) { return corner_vector_3[corner].sum() % 2 == 0; };
 
         auto corners_connected = [](Corner3 a, Corner3 b) {
-            return CornerVector3[a].vectorTo(CornerVector3[b]).sum() == 1;
+            return corner_vector_3[a].vectorTo(corner_vector_3[b]).sum() == 1;
         };
 
         Lines lines;
         for (auto dir : dutils::enumerate<Facing3>) {
-            auto masked_corners = corners & FacingCorners3[dir];
-            auto right = static_cast<Axis3>((static_cast<int>(FacingAxis3[dir]) + 2) % 3);
-            auto up = static_cast<Axis3>((static_cast<int>(FacingAxis3[dir]) + 1) % 3);
+            auto masked_corners = corners & facing_corners_3[dir];
+            auto right = static_cast<Axis3>((static_cast<int>(facing_axis_3[dir]) + 2) % 3);
+            auto up = static_cast<Axis3>((static_cast<int>(facing_axis_3[dir]) + 1) % 3);
 
             switch (masked_corners.size()) {
             case 1: {
@@ -182,9 +182,9 @@ private:
                 auto corner1 = masked_corners.front();
                 auto corner2 = masked_corners.back();
                 if (corners_connected(corner1, corner2)) {
-                    auto normal = FacingVector3[dir].cross(CornerVector3[corner2] - CornerVector3[corner1]);
-                    auto flipped = FacingVector3[dir]
-                                       .cross(CornerVector3[corner2] + CornerVector3[corner1] - 1)
+                    auto normal = facing_vector_3[dir].cross(corner_vector_3[corner2] - corner_vector_3[corner1]);
+                    auto flipped = facing_vector_3[dir]
+                                       .cross(corner_vector_3[corner2] + corner_vector_3[corner1] - 1)
                                        .lessThanEqual(0)
                                        .all();
                     if (flipped)
@@ -200,7 +200,7 @@ private:
                 }
             } break;
             case 3: {
-                auto corner = (FacingCorners3[dir] - corners).front();
+                auto corner = (facing_corners_3[dir] - corners).front();
                 lines.emplace_back(!count_windings(corner),
                                    true,
                                    PlanePoint::inverted(corner, right),

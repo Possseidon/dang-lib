@@ -236,7 +236,7 @@ struct Bounds {
         static_assert(VDim >= 1 && VDim <= 3);
         dutils::EnumArray<Corner<VDim>, Vector<T, VDim>> result;
         for (auto corner : Corner<VDim>())
-            result[corner] = low + Vector<T, VDim>(CornerVector<VDim>[corner]) * (high - low);
+            result[corner] = low + Vector<T, VDim>(corner_vector<VDim>[corner]) * (high - low);
         return result;
     }
 
