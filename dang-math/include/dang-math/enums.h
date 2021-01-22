@@ -109,93 +109,93 @@ namespace dang::math {
 namespace detail {
 
 template <std::size_t Dim>
-struct AxisSelector {
-    enum Type {};
+struct axis_selector {
+    enum type {};
 };
 
 template <>
-struct AxisSelector<1> {
-    using Type = Axis1;
+struct axis_selector<1> {
+    using type = Axis1;
 };
 
 template <>
-struct AxisSelector<2> {
-    using Type = Axis2;
+struct axis_selector<2> {
+    using type = Axis2;
 };
 
 template <>
-struct AxisSelector<3> {
-    using Type = Axis3;
+struct axis_selector<3> {
+    using type = Axis3;
 };
 
 template <std::size_t Dim>
-struct CornerSelector {
-    enum Type {};
+struct corner_selector {
+    enum type {};
 };
 
 template <>
-struct CornerSelector<1> {
-    using Type = Corner1;
+struct corner_selector<1> {
+    using type = Corner1;
 };
 
 template <>
-struct CornerSelector<2> {
-    using Type = Corner2;
+struct corner_selector<2> {
+    using type = Corner2;
 };
 
 template <>
-struct CornerSelector<3> {
-    using Type = Corner3;
+struct corner_selector<3> {
+    using type = Corner3;
 };
 
 template <std::size_t Dim>
-struct EdgeSelector {
-    enum Type {};
+struct edge_selector {
+    enum type {};
 };
 
 template <>
-struct EdgeSelector<2> {
-    using Type = Edge2;
+struct edge_selector<2> {
+    using type = Edge2;
 };
 
 template <>
-struct EdgeSelector<3> {
-    using Type = Edge3;
+struct edge_selector<3> {
+    using type = Edge3;
 };
 
 template <std::size_t Dim>
-struct FacingSelector {
-    enum Type {};
+struct facing_selector {
+    enum type {};
 };
 
 template <>
-struct FacingSelector<1> {
-    using Type = Facing1;
+struct facing_selector<1> {
+    using type = Facing1;
 };
 
 template <>
-struct FacingSelector<2> {
-    using Type = Facing2;
+struct facing_selector<2> {
+    using type = Facing2;
 };
 
 template <>
-struct FacingSelector<3> {
-    using Type = Facing3;
+struct facing_selector<3> {
+    using type = Facing3;
 };
 
 } // namespace detail
 
 template <std::size_t Dim>
-using Axis = typename detail::AxisSelector<Dim>::Type;
+using Axis = typename detail::axis_selector<Dim>::type;
 
 template <std::size_t Dim>
-using Corner = typename detail::CornerSelector<Dim>::Type;
+using Corner = typename detail::corner_selector<Dim>::type;
 
 template <std::size_t Dim>
-using Edge = typename detail::EdgeSelector<Dim>::Type;
+using Edge = typename detail::edge_selector<Dim>::type;
 
 template <std::size_t Dim>
-using Facing = typename detail::FacingSelector<Dim>::Type;
+using Facing = typename detail::facing_selector<Dim>::type;
 
 template <std::size_t Dim>
 using Axes = dutils::EnumSet<Axis<Dim>>;
