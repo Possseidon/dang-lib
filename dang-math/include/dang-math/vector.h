@@ -9,9 +9,9 @@ namespace dang::math {
 // TODO: C++20 Replace SFINAE/static_assert with requires
 
 /// @brief A vector of the templated type and dimension, using std::array as base.
-template <typename T, std::size_t Dim>
-struct Vector : std::array<T, Dim> {
-    using Base = std::array<T, Dim>;
+template <typename T, std::size_t VDim>
+struct Vector : std::array<T, VDim> {
+    using Base = std::array<T, VDim>;
 
     /// @brief Initializes all values with default values.
     constexpr Vector()
@@ -25,7 +25,7 @@ struct Vector : std::array<T, Dim> {
     constexpr Vector(T value)
         : Base()
     {
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             (*this)[i] = value;
     }
 
@@ -33,21 +33,21 @@ struct Vector : std::array<T, Dim> {
     constexpr Vector(T x, T y)
         : Base{x, y}
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
     }
 
     /// @brief Initializes x, y and z with the given values.
     constexpr Vector(T x, T y, T z)
         : Base{x, y, z}
     {
-        static_assert(Dim == 3);
+        static_assert(VDim == 3);
     }
 
     /// @brief Initializes x, y, z and w with the given values.
     constexpr Vector(T x, T y, T z, T w)
         : Base{x, y, z, w}
     {
-        static_assert(Dim == 4);
+        static_assert(VDim == 4);
     }
 
     /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
@@ -57,36 +57,36 @@ struct Vector : std::array<T, Dim> {
     constexpr Vector(Vector<T, 3> vector, T w)
         : Base{vector[0], vector[1], vector[2], w}
     {
-        static_assert(Dim == 4);
+        static_assert(VDim == 4);
     }
 
     /// @brief Allows explicit conversion between vector of same size but different types.
     template <typename TFrom>
-    explicit constexpr Vector(const Vector<TFrom, Dim>& other)
+    explicit constexpr Vector(const Vector<TFrom, VDim>& other)
         : Vector()
     {
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             (*this)[i] = static_cast<T>(other[i]);
     }
 
     /// @brief Allows for conversion from single-value vectors to their respective value type.
     explicit constexpr operator T()
     {
-        static_assert(Dim == 1);
+        static_assert(VDim == 1);
         return (*this)[0];
     }
 
     using Base::operator[];
 
-    constexpr T& operator[](Axis<Dim> axis) { return (*this)[static_cast<size_t>(axis)]; }
-    constexpr T operator[](Axis<Dim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T& operator[](Axis<VDim> axis) { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T operator[](Axis<VDim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
 
     /// @brief Returns the sum of all components.
     constexpr auto sum() const
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             result += (*this)[i];
         return result;
     }
@@ -96,7 +96,7 @@ struct Vector : std::array<T, Dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{1};
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             result *= (*this)[i];
         return result;
     }
@@ -106,7 +106,7 @@ struct Vector : std::array<T, Dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             result += (*this)[i] * other[i];
         return result;
     }
@@ -116,7 +116,7 @@ struct Vector : std::array<T, Dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             result += (*this)[i] * (*this)[i];
         return result;
     }
@@ -262,7 +262,7 @@ struct Vector : std::array<T, Dim> {
     constexpr auto all() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             if (!(*this)[i])
                 return false;
         return true;
@@ -272,7 +272,7 @@ struct Vector : std::array<T, Dim> {
     constexpr auto any() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             if ((*this)[i])
                 return true;
         return false;
@@ -282,7 +282,7 @@ struct Vector : std::array<T, Dim> {
     constexpr auto none() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             if ((*this)[i])
                 return false;
         return true;
@@ -367,32 +367,32 @@ struct Vector : std::array<T, Dim> {
     }
 
     /// @brief Returns a swizzle of the given components.
-    template <std::size_t... Indices>
+    template <std::size_t... VIndices>
     constexpr auto swizzle() const
     {
-        return Vector<T, sizeof...(Indices)>{std::get<Indices>(*this)...};
+        return Vector<T, sizeof...(VIndices)>{std::get<VIndices>(*this)...};
     }
 
     /// @brief Sets a swizzle for the given components.
-    template <std::size_t... Indices, std::size_t... OtherIndices>
-    constexpr void setSwizzleHelper(Vector<T, sizeof...(Indices)> vector, std::index_sequence<OtherIndices...>)
+    template <std::size_t... VIndices, std::size_t... VOtherIndices>
+    constexpr void setSwizzleHelper(Vector<T, sizeof...(VIndices)> vector, std::index_sequence<VOtherIndices...>)
     {
-        ((std::get<Indices>(*this) = std::get<OtherIndices>(vector)), ...);
+        ((std::get<VIndices>(*this) = std::get<VOtherIndices>(vector)), ...);
     }
 
     /// @brief Sets a swizzle for the given components.
-    template <std::size_t... Indices>
-    constexpr void setSwizzle(Vector<T, sizeof...(Indices)> vector)
+    template <std::size_t... VIndices>
+    constexpr void setSwizzle(Vector<T, sizeof...(VIndices)> vector)
     {
-        setSwizzleHelper<Indices...>(vector, std::make_index_sequence<sizeof...(Indices)>());
+        setSwizzleHelper<VIndices...>(vector, std::make_index_sequence<sizeof...(VIndices)>());
     }
 
     /// @brief Performs an operation on each component using an arbitrary number of other vectors.
     template <typename TOperation, typename... TVectors>
     constexpr auto variadicOp(TOperation operation, const TVectors&... vectors) const
     {
-        Vector<decltype(operation((*this)[0], vectors[0]...)), Dim> result;
-        for (std::size_t i = 0; i < Dim; i++)
+        Vector<decltype(operation((*this)[0], vectors[0]...)), VDim> result;
+        for (std::size_t i = 0; i < VDim; i++)
             result[i] = operation((*this)[i], vectors[i]...);
         return result;
     }
@@ -401,7 +401,7 @@ struct Vector : std::array<T, Dim> {
     template <typename TOperation>
     constexpr auto& assignmentOp(TOperation operation, const Vector& other)
     {
-        for (std::size_t i = 0; i < Dim; i++)
+        for (std::size_t i = 0; i < VDim; i++)
             (*this)[i] = operation((*this)[i], other[i]);
         return *this;
     }
@@ -417,9 +417,9 @@ struct Vector : std::array<T, Dim> {
             stream << std::boolalpha;
 
         stream << '[';
-        if constexpr (Dim > 0) {
+        if constexpr (VDim > 0) {
             stream << vector[0];
-            for (std::size_t i = 1; i < Dim; i++)
+            for (std::size_t i = 1; i < VDim; i++)
                 stream << ", " << vector[i];
         }
         if constexpr (std::is_same_v<T, bool>)
@@ -432,14 +432,14 @@ struct Vector : std::array<T, Dim> {
     /// @brief The x-component of the vector.
     constexpr auto& x()
     {
-        static_assert(Dim >= 1 && Dim <= 4);
+        static_assert(VDim >= 1 && VDim <= 4);
         return (*this)[0];
     }
 
     /// @brief The x-component of the vector.
     constexpr auto x() const
     {
-        static_assert(Dim >= 1 && Dim <= 4);
+        static_assert(VDim >= 1 && VDim <= 4);
         return (*this)[0];
     }
 
@@ -448,14 +448,14 @@ struct Vector : std::array<T, Dim> {
     /// @brief The y-component of the vector.
     constexpr auto& y()
     {
-        static_assert(Dim >= 2 && Dim <= 4);
+        static_assert(VDim >= 2 && VDim <= 4);
         return (*this)[1];
     }
 
     /// @brief The y-component of the vector.
     constexpr auto y() const
     {
-        static_assert(Dim >= 1 && Dim <= 4);
+        static_assert(VDim >= 1 && VDim <= 4);
         return (*this)[1];
     }
 
@@ -464,7 +464,7 @@ struct Vector : std::array<T, Dim> {
     /// one.
     static constexpr auto fromSlope(std::optional<T> slope)
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(!std::is_same_v<T, bool>);
         return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
     }
@@ -473,7 +473,7 @@ struct Vector : std::array<T, Dim> {
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromRadians(T radians)
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(std::is_floating_point_v<T>);
         return Vector<T, 2>{std::cos(radians), std::sin(radians)};
     }
@@ -482,7 +482,7 @@ struct Vector : std::array<T, Dim> {
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromDegrees(T degrees)
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(std::is_floating_point_v<T>);
         return fromRadians(dang::math::radians(degrees));
     }
@@ -491,7 +491,7 @@ struct Vector : std::array<T, Dim> {
     /// x.
     constexpr auto cross() const
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(std::is_signed_v<T>);
         return Vector<T, 2>{-y(), x()};
     }
@@ -500,7 +500,7 @@ struct Vector : std::array<T, Dim> {
     /// @remark Equivalent to <c>x1 * y2 - y1 * x2</c>
     constexpr auto cross(const Vector<T, 2>& other) const
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(!std::is_same_v<T, bool>);
         return x() * other.y() - y() * other.x();
     }
@@ -508,7 +508,7 @@ struct Vector : std::array<T, Dim> {
     /// @brief Returns the slope of the vector or std::nullopt if infinite.
     constexpr std::optional<T> slope() const
     {
-        static_assert(Dim == 2);
+        static_assert(VDim == 2);
         static_assert(std::is_floating_point_v<T>);
         if (x() != T())
             return y() / x();
@@ -520,21 +520,21 @@ struct Vector : std::array<T, Dim> {
     /// @brief The z-component of the vector.
     constexpr auto& z()
     {
-        static_assert(Dim >= 3 && Dim <= 4);
+        static_assert(VDim >= 3 && VDim <= 4);
         return (*this)[2];
     }
 
     /// @brief The z-component of the vector.
     constexpr auto z() const
     {
-        static_assert(Dim >= 3 && Dim <= 4);
+        static_assert(VDim >= 3 && VDim <= 4);
         return (*this)[2];
     }
 
     /// @brief Returns the cross-product with the given vector.
     constexpr auto cross(const Vector<T, 3>& other) const
     {
-        static_assert(Dim == 3);
+        static_assert(VDim == 3);
         static_assert(!std::is_same_v<T, bool>);
         return Vector<T, 3>{(*this)[1] * other[2] - (*this)[2] * other[1],
                             (*this)[2] * other[0] - (*this)[0] * other[2],
@@ -546,14 +546,14 @@ struct Vector : std::array<T, Dim> {
     /// @brief The w-component of the vector.
     constexpr auto& w()
     {
-        static_assert(Dim == 4);
+        static_assert(VDim == 4);
         return (*this)[3];
     }
 
     /// @brief The w-component of the vector.
     constexpr auto w() const
     {
-        static_assert(Dim == 4);
+        static_assert(VDim == 4);
         return (*this)[3];
     }
 
@@ -562,12 +562,12 @@ struct Vector : std::array<T, Dim> {
 #define DMATH_DEFINE_SWIZZLE(name, ...)                                                                                \
     constexpr auto name() const                                                                                        \
     {                                                                                                                  \
-        static_assert(Dim >= sizeof(#name) - 1);                                                                       \
+        static_assert(VDim >= sizeof(#name) - 1);                                                                       \
         return swizzle<__VA_ARGS__>();                                                                                 \
     }                                                                                                                  \
     void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                                        \
     {                                                                                                                  \
-        static_assert(Dim >= sizeof(#name) - 1);                                                                       \
+        static_assert(VDim >= sizeof(#name) - 1);                                                                       \
         setSwizzle<__VA_ARGS__>(vector);                                                                               \
     }
 
@@ -631,23 +631,23 @@ struct Vector : std::array<T, Dim> {
 #undef DMATH_DEFINE_SWIZZLE
 };
 
-template <std::size_t Dim>
-using vec = Vector<float, Dim>;
+template <std::size_t VDim>
+using vec = Vector<float, VDim>;
 
-template <std::size_t Dim>
-using dvec = Vector<double, Dim>;
+template <std::size_t VDim>
+using dvec = Vector<double, VDim>;
 
-template <std::size_t Dim>
-using ivec = Vector<int, Dim>;
+template <std::size_t VDim>
+using ivec = Vector<int, VDim>;
 
-template <std::size_t Dim>
-using uvec = Vector<unsigned, Dim>;
+template <std::size_t VDim>
+using uvec = Vector<unsigned, VDim>;
 
-template <std::size_t Dim>
-using svec = Vector<std::size_t, Dim>;
+template <std::size_t VDim>
+using svec = Vector<std::size_t, VDim>;
 
-template <std::size_t Dim>
-using bvec = Vector<bool, Dim>;
+template <std::size_t VDim>
+using bvec = Vector<bool, VDim>;
 
 using vec1 = vec<1>;
 using vec2 = vec<2>;
@@ -681,8 +681,8 @@ using bvec4 = bvec<4>;
 
 } // namespace dang::math
 
-template <typename T, std::size_t Dim>
-struct std::tuple_size<dang::math::Vector<T, Dim>> : tuple_size<array<T, Dim>> {};
+template <typename T, std::size_t VDim>
+struct std::tuple_size<dang::math::Vector<T, VDim>> : tuple_size<array<T, VDim>> {};
 
-template <typename T, std::size_t Dim, std::size_t Index>
-struct std::tuple_element<Index, dang::math::Vector<T, Dim>> : tuple_element<Index, array<T, Dim>> {};
+template <typename T, std::size_t VDim, std::size_t VIndex>
+struct std::tuple_element<VIndex, dang::math::Vector<T, VDim>> : tuple_element<VIndex, array<T, VDim>> {};
