@@ -53,20 +53,20 @@ struct Quaternion : private Vector<T, 4> {
     }
 
     /// @brief Returns a quaternion with all euler angles in radians applied in the given order.
-    template <std::size_t AngleCount>
-    static constexpr Quaternion fromEulerRad(const Vector<T, AngleCount>& radians,
-                                             const std::array<Axis3, AngleCount>& order)
+    template <std::size_t VAngleCount>
+    static constexpr Quaternion fromEulerRad(const Vector<T, VAngleCount>& radians,
+                                             const std::array<Axis3, VAngleCount>& order)
     {
         Quaternion result = Quaternion::identity();
-        for (std::size_t i = 0; i < AngleCount; i++)
+        for (std::size_t i = 0; i < VAngleCount; i++)
             result *= fromAxisRad(static_cast<Vector<T, 3>>(axis_vector_3[order[i]]), radians[i]);
         return result;
     }
 
     /// @brief Returns a quaternion with all euler angles in degrees applied in the given order.
-    template <std::size_t AngleCount>
-    static constexpr Quaternion fromEuler(const Vector<T, AngleCount>& degrees,
-                                          const std::array<Axis3, AngleCount>& order)
+    template <std::size_t VAngleCount>
+    static constexpr Quaternion fromEuler(const Vector<T, VAngleCount>& degrees,
+                                          const std::array<Axis3, VAngleCount>& order)
     {
         return fromEulerRad(degrees.radians(), order);
     }
@@ -338,19 +338,19 @@ struct DualQuaternion {
     }
 
     /// @brief Returns a dual-quaternion with all euler angles in radians applied in the given order.
-    template <std::size_t AngleCount>
-    static constexpr DualQuaternion fromEulerRad(const Vector<T, AngleCount>& radians,
-                                                 const std::array<Axis3, AngleCount>& order)
+    template <std::size_t VAngleCount>
+    static constexpr DualQuaternion fromEulerRad(const Vector<T, VAngleCount>& radians,
+                                                 const std::array<Axis3, VAngleCount>& order)
     {
-        return DualQuaternion(Quaternion<T>::fromEulerRad<AngleCount>(radians, order));
+        return DualQuaternion(Quaternion<T>::fromEulerRad<VAngleCount>(radians, order));
     }
 
     /// @brief Returns a dual-quaternion with all euler angles in degrees applied in the given order.
-    template <std::size_t AngleCount>
-    static constexpr DualQuaternion fromEuler(const Vector<T, AngleCount>& degrees,
-                                              const std::array<Axis3, AngleCount>& order)
+    template <std::size_t VAngleCount>
+    static constexpr DualQuaternion fromEuler(const Vector<T, VAngleCount>& degrees,
+                                              const std::array<Axis3, VAngleCount>& order)
     {
-        return DualQuaternion(Quaternion<T>::fromEuler<AngleCount>(degrees, order));
+        return DualQuaternion(Quaternion<T>::fromEuler<VAngleCount>(degrees, order));
     }
 
     /// @brief Returns a dual-quaternion with all euler angles in radians applied in YXZ-order.
