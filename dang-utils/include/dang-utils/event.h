@@ -12,22 +12,22 @@ namespace detail {
 
 // TODO: C++20 use std::bind_front
 
-template <int Index>
+template <int VIndex>
 struct Placeholder {};
 
-template <int Index, int... Indices, typename... TArgs>
+template <int VIndex, int... VIndices, typename... TArgs>
 auto bind_indices(TArgs&&... args)
 {
-    if constexpr (Index == 0)
-        return std::bind(std::forward<TArgs>(args)..., Placeholder<Indices>()...);
+    if constexpr (VIndex == 0)
+        return std::bind(std::forward<TArgs>(args)..., Placeholder<VIndices>()...);
     else
-        return bind_indices<Index - 1, Index, Indices...>(std::forward<TArgs>(args)...);
+        return bind_indices<VIndex - 1, VIndex, VIndices...>(std::forward<TArgs>(args)...);
 }
 
-template <int Index, typename... TArgs>
+template <int VIndex, typename... TArgs>
 auto bind_n(TArgs&&... args)
 {
-    return bind_indices<Index>(std::forward<TArgs>(args)...);
+    return bind_indices<VIndex>(std::forward<TArgs>(args)...);
 }
 
 } // namespace detail
