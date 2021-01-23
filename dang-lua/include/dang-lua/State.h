@@ -2744,12 +2744,12 @@ private:
 
     /// @brief A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the
     /// called closure.
-    template <typename v_func>
+    template <typename TFunc>
     static int wrappedFunction(lua_State* state)
     {
-        using Info = detail::SignatureInfo<v_func>;
+        using Info = detail::SignatureInfo<TFunc>;
         // TODO: Is "check" appropriate here?
-        v_func func = Convert<v_func>::check(state, lua_upvalueindex(1));
+        TFunc func = Convert<TFunc>::check(state, lua_upvalueindex(1));
 
         // TODO: Code duplication with wrap
         State lua(state);
