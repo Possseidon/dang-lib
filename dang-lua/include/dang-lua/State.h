@@ -159,8 +159,8 @@ struct SignatureInfoBase {
     using Return = TRet;
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
-    static constexpr bool AnyFixedSizeStackArgs = (is_fixed_size_stack_index<TArgs>::value || ...);
-    static constexpr bool AnyStateArgs = ((std::is_same_v<TArgs, State&> || is_any_index<TArgs>::value) || ...);
+    static constexpr bool any_fixed_size_stack_args = (is_fixed_size_stack_index<TArgs>::value || ...);
+    static constexpr bool any_state_args = ((std::is_same_v<TArgs, State&> || is_any_index<TArgs>::value) || ...);
 
 protected:
     /// @brief Calculates the index of the next argument from the given index list of all previous arguments.
@@ -2783,13 +2783,13 @@ inline int wrap(lua_State* state)
 {
     using Info = detail::SignatureInfo<decltype(v_func)>;
 
-    if constexpr (Info::AnyStateArgs) {
+    if constexpr (Info::any_state_args) {
         State lua(state);
         auto old_top = lua.size();
         auto&& args = Info::convertArguments(lua);
 
         // convertArguments calls maxFuncArg for StackIndex and StackIndices, which updates the internal size
-        if constexpr (Info::AnyFixedSizeStackArgs) {
+        if constexpr (Info::any_fixed_size_stack_args) {
             if (old_top != lua.size()) {
                 // It should only increase
                 assert(lua.size() > old_top);
