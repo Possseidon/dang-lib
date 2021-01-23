@@ -13,21 +13,21 @@ namespace dang::gl {
 // TODO: Lock mapped buffers again
 
 /// @brief An OpenGL buffer for a template specified target.
-template <BufferTarget Target>
+template <BufferTarget v_target>
 class BufferBase : public Object<ObjectType::Buffer> {
 public:
     /// @brief Resets the bound buffer of the context, in case of the buffer still being bound.
     ~BufferBase()
     {
         if (*this)
-            objectContext().reset(Target, handle());
+            objectContext().reset(v_target, handle());
     }
 
     BufferBase(const BufferBase&) = delete;
     BufferBase& operator=(const BufferBase&) = delete;
 
     /// @brief Binds the buffer to the correct target.
-    void bind() const { objectContext().bind(Target, handle()); }
+    void bind() const { objectContext().bind(v_target, handle()); }
 
 protected:
     BufferBase() = default;

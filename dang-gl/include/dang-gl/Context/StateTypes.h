@@ -242,7 +242,7 @@ struct BlendFactor {
 };
 
 /// @brief Which polygon mode to use for a template specified polygon side.
-template <PolygonSide Side>
+template <PolygonSide v_side>
 struct PolygonSideMode {
     PolygonMode mode;
 
@@ -255,7 +255,7 @@ struct PolygonSideMode {
 
     std::tuple<GLenum, GLenum> toTuple() const
     {
-        return {GLConstants<PolygonSide>[Side], GLConstants<PolygonMode>[mode]};
+        return {GLConstants<PolygonSide>[v_side], GLConstants<PolygonMode>[mode]};
     }
 };
 

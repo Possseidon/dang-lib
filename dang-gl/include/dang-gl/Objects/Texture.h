@@ -194,7 +194,7 @@ private:
 
 namespace detail {
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 inline constexpr auto glTexStorage = nullptr;
 
 template <>
@@ -204,7 +204,7 @@ inline constexpr auto& glTexStorage<2> = glTexStorage2D;
 template <>
 inline constexpr auto& glTexStorage<3> = glTexStorage3D;
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 inline constexpr auto glTexStorageMultisample = nullptr;
 
 template <>
@@ -212,7 +212,7 @@ inline constexpr auto& glTexStorageMultisample<2> = glTexStorage2DMultisample;
 template <>
 inline constexpr auto& glTexStorageMultisample<3> = glTexStorage3DMultisample;
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 inline constexpr auto glTexSubImage = nullptr;
 
 template <>
@@ -223,11 +223,11 @@ template <>
 inline constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 
 /// @brief A base for all textures with template parameters for the dimension and texture target.
-template <std::size_t Dim, TextureTarget Target>
+template <std::size_t v_dim, TextureTarget v_target>
 class TextureBaseTyped : public TextureBase {
 public:
-    template <PixelFormat Format>
-    static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<Format>::Internal;
+    template <PixelFormat v_format>
+    static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<v_format>::Internal;
 
     ~TextureBaseTyped() = default;
 
@@ -235,21 +235,23 @@ public:
     TextureBaseTyped& operator=(const TextureBaseTyped&) = delete;
 
     /// @brief Returns the size of the image along each axis.
-    dmath::svec<Dim> size() const { return size_; }
+    dmath::svec<v_dim> size() const { return size_; }
 
     /// @brief Modifies a part of the stored texture at the optional given offset and mipmap level.
-    template <std::size_t ImageDim, PixelFormat Format, PixelType Type>
-    void modify(const Image<ImageDim, Format, Type>& image, dmath::svec<Dim> offset = {}, GLint mipmap_level = 0)
+    template <std::size_t v_image_dim, PixelFormat v_format, PixelType v_type>
+    void modify(const Image<v_image_dim, v_format, v_type>& image,
+                dmath::svec<v_dim> offset = {},
+                GLint mipmap_level = 0)
     {
         this->bind();
-        subImage(std::make_index_sequence<Dim>(), image, offset, mipmap_level);
+        subImage(std::make_index_sequence<v_dim>(), image, offset, mipmap_level);
     }
 
     /// @brief Regenerates all mipmaps from the top level.
     void generateMipmap()
     {
         this->bind();
-        glGenerateMipmap(toGLConstant(Target));
+        glGenerateMipmap(toGLConstant(v_target));
     }
 
     const vec4& borderColor() const { return border_color_; }
@@ -258,7 +260,7 @@ public:
     {
         if (border_color_ == color)
             return;
-        glTexParameterfv(toGLConstant(Target), GL_TEXTURE_BORDER_COLOR, &color[0]);
+        glTexParameterfv(toGLConstant(v_target), GL_TEXTURE_BORDER_COLOR, &color[0]);
         border_color_ = color;
     }
 
@@ -268,7 +270,7 @@ public:
     {
         if (depth_stencil_mode_ == mode)
             return;
-        glTexParameteri(toGLConstant(Target), GL_DEPTH_STENCIL_TEXTURE_MODE, toGLConstant(mode));
+        glTexParameteri(toGLConstant(v_target), GL_DEPTH_STENCIL_TEXTURE_MODE, toGLConstant(mode));
         depth_stencil_mode_ = mode;
     }
 
@@ -278,7 +280,7 @@ public:
     {
         if (compare_func_ == func)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_COMPARE_FUNC, toGLConstant(func));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_COMPARE_FUNC, toGLConstant(func));
         compare_func_ = func;
     }
 
@@ -288,7 +290,7 @@ public:
     {
         if (min_level_of_detail_ == level)
             return;
-        glTexParameterf(toGLConstant(Target), GL_TEXTURE_MIN_LOD, level);
+        glTexParameterf(toGLConstant(v_target), GL_TEXTURE_MIN_LOD, level);
         min_level_of_detail_ = level;
     }
 
@@ -298,7 +300,7 @@ public:
     {
         if (max_level_of_detail_ == level)
             return;
-        glTexParameterf(toGLConstant(Target), GL_TEXTURE_MAX_LOD, level);
+        glTexParameterf(toGLConstant(v_target), GL_TEXTURE_MAX_LOD, level);
         max_level_of_detail_ = level;
     }
 
@@ -308,7 +310,7 @@ public:
     {
         if (level_of_detail_bias_ == bias)
             return;
-        glTexParameterf(toGLConstant(Target), GL_TEXTURE_LOD_BIAS, bias);
+        glTexParameterf(toGLConstant(v_target), GL_TEXTURE_LOD_BIAS, bias);
         level_of_detail_bias_ = bias;
     }
 
@@ -318,7 +320,7 @@ public:
     {
         if (mag_filter_ == mag_filter)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MAG_FILTER, toGLConstant(mag_filter));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_MAG_FILTER, toGLConstant(mag_filter));
         mag_filter_ = mag_filter;
     }
 
@@ -328,7 +330,7 @@ public:
     {
         if (min_filter_ == min_filter)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MIN_FILTER, toGLConstant(min_filter));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_MIN_FILTER, toGLConstant(min_filter));
         min_filter_ = min_filter;
     }
 
@@ -338,7 +340,7 @@ public:
     {
         if (base_level_ == base_level)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_BASE_LEVEL, base_level);
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_BASE_LEVEL, base_level);
         base_level_ = base_level;
     }
 
@@ -348,7 +350,7 @@ public:
     {
         if (max_level_ == max_level)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_MAX_LEVEL, max_level);
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_MAX_LEVEL, max_level);
         max_level_ = max_level;
     }
 
@@ -358,7 +360,7 @@ public:
     {
         if (swizzle_red_ == swizzle)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_R, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_SWIZZLE_R, toGLConstant(swizzle));
         swizzle_red_ = swizzle;
     }
 
@@ -368,7 +370,7 @@ public:
     {
         if (swizzle_green_ == swizzle)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_G, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_SWIZZLE_G, toGLConstant(swizzle));
         swizzle_green_ = swizzle;
     }
 
@@ -378,7 +380,7 @@ public:
     {
         if (swizzle_blue_ == swizzle)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_B, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_SWIZZLE_B, toGLConstant(swizzle));
         swizzle_blue_ = swizzle;
     }
 
@@ -388,7 +390,7 @@ public:
     {
         if (swizzle_alpha_ == swizzle)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_SWIZZLE_A, toGLConstant(swizzle));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_SWIZZLE_A, toGLConstant(swizzle));
         swizzle_alpha_ = swizzle;
     }
 
@@ -398,7 +400,7 @@ public:
     {
         if (wrap_s_ == wrap)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_S, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_WRAP_S, toGLConstant(wrap));
         wrap_s_ = wrap;
     }
 
@@ -408,7 +410,7 @@ public:
     {
         if (wrap_t_ == wrap)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_T, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_WRAP_T, toGLConstant(wrap));
         wrap_t_ = wrap;
     }
 
@@ -418,40 +420,40 @@ public:
     {
         if (wrap_r_ == wrap)
             return;
-        glTexParameteri(toGLConstant(Target), GL_TEXTURE_WRAP_R, toGLConstant(wrap));
+        glTexParameteri(toGLConstant(v_target), GL_TEXTURE_WRAP_R, toGLConstant(wrap));
         wrap_r_ = wrap;
     }
 
 protected:
     /// @brief Simply calls the base constructor with the templated texture target.
     TextureBaseTyped()
-        : TextureBase(Target)
+        : TextureBase(v_target)
     {}
 
     TextureBaseTyped(TextureBaseTyped&&) = default;
     TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
 
     /// @brief Sets the internal size to the given value.
-    void setSize(dmath::svec<Dim> size) { size_ = size; }
+    void setSize(dmath::svec<v_dim> size) { size_ = size; }
 
     /// @brief Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.
-    template <std::size_t ImageDim, PixelFormat Format, PixelType Type, std::size_t... Indices>
-    void subImage(std::index_sequence<Indices...>,
-                  const Image<ImageDim, Format, Type>& image,
-                  dmath::svec<Dim> offset = {},
+    template <std::size_t v_image_dim, PixelFormat v_format, PixelType v_type, std::size_t... v_indices>
+    void subImage(std::index_sequence<v_indices...>,
+                  const Image<v_image_dim, v_format, v_type>& image,
+                  dmath::svec<v_dim> offset = {},
                   GLint mipmap_level = 0)
     {
-        glTexSubImage<Dim>(toGLConstant(Target),
-                           mipmap_level,
-                           static_cast<GLint>(offset[Indices])...,
-                           static_cast<GLsizei>(Indices < image.size().size() ? image.size()[Indices] : 1)...,
-                           toGLConstant(Format),
-                           toGLConstant(Type),
-                           image.data());
+        glTexSubImage<v_dim>(toGLConstant(v_target),
+                             mipmap_level,
+                             static_cast<GLint>(offset[v_indices])...,
+                             static_cast<GLsizei>(v_indices < image.size().size() ? image.size()[v_indices] : 1)...,
+                             toGLConstant(v_format),
+                             toGLConstant(v_type),
+                             image.data());
     }
 
 private:
-    dmath::svec<Dim> size_;
+    dmath::svec<v_dim> size_;
 
     vec4 border_color_;
 
@@ -479,15 +481,15 @@ private:
 };
 
 /// @brief Base class for all regluar, non-multisampled textures.
-template <std::size_t Dim, TextureTarget Target>
-class TextureBaseRegular : public TextureBaseTyped<Dim, Target> {
+template <std::size_t v_dim, TextureTarget v_target>
+class TextureBaseRegular : public TextureBaseTyped<v_dim, v_target> {
 public:
     /// @brief Creates an empty texture.
     TextureBaseRegular() = default;
 
     /// @brief Initializes a new texture with the given size, optional mipmap level count and internal format.
     /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
-    explicit TextureBaseRegular(dmath::svec<Dim> size,
+    explicit TextureBaseRegular(dmath::svec<v_dim> size,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
                                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
         : TextureBaseRegular()
@@ -498,10 +500,10 @@ public:
     /// @brief Initializes a new texture with the given image data, optional mipmap level count and internal format.
     /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
     /// @param internal_format Defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat Format, PixelType Type>
-    explicit TextureBaseRegular(const Image<Dim, Format, Type>& image,
+    template <PixelFormat v_format, PixelType v_type>
+    explicit TextureBaseRegular(const Image<v_dim, v_format, v_type>& image,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
-                                PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+                                PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
         : TextureBaseRegular()
     {
         generate(image, mipmap_levels, internal_format);
@@ -514,26 +516,26 @@ public:
 
     /// @brief Generates storage for the specified size with optional mipmap level count and internal format.
     /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
-    void generate(dmath::svec<Dim> size,
+    void generate(dmath::svec<v_dim> size,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         this->bind();
-        storage(std::make_index_sequence<Dim>(), size, mipmap_levels, internal_format);
+        storage(std::make_index_sequence<v_dim>(), size, mipmap_levels, internal_format);
     }
 
     /// @brief Generates texture storage and fills it with the provided image.
     /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
     /// @param internal_format Defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat Format, PixelType Type>
-    void generate(const Image<Dim, Format, Type>& image,
+    template <PixelFormat v_format, PixelType v_type>
+    void generate(const Image<v_dim, v_format, v_type>& image,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
-                  PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+                  PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
     {
         this->bind();
-        storage(std::make_index_sequence<Dim>(), image.size(), mipmap_levels, internal_format);
-        this->subImage(std::make_index_sequence<Dim>(), image);
-        glGenerateMipmap(toGLConstant(Target));
+        storage(std::make_index_sequence<v_dim>(), image.size(), mipmap_levels, internal_format);
+        this->subImage(std::make_index_sequence<v_dim>(), image);
+        glGenerateMipmap(toGLConstant(v_target));
     }
 
 protected:
@@ -542,11 +544,11 @@ protected:
 
 private:
     /// @brief Returns the biggest component of a given vector.
-    template <std::size_t... Indices>
-    static std::size_t maxSize(dmath::svec<Dim> size, std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    static std::size_t maxSize(dmath::svec<v_dim> size, std::index_sequence<v_indices...>)
     {
         std::size_t result = 0;
-        ((result = std::max(result, size[Indices])), ...);
+        ((result = std::max(result, size[v_indices])), ...);
         return result;
     }
 
@@ -562,35 +564,35 @@ private:
     }
 
     /// @brief Returns the required count to generate a full mipmap down to 1x1 for the given size.
-    GLsizei maxMipmapLevelsFor(dmath::svec<Dim> size)
+    GLsizei maxMipmapLevelsFor(dmath::svec<v_dim> size)
     {
-        return static_cast<GLsizei>(mipmapCount(maxSize(size, std::make_index_sequence<Dim>())));
+        return static_cast<GLsizei>(mipmapCount(maxSize(size, std::make_index_sequence<v_dim>())));
     }
 
     /// @brief Calls glTexStorage with the provided parameters and index sequence of the textures dimension.
-    template <std::size_t... Indices>
-    void storage(std::index_sequence<Indices...>,
-                 dmath::svec<Dim> size,
+    template <std::size_t... v_indices>
+    void storage(std::index_sequence<v_indices...>,
+                 dmath::svec<v_dim> size,
                  std::optional<GLsizei> mipmap_levels = std::nullopt,
                  PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        glTexStorage<Dim>(toGLConstant(Target),
-                          mipmap_levels.value_or(maxMipmapLevelsFor(size)),
-                          toGLConstant(internal_format),
-                          static_cast<GLsizei>(size[Indices])...);
+        glTexStorage<v_dim>(toGLConstant(v_target),
+                            mipmap_levels.value_or(maxMipmapLevelsFor(size)),
+                            toGLConstant(internal_format),
+                            static_cast<GLsizei>(size[v_indices])...);
         this->setSize(size);
     }
 };
 
 /// @brief Base class for all multisampled textures.
-template <std::size_t Dim, TextureTarget Target>
-class TextureBaseMultisample : public TextureBaseTyped<Dim, Target> {
+template <std::size_t v_dim, TextureTarget v_target>
+class TextureBaseMultisample : public TextureBaseTyped<v_dim, v_target> {
 public:
     /// @brief Creates an empty multisampled texture.
     TextureBaseMultisample() = default;
 
     /// @brief Initializes a new multisampled texture with the given size, sample count and optional internal format.
-    TextureBaseMultisample(dmath::svec<Dim> size,
+    TextureBaseMultisample(dmath::svec<v_dim> size,
                            GLsizei samples,
                            bool fixed_sample_locations = true,
                            PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -602,11 +604,11 @@ public:
     /// @brief Initializes a new multisampled texture with the given image data, sample count and optional internal
     /// format.
     /// @param internal_format Defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat Format, PixelType Type>
-    explicit TextureBaseMultisample(const Image<Dim, Format, Type>& image,
+    template <PixelFormat v_format, PixelType v_type>
+    explicit TextureBaseMultisample(const Image<v_dim, v_format, v_type>& image,
                                     GLsizei samples,
                                     bool fixed_sample_locations = true,
-                                    PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+                                    PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
         : TextureBaseMultisample()
     {
         generate(image, samples, fixed_sample_locations, internal_format);
@@ -618,27 +620,27 @@ public:
     TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
 
     /// @brief Generates storage for the specified size, samples and optional internal format.
-    void generate(dmath::svec<Dim> size,
+    void generate(dmath::svec<v_dim> size,
                   GLsizei samples,
                   bool fixed_sample_locations = true,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         this->bind();
-        storageMultisample(std::make_index_sequence<Dim>(), size, samples, fixed_sample_locations, internal_format);
+        storageMultisample(std::make_index_sequence<v_dim>(), size, samples, fixed_sample_locations, internal_format);
     }
 
     /// @brief Generates texture storage and fills it with the provided image.
     /// @param internal_format Defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat Format, PixelType Type>
-    void generate(const Image<Dim, Format, Type>& image,
+    template <PixelFormat v_format, PixelType v_type>
+    void generate(const Image<v_dim, v_format, v_type>& image,
                   GLint samples,
                   bool fixed_sample_locations = true,
-                  PixelInternalFormat internal_format = PixelFormatInfo<Format>::Internal)
+                  PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
     {
         this->bind();
         storageMultisample(
-            std::make_index_sequence<Dim>(), image.size(), samples, fixed_sample_locations, internal_format);
-        this->texSubImage(std::make_index_sequence<Dim>(), image);
+            std::make_index_sequence<v_dim>(), image.size(), samples, fixed_sample_locations, internal_format);
+        this->texSubImage(std::make_index_sequence<v_dim>(), image);
     }
 
 protected:
@@ -647,18 +649,18 @@ protected:
 
 private:
     /// @brief Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.
-    template <std::size_t... Indices>
-    void storageMultisample(std::index_sequence<Indices...>,
-                            dmath::svec<Dim> size,
+    template <std::size_t... v_indices>
+    void storageMultisample(std::index_sequence<v_indices...>,
+                            dmath::svec<v_dim> size,
                             GLsizei samples,
                             bool fixed_sample_locations = true,
                             PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        glTexStorageMultisample<Dim>(toGLConstant(Target),
-                                     samples,
-                                     toGLConstant(internal_format),
-                                     static_cast<GLsizei>(size[Indices])...,
-                                     static_cast<GLboolean>(fixed_sample_locations));
+        glTexStorageMultisample<v_dim>(toGLConstant(v_target),
+                                       samples,
+                                       toGLConstant(internal_format),
+                                       static_cast<GLsizei>(size[v_indices])...,
+                                       static_cast<GLboolean>(fixed_sample_locations));
         this->setSize(size);
     }
 };

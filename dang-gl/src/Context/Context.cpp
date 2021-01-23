@@ -18,10 +18,10 @@ Context::Context(svec2 size)
     glDebugMessageCallback(debugMessageCallback, this);
 }
 
-template <ObjectType... Types>
-void Context::createContexts(dutils::EnumSequence<ObjectType, Types...>)
+template <ObjectType... v_types>
+void Context::createContexts(dutils::EnumSequence<ObjectType, v_types...>)
 {
-    ((object_contexts_[Types] = std::make_unique<ObjectContext<Types>>(*this)), ...);
+    ((object_contexts_[v_types] = std::make_unique<ObjectContext<v_types>>(*this)), ...);
 }
 
 void Context::debugMessageCallback(GLenum source,

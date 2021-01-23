@@ -67,16 +67,16 @@ public:
 
     const State* operator->() const { return &state_; }
 
-    template <ObjectType Type>
+    template <ObjectType v_type>
     auto& contextFor()
     {
-        return static_cast<ObjectContext<Type>&>(*object_contexts_[Type]);
+        return static_cast<ObjectContext<v_type>&>(*object_contexts_[v_type]);
     }
 
-    template <ObjectType Type>
+    template <ObjectType v_type>
     auto& contextFor() const
     {
-        return static_cast<const ObjectContext<Type>&>(*object_contexts_[Type]);
+        return static_cast<const ObjectContext<v_type>&>(*object_contexts_[v_type]);
     }
 
     svec2 size() const { return size_; }
@@ -99,8 +99,8 @@ public:
 
 private:
     /// @brief Initializes the contexts for the different GL-Object types.
-    template <ObjectType... Types>
-    void createContexts(dutils::EnumSequence<ObjectType, Types...>);
+    template <ObjectType... v_types>
+    void createContexts(dutils::EnumSequence<ObjectType, v_types...>);
 
     static void APIENTRY debugMessageCallback(GLenum source,
                                               GLenum type,

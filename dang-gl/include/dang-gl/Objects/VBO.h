@@ -203,10 +203,10 @@ public:
     }
 
     /// @brief Creates new uninitialized data for a given number of elements.
-    template <std::size_t Count>
+    template <std::size_t v_count>
     void generate(BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(Count, usage);
+        generate(v_count, usage);
     }
 
     /// @brief Creates new data from the given initializer list.
@@ -234,23 +234,23 @@ public:
     }
 
     /// @brief Creates new data from the given C-Style array.
-    template <GLsizei Size>
-    void generate(const T (&data)[Size], BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    template <GLsizei v_size>
+    void generate(const T (&data)[v_size], BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(Size, data, usage);
+        generate(v_size, data, usage);
     }
 
     /// @brief Creates new data from the given std::array.
-    template <GLsizei Size>
-    void generate(const std::array<T, Size>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    template <GLsizei v_size>
+    void generate(const std::array<T, v_size>& data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
-        generate(Size, data.data(), usage);
+        generate(v_size, data.data(), usage);
     }
 
     /// @brief Creates new data from the given std::array iterator.
-    template <GLsizei Size>
-    void generate(typename std::array<T, Size>::const_iterator begin,
-                  typename std::array<T, Size>::const_iterator end,
+    template <GLsizei v_size>
+    void generate(typename std::array<T, v_size>::const_iterator begin,
+                  typename std::array<T, v_size>::const_iterator end,
                   BufferUsageHint usage = BufferUsageHint::DynamicDraw)
     {
         const auto count = std::distance(begin, end);
@@ -290,24 +290,24 @@ public:
     }
 
     /// @brief Modifies the existing buffer at the given position with the given C-Style array.
-    template <GLsizei Size>
-    void modify(GLsizei offset, const T (&data)[Size])
+    template <GLsizei v_size>
+    void modify(GLsizei offset, const T (&data)[v_size])
     {
-        modify(offset, Size, data);
+        modify(offset, v_size, data);
     }
 
     /// @brief Modifies the existing buffer at the given position with the given std::array.
-    template <GLsizei Size>
-    void modify(GLsizei offset, const std::array<T, Size>& data)
+    template <GLsizei v_size>
+    void modify(GLsizei offset, const std::array<T, v_size>& data)
     {
-        modify(offset, Size, data.data());
+        modify(offset, v_size, data.data());
     }
 
     /// @brief Modifies the existing buffer at the given position with the given std::array iterators.
-    template <GLsizei Size>
+    template <GLsizei v_size>
     void modify(GLsizei offset,
-                typename std::array<T, Size>::const_iterator begin,
-                typename std::array<T, Size>::const_iterator end)
+                typename std::array<T, v_size>::const_iterator begin,
+                typename std::array<T, v_size>::const_iterator end)
     {
         const auto count = std::distance(begin, end);
         assert(count >= 0 && count <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));

@@ -11,23 +11,23 @@ namespace dang::gl {
 
 // Aliases for vector and matrix types, using GLSL naming
 
-template <std::size_t Dim>
-using vec = dang::math::Vector<GLfloat, Dim>;
+template <std::size_t v_dim>
+using vec = dang::math::Vector<GLfloat, v_dim>;
 
-template <std::size_t Dim>
-using dvec = dang::math::Vector<GLdouble, Dim>;
+template <std::size_t v_dim>
+using dvec = dang::math::Vector<GLdouble, v_dim>;
 
-template <std::size_t Dim>
-using ivec = dang::math::Vector<GLint, Dim>;
+template <std::size_t v_dim>
+using ivec = dang::math::Vector<GLint, v_dim>;
 
-template <std::size_t Dim>
-using uvec = dang::math::Vector<GLuint, Dim>;
+template <std::size_t v_dim>
+using uvec = dang::math::Vector<GLuint, v_dim>;
 
-template <std::size_t Dim>
-using bvec = dang::math::Vector<GLboolean, Dim>;
+template <std::size_t v_dim>
+using bvec = dang::math::Vector<GLboolean, v_dim>;
 
-template <std::size_t Dim>
-using svec = dang::math::Vector<GLsizei, Dim>;
+template <std::size_t v_dim>
+using svec = dang::math::Vector<GLsizei, v_dim>;
 
 using vec1 = vec<1>;
 using vec2 = vec<2>;
@@ -59,20 +59,20 @@ using svec2 = svec<2>;
 using svec3 = svec<3>;
 using svec4 = svec<4>;
 
-template <std::size_t Dim>
-using bounds = dang::math::Bounds<GLfloat, Dim>;
+template <std::size_t v_dim>
+using bounds = dang::math::Bounds<GLfloat, v_dim>;
 
-template <std::size_t Dim>
-using dbounds = dang::math::Bounds<GLdouble, Dim>;
+template <std::size_t v_dim>
+using dbounds = dang::math::Bounds<GLdouble, v_dim>;
 
-template <std::size_t Dim>
-using ibounds = dang::math::Bounds<GLint, Dim>;
+template <std::size_t v_dim>
+using ibounds = dang::math::Bounds<GLint, v_dim>;
 
-template <std::size_t Dim>
-using ubounds = dang::math::Bounds<GLuint, Dim>;
+template <std::size_t v_dim>
+using ubounds = dang::math::Bounds<GLuint, v_dim>;
 
-template <std::size_t Dim>
-using sbounds = dang::math::Bounds<GLsizei, Dim>;
+template <std::size_t v_dim>
+using sbounds = dang::math::Bounds<GLsizei, v_dim>;
 
 using bounds1 = bounds<1>;
 using bounds2 = bounds<2>;
@@ -94,8 +94,8 @@ using sbounds1 = sbounds<1>;
 using sbounds2 = sbounds<2>;
 using sbounds3 = sbounds<3>;
 
-template <std::size_t Cols, std::size_t Rows = Cols>
-using mat = dang::math::Matrix<GLfloat, Cols, Rows>;
+template <std::size_t v_cols, std::size_t v_rows = v_cols>
+using mat = dang::math::Matrix<GLfloat, v_cols, v_rows>;
 using mat2 = mat<2, 2>;
 using mat2x3 = mat<2, 3>;
 using mat2x4 = mat<2, 4>;
@@ -106,8 +106,8 @@ using mat4x2 = mat<4, 2>;
 using mat4x3 = mat<4, 3>;
 using mat4 = mat<4, 4>;
 
-template <std::size_t Cols, std::size_t Rows = Cols>
-using dmat = dang::math::Matrix<GLdouble, Cols, Rows>;
+template <std::size_t v_cols, std::size_t v_rows = v_cols>
+using dmat = dang::math::Matrix<GLdouble, v_cols, v_rows>;
 using dmat2 = dmat<2, 2>;
 using dmat2x3 = dmat<2, 3>;
 using dmat2x4 = dmat<2, 4>;

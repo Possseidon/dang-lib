@@ -6,9 +6,8 @@
 
 #include "dang-math/vector.h"
 
-// TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient (I
-// think?)
-//       Backup still needs to be polymorphic, as they get stored in a vector
+// TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient.
+// Backup still needs to be polymorphic, as they get stored in a vector
 
 namespace dang::gl {
 
@@ -88,7 +87,7 @@ private:
 };
 
 /// @brief State flags that can be enabled and disabled with glEnable and glDisable respectively.
-template <GLenum Flag>
+template <GLenum v_flag>
 class StateFlag : public StateProperty<bool> {
 public:
     using StateProperty<bool>::StateProperty;
@@ -105,15 +104,15 @@ protected:
     void update() override
     {
         if (*this)
-            glEnable(Flag);
+            glEnable(v_flag);
         else
-            glDisable(Flag);
+            glDisable(v_flag);
     }
 };
 
 /// @brief A state property, which calls a template supplied function with a single enum, arithmetic value or struct
 /// with a toTuple method.
-template <auto Func, typename T>
+template <auto v_func, typename T>
 class StateFunc : public StateProperty<T> {
 public:
     using StateProperty<T>::StateProperty;
@@ -130,31 +129,31 @@ protected:
     void update() override
     {
         if constexpr (std::is_enum_v<T>)
-            (*Func)(toGLConstant(**this));
+            (*v_func)(toGLConstant(**this));
         else if constexpr (std::is_arithmetic_v<T>)
-            (*Func)(**this);
+            (*v_func)(**this);
         else
-            std::apply(*Func, (*this)->toTuple());
+            std::apply(*v_func, (*this)->toTuple());
     }
 };
 
 /// @brief A state property, which calls the template supplied function with each vector component as a separate
 /// parameter.
-template <auto Func, typename T, std::size_t Dim>
-class StateVector : public StateProperty<dmath::Vector<T, Dim>> {
+template <auto v_func, typename T, std::size_t v_dim>
+class StateVector : public StateProperty<dmath::Vector<T, v_dim>> {
 public:
-    using StateProperty<dmath::Vector<T, Dim>>::StateProperty;
+    using StateProperty<dmath::Vector<T, v_dim>>::StateProperty;
 
     /// @brief Allows for implicit assignment of the state.
-    StateVector& operator=(const dmath::Vector<T, Dim>& value)
+    StateVector& operator=(const dmath::Vector<T, v_dim>& value)
     {
-        StateProperty<dmath::Vector<T, Dim>>::operator=(value);
+        StateProperty<dmath::Vector<T, v_dim>>::operator=(value);
         return *this;
     }
 
 protected:
     /// @brief Calls the template specified function with the current vector components.
-    void update() override { std::apply(*Func, **this); }
+    void update() override { std::apply(*v_func, **this); }
 };
 
 /// @brief A polymorphic base class for state backups.
@@ -199,7 +198,7 @@ template <>
 inline constexpr auto& glGet<GLint64> = glGetInteger64v;
 
 /// @brief A constant, which is queried on first use, but cached for further accesses.
-template <typename T, GLenum Name>
+template <typename T, GLenum v_name>
 class Constant {
 public:
     /// @brief Calls glGet the first time, but caches the value.
@@ -207,7 +206,7 @@ public:
     {
         if (!value_) {
             value_.emplace();
-            glGet<T>(Name, &*value_);
+            glGet<T>(v_name, &*value_);
         }
         return *value_;
     }
@@ -234,7 +233,7 @@ template <>
 inline constexpr auto& glGeti<GLint64> = glGetInteger64i_v;
 
 /// @brief A list of constants, which is queried on first use, but cached for further accesses.
-template <typename T, GLenum Name>
+template <typename T, GLenum v_name>
 class IndexedConstant {
 public:
     /// @brief Queries the given index, but caches all indices.
@@ -245,7 +244,7 @@ public:
         else if (values_[index])
             return values_[index];
         auto& value = values_[index].emplace();
-        glGeti<T>(Name, index, &value);
+        glGeti<T>(v_name, index, &value);
         return values_[index];
     }
 

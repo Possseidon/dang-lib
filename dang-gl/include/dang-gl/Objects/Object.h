@@ -9,11 +9,11 @@
 namespace dang::gl {
 
 /// @brief Serves as a base class for all GL-Objects of the template specified type.
-template <ObjectType Type>
+template <ObjectType v_type>
 class Object {
 public:
-    using Handle = ObjectHandle<Type>;
-    using Wrapper = ObjectWrapper<Type>;
+    using Handle = ObjectHandle<v_type>;
+    using Wrapper = ObjectWrapper<v_type>;
 
     /// @brief Destroys the GL-Object.
     ~Object() { destroy(); }
@@ -34,7 +34,7 @@ public:
     Context& context() const noexcept { return *context_; }
 
     /// @brief Returns the context for this object type.
-    auto& objectContext() const { return context_->contextFor<Type>(); }
+    auto& objectContext() const { return context_->contextFor<v_type>(); }
 
     /// @brief Returns the handle of the GL-Object or InvalidHandle for default constructed objects.
     Handle handle() const noexcept { return handle_; }
@@ -58,9 +58,9 @@ public:
         label_ = std::move(label);
         if (label_)
             glObjectLabel(
-                toGLConstant(Type), handle_.unwrap(), static_cast<GLsizei>(label_->length()), label_->c_str());
+                toGLConstant(v_type), handle_.unwrap(), static_cast<GLsizei>(label_->length()), label_->c_str());
         else
-            glObjectLabel(toGLConstant(Type), handle_.unwrap(), 0, nullptr);
+            glObjectLabel(toGLConstant(v_type), handle_.unwrap(), 0, nullptr);
     }
 
     /// @brief Returns the label used in OpenGL generated debug messages.
@@ -98,8 +98,8 @@ private:
 };
 
 /// @brief A base class for GL-Objects, which can be bound without a target.
-template <ObjectType Type>
-class ObjectBindable : public Object<Type> {
+template <ObjectType v_type>
+class ObjectBindable : public Object<v_type> {
 public:
     /// @brief Resets the bound object in the context if the object is still bound.
     ~ObjectBindable()

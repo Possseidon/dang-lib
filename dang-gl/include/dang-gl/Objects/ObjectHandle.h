@@ -5,7 +5,7 @@
 
 namespace dang::gl {
 
-template <ObjectType Type>
+template <ObjectType>
 class ObjectHandle {
 public:
     ObjectHandle() = default;

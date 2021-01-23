@@ -133,29 +133,29 @@ public:
 
 private:
     /// @brief Returns the instance count of the VBO with the given index.
-    template <std::size_t VBOIndex>
+    template <std::size_t v_vbo_index>
     GLsizei instanceCountOf() const
     {
-        return std::get<VBOIndex>(instance_vbos_)->count() * program().instancedAttributeOrder()[VBOIndex].divisor;
+        return std::get<v_vbo_index>(instance_vbos_)->count() * program().instancedAttributeOrder()[v_vbo_index].divisor;
     }
 
     /// @brief Helper function for instance counting, which takes an index list of one less than the actual instance VBO
     /// count.
-    template <std::size_t... Indices>
-    GLsizei instanceCountHelper(std::index_sequence<Indices...>) const
+    template <std::size_t... v_indices>
+    GLsizei instanceCountHelper(std::index_sequence<v_indices...>) const
     {
         if constexpr (sizeof...(TInstanceData) > 1)
-            assert(((instanceCountOf<Indices>() == instanceCountOf<Indices + 1>()) && ...));
+            assert(((instanceCountOf<v_indices>() == instanceCountOf<v_indices + 1>()) && ...));
         return instanceCountOf<0>();
     }
 
     /// @brief Enables all attributes for both data and specified instance VBOs.
-    template <std::size_t... Indices>
-    void enableAttributes(std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    void enableAttributes(std::index_sequence<v_indices...>)
     {
         bind();
         enableAttributes(*data_vbo_, program().attributeOrder());
-        (enableAttributes(*std::get<Indices>(instance_vbos_), program().instancedAttributeOrder()[Indices]), ...);
+        (enableAttributes(*std::get<v_indices>(instance_vbos_), program().instancedAttributeOrder()[v_indices]), ...);
     }
 
     /// @brief Enables attributes for the given VBO with the given attribute order.

@@ -190,14 +190,14 @@ struct TargetSelector<ObjectType::Framebuffer> {
 
 /// @brief Maps to the different enums for the various binding targets of the template specified object type.
 /// @remark Not all bindable objects support multiple targets.
-template <ObjectType Type>
-using ObjectTarget = typename detail::TargetSelector<Type>::Type;
+template <ObjectType v_type>
+using ObjectTarget = typename detail::TargetSelector<v_type>::Type;
 
 namespace detail {
 
 // Wraps OpenGL functions in a templated manner
 
-template <ObjectType Type>
+template <ObjectType>
 inline constexpr auto glGenObjects = nullptr;
 
 template <>
@@ -219,7 +219,7 @@ inline constexpr auto& glGenObjects<ObjectType::Renderbuffer> = glGenRenderbuffe
 template <>
 inline constexpr auto& glGenObjects<ObjectType::Framebuffer> = glGenFramebuffers;
 
-template <ObjectType Type>
+template <ObjectType>
 inline constexpr auto glCreateObject = nullptr;
 
 template <>
@@ -227,7 +227,7 @@ inline constexpr auto& glCreateObject<ObjectType::Shader> = glCreateShader;
 template <>
 inline constexpr auto& glCreateObject<ObjectType::Program> = glCreateProgram;
 
-template <ObjectType Type>
+template <ObjectType>
 inline constexpr auto glDeleteObjects = nullptr;
 
 template <>
@@ -249,7 +249,7 @@ inline constexpr auto& glDeleteObjects<ObjectType::Renderbuffer> = glDeleteRende
 template <>
 inline constexpr auto& glDeleteObjects<ObjectType::Framebuffer> = glDeleteFramebuffers;
 
-template <ObjectType Type>
+template <ObjectType>
 inline constexpr auto glDeleteObject = nullptr;
 template <>
 inline constexpr auto& glDeleteObject<ObjectType::Shader> = glDeleteShader;

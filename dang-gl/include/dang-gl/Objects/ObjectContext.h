@@ -25,11 +25,11 @@ private:
 };
 
 /// @brief Can be used as base class, when no multiple binding targets are required for the given object type.
-template <ObjectType Type>
+template <ObjectType v_type>
 class ObjectContextBindable : public ObjectContextBase {
 public:
-    using Handle = ObjectHandle<Type>;
-    using Wrapper = ObjectWrapper<Type>;
+    using Handle = ObjectHandle<v_type>;
+    using Wrapper = ObjectWrapper<v_type>;
 
     using ObjectContextBase::ObjectContextBase;
 
@@ -56,7 +56,7 @@ private:
 };
 
 /// @brief The different context classes, which should be specialized for the various types.
-template <ObjectType Type>
+template <ObjectType v_type>
 class ObjectContext : public ObjectContextBase {
     using ObjectContextBase::ObjectContextBase;
 };

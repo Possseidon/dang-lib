@@ -12,7 +12,7 @@ namespace dang::gl {
 
 namespace detail {
 
-template <std::size_t Dim, typename T>
+template <std::size_t v_dim, typename T>
 inline constexpr auto glUniform = nullptr;
 
 template <>
@@ -51,7 +51,7 @@ inline constexpr auto& glUniform<3, GLuint> = glUniform3ui;
 template <>
 inline constexpr auto& glUniform<4, GLuint> = glUniform4ui;
 
-template <std::size_t Dim, typename T>
+template <std::size_t v_dim, typename T>
 inline constexpr auto glUniformv = nullptr;
 
 template <>
@@ -102,7 +102,7 @@ inline constexpr auto& glGetUniformv<GLint> = glGetUniformiv;
 template <>
 inline constexpr auto& glGetUniformv<GLuint> = glGetUniformuiv;
 
-template <std::size_t Cols, std::size_t Rows, typename T>
+template <std::size_t v_cols, std::size_t v_rows, typename T>
 inline constexpr auto glUniformMatrixv = nullptr;
 
 template <>
@@ -172,51 +172,51 @@ struct UniformWrapper<GLboolean> {
 };
 
 /// @brief Specializes uniform access for vectors of any supported type and size.
-template <typename T, std::size_t Dim>
-struct UniformWrapper<dmath::Vector<T, Dim>> {
-    static dmath::Vector<T, Dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
+template <typename T, std::size_t v_dim>
+struct UniformWrapper<dmath::Vector<T, v_dim>> {
+    static dmath::Vector<T, v_dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
     {
-        dmath::Vector<T, Dim> value;
+        dmath::Vector<T, v_dim> value;
         detail::glGetUniformv<T>(program.unwrap(), location, &value[0]);
         return value;
     }
 
-    static void set(GLint location, const dmath::Vector<T, Dim>& value)
+    static void set(GLint location, const dmath::Vector<T, v_dim>& value)
     {
-        detail::glUniformv<Dim, T>(location, 1, &value[0]);
+        detail::glUniformv<v_dim, T>(location, 1, &value[0]);
     }
 };
 
 /// @brief Specializes uniform access for vectors of GLboolean and any supported size.
-template <std::size_t Dim>
-struct UniformWrapper<dmath::Vector<GLboolean, Dim>> {
-    static dmath::Vector<GLboolean, Dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
+template <std::size_t v_dim>
+struct UniformWrapper<dmath::Vector<GLboolean, v_dim>> {
+    static dmath::Vector<GLboolean, v_dim> get(ObjectHandle<ObjectType::Program> program, GLint location)
     {
-        ivec<Dim> value;
+        ivec<v_dim> value;
         glGetUniformiv(program.unwrap(), location, &value[0]);
-        return static_cast<bvec<Dim>>(value);
+        return static_cast<bvec<v_dim>>(value);
     }
 
-    static void set(GLint location, const dmath::Vector<GLboolean, Dim>& value)
+    static void set(GLint location, const dmath::Vector<GLboolean, v_dim>& value)
     {
-        ivec<Dim> bvalue(value);
-        detail::glUniformv<Dim, GLint>(location, 1, &bvalue[0]);
+        ivec<v_dim> bvalue(value);
+        detail::glUniformv<v_dim, GLint>(location, 1, &bvalue[0]);
     }
 };
 
 /// @brief Specializes uniform access for matrices of any supported type and dimensions.
-template <typename T, std::size_t Cols, std::size_t Rows>
-struct UniformWrapper<dmath::Matrix<T, Cols, Rows>> {
-    static dmath::Matrix<T, Cols, Rows> get(ObjectHandle<ObjectType::Program> program, GLint location)
+template <typename T, std::size_t v_cols, std::size_t v_rows>
+struct UniformWrapper<dmath::Matrix<T, v_cols, v_rows>> {
+    static dmath::Matrix<T, v_cols, v_rows> get(ObjectHandle<ObjectType::Program> program, GLint location)
     {
-        dmath::Matrix<T, Cols, Rows> value;
+        dmath::Matrix<T, v_cols, v_rows> value;
         detail::glGetUniformv<T>(program.unwrap(), location, &value(0, 0));
         return value;
     }
 
-    static void set(GLint location, const dmath::Matrix<T, Cols, Rows>& value)
+    static void set(GLint location, const dmath::Matrix<T, v_cols, v_rows>& value)
     {
-        detail::glUniformMatrixv<Cols, Rows, T>(location, 1, GL_FALSE, &value(0, 0));
+        detail::glUniformMatrixv<v_cols, v_rows, T>(location, 1, GL_FALSE, &value(0, 0));
     }
 };
 

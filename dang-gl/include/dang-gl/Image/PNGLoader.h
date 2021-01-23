@@ -51,8 +51,8 @@ public:
     /// @brief Converts the data into the specified format and returns a consecutive vector of pixels.
     /// @remark Use the size method to query the width and height of the returned data.
     /// @param flip Whether to flip the top and bottom of the PNG.
-    template <PixelFormat Format = PixelFormat::RGBA>
-    std::vector<Pixel<Format>> read(bool flip = false);
+    template <PixelFormat v_format = PixelFormat::RGBA>
+    std::vector<Pixel<v_format>> read(bool flip = false);
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
     PNGWarningEvent onWarning;
@@ -62,13 +62,13 @@ private:
     /// channel in the process.
     void handleBitDepth();
     /// @brief Converts between gray and rgb values, depending on the given pixel format.
-    template <PixelFormat Format>
+    template <PixelFormat v_format>
     void handleGrayRGB();
     /// @brief Adds or strips the alpha channel, depending on the pixel format.
-    template <PixelFormat Format>
+    template <PixelFormat v_format>
     void handleAlpha();
     /// @brief Converts between RGB(A) to BGR(A), depending on the given pixel format.
-    template <PixelFormat Format>
+    template <PixelFormat v_format>
     void handleBGR();
 
     /// @brief Called by libpng, when an unrecoverable error occurs.
@@ -104,8 +104,8 @@ private:
     png_byte bit_depth_ = 0;
 };
 
-template <PixelFormat Format>
-inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
+template <PixelFormat v_format>
+inline std::vector<Pixel<v_format>> PNGLoader::read(bool flip)
 {
     if (!initialized_)
         throw PNGError("PNG not initialized.");
@@ -119,9 +119,9 @@ inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
     bit_depth_ = png_get_bit_depth(png_ptr_, info_ptr_);
 
     handleBitDepth();
-    handleGrayRGB<Format>();
-    handleAlpha<Format>();
-    handleBGR<Format>();
+    handleGrayRGB<v_format>();
+    handleAlpha<v_format>();
+    handleBGR<v_format>();
 
     png_read_update_info(png_ptr_, info_ptr_);
 
@@ -131,10 +131,10 @@ inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
         throw PNGError("PNG bit_depth mismatch");
 
     png_size_t rowbytes = png_get_rowbytes(png_ptr_, info_ptr_);
-    if (rowbytes != size_.x() * PixelFormatInfo<Format>::ComponentCount)
+    if (rowbytes != size_.x() * PixelFormatInfo<v_format>::ComponentCount)
         throw PNGError("Cannot convert PNG to correct format.");
 
-    std::vector<Pixel<Format>> image(size_.product());
+    std::vector<Pixel<v_format>> image(size_.product());
 
     // fill offsets with the row-pointers to the actual image data
     std::vector<png_bytep> offsets(size_.y());
@@ -153,15 +153,15 @@ inline std::vector<Pixel<Format>> PNGLoader::read(bool flip)
     return image;
 }
 
-template <PixelFormat Format>
+template <PixelFormat v_format>
 inline void PNGLoader::handleGrayRGB()
 {
     bool is_gray = color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA;
 
-    if constexpr (Format == PixelFormat::RGB || Format == PixelFormat::BGR || Format == PixelFormat::RGBA ||
-                  Format == PixelFormat::BGRA || Format == PixelFormat::RGB_INTEGER ||
-                  Format == PixelFormat::BGR_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
-                  Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_format == PixelFormat::RGB || v_format == PixelFormat::BGR || v_format == PixelFormat::RGBA ||
+                  v_format == PixelFormat::BGRA || v_format == PixelFormat::RGB_INTEGER ||
+                  v_format == PixelFormat::BGR_INTEGER || v_format == PixelFormat::RGBA_INTEGER ||
+                  v_format == PixelFormat::BGRA_INTEGER) {
         if (is_gray) {
             png_set_gray_to_rgb(png_ptr_);
             color_type_ |= PNG_COLOR_MASK_COLOR;
@@ -183,14 +183,14 @@ inline void PNGLoader::handleGrayRGB()
     }
 }
 
-template <PixelFormat Format>
+template <PixelFormat v_format>
 inline void PNGLoader::handleAlpha()
 {
     bool has_alpha = color_type_ & PNG_COLOR_MASK_ALPHA;
 
-    if constexpr (Format == PixelFormat::RG || Format == PixelFormat::RGBA || Format == PixelFormat::BGRA ||
-                  Format == PixelFormat::RG_INTEGER || Format == PixelFormat::RGBA_INTEGER ||
-                  Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_format == PixelFormat::RG || v_format == PixelFormat::RGBA || v_format == PixelFormat::BGRA ||
+                  v_format == PixelFormat::RG_INTEGER || v_format == PixelFormat::RGBA_INTEGER ||
+                  v_format == PixelFormat::BGRA_INTEGER) {
         if (!has_alpha) {
             png_set_add_alpha(png_ptr_, 0xFF, PNG_FILLER_AFTER);
             color_type_ |= PNG_COLOR_MASK_ALPHA;
@@ -204,11 +204,11 @@ inline void PNGLoader::handleAlpha()
     }
 }
 
-template <PixelFormat Format>
+template <PixelFormat v_format>
 inline void PNGLoader::handleBGR()
 {
-    if constexpr (Format == PixelFormat::BGR || Format == PixelFormat::BGRA || Format == PixelFormat::BGR_INTEGER ||
-                  Format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_format == PixelFormat::BGR || v_format == PixelFormat::BGRA || v_format == PixelFormat::BGR_INTEGER ||
+                  v_format == PixelFormat::BGRA_INTEGER) {
         assert(color_type_ == PNG_COLOR_TYPE_RGB || color_type_ == PNG_COLOR_TYPE_RGBA);
         png_set_bgr(png_ptr_);
     }
