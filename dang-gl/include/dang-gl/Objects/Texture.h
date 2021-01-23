@@ -227,9 +227,6 @@ inline constexpr auto& glTexSubImage<3> = glTexSubImage3D;
 template <std::size_t v_dim, TextureTarget v_target>
 class TextureBaseTyped : public TextureBase {
 public:
-    template <PixelFormat v_format>
-    static constexpr PixelInternalFormat DefaultInternal = pixel_format_internal_v<v_format>;
-
     ~TextureBaseTyped() = default;
 
     TextureBaseTyped(const TextureBaseTyped&) = delete;
