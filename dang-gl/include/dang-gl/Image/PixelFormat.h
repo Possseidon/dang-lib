@@ -5,6 +5,7 @@
 #include "dang-gl/global.h"
 
 #include "dang-utils/enum.h"
+#include "dang-utils/utils.h"
 
 namespace dang::gl {
 
@@ -62,91 +63,94 @@ inline constexpr dutils::EnumArray<PixelFormat, GLenum> gl_constants<PixelFormat
                                                                                      GL_DEPTH_COMPONENT,
                                                                                      GL_DEPTH_STENCIL};
 
-/// @brief Provides info about a pixel format, like its component count, which is necessary to find out the storage
-/// size.
+/// @brief Provides the internal format to use for a given pixel format.
 template <PixelFormat>
-struct PixelFormatInfo {};
+struct pixel_format_internal {};
+
+template <PixelFormat v_format>
+inline constexpr auto pixel_format_internal_v = pixel_format_internal<v_format>::value;
 
 template <>
-struct PixelFormatInfo<PixelFormat::RED> {
-    static constexpr std::size_t ComponentCount = 1;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::R8;
-};
+struct pixel_format_internal<PixelFormat::RED> : dutils::constant<PixelInternalFormat::R8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RG> {
-    static constexpr std::size_t ComponentCount = 2;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RG8;
-};
+struct pixel_format_internal<PixelFormat::RG> : dutils::constant<PixelInternalFormat::RG8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RGB> {
-    static constexpr std::size_t ComponentCount = 3;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8;
-};
+struct pixel_format_internal<PixelFormat::RGB> : dutils::constant<PixelInternalFormat::RGB8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::BGR> {
-    static constexpr std::size_t ComponentCount = 3;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8;
-};
+struct pixel_format_internal<PixelFormat::BGR> : dutils::constant<PixelInternalFormat::RGB8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RGBA> {
-    static constexpr std::size_t ComponentCount = 4;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8;
-};
+struct pixel_format_internal<PixelFormat::RGBA> : dutils::constant<PixelInternalFormat::RGBA8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::BGRA> {
-    static constexpr std::size_t ComponentCount = 4;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8;
-};
+struct pixel_format_internal<PixelFormat::BGRA> : dutils::constant<PixelInternalFormat::RGBA8> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RED_INTEGER> {
-    static constexpr std::size_t ComponentCount = 1;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::R8UI;
-};
+struct pixel_format_internal<PixelFormat::RED_INTEGER> : dutils::constant<PixelInternalFormat::R8UI> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RG_INTEGER> {
-    static constexpr std::size_t ComponentCount = 2;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RG8UI;
-};
+struct pixel_format_internal<PixelFormat::RG_INTEGER> : dutils::constant<PixelInternalFormat::RG8UI> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RGB_INTEGER> {
-    static constexpr std::size_t ComponentCount = 3;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8UI;
-};
+struct pixel_format_internal<PixelFormat::RGB_INTEGER> : dutils::constant<PixelInternalFormat::RGB8UI> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::BGR_INTEGER> {
-    static constexpr std::size_t ComponentCount = 3;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGB8UI;
-};
+struct pixel_format_internal<PixelFormat::BGR_INTEGER> : dutils::constant<PixelInternalFormat::RGB8UI> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::RGBA_INTEGER> {
-    static constexpr std::size_t ComponentCount = 4;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8UI;
-};
+struct pixel_format_internal<PixelFormat::RGBA_INTEGER> : dutils::constant<PixelInternalFormat::RGBA8UI> {};
 
 template <>
-struct PixelFormatInfo<PixelFormat::BGRA_INTEGER> {
-    static constexpr std::size_t ComponentCount = 4;
-    static constexpr PixelInternalFormat Internal = PixelInternalFormat::RGBA8UI;
-};
+struct pixel_format_internal<PixelFormat::BGRA_INTEGER> : dutils::constant<PixelInternalFormat::RGBA8UI> {};
+
+/// @brief Provides the count of (usually color) components for the given pixel format.
+template <PixelFormat>
+struct pixel_format_component_count {};
+
+template <PixelFormat v_format>
+inline constexpr auto pixel_format_component_count_v = pixel_format_component_count<v_format>::value;
 
 template <>
-struct PixelFormatInfo<PixelFormat::STENCIL_INDEX> { /* TODO: PixelFormatInfo<PixelFormat::STENCIL_INDEX> */
-};
+struct pixel_format_component_count<PixelFormat::RED> : std::integral_constant<std::size_t, 1> {};
+
 template <>
-struct PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> { /* TODO: PixelFormatInfo<PixelFormat::DEPTH_COMPONENT> */
-};
+struct pixel_format_component_count<PixelFormat::RG> : std::integral_constant<std::size_t, 2> {};
+
 template <>
-struct PixelFormatInfo<PixelFormat::DEPTH_STENCIL> { /* TODO: PixelFormatInfo<PixelFormat::DEPTH_STENCIL> */
-};
+struct pixel_format_component_count<PixelFormat::RGB> : std::integral_constant<std::size_t, 3> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::BGR> : std::integral_constant<std::size_t, 3> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::RGBA> : std::integral_constant<std::size_t, 4> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::BGRA> : std::integral_constant<std::size_t, 4> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::RED_INTEGER> : std::integral_constant<std::size_t, 1> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::RG_INTEGER> : std::integral_constant<std::size_t, 2> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::RGB_INTEGER> : std::integral_constant<std::size_t, 3> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::BGR_INTEGER> : std::integral_constant<std::size_t, 3> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::RGBA_INTEGER> : std::integral_constant<std::size_t, 4> {};
+
+template <>
+struct pixel_format_component_count<PixelFormat::BGRA_INTEGER> : std::integral_constant<std::size_t, 4> {};
+
+// TODO: PixelFormat::STENCIL_INDEX
+// TODO: PixelFormat::DEPTH_COMPONENT
+// TODO: PixelFormat::DEPTH_STENCIL
 
 } // namespace dang::gl

@@ -131,7 +131,7 @@ inline std::vector<Pixel<v_format>> PNGLoader::read(bool flip)
         throw PNGError("PNG bit_depth mismatch");
 
     png_size_t rowbytes = png_get_rowbytes(png_ptr_, info_ptr_);
-    if (rowbytes != size_.x() * PixelFormatInfo<v_format>::ComponentCount)
+    if (rowbytes != size_.x() * pixel_format_component_count_v<v_format>)
         throw PNGError("Cannot convert PNG to correct format.");
 
     std::vector<Pixel<v_format>> image(size_.product());
@@ -207,8 +207,8 @@ inline void PNGLoader::handleAlpha()
 template <PixelFormat v_format>
 inline void PNGLoader::handleBGR()
 {
-    if constexpr (v_format == PixelFormat::BGR || v_format == PixelFormat::BGRA || v_format == PixelFormat::BGR_INTEGER ||
-                  v_format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_format == PixelFormat::BGR || v_format == PixelFormat::BGRA ||
+                  v_format == PixelFormat::BGR_INTEGER || v_format == PixelFormat::BGRA_INTEGER) {
         assert(color_type_ == PNG_COLOR_TYPE_RGB || color_type_ == PNG_COLOR_TYPE_RGBA);
         png_set_bgr(png_ptr_);
     }

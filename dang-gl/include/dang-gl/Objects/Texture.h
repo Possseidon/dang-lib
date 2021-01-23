@@ -228,7 +228,7 @@ template <std::size_t v_dim, TextureTarget v_target>
 class TextureBaseTyped : public TextureBase {
 public:
     template <PixelFormat v_format>
-    static constexpr PixelInternalFormat DefaultInternal = PixelFormatInfo<v_format>::Internal;
+    static constexpr PixelInternalFormat DefaultInternal = pixel_format_internal_v<v_format>;
 
     ~TextureBaseTyped() = default;
 
@@ -504,7 +504,7 @@ public:
     template <PixelFormat v_format, PixelType v_type>
     explicit TextureBaseRegular(const Image<v_dim, v_format, v_type>& image,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
-                                PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
+                                PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
         : TextureBaseRegular()
     {
         generate(image, mipmap_levels, internal_format);
@@ -531,7 +531,7 @@ public:
     template <PixelFormat v_format, PixelType v_type>
     void generate(const Image<v_dim, v_format, v_type>& image,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
-                  PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
+                  PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
         this->bind();
         storage(std::make_index_sequence<v_dim>(), image.size(), mipmap_levels, internal_format);
@@ -609,7 +609,7 @@ public:
     explicit TextureBaseMultisample(const Image<v_dim, v_format, v_type>& image,
                                     GLsizei samples,
                                     bool fixed_sample_locations = true,
-                                    PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
+                                    PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
         : TextureBaseMultisample()
     {
         generate(image, samples, fixed_sample_locations, internal_format);
@@ -636,7 +636,7 @@ public:
     void generate(const Image<v_dim, v_format, v_type>& image,
                   GLint samples,
                   bool fixed_sample_locations = true,
-                  PixelInternalFormat internal_format = PixelFormatInfo<v_format>::Internal)
+                  PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
         this->bind();
         storageMultisample(
