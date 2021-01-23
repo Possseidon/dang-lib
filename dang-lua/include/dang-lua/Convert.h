@@ -690,8 +690,8 @@ struct Convert<std::string_view> {
 };
 
 /// @brief Allows pushing of char arrays as strings.
-template <std::size_t Count>
-struct Convert<char[Count]> {
+template <std::size_t v_count>
+struct Convert<char[v_count]> {
     static constexpr std::optional<int> PushCount = 1;
     static constexpr bool AllowNesting = true;
 
@@ -702,9 +702,9 @@ struct Convert<char[Count]> {
     }
 
     /// @brief Pushes the given string onto the stack, shortening a potential null-termination.
-    static void push(lua_State* state, const char (&value)[Count])
+    static void push(lua_State* state, const char (&value)[v_count])
     {
-        lua_pushlstring(state, value, value[Count - 1] ? Count : Count - 1);
+        lua_pushlstring(state, value, value[v_count - 1] ? v_count : v_count - 1);
     }
 };
 
@@ -890,43 +890,43 @@ struct Convert<std::tuple<TValues...>> {
     }
 
 private:
-    template <std::size_t... Indices>
-    static bool isExactHelper(lua_State* state, int pos, std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    static bool isExactHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
     {
-        return (Convert<TValues>::isExact(state, pos + Indices) && ...);
+        return (Convert<TValues>::isExact(state, pos + v_indices) && ...);
     }
 
-    template <std::size_t... Indices>
-    static bool isValidHelper(lua_State* state, int pos, std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    static bool isValidHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
     {
-        return (Convert<TValues>::isValid(state, pos + Indices) && ...);
+        return (Convert<TValues>::isValid(state, pos + v_indices) && ...);
     }
 
-    template <std::size_t... Indices>
-    static std::optional<std::tuple<TValues...>> atHelper(lua_State* state, int pos, std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    static std::optional<std::tuple<TValues...>> atHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
     {
-        std::tuple values{Convert<TValues>::at(state, pos + Indices)...};
-        if ((std::get<Indices>(values) && ...))
-            return std::tuple{*std::get<Indices>(values)...};
+        std::tuple values{Convert<TValues>::at(state, pos + v_indices)...};
+        if ((std::get<v_indices>(values) && ...))
+            return std::tuple{*std::get<v_indices>(values)...};
         return std::nullopt;
     }
 
-    template <std::size_t... Indices>
-    static std::tuple<TValues...> checkHelper(lua_State* state, int arg, std::index_sequence<Indices...>)
+    template <std::size_t... v_indices>
+    static std::tuple<TValues...> checkHelper(lua_State* state, int arg, std::index_sequence<v_indices...>)
     {
-        return {Convert<TValues>::check(state, arg + Indices)...};
+        return {Convert<TValues>::check(state, arg + v_indices)...};
     }
 
-    template <std::size_t... Indices>
-    static void pushAll(lua_State* state, std::index_sequence<Indices...>, std::tuple<TValues...>&& values)
+    template <std::size_t... v_indices>
+    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, std::tuple<TValues...>&& values)
     {
-        (Convert<TValues>::push(state, std::move(std::get<Indices>(values))), ...);
+        (Convert<TValues>::push(state, std::move(std::get<v_indices>(values))), ...);
     }
 
-    template <std::size_t... Indices>
-    static void pushAll(lua_State* state, std::index_sequence<Indices...>, const std::tuple<TValues...>& values)
+    template <std::size_t... v_indices>
+    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, const std::tuple<TValues...>& values)
     {
-        (Convert<TValues>::push(state, std::get<Indices>(values)), ...);
+        (Convert<TValues>::push(state, std::get<v_indices>(values)), ...);
     }
 };
 
