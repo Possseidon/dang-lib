@@ -20,62 +20,62 @@ struct enum_count<dang::math::LineSide> : default_enum_count<dang::math::LineSid
 
 namespace dang::math {
 
-template <typename T, std::size_t VDim, std::size_t VAxisCount>
+template <typename T, std::size_t v_dim, std::size_t v_axis_count>
 struct AxisSystem;
 
-template <typename T, std::size_t VDim>
+template <typename T, std::size_t v_dim>
 struct Line;
 
-template <typename T, std::size_t VDim>
+template <typename T, std::size_t v_dim>
 struct Plane;
 
-template <typename T, std::size_t VDim>
+template <typename T, std::size_t v_dim>
 struct Spat;
 
 namespace detail {
 
 /// @brief Used as a base for axis-sytems, consisting of one support vector and an arbitrary amount of direction
 /// vectors.
-template <typename T, std::size_t VDim, std::size_t VAxisCount>
+template <typename T, std::size_t v_dim, std::size_t v_axis_count>
 struct AxisSystemBase {
-    Vector<T, VDim> support;
-    Matrix<T, VAxisCount, VDim> directions;
+    Vector<T, v_dim> support;
+    Matrix<T, v_axis_count, v_dim> directions;
 
     /// @brief Initializes support and direction vectors with zero.
     constexpr AxisSystemBase() = default;
 
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr AxisSystemBase(Vector<T, VDim> support, Matrix<T, VAxisCount, VDim> directions)
+    constexpr AxisSystemBase(Vector<T, v_dim> support, Matrix<T, v_axis_count, v_dim> directions)
         : support(support)
         , directions(directions)
     {}
 
     /// @brief Converts a single given direction vector into a line.
-    constexpr Line<T, VDim> line(std::size_t index) const { return Line<T, VDim>(support, directions[index]); }
+    constexpr Line<T, v_dim> line(std::size_t index) const { return Line<T, v_dim>(support, directions[index]); }
 
     /// @brief Converts two given direction vectors into a plane.
-    constexpr Plane<T, VDim> plane(std::size_t index1, std::size_t index2) const
+    constexpr Plane<T, v_dim> plane(std::size_t index1, std::size_t index2) const
     {
-        return Plane<T, VDim>(support, {directions[index1], directions[index2]});
+        return Plane<T, v_dim>(support, {directions[index1], directions[index2]});
     }
 
     /// @brief Converts three given direction vectors into a spat.
-    constexpr Spat<T, VDim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const
+    constexpr Spat<T, v_dim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const
     {
-        return Spat<T, VDim>(support, {directions[index1], directions[index2], directions[index3]});
+        return Spat<T, v_dim>(support, {directions[index1], directions[index2], directions[index3]});
     }
 
     /// @brief Returns a point in the axis-system by multiplying the factor onto the directions and adding the support
     /// vector onto it.
-    constexpr Vector<T, VDim> operator[](const Vector<T, VAxisCount>& factor) const
+    constexpr Vector<T, v_dim> operator[](const Vector<T, v_axis_count>& factor) const
     {
         return support + directions * factor;
     }
 
     /// @brief Returns the required factor to reach the specified point.
-    constexpr std::optional<Vector<T, VDim>> factorAt(const Vector<T, VDim>& point) const
+    constexpr std::optional<Vector<T, v_dim>> factorAt(const Vector<T, v_dim>& point) const
     {
-        static_assert(VDim == VAxisCount, "factorAt requires dimension and axis-count to be equal");
+        static_assert(v_dim == v_axis_count, "factorAt requires dimension and axis-count to be equal");
         return directions.solve(point - support);
     }
 
@@ -93,34 +93,34 @@ struct AxisSystemBase {
 };
 
 /// @brief Used as a base for lines, consisting of one support and one direction vector.
-template <typename T, std::size_t VDim>
-struct LineBase : AxisSystemBase<T, VDim, 1> {
+template <typename T, std::size_t v_dim>
+struct LineBase : AxisSystemBase<T, v_dim, 1> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr LineBase()
-        : AxisSystemBase<T, VDim, 1>()
+        : AxisSystemBase<T, v_dim, 1>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr LineBase(Vector<T, VDim> support, Vector<T, VDim> directions)
-        : AxisSystemBase<T, VDim, 1>(support, directions)
+    constexpr LineBase(Vector<T, v_dim> support, Vector<T, v_dim> directions)
+        : AxisSystemBase<T, v_dim, 1>(support, directions)
     {}
 
     /// @brief A simple shortcut, getting the only direction vector of the line.
-    constexpr const Vector<T, VDim>& direction() const { return this->directions[0]; }
+    constexpr const Vector<T, v_dim>& direction() const { return this->directions[0]; }
 
     /// @brief A simple shortcut, getting the only direction vector of the line.
-    constexpr Vector<T, VDim>& direction() { return this->directions[0]; }
+    constexpr Vector<T, v_dim>& direction() { return this->directions[0]; }
 
     /// @brief Returns the position of the head of the line. (support + direction)
-    constexpr Vector<T, VDim> head() const { return this->support + direction(); }
+    constexpr Vector<T, v_dim> head() const { return this->support + direction(); }
 
     /// @brief Changes the head of the line to the given position without modifying the tail position.
-    void setHead(const Vector<T, VDim>& position) { direction() = position - this->support; }
+    void setHead(const Vector<T, v_dim>& position) { direction() = position - this->support; }
 
     /// @brief Returns the position of the tail of the line. (support)
-    constexpr Vector<T, VDim> tail() const { return this->support; }
+    constexpr Vector<T, v_dim> tail() const { return this->support; }
 
     /// @brief Changes the tail of the line to the given position without modifying the head position.
-    void setTail(const Vector<T, VDim>& position)
+    void setTail(const Vector<T, v_dim>& position)
     {
         direction() += position - this->support;
         this->support = position;
@@ -130,29 +130,29 @@ struct LineBase : AxisSystemBase<T, VDim, 1> {
     constexpr T length() const { return direction().length(); }
 
     /// @brief Returns the factor of the closest point on the line for the given point.
-    constexpr T orthoProj(const Vector<T, VDim>& point) const
+    constexpr T orthoProj(const Vector<T, v_dim>& point) const
     {
         return direction().dot(point - this->support) / direction().sqrdot();
     }
 };
 
 /// @brief Used as a base for planes, consisting of one support and two direction vectors.
-template <typename T, std::size_t VDim>
-struct PlaneBase : AxisSystemBase<T, VDim, 2> {
+template <typename T, std::size_t v_dim>
+struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr PlaneBase()
-        : AxisSystemBase<T, VDim, 2>()
+        : AxisSystemBase<T, v_dim, 2>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr PlaneBase(Vector<T, VDim> support, Matrix<T, 2, VDim> directions)
-        : AxisSystemBase<T, VDim, 2>(support, directions)
+    constexpr PlaneBase(Vector<T, v_dim> support, Matrix<T, 2, v_dim> directions)
+        : AxisSystemBase<T, v_dim, 2>(support, directions)
     {}
 
     /// @brief Returns the area of the plane, seen as an n-dimensional parallelogram.
     constexpr T area() { return this->directions[0].length() * this->directions[1].length(); }
 
     /// @brief Returns the factors of the closest point on the plane for the given point.
-    constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, VDim> point) const
+    constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, v_dim> point) const
     {
         auto dxs = this->directions[0].sqrdot();
         auto dys = this->directions[1].sqrdot();
@@ -169,7 +169,7 @@ struct PlaneBase : AxisSystemBase<T, VDim, 2> {
     }
 
     /// @brief Returns one of the four quad points of the plane.
-    constexpr Vector<T, VDim> quadPoint(std::size_t index)
+    constexpr Vector<T, v_dim> quadPoint(std::size_t index)
     {
         switch (index) {
         case 0:
@@ -186,7 +186,7 @@ struct PlaneBase : AxisSystemBase<T, VDim, 2> {
     }
 
     /// @brief Returns one of the three triangle points of the plane.
-    constexpr Vector<T, VDim> trianglePoint(std::size_t index)
+    constexpr Vector<T, v_dim> trianglePoint(std::size_t index)
     {
         switch (index) {
         case 0:
@@ -220,43 +220,43 @@ struct PlaneBase : AxisSystemBase<T, VDim, 2> {
 };
 
 /// @brief Used as a base for spats, consisting of one support and three direction vectors.
-template <typename T, std::size_t VDim>
-struct SpatBase : AxisSystemBase<T, VDim, 3> {
+template <typename T, std::size_t v_dim>
+struct SpatBase : AxisSystemBase<T, v_dim, 3> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr SpatBase()
-        : AxisSystemBase<T, VDim, 3>()
+        : AxisSystemBase<T, v_dim, 3>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr SpatBase(Vector<T, VDim> support, Matrix<T, 3, VDim> directions)
-        : AxisSystemBase<T, VDim, 3>(support, directions)
+    constexpr SpatBase(Vector<T, v_dim> support, Matrix<T, 3, v_dim> directions)
+        : AxisSystemBase<T, v_dim, 3>(support, directions)
     {}
 };
 
 } // namespace detail
 
 /// @brief An axis-system with one support and an arbitrary amount of direction vectors.
-template <typename T, std::size_t VDim, std::size_t VAxisCount>
-struct AxisSystem : detail::AxisSystemBase<T, VDim, VAxisCount> {
+template <typename T, std::size_t v_dim, std::size_t v_axis_count>
+struct AxisSystem : detail::AxisSystemBase<T, v_dim, v_axis_count> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr AxisSystem()
-        : detail::AxisSystemBase<T, VDim, VAxisCount>()
+        : detail::AxisSystemBase<T, v_dim, v_axis_count>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr AxisSystem(Vector<T, VDim> support, Matrix<T, VAxisCount, VDim> directions)
-        : detail::AxisSystemBase<T, VDim, VAxisCount>(support, directions)
+    constexpr AxisSystem(Vector<T, v_dim> support, Matrix<T, v_axis_count, v_dim> directions)
+        : detail::AxisSystemBase<T, v_dim, v_axis_count>(support, directions)
     {}
 };
 
 /// @brief A line with one support and one direction vector.
-template <typename T, std::size_t VDim>
-struct Line : detail::LineBase<T, VDim> {
+template <typename T, std::size_t v_dim>
+struct Line : detail::LineBase<T, v_dim> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr Line()
-        : detail::LineBase<T, VDim>()
+        : detail::LineBase<T, v_dim>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr Line(Vector<T, VDim> support, Vector<T, VDim> directions)
-        : detail::LineBase<T, VDim>(support, directions)
+    constexpr Line(Vector<T, v_dim> support, Vector<T, v_dim> directions)
+        : detail::LineBase<T, v_dim>(support, directions)
     {}
 };
 
@@ -337,15 +337,15 @@ using Line2 = Line<float, 2>;
 using Line3 = Line<float, 3>;
 
 /// @brief A plane with one support and two direction vectors.
-template <typename T, std::size_t VDim>
-struct Plane : detail::PlaneBase<T, VDim> {
+template <typename T, std::size_t v_dim>
+struct Plane : detail::PlaneBase<T, v_dim> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr Plane()
-        : detail::PlaneBase<T, VDim>()
+        : detail::PlaneBase<T, v_dim>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr Plane(Vector<T, VDim> support, Matrix<T, 2, VDim> directions)
-        : detail::PlaneBase<T, VDim>(support, directions)
+    constexpr Plane(Vector<T, v_dim> support, Matrix<T, 2, v_dim> directions)
+        : detail::PlaneBase<T, v_dim>(support, directions)
     {}
 };
 
@@ -460,15 +460,15 @@ using Plane2 = Plane<float, 2>;
 using Plane3 = Plane<float, 3>;
 
 /// @brief A spat with one support and three direction vectors.
-template <typename T, std::size_t VDim>
-struct Spat : detail::SpatBase<T, VDim> {
+template <typename T, std::size_t v_dim>
+struct Spat : detail::SpatBase<T, v_dim> {
     /// @brief Initializes support and direction vectors with zero.
     constexpr Spat()
-        : detail::SpatBase<T, VDim>()
+        : detail::SpatBase<T, v_dim>()
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
-    constexpr Spat(Vector<T, VDim> support, Matrix<T, 3, VDim> directions)
-        : detail::SpatBase<T, VDim>(support, directions)
+    constexpr Spat(Vector<T, v_dim> support, Matrix<T, 3, v_dim> directions)
+        : detail::SpatBase<T, v_dim>(support, directions)
     {}
 };
 

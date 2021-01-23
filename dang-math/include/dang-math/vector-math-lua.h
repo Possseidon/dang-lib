@@ -7,9 +7,9 @@
 
 namespace dang::lua {
 
-template <typename T, std::size_t VDim>
-struct ClassInfo<dang::math::Vector<T, VDim>> {
-    using Vector = dang::math::Vector<T, VDim>;
+template <typename T, std::size_t v_dim>
+struct ClassInfo<dang::math::Vector<T, v_dim>> {
+    using Vector = dang::math::Vector<T, v_dim>;
     using VectorOrScalar = std::variant<Vector, T>;
 
     using Swizzled = std::variant<T, dang::math::Vector<T, 2>, dang::math::Vector<T, 3>, dang::math::Vector<T, 4>>;
@@ -17,19 +17,19 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
 
     using MultiplyType = std::variant<T,
                                       Vector,
-                                      dang::math::Matrix<T, 2, VDim>,
-                                      dang::math::Matrix<T, 3, VDim>,
-                                      dang::math::Matrix<T, 4, VDim>>;
+                                      dang::math::Matrix<T, 2, v_dim>,
+                                      dang::math::Matrix<T, 3, v_dim>,
+                                      dang::math::Matrix<T, 4, v_dim>>;
     using MultiplyResult = std::variant<T,
                                         dang::math::Vector<T, 2>,
                                         dang::math::Vector<T, 3>,
                                         dang::math::Vector<T, 4>,
-                                        dang::math::Matrix<T, 2, VDim>,
-                                        dang::math::Matrix<T, 3, VDim>,
-                                        dang::math::Matrix<T, 4, VDim>>;
+                                        dang::math::Matrix<T, 2, v_dim>,
+                                        dang::math::Matrix<T, 3, v_dim>,
+                                        dang::math::Matrix<T, 4, v_dim>>;
 
-    using DivideType = std::variant<T, Vector, dang::math::Matrix<T, VDim>>;
-    using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, VDim>>>;
+    using DivideType = std::variant<T, Vector, dang::math::Matrix<T, v_dim>>;
+    using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, v_dim>>>;
 
     inline static const std::string base_name = [] {
         using namespace std::literals;
@@ -49,18 +49,18 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
             return typeid(T).name() + " vec"s;
     }();
 
-    inline static const std::string name = base_name + std::to_string(VDim);
+    inline static const std::string name = base_name + std::to_string(v_dim);
     inline static const std::string ref_name = name + '&';
 
     static constexpr auto table()
     {
-        constexpr auto set = +[](Vector& vec, Args<VDim> values) {
+        constexpr auto set = +[](Vector& vec, Args<v_dim> values) {
             std::transform(values.begin(), values.end(), vec.begin(), ArgCheck<T>{});
         };
 
         constexpr auto copy = +[](const Vector& vec) { return vec; };
 
-        constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<VDim>{}); };
+        constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<v_dim>{}); };
 
         std::vector result{reg<set>("set"),
                            reg<copy>("copy"),
@@ -85,7 +85,7 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
             result.push_back(reg<&Vector::floor>("floor"));
             result.push_back(reg<&Vector::ceil>("ceil"));
 
-            if constexpr (VDim == 2) {
+            if constexpr (v_dim == 2) {
                 constexpr auto cross = +[](const Vector& vec, const std::optional<Vector>& other) {
                     return other ? vec.cross(*other) : vec.cross();
                 };
@@ -113,7 +113,7 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
             result.push_back(reg<&Vector::clamp>("clamp"));
             result.push_back(reg<&Vector::reflect>("reflect"));
 
-            if constexpr (VDim == 3) {
+            if constexpr (v_dim == 3) {
                 constexpr auto cross = +[](const Vector& lhs, const Vector& rhs) { return lhs.cross(rhs); };
                 result.push_back(reg<cross>("cross"));
             }
@@ -128,7 +128,7 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
 
     static constexpr auto metatable()
     {
-        constexpr auto len = +[](const Vector&) { return VDim; };
+        constexpr auto len = +[](const Vector&) { return v_dim; };
 
         constexpr auto eq = +[](const Vector& lhs, const Vector& rhs) { return lhs == rhs; };
         constexpr auto lt = +[](const Vector& lhs, const Vector& rhs) { return lhs < rhs; };
@@ -190,24 +190,24 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
                 return Vector();
             if (values.size() == 1)
                 return Vector(values[0].check<T>());
-            if (values.size() == VDim) {
+            if (values.size() == v_dim) {
                 Vector result;
                 std::transform(values.begin(), values.end(), result.begin(), ArgCheck<T>{});
                 return result;
             }
 
-            if constexpr (VDim == 0)
+            if constexpr (v_dim == 0)
                 lua.error("0 parameters expected, got " + std::to_string(values.size()));
-            else if constexpr (VDim == 1)
+            else if constexpr (v_dim == 1)
                 lua.error("0 or 1 parameters expected, got " + std::to_string(values.size()));
             else
-                lua.error("0, 1 or " + std::to_string(VDim) + " parameters expected, got " +
+                lua.error("0, 1 or " + std::to_string(v_dim) + " parameters expected, got " +
                           std::to_string(values.size()));
         };
 
         auto result = lua.pushTable();
 
-        if constexpr (VDim == 2) {
+        if constexpr (v_dim == 2) {
             if constexpr (!std::is_same_v<T, bool>) {
                 constexpr auto from_slope = +[](std::optional<T> slope) { return Vector::fromSlope(slope); };
                 result.rawSetTable("fromSlope", wrap<from_slope>);
@@ -230,24 +230,24 @@ struct ClassInfo<dang::math::Vector<T, VDim>> {
     }
 
 private:
-    template <std::size_t... VIndices>
-    static auto unpackHelper(const Vector& vector, std::index_sequence<VIndices...>)
+    template <std::size_t... v_indices>
+    static auto unpackHelper(const Vector& vector, std::index_sequence<v_indices...>)
     {
-        return std::tuple{std::get<VIndices>(vector)...};
+        return std::tuple{std::get<v_indices>(vector)...};
     }
 
     static std::optional<int> axisToIndex(char axis)
     {
-        if constexpr (VDim >= 1 && VDim <= 4)
+        if constexpr (v_dim >= 1 && v_dim <= 4)
             if (axis == 'x')
                 return 0;
-        if constexpr (VDim >= 2 && VDim <= 4)
+        if constexpr (v_dim >= 2 && v_dim <= 4)
             if (axis == 'y')
                 return 1;
-        if constexpr (VDim >= 3 && VDim <= 4)
+        if constexpr (v_dim >= 3 && v_dim <= 4)
             if (axis == 'z')
                 return 2;
-        if constexpr (VDim >= 4 && VDim <= 4)
+        if constexpr (v_dim >= 4 && v_dim <= 4)
             if (axis == 'w')
                 return 3;
         return std::nullopt;
@@ -257,17 +257,17 @@ private:
         State& lua;
         const Vector& vector;
 
-        template <std::size_t... VIndices, typename... TSwizzles>
-        std::optional<Swizzled> accessHelper(std::index_sequence<VIndices...>, TSwizzles... swizzle) const
+        template <std::size_t... v_indices, typename... TSwizzles>
+        std::optional<Swizzled> accessHelper(std::index_sequence<v_indices...>, TSwizzles... swizzle) const
         {
             auto indices = std::array{axisToIndex(swizzle)...};
-            if ((!std::get<VIndices>(indices) || ...))
+            if ((!std::get<v_indices>(indices) || ...))
                 return std::nullopt;
 
             if constexpr (sizeof...(TSwizzles) == 1)
                 return vector[*std::get<0>(indices)];
             else
-                return dang::math::Vector<T, sizeof...(TSwizzles)>(vector[*std::get<VIndices>(indices)]...);
+                return dang::math::Vector<T, sizeof...(TSwizzles)>(vector[*std::get<v_indices>(indices)]...);
         }
 
         template <typename... TSwizzles>
@@ -293,7 +293,7 @@ private:
 
         std::optional<Swizzled> operator()(std::size_t index) const
         {
-            if (index >= 1 && index <= VDim)
+            if (index >= 1 && index <= v_dim)
                 return vector[index - 1];
             return std::nullopt;
         }
@@ -304,21 +304,21 @@ private:
         Vector& vector;
         const Swizzled& value;
 
-        template <std::size_t... VIndices, typename... TSwizzles>
-        void accessHelper(std::index_sequence<VIndices...>, TSwizzles... swizzle) const
+        template <std::size_t... v_indices, typename... TSwizzles>
+        void accessHelper(std::index_sequence<v_indices...>, TSwizzles... swizzle) const
         {
             auto indices = std::array{axisToIndex(swizzle)...};
-            if ((!std::get<VIndices>(indices) || ...))
+            if ((!std::get<v_indices>(indices) || ...))
                 lua.argError(2, "invalid swizzle");
 
             if (auto opt_value = std::get_if<T>(&value)) {
-                ((vector[*std::get<VIndices>(indices)] = *opt_value), ...);
+                ((vector[*std::get<v_indices>(indices)] = *opt_value), ...);
                 return;
             }
 
             if constexpr (sizeof...(TSwizzles) > 1) {
                 if (auto opt_values = std::get_if<dang::math::Vector<T, sizeof...(TSwizzles)>>(&value)) {
-                    ((vector[*std::get<VIndices>(indices)] = (*opt_values)[VIndices]), ...);
+                    ((vector[*std::get<v_indices>(indices)] = (*opt_values)[v_indices]), ...);
                     return;
                 }
             }
@@ -353,7 +353,7 @@ private:
 
         void operator()(std::size_t index)
         {
-            if (index < 1 || index > VDim)
+            if (index < 1 || index > v_dim)
                 lua.argError(2, "index out of range");
             if (auto opt_value = std::get_if<T>(&value))
                 vector[index - 1] = *opt_value;
@@ -363,24 +363,24 @@ private:
     };
 };
 
-template <typename T, std::size_t VDim>
-const char* ClassName<dang::math::Vector<T, VDim>> = ClassInfo<dang::math::Vector<T, VDim>>::name.c_str();
+template <typename T, std::size_t v_dim>
+const char* ClassName<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::name.c_str();
 
-template <typename T, std::size_t VDim>
-const char* ClassNameRef<dang::math::Vector<T, VDim>> = ClassInfo<dang::math::Vector<T, VDim>>::ref_name.c_str();
+template <typename T, std::size_t v_dim>
+const char* ClassNameRef<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::ref_name.c_str();
 
-template <typename T, std::size_t VCols, std::size_t VRows>
-struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
-    using Matrix = dang::math::Matrix<T, VCols, VRows>;
+template <typename T, std::size_t v_cols, std::size_t v_rows>
+struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
+    using Matrix = dang::math::Matrix<T, v_cols, v_rows>;
     using MatrixOrScalar = std::variant<Matrix, T>;
     using IndexOrPos = std::variant<std::size_t, dang::math::svec2>;
-    using IndexResult = std::variant<std::monostate, T, dang::math::Vector<T, VRows>>;
+    using IndexResult = std::variant<std::monostate, T, dang::math::Vector<T, v_rows>>;
 
     using MultiplyType = std::variant<T,
-                                      dang::math::Vector<T, VCols>,
-                                      dang::math::Matrix<T, 2, VCols>,
-                                      dang::math::Matrix<T, 3, VCols>,
-                                      dang::math::Matrix<T, 4, VCols>>;
+                                      dang::math::Vector<T, v_cols>,
+                                      dang::math::Matrix<T, 2, v_cols>,
+                                      dang::math::Matrix<T, 3, v_cols>,
+                                      dang::math::Matrix<T, 4, v_cols>>;
     using MultiplyResult = std::variant<T,
                                         dang::math::Vector<T, 2>,
                                         dang::math::Vector<T, 3>,
@@ -395,11 +395,11 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
                                         dang::math::Matrix<T, 4, 3>,
                                         dang::math::Matrix<T, 4>>;
 
-    using DivideType = std::variant<T, dang::math::Matrix<T, VCols>>;
+    using DivideType = std::variant<T, dang::math::Matrix<T, v_cols>>;
     using DivideResult =
-        std::conditional_t<VCols == VRows,
+        std::conditional_t<v_cols == v_rows,
                            std::variant<T, std::optional<Matrix>>,
-                           std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, VCols>>>>;
+                           std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, v_cols>>>>;
 
     inline static const std::string base_name = [] {
         using namespace std::literals;
@@ -412,13 +412,13 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
     }();
 
     inline static const std::string name =
-        base_name + std::to_string(VCols) + (VCols != VRows ? 'x' + std::to_string(VRows) : "");
+        base_name + std::to_string(v_cols) + (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
     inline static const std::string ref_name = name + '&';
 
     static constexpr auto table()
     {
-        constexpr auto set = +[](Matrix& mat, Args<VCols> values) {
-            std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, VRows>>{});
+        constexpr auto set = +[](Matrix& mat, Args<v_cols> values) {
+            std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, v_rows>>{});
         };
 
         constexpr auto copy = +[](const Matrix& mat) { return mat; };
@@ -462,7 +462,7 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
         // Matrix parameters for solve functions are not const, to enable in-place calculation
         // (swaps columns around, but reverts to the original at the end)
 
-        if constexpr (VCols == VRows + 1) {
+        if constexpr (v_cols == v_rows + 1) {
             constexpr auto solve_col = +[](State& lua, Matrix& mat, std::size_t col) {
                 checkColumn(lua, col, 2);
                 return mat.solveCol(col - 1);
@@ -473,17 +473,17 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
             result.push_back(reg<solve>("solve"));
         }
 
-        if constexpr (VCols == VRows) {
+        if constexpr (v_cols == v_rows) {
             result.push_back(reg<&Matrix::inverse>("inverse"));
 
             constexpr auto solve_col =
-                +[](State& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, VCols>& vec) {
+                +[](State& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, v_cols>& vec) {
                     checkColumn(lua, col, 2);
                     return mat.solveCol(col - 1, vec);
                 };
             result.push_back(reg<solve_col>("solveCol"));
 
-            constexpr auto solve = +[](Matrix& mat, const dang::math::Vector<T, VCols>& vec) { return mat.solve(vec); };
+            constexpr auto solve = +[](Matrix& mat, const dang::math::Vector<T, v_cols>& vec) { return mat.solve(vec); };
             result.push_back(reg<solve>("solve"));
         }
         return result;
@@ -504,7 +504,7 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
             return std::visit([](const auto& a, const auto& b) -> DivideResult { return a / b; }, lhs, rhs);
         };
 
-        constexpr auto len = +[](const Matrix&) { return VCols; };
+        constexpr auto len = +[](const Matrix&) { return v_cols; };
 
         constexpr auto eq = +[](const Matrix& lhs, const Matrix& rhs) { return lhs == rhs; };
         constexpr auto lt = +[](const Matrix& lhs, const Matrix& rhs) { return lhs < rhs; };
@@ -550,14 +550,14 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
                 return Matrix();
             if (values.size() == 1)
                 return Matrix(values[0].check<T>());
-            if (values.size() == VCols * VRows) {
+            if (values.size() == v_cols * v_rows) {
                 Matrix result;
-                dang::math::sbounds2 bounds{{VCols, VRows}};
+                dang::math::sbounds2 bounds{{v_cols, v_rows}};
                 for (const auto& [col, row] : bounds)
-                    result(col, row) = values[static_cast<int>(col * VRows + row)].check<T>();
+                    result(col, row) = values[static_cast<int>(col * v_rows + row)].check<T>();
                 return result;
             }
-            lua.error("0, 1 or "s + std::to_string(VCols * VRows) + " arguments expected, got "s +
+            lua.error("0, 1 or "s + std::to_string(v_cols * v_rows) + " arguments expected, got "s +
                       std::to_string(values.size()));
         };
 
@@ -575,20 +575,20 @@ struct ClassInfo<dang::math::Matrix<T, VCols, VRows>> {
     }
 
 private:
-    static bool columnInRange(std::size_t col) { return col >= 1 && col <= VCols; }
-    static bool rowInRange(std::size_t row) { return row >= 1 && row <= VRows; }
+    static bool columnInRange(std::size_t col) { return col >= 1 && col <= v_cols; }
+    static bool rowInRange(std::size_t row) { return row >= 1 && row <= v_rows; }
     static bool inRange(std::size_t col, std::size_t row) { return columnInRange(col) && rowInRange(row); }
     static bool inRange(dang::math::svec2 pos) { return inRange(pos.x(), pos.y()); }
 
     static void checkColumn(State& lua, std::size_t col, int arg)
     {
-        if (col < 1 || col > VCols)
+        if (col < 1 || col > v_cols)
             lua.argError(arg, "column out of range");
     }
 
     static void checkRow(State& lua, std::size_t row, int arg)
     {
-        if (row < 1 || row > VRows)
+        if (row < 1 || row > v_rows)
             lua.argError(arg, "row out of range");
     }
 
@@ -608,14 +608,14 @@ private:
 
         IndexResult operator()(std::size_t index) const
         {
-            if (index >= 1 && index <= VCols)
+            if (index >= 1 && index <= v_cols)
                 return matrix[index - 1];
             return {};
         }
 
         IndexResult operator()(dang::math::svec2 pos) const
         {
-            if (pos.greaterThanEqual(1).all() && pos.lessThanEqual({VCols, VRows}).all())
+            if (pos.greaterThanEqual(1).all() && pos.lessThanEqual({v_cols, v_rows}).all())
                 return matrix[pos - 1];
             return {};
         }
@@ -629,7 +629,7 @@ private:
         void operator()(std::size_t col)
         {
             checkColumn(lua, col, 2);
-            matrix[col - 1] = value.check<dang::math::Vector<T, VRows>>();
+            matrix[col - 1] = value.check<dang::math::Vector<T, v_rows>>();
         }
 
         void operator()(dang::math::svec2 pos)
@@ -640,12 +640,12 @@ private:
     };
 };
 
-template <typename T, std::size_t VCols, std::size_t VRows>
-const char* ClassName<dang::math::Matrix<T, VCols, VRows>> =
-    ClassInfo<dang::math::Matrix<T, VCols, VRows>>::name.c_str();
+template <typename T, std::size_t v_cols, std::size_t v_rows>
+const char* ClassName<dang::math::Matrix<T, v_cols, v_rows>> =
+    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::name.c_str();
 
-template <typename T, std::size_t VCols, std::size_t VRows>
-const char* ClassNameRef<dang::math::Matrix<T, VCols, VRows>> =
-    ClassInfo<dang::math::Matrix<T, VCols, VRows>>::ref_name.c_str();
+template <typename T, std::size_t v_cols, std::size_t v_rows>
+const char* ClassNameRef<dang::math::Matrix<T, v_cols, v_rows>> =
+    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::ref_name.c_str();
 
 } // namespace dang::lua

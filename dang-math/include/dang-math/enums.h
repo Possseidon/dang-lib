@@ -108,7 +108,7 @@ namespace dang::math {
 
 namespace detail {
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 struct axis_selector {
     enum type {};
 };
@@ -128,7 +128,7 @@ struct axis_selector<3> {
     using type = Axis3;
 };
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 struct corner_selector {
     enum type {};
 };
@@ -148,7 +148,7 @@ struct corner_selector<3> {
     using type = Corner3;
 };
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 struct edge_selector {
     enum type {};
 };
@@ -163,7 +163,7 @@ struct edge_selector<3> {
     using type = Edge3;
 };
 
-template <std::size_t Dim>
+template <std::size_t v_dim>
 struct facing_selector {
     enum type {};
 };
@@ -185,29 +185,29 @@ struct facing_selector<3> {
 
 } // namespace detail
 
-template <std::size_t Dim>
-using Axis = typename detail::axis_selector<Dim>::type;
+template <std::size_t v_dim>
+using Axis = typename detail::axis_selector<v_dim>::type;
 
-template <std::size_t Dim>
-using Corner = typename detail::corner_selector<Dim>::type;
+template <std::size_t v_dim>
+using Corner = typename detail::corner_selector<v_dim>::type;
 
-template <std::size_t Dim>
-using Edge = typename detail::edge_selector<Dim>::type;
+template <std::size_t v_dim>
+using Edge = typename detail::edge_selector<v_dim>::type;
 
-template <std::size_t Dim>
-using Facing = typename detail::facing_selector<Dim>::type;
+template <std::size_t v_dim>
+using Facing = typename detail::facing_selector<v_dim>::type;
 
-template <std::size_t Dim>
-using Axes = dutils::EnumSet<Axis<Dim>>;
+template <std::size_t v_dim>
+using Axes = dutils::EnumSet<Axis<v_dim>>;
 
-template <std::size_t Dim>
-using Corners = dutils::EnumSet<Corner<Dim>>;
+template <std::size_t v_dim>
+using Corners = dutils::EnumSet<Corner<v_dim>>;
 
-template <std::size_t Dim>
-using Edges = dutils::EnumSet<Edge<Dim>>;
+template <std::size_t v_dim>
+using Edges = dutils::EnumSet<Edge<v_dim>>;
 
-template <std::size_t Dim>
-using Facings = dutils::EnumSet<Facing<Dim>>;
+template <std::size_t v_dim>
+using Facings = dutils::EnumSet<Facing<v_dim>>;
 
 using Axes1 = Axes<1>;
 using Axes2 = Axes<2>;

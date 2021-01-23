@@ -10,10 +10,10 @@
 
 namespace dang::math {
 
-template <bool VWithCenter = false>
+template <bool v_with_center = false>
 class MarchingCubes {
 public:
-    template <typename T, std::size_t VMaxSize>
+    template <typename T, std::size_t v_max_size>
     struct LimitedVector {
     public:
         using iterator = T*;
@@ -28,7 +28,7 @@ public:
         {}
 
         constexpr auto size() const { return size_; }
-        constexpr auto max_size() const { return VMaxSize; }
+        constexpr auto max_size() const { return v_max_size; }
         constexpr auto empty() const { return size_ == 0; }
 
         constexpr iterator begin() { return &items_[0]; }
@@ -72,7 +72,7 @@ public:
         constexpr auto clear() { size_ = 0; }
 
     private:
-        T items_[VMaxSize];
+        T items_[v_max_size];
         std::size_t size_ = 0;
     };
 
@@ -129,7 +129,7 @@ public:
         }
     };
 
-    using Planes = LimitedVector<PlaneInfo, VWithCenter ? 12 : 5>;
+    using Planes = LimitedVector<PlaneInfo, v_with_center ? 12 : 5>;
     using Lookup = std::array<Planes, 256>;
 
     constexpr const auto& operator[](Corners3 corners) const { return lookup_[corners.toBits<std::size_t>()]; }
@@ -240,7 +240,7 @@ private:
     {
         Planes result;
         for (const auto& loop : generateLoops(corners)) {
-            if constexpr (VWithCenter) {
+            if constexpr (v_with_center) {
                 vec3 center;
                 for (const auto& point : loop)
                     center += point.position + point.direction / 2;

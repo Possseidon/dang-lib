@@ -12,22 +12,22 @@ namespace detail {
 
 // TODO: C++20 use std::bind_front
 
-template <int VIndex>
+template <int v_index>
 struct Placeholder {};
 
-template <int VIndex, int... VIndices, typename... TArgs>
+template <int v_index, int... v_indices, typename... TArgs>
 auto bind_indices(TArgs&&... args)
 {
-    if constexpr (VIndex == 0)
-        return std::bind(std::forward<TArgs>(args)..., Placeholder<VIndices>()...);
+    if constexpr (v_index == 0)
+        return std::bind(std::forward<TArgs>(args)..., Placeholder<v_indices>()...);
     else
-        return bind_indices<VIndex - 1, VIndex, VIndices...>(std::forward<TArgs>(args)...);
+        return bind_indices<v_index - 1, v_index, v_indices...>(std::forward<TArgs>(args)...);
 }
 
-template <int VIndex, typename... TArgs>
+template <int v_index, typename... TArgs>
 auto bind_n(TArgs&&... args)
 {
-    return bind_indices<VIndex>(std::forward<TArgs>(args)...);
+    return bind_indices<v_index>(std::forward<TArgs>(args)...);
 }
 
 } // namespace detail
@@ -316,7 +316,7 @@ private:
 
 namespace std {
 
-template <int Index>
-class is_placeholder<dang::utils::detail::Placeholder<Index>> : public integral_constant<int, Index> {};
+template <int v_index>
+class is_placeholder<dang::utils::detail::Placeholder<v_index>> : public integral_constant<int, v_index> {};
 
 } // namespace std

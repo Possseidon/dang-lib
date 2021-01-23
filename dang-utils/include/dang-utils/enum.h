@@ -12,9 +12,9 @@
 namespace dang::utils {
 
 /// @brief An integral constant converting the given enum value to its underlying type.
-template <auto V>
+template <auto v>
 struct underlying_value
-    : std::integral_constant<std::underlying_type_t<decltype(V)>, static_cast<std::underlying_type_t<decltype(V)>>(V)> {
+    : std::integral_constant<std::underlying_type_t<decltype(v)>, static_cast<std::underlying_type_t<decltype(v)>>(v)> {
 };
 
 /// @brief Simply uses T::COUNT.
@@ -67,7 +67,7 @@ enum class EnumSetIteration { Forward, Bidirectional };
 struct All {};
 inline constexpr All all;
 
-template <typename T, EnumSetIteration VIteration = EnumSetIteration::Forward>
+template <typename T, EnumSetIteration v_iteration = EnumSetIteration::Forward>
 class EnumSet {
 public:
     static constexpr std::size_t enum_count = enum_count_v<T>;
@@ -217,12 +217,12 @@ public:
     };
 
     using iterator =
-        std::conditional_t<VIteration == EnumSetIteration::Forward, forward_iterator, bidirectional_iterator>;
+        std::conditional_t<v_iteration == EnumSetIteration::Forward, forward_iterator, bidirectional_iterator>;
 
     EnumSet() = default;
 
-    template <EnumSetIteration VOtherIteration>
-    constexpr EnumSet(const EnumSet<T, VOtherIteration>& other)
+    template <EnumSetIteration v_other_iteration>
+    constexpr EnumSet(const EnumSet<T, v_other_iteration>& other)
         : words_(other.words())
     {}
 
@@ -415,7 +415,7 @@ public:
 
     constexpr iterator end() const
     {
-        if constexpr (VIteration == EnumSetIteration::Forward)
+        if constexpr (v_iteration == EnumSetIteration::Forward)
             return iterator();
         else
             return iterator(*this, std::nullopt);
@@ -604,7 +604,7 @@ private:
 };
 
 /// @brief Used in the same fashion as std::index_sequence.
-template <typename T, T... Values>
+template <typename T, T...>
 struct EnumSequence {
     static_assert(std::is_enum_v<T>, "Enum sequence requires enumeration type.");
 };
@@ -612,10 +612,10 @@ struct EnumSequence {
 namespace detail {
 
 /// @brief Helper function to create an enum sequences from a given integer sequence.
-template <typename T, std::underlying_type_t<T>... Indices>
-constexpr auto makeEnumSequenceHelper(std::integer_sequence<std::underlying_type_t<T>, Indices...>)
+template <typename T, std::underlying_type_t<T>... v_indices>
+constexpr auto makeEnumSequenceHelper(std::integer_sequence<std::underlying_type_t<T>, v_indices...>)
 {
-    return EnumSequence<T, static_cast<T>(Indices)...>();
+    return EnumSequence<T, static_cast<T>(v_indices)...>();
 }
 
 } // namespace detail
