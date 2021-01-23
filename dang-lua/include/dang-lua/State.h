@@ -169,9 +169,9 @@ protected:
     template <std::size_t... v_indices>
     static constexpr int indexOffset(std::index_sequence<v_indices...>)
     {
-        static_assert((Convert<std::tuple_element_t<v_indices, Arguments>>::PushCount && ...),
+        static_assert((Convert<std::tuple_element_t<v_indices, Arguments>>::push_count && ...),
                       "Only the last function argument can be variadic.");
-        return (1 + ... + *Convert<std::tuple_element_t<v_indices, Arguments>>::PushCount);
+        return (1 + ... + *Convert<std::tuple_element_t<v_indices, Arguments>>::push_count);
     }
 };
 
@@ -1864,8 +1864,8 @@ public:
     template <typename T, typename... TArgs>
     auto pushNew(TArgs&&... args)
     {
-        if constexpr (Convert<T>::PushCount) {
-            constexpr int push_count = *Convert<T>::PushCount;
+        if constexpr (Convert<T>::push_count) {
+            constexpr int push_count = *Convert<T>::push_count;
             assertPushable(push_count);
             Convert<T>::push(state_, std::forward<TArgs>(args)...);
             notifyPush(push_count);
@@ -1930,7 +1930,7 @@ public:
     template <typename TIndex, typename TValue>
     void replace(TIndex&& index, TValue&& value)
     {
-        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(Convert<TValue>::push_count == 1, "Supplied value must take up a single stack position.");
         static_assert(IsIndex<std::decay_t<TIndex>>::value, "Supplied index must be an index.");
 
         if constexpr (IsIndex<std::decay_t<TValue>>::value) {
@@ -1952,7 +1952,7 @@ public:
     template <typename TMessage>
     [[noreturn]] void error(TMessage&& message)
     {
-        static_assert(Convert<TMessage>::PushCount == 1, "Supplied message must take up a single stack position.");
+        static_assert(Convert<TMessage>::push_count == 1, "Supplied message must take up a single stack position.");
         push(std::forward<TMessage>(message));
         // technically lua_error pops the message, but since it doesn't return this is not really visible to users
         detail::noreturn_lua_error(state_);
@@ -1980,7 +1980,7 @@ public:
     {
         assertPushableAuxiliary();
         auto status = static_cast<Status>(
-            luaL_loadbufferx(state_, info.buffer.data(), info.buffer.size(), info.name, loadModeNames[info.mode]));
+            luaL_loadbufferx(state_, info.buffer.data(), info.buffer.size(), info.name, load_mode_names[info.mode]));
         notifyPush();
         if (status == Status::Ok)
             return Expected<Arg>{top().asResult()};
@@ -1994,7 +1994,7 @@ public:
     template <int v_results = 0, typename TFunc, typename... TArgs>
     auto call(TFunc&& func, TArgs&&... args)
     {
-        static_assert(Convert<TFunc>::PushCount == 1, "Supplied function must take up a single stack position.");
+        static_assert(Convert<TFunc>::push_count == 1, "Supplied function must take up a single stack position.");
 
         int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
 
@@ -2028,7 +2028,7 @@ public:
     template <typename TFunc, typename... TArgs>
     auto callReturning(int results, TFunc&& func, TArgs&&... args)
     {
-        static_assert(Convert<TFunc>::PushCount == 1, "Supplied function must take up a single stack position.");
+        static_assert(Convert<TFunc>::push_count == 1, "Supplied function must take up a single stack position.");
         assert(results != LUA_MULTRET); // TODO: Support LUA_MULTRET
 
         int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
@@ -2044,7 +2044,7 @@ public:
     template <int v_results = 0, typename TFunc, typename... TArgs>
     auto pcall(TFunc&& func, TArgs&&... args)
     {
-        static_assert(Convert<TFunc>::PushCount == 1, "Supplied function must take up a single stack position.");
+        static_assert(Convert<TFunc>::push_count == 1, "Supplied function must take up a single stack position.");
 
         int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
 
@@ -2091,7 +2091,7 @@ public:
     template <typename TFunc, typename... TArgs>
     auto pcallReturning(int results, TFunc&& func, TArgs&&... args)
     {
-        static_assert(Convert<TFunc>::PushCount == 1, "Supplied function must take up a single stack position.");
+        static_assert(Convert<TFunc>::push_count == 1, "Supplied function must take up a single stack position.");
         assert(results != LUA_MULTRET); // TODO: Support LUA_MULTRET
 
         int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
@@ -2191,9 +2191,9 @@ public:
         constexpr bool unary_op = v_operation == ArithOp::UnaryMinus || v_operation == ArithOp::BinaryNot;
         auto pushed_args = push(std::forward<TArgs>(args)...);
         constexpr bool unary_arg =
-            Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 1;
+            Convert<decltype(pushed_args)>::push_count && *Convert<decltype(pushed_args)>::push_count == 1;
         constexpr bool binary_args =
-            Convert<decltype(pushed_args)>::PushCount && *Convert<decltype(pushed_args)>::PushCount == 2;
+            Convert<decltype(pushed_args)>::push_count && *Convert<decltype(pushed_args)>::push_count == 2;
         static_assert(unary_op && unary_arg || binary_args, "Argument count does not match the operation type.");
         lua_arith(state_, static_cast<int>(v_operation));
         if constexpr (binary_args)
@@ -2205,8 +2205,8 @@ public:
     template <typename TLeft, typename TRight>
     bool compare(CompareOp operation, TLeft&& lhs, TRight&& rhs) const
     {
-        static_assert(Convert<TLeft>::PushCount == 1, "Left operand must take up a single stack position.");
-        static_assert(Convert<TRight>::PushCount == 1, "Right operand must take up a single stack position.");
+        static_assert(Convert<TLeft>::push_count == 1, "Left operand must take up a single stack position.");
+        static_assert(Convert<TRight>::push_count == 1, "Right operand must take up a single stack position.");
 
         constexpr bool left_is_index = IsIndex<std::decay_t<TLeft>>::value;
         constexpr bool right_is_index = IsIndex<std::decay_t<TRight>>::value;
@@ -2278,7 +2278,7 @@ public:
     template <typename TTable, typename TKey>
     auto getTableWithType(TTable& table, TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2324,8 +2324,8 @@ public:
     template <typename TTable, typename TKey, typename TValue>
     void setTable(TTable& table, TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
-        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TValue>::push_count == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2357,7 +2357,7 @@ public:
     template <typename TTable, typename TKey>
     auto rawGetTableWithType(TTable& table, TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2397,8 +2397,8 @@ public:
     template <typename TTable, typename TKey, typename TValue>
     void rawSetTable(TTable& table, TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
-        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TValue>::push_count == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
@@ -2426,7 +2426,7 @@ public:
     template <typename TKey>
     auto getGlobalWithType(TKey&& key)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
         if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
             auto type = static_cast<Type>(lua_getglobal(state_, key));
             notifyPush(1);
@@ -2451,8 +2451,8 @@ public:
     template <typename TKey, typename TValue>
     void setGlobal(TKey&& key, TValue&& value)
     {
-        static_assert(Convert<TKey>::PushCount == 1, "Supplied key must take up a single stack position.");
-        static_assert(Convert<TValue>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(Convert<TKey>::push_count == 1, "Supplied key must take up a single stack position.");
+        static_assert(Convert<TValue>::push_count == 1, "Supplied value must take up a single stack position.");
         if constexpr (std::is_same_v<std::decay_t<TKey>, const char*>) {
             push(std::forward<TValue>(value));
             lua_setglobal(state_, key);
@@ -2529,7 +2529,7 @@ public:
     void openLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
-        luaL_requiref(state_, libraryNames[library], libraryFunctions[library], 1);
+        luaL_requiref(state_, library_names[library], library_functions[library], 1);
         lua_pop(state_, 1);
     }
 
@@ -2537,7 +2537,7 @@ public:
     auto pushLib(StandardLibrary library)
     {
         assertPushableAuxiliary();
-        luaL_requiref(state_, libraryNames[library], libraryFunctions[library], 1);
+        luaL_requiref(state_, library_names[library], library_functions[library], 1);
         notifyPush();
         return top().asResult();
     }
@@ -2560,7 +2560,7 @@ public:
     template <typename T>
     void require(bool global = false)
     {
-        require(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
+        require(class_name<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
     /// @brief Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it
@@ -2576,7 +2576,7 @@ public:
     template <typename T>
     auto pushRequire(bool global = false)
     {
-        return pushRequire(ClassName<T>, wrap<&ClassInfo<T>::require>, global);
+        return pushRequire(class_name<T>, wrap<&ClassInfo<T>::require>, global);
     }
 
     /// @brief Registers a function with a given name in the global table.
@@ -2626,7 +2626,7 @@ public:
     template <typename T>
     Reference ref(T&& value)
     {
-        static_assert(Convert<T>::PushCount == 1, "Supplied value must take up a single stack position.");
+        static_assert(Convert<T>::push_count == 1, "Supplied value must take up a single stack position.");
         push(std::forward<T>(value));
         notifyPush(-1);
         return Reference(state());
@@ -2728,8 +2728,8 @@ private:
     template <typename T>
     void pushValue(T&& value)
     {
-        if constexpr (Convert<T>::PushCount) {
-            constexpr int push_count = *Convert<T>::PushCount;
+        if constexpr (Convert<T>::push_count) {
+            constexpr int push_count = *Convert<T>::push_count;
             assertPushable(push_count);
             Convert<T>::push(state_, std::forward<T>(value));
             notifyPush(push_count);
@@ -2815,8 +2815,8 @@ inline int wrap(lua_State* state)
         else {
             auto&& result = std::apply(v_func, std::move(args));
             using TResult = decltype(result);
-            if constexpr (Convert<TResult>::PushCount) {
-                constexpr auto push_count = *Convert<TResult>::PushCount;
+            if constexpr (Convert<TResult>::push_count) {
+                constexpr auto push_count = *Convert<TResult>::push_count;
                 if constexpr (push_count > LUA_MINSTACK)
                     luaL_checkstack(state, push_count);
                 Convert<TResult>::push(state, std::move(result));
@@ -2920,8 +2920,8 @@ private:
 
 template <>
 struct Convert<Reference> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = false;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = false;
 
     static void push([[maybe_unused]] lua_State* state, const Reference& reference)
     {
@@ -2932,8 +2932,8 @@ struct Convert<Reference> {
 
 template <>
 struct Convert<State&> {
-    static constexpr std::optional<int> PushCount = 0;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 0;
+    static constexpr bool allow_nesting = true;
 
     static bool isExact(State&, int) { return true; }
 
@@ -2951,8 +2951,8 @@ struct ConvertIndexBase {
 };
 
 struct ConvertIndex : ConvertIndexBase {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = false;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = false;
 
     template <typename TIndex>
     static void push(lua_State* state, TIndex index)
@@ -2992,8 +2992,8 @@ struct ConvertStackIndexResult : ConvertIndex {
 
 template <int v_count>
 struct ConvertIndices : ConvertIndexBase {
-    static constexpr std::optional<int> PushCount = v_count;
-    static constexpr bool AllowNesting = false;
+    static constexpr std::optional<int> push_count = v_count;
+    static constexpr bool allow_nesting = false;
 
     template <typename TIndices>
     static void push(lua_State* state, TIndices indices)
@@ -3041,8 +3041,8 @@ struct ConvertStackIndicesResult : ConvertIndices<v_count> {
 };
 
 struct ConvertIndexRange : ConvertIndexBase {
-    static constexpr std::optional<int> PushCount = std::nullopt;
-    static constexpr bool AllowNesting = false;
+    static constexpr std::optional<int> push_count = std::nullopt;
+    static constexpr bool allow_nesting = false;
 
     template <typename TIndexRange>
     static void push(lua_State* state, TIndexRange index_range)

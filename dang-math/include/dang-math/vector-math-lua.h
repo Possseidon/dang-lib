@@ -364,10 +364,10 @@ private:
 };
 
 template <typename T, std::size_t v_dim>
-const char* ClassName<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::name.c_str();
+const char* class_name<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::name.c_str();
 
 template <typename T, std::size_t v_dim>
-const char* ClassNameRef<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::ref_name.c_str();
+const char* class_name_ref<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::ref_name.c_str();
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
 struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
@@ -483,7 +483,8 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
                 };
             result.push_back(reg<solve_col>("solveCol"));
 
-            constexpr auto solve = +[](Matrix& mat, const dang::math::Vector<T, v_cols>& vec) { return mat.solve(vec); };
+            constexpr auto solve =
+                +[](Matrix& mat, const dang::math::Vector<T, v_cols>& vec) { return mat.solve(vec); };
             result.push_back(reg<solve>("solve"));
         }
         return result;
@@ -641,11 +642,11 @@ private:
 };
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* ClassName<dang::math::Matrix<T, v_cols, v_rows>> =
+const char* class_name<dang::math::Matrix<T, v_cols, v_rows>> =
     ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::name.c_str();
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* ClassNameRef<dang::math::Matrix<T, v_cols, v_rows>> =
+const char* class_name_ref<dang::math::Matrix<T, v_cols, v_rows>> =
     ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::ref_name.c_str();
 
 } // namespace dang::lua

@@ -17,11 +17,11 @@ constexpr SubClasses<T> SubClassesOf{};
 
 /// @brief Can be specialized to provide a customized name for a class.
 template <typename T>
-const char* ClassName = typeid(T).name();
+const char* class_name = typeid(T).name();
 
 /// @brief Can be specialized to provide a customized name for references to a class.
 template <typename T>
-const char* ClassNameRef = typeid(T*).name();
+const char* class_name_ref = typeid(T*).name();
 
 /// @brief Returns empty index and metatable.
 struct DefaultClassInfo {
@@ -36,16 +36,16 @@ struct ClassInfo : DefaultClassInfo {};
 
 /// @brief Shorthand to access the index table of a wrapped class.
 template <typename T>
-const auto ClassTable = ClassInfo<T>::table();
+const auto class_table = ClassInfo<T>::table();
 
 /// @brief Shorthand to access the metatable of a wrapped class.
 template <typename T>
-const auto ClassMetatable = ClassInfo<T>::metatable();
+const auto class_metatable = ClassInfo<T>::metatable();
 
 /// @brief Can be specialized to provide an array of string names for a given enum to convert from and to Lua.
 /// @remark The array needs to end with a "null" entry.
 template <typename T>
-constexpr const char* EnumValues[1]{};
+constexpr const char* enum_values[1]{};
 
 namespace detail {
 
@@ -92,11 +92,11 @@ void setfuncs(lua_State* state, const T& funcs)
 
 --- Convert Protocol ---
 
-static constexpr std::optional<int> PushCount = 1;
+static constexpr std::optional<int> push_count = 1;
     -> How many items are pushed by push, usually 1
     -> Can be std::nullopt if the size varies, in which case the getPushCount function must be provided
 
-static constexpr bool AllowNesting = true;
+static constexpr bool allow_nesting = true;
     -> Whether this type can be nested inside of tuples.
 
 static bool isExact(lua_State* state, int pos);
@@ -116,22 +116,22 @@ static T check(lua_State* state, int arg);
     -> lua_checkT(state, arg)
 
 static int getPushCount(const &T value);
-    -> When PushCount is std::nullopt, this function returns the actual count for a given value
+    -> When push_count is std::nullopt, this function returns the actual count for a given value
 
 static std::string/std::string_view getPushTypename();
     -> Returns the typename of the value
     -> luaL_typename
 
 static void push(lua_State* state, T value);
-    -> Pushes the given value onto the stack using PushCount values
+    -> Pushes the given value onto the stack using push_count values
     -> lua_pushT(state, value)
 
 // A full implementation would look like this:
 
 template <>
 struct Convert<T> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     static bool isExact(lua_State* state, int pos) {}
 
@@ -156,11 +156,11 @@ enum class StoreType { None, Value, Reference };
 /// @brief Converts instances of classes and enums to and from Lua as either value or reference.
 template <typename T>
 struct Convert {
-    static_assert(EnumValues<T>[std::size(EnumValues<T>) - 1] == nullptr, "EnumValues is not null-terminated");
-    static_assert(!std::is_enum_v<T> || std::size(EnumValues<T>) > 1, "EnumValues is empty");
+    static_assert(enum_values<T>[std::size(enum_values<T>) - 1] == nullptr, "enum_values is not null-terminated");
+    static_assert(!std::is_enum_v<T> || std::size(enum_values<T>) > 1, "enum_values is empty");
 
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Checks whether the type matches any of the supplied sub classes.
     template <typename TFirst, typename... TRest>
@@ -179,9 +179,9 @@ struct Convert {
     static StoreType type(lua_State* state, int pos)
     {
         static_assert(std::is_class_v<T>);
-        if (luaL_testudata(state, pos, ClassName<T>))
+        if (luaL_testudata(state, pos, class_name<T>))
             return StoreType::Value;
-        if (luaL_testudata(state, pos, ClassNameRef<T>))
+        if (luaL_testudata(state, pos, class_name_ref<T>))
             return StoreType::Reference;
         return type(state, pos, SubClassesOf<T>);
     }
@@ -190,8 +190,8 @@ struct Convert {
     static std::optional<T> findEnumValue(const char* value)
     {
         static_assert(std::is_enum_v<T>);
-        for (std::size_t i = 0; EnumValues<T>[i]; i++)
-            if (std::strcmp(EnumValues<T>[i], value) == 0)
+        for (std::size_t i = 0; enum_values<T>[i]; i++)
+            if (std::strcmp(enum_values<T>[i], value) == 0)
                 return static_cast<T>(i);
         return std::nullopt;
     }
@@ -227,9 +227,9 @@ struct Convert {
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
-            if (void* value = luaL_testudata(state, pos, ClassName<T>))
+            if (void* value = luaL_testudata(state, pos, class_name<T>))
                 return *static_cast<T*>(value);
-            if (void* pointer = luaL_testudata(state, pos, ClassNameRef<T>))
+            if (void* pointer = luaL_testudata(state, pos, class_name_ref<T>))
                 return **static_cast<T**>(pointer);
             return at(state, pos, SubClassesOf<T>);
         }
@@ -249,12 +249,12 @@ struct Convert {
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
                 return *result;
-            luaL_checkudata(state, arg, ClassName<T>);
+            luaL_checkudata(state, arg, class_name<T>);
             // luaL_checkudata should always cause an error here, yet still, sanity check
             detail::noreturn_luaL_error(state, "userdata suddenly of correct type - something went very wrong");
         }
         else if constexpr (std::is_enum_v<T>) {
-            return static_cast<T>(luaL_checkoption(state, arg, nullptr, EnumValues<T>));
+            return static_cast<T>(luaL_checkoption(state, arg, nullptr, enum_values<T>));
         }
     }
 
@@ -287,15 +287,15 @@ struct Convert {
     static void pushValueMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, ClassName<T>))
+        if (!luaL_newmetatable(state, class_name<T>))
             return;
-        detail::setfuncs(state, ClassMetatable<T>);
+        detail::setfuncs(state, class_metatable<T>);
         lua_pushcfunction(state, cleanup);
         lua_setfield(state, -2, "__gc");
         pushReferenceMetatable(state);
         if (!luaL_getmetafield(state, -1, "__index")) {
-            lua_createtable(state, 0, static_cast<int>(ClassTable<T>.size()));
-            detail::setfuncs(state, ClassTable<T>);
+            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
+            detail::setfuncs(state, class_table<T>);
             lua_pushvalue(state, -1);
             lua_setfield(state, -4, "indextable");
         }
@@ -311,13 +311,13 @@ struct Convert {
     static void pushReferenceMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, ClassNameRef<T>))
+        if (!luaL_newmetatable(state, class_name_ref<T>))
             return;
-        detail::setfuncs(state, ClassMetatable<T>);
+        detail::setfuncs(state, class_metatable<T>);
         pushValueMetatable(state);
         if (!luaL_getmetafield(state, -1, "__index")) {
-            lua_createtable(state, 0, static_cast<int>(ClassTable<T>.size()));
-            detail::setfuncs(state, ClassTable<T>);
+            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
+            detail::setfuncs(state, class_table<T>);
             lua_pushvalue(state, -1);
             lua_setfield(state, -4, "indextable");
         }
@@ -330,7 +330,7 @@ struct Convert {
     }
 
     /// @brief Returns the name of the class or enum.
-    static constexpr std::string_view getPushTypename() { return ClassName<T>; }
+    static constexpr std::string_view getPushTypename() { return class_name<T>; }
 
     /// @brief Pushes the in place constructed value onto the stack.
     template <typename... TArgs>
@@ -345,7 +345,7 @@ struct Convert {
             lua_setmetatable(state, -2);
         }
         else if constexpr (std::is_enum_v<T>) {
-            lua_pushstring(state, EnumValues<T>[static_cast<std::size_t>(values)]...);
+            lua_pushstring(state, enum_values<T>[static_cast<std::size_t>(values)]...);
         }
     }
 
@@ -379,15 +379,15 @@ struct Convert<std::reference_wrapper<T>> : Convert<T> {};
 /// @brief Converts nothing.
 template <>
 struct Convert<void> {
-    static constexpr std::optional<int> PushCount = 0;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 0;
+    static constexpr bool allow_nesting = true;
 };
 
 /// @brief Converts nil values.
 template <typename TNil>
 struct ConvertNil {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the given stack position is nil.
     static bool isExact(lua_State* state, int pos) { return lua_isnil(state, pos); }
@@ -431,8 +431,8 @@ struct Convert<std::monostate> : ConvertNil<std::monostate> {};
 /// @brief Allows for conversion between Lua boolean and C++ bool.
 template <>
 struct Convert<bool> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the given stack position contains an actual boolean.
     static bool isExact(lua_State* state, int pos) { return lua_isboolean(state, pos); }
@@ -461,8 +461,8 @@ template <typename T>
 struct ConvertFloatingPoint {
     static_assert(std::is_floating_point_v<T>, "T must be floating point");
 
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the stack position contains an actual number.
     static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TNUMBER; }
@@ -505,8 +505,8 @@ template <typename T>
 struct ConvertIntegral {
     static_assert(std::is_integral_v<T>, "T must be integral");
 
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     // TODO: C++20 replace with std::in_range <3
     /// @brief Checks, whether the given Lua integer fits into the range of the C++ integral type.
@@ -603,8 +603,8 @@ struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
 /// @brief Allows for conversion between Lua strings and std::string.
 template <>
 struct Convert<std::string> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the value at the given stack position is a string.
     static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TSTRING; }
@@ -649,8 +649,8 @@ struct Convert<std::string> {
 /// @brief Allows for conversion between Lua strings and std::string_view.
 template <>
 struct Convert<std::string_view> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the value at the given stack position is a string.
     static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TSTRING; }
@@ -692,8 +692,8 @@ struct Convert<std::string_view> {
 /// @brief Allows pushing of char arrays as strings.
 template <std::size_t v_count>
 struct Convert<char[v_count]> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     static constexpr std::string_view getPushTypename()
     {
@@ -711,8 +711,8 @@ struct Convert<char[v_count]> {
 /// @brief Allows pushing of C-Style strings.
 template <>
 struct Convert<const char*> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     static constexpr std::string_view getPushTypename()
     {
@@ -731,8 +731,8 @@ struct Convert<char*> : Convert<const char*> {};
 /// @brief Allows for conversion of C functions.
 template <>
 struct Convert<lua_CFunction> {
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the value at the given stack position is a C function.
     static bool isExact(lua_State* state, int pos) { return lua_iscfunction(state, pos); }
@@ -776,10 +776,10 @@ template <typename T>
 struct Convert<std::optional<T>> {
     using Base = Convert<T>;
 
-    static_assert(Base::PushCount == 1, "Only single values can be optional.");
+    static_assert(Base::push_count == 1, "Only single values can be optional.");
 
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether the value at the given stack position is nil or a valid value.
     static bool isExact(lua_State* state, int pos) { return lua_isnoneornil(state, pos) || Base::isValid(state, pos); }
@@ -820,8 +820,8 @@ struct Convert<std::optional<T>> {
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
 constexpr std::optional<int> CombinedPushCount = [] {
-    if constexpr ((Convert<TValues>::PushCount && ...))
-        return (0 + ... + *Convert<TValues>::PushCount);
+    if constexpr ((Convert<TValues>::push_count && ...))
+        return (0 + ... + *Convert<TValues>::push_count);
     else
         return std::nullopt;
 }();
@@ -831,8 +831,8 @@ template <typename... TValues>
 static constexpr int combinedPushCount(const TValues&... values)
 {
     return (0 + ... + [&values] {
-        if constexpr (Convert<TValues>::PushCount)
-            return *Convert<TValues>::PushCount;
+        if constexpr (Convert<TValues>::push_count)
+            return *Convert<TValues>::push_count;
         else
             return Convert<TValues>::getPushCount(values);
     }());
@@ -841,10 +841,10 @@ static constexpr int combinedPushCount(const TValues&... values)
 /// @brief Allows for conversion of multiple values using std::tuple.
 template <typename... TValues>
 struct Convert<std::tuple<TValues...>> {
-    static constexpr std::optional<int> PushCount = CombinedPushCount<TValues...>;
-    static constexpr bool AllowNesting = (Convert<TValues>::AllowNesting && ...);
+    static constexpr std::optional<int> push_count = CombinedPushCount<TValues...>;
+    static constexpr bool allow_nesting = (Convert<TValues>::allow_nesting && ...);
 
-    static_assert(AllowNesting, "Tuples do not allow nesting of stack indices.");
+    static_assert(allow_nesting, "Tuples do not allow nesting of stack indices.");
 
     /// @brief Whether all stack positions starting at pos are exact.
     static bool isExact(lua_State* state, int pos)
@@ -885,7 +885,7 @@ struct Convert<std::tuple<TValues...>> {
     /// @brief Returns the total push count of all values in the tuple.
     static constexpr int getPushCount(const std::tuple<TValues...>& values)
     {
-        static_assert(!PushCount);
+        static_assert(!push_count);
         return std::apply(combinedPushCount, values);
     }
 
@@ -933,12 +933,12 @@ private:
 /// @brief Allows for conversion of different values using std::variant.
 template <typename... TOptions>
 struct Convert<std::variant<TOptions...>> {
-    static_assert(((Convert<TOptions>::PushCount == 1) && ...), "All variant options must have a push count of one.");
+    static_assert(((Convert<TOptions>::push_count == 1) && ...), "All variant options must have a push count of one.");
 
     using Variant = std::variant<TOptions...>;
 
-    static constexpr std::optional<int> PushCount = 1;
-    static constexpr bool AllowNesting = true;
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
 
     /// @brief Whether at least one option matches exactly.
     static bool isExact(lua_State* state, int pos) { return (Convert<TOptions>::isExact(state, pos) || ...); }

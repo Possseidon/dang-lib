@@ -112,28 +112,28 @@ struct enum_count<dang::lua::LoadMode> : default_enum_count<dang::lua::LoadMode>
 
 namespace dang::lua {
 
-inline const dutils::EnumArray<StandardLibrary, lua_CFunction> libraryFunctions = {luaopen_base,
-                                                                                   luaopen_coroutine,
-                                                                                   luaopen_table,
-                                                                                   luaopen_io,
-                                                                                   luaopen_os,
-                                                                                   luaopen_string,
-                                                                                   luaopen_utf8,
-                                                                                   luaopen_math,
-                                                                                   luaopen_debug,
-                                                                                   luaopen_package};
+inline const dutils::EnumArray<StandardLibrary, lua_CFunction> library_functions = {luaopen_base,
+                                                                                    luaopen_coroutine,
+                                                                                    luaopen_table,
+                                                                                    luaopen_io,
+                                                                                    luaopen_os,
+                                                                                    luaopen_string,
+                                                                                    luaopen_utf8,
+                                                                                    luaopen_math,
+                                                                                    luaopen_debug,
+                                                                                    luaopen_package};
 
-inline constexpr dutils::EnumArray<StandardLibrary, const char*> libraryNames = {"_G",
-                                                                                 LUA_COLIBNAME,
-                                                                                 LUA_TABLIBNAME,
-                                                                                 LUA_IOLIBNAME,
-                                                                                 LUA_OSLIBNAME,
-                                                                                 LUA_STRLIBNAME,
-                                                                                 LUA_UTF8LIBNAME,
-                                                                                 LUA_MATHLIBNAME,
-                                                                                 LUA_DBLIBNAME,
-                                                                                 LUA_LOADLIBNAME};
+inline constexpr dutils::EnumArray<StandardLibrary, const char*> library_names = {"_G",
+                                                                                  LUA_COLIBNAME,
+                                                                                  LUA_TABLIBNAME,
+                                                                                  LUA_IOLIBNAME,
+                                                                                  LUA_OSLIBNAME,
+                                                                                  LUA_STRLIBNAME,
+                                                                                  LUA_UTF8LIBNAME,
+                                                                                  LUA_MATHLIBNAME,
+                                                                                  LUA_DBLIBNAME,
+                                                                                  LUA_LOADLIBNAME};
 
-inline constexpr dutils::EnumArray<LoadMode, const char*> loadModeNames = {nullptr, "b", "t", "bt"};
+inline constexpr dutils::EnumArray<LoadMode, const char*> load_mode_names = {nullptr, "b", "t", "bt"};
 
 } // namespace dang::lua
