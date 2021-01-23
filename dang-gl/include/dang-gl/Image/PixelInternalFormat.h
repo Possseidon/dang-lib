@@ -118,7 +118,7 @@ namespace dang::gl {
 
 /// @brief GL-Constants for internal pixel formats.
 template <>
-inline constexpr dutils::EnumArray<PixelInternalFormat, GLenum> GLConstants<PixelInternalFormat> = {
+inline constexpr dutils::EnumArray<PixelInternalFormat, GLenum> gl_constants<PixelInternalFormat> = {
     // base formats
     GL_DEPTH_COMPONENT,
     GL_DEPTH_STENCIL,

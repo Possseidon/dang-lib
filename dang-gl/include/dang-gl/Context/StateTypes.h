@@ -158,76 +158,76 @@ struct enum_count<dang::gl::StencilAction> : default_enum_count<dang::gl::Stenci
 namespace dang::gl {
 
 template <>
-inline constexpr dutils::EnumArray<BlendFactorSrc, GLenum> GLConstants<BlendFactorSrc> = {GL_ZERO,
-                                                                                          GL_ONE,
-                                                                                          GL_SRC_COLOR,
-                                                                                          GL_ONE_MINUS_SRC_COLOR,
-                                                                                          GL_DST_COLOR,
-                                                                                          GL_ONE_MINUS_DST_COLOR,
-                                                                                          GL_SRC_ALPHA,
-                                                                                          GL_ONE_MINUS_SRC_ALPHA,
-                                                                                          GL_DST_ALPHA,
-                                                                                          GL_ONE_MINUS_DST_ALPHA,
-                                                                                          GL_CONSTANT_COLOR,
-                                                                                          GL_ONE_MINUS_CONSTANT_COLOR,
-                                                                                          GL_CONSTANT_ALPHA,
-                                                                                          GL_ONE_MINUS_CONSTANT_ALPHA,
-                                                                                          GL_SRC_ALPHA_SATURATE};
+inline constexpr dutils::EnumArray<BlendFactorSrc, GLenum> gl_constants<BlendFactorSrc> = {GL_ZERO,
+                                                                                           GL_ONE,
+                                                                                           GL_SRC_COLOR,
+                                                                                           GL_ONE_MINUS_SRC_COLOR,
+                                                                                           GL_DST_COLOR,
+                                                                                           GL_ONE_MINUS_DST_COLOR,
+                                                                                           GL_SRC_ALPHA,
+                                                                                           GL_ONE_MINUS_SRC_ALPHA,
+                                                                                           GL_DST_ALPHA,
+                                                                                           GL_ONE_MINUS_DST_ALPHA,
+                                                                                           GL_CONSTANT_COLOR,
+                                                                                           GL_ONE_MINUS_CONSTANT_COLOR,
+                                                                                           GL_CONSTANT_ALPHA,
+                                                                                           GL_ONE_MINUS_CONSTANT_ALPHA,
+                                                                                           GL_SRC_ALPHA_SATURATE};
 
 template <>
-inline constexpr dutils::EnumArray<BlendFactorDst, GLenum> GLConstants<BlendFactorDst> = {GL_ZERO,
-                                                                                          GL_ONE,
-                                                                                          GL_SRC_COLOR,
-                                                                                          GL_ONE_MINUS_SRC_COLOR,
-                                                                                          GL_DST_COLOR,
-                                                                                          GL_ONE_MINUS_DST_COLOR,
-                                                                                          GL_SRC_ALPHA,
-                                                                                          GL_ONE_MINUS_SRC_ALPHA,
-                                                                                          GL_DST_ALPHA,
-                                                                                          GL_ONE_MINUS_DST_ALPHA,
-                                                                                          GL_CONSTANT_COLOR,
-                                                                                          GL_ONE_MINUS_CONSTANT_COLOR,
-                                                                                          GL_CONSTANT_ALPHA,
-                                                                                          GL_ONE_MINUS_CONSTANT_ALPHA};
+inline constexpr dutils::EnumArray<BlendFactorDst, GLenum> gl_constants<BlendFactorDst> = {GL_ZERO,
+                                                                                           GL_ONE,
+                                                                                           GL_SRC_COLOR,
+                                                                                           GL_ONE_MINUS_SRC_COLOR,
+                                                                                           GL_DST_COLOR,
+                                                                                           GL_ONE_MINUS_DST_COLOR,
+                                                                                           GL_SRC_ALPHA,
+                                                                                           GL_ONE_MINUS_SRC_ALPHA,
+                                                                                           GL_DST_ALPHA,
+                                                                                           GL_ONE_MINUS_DST_ALPHA,
+                                                                                           GL_CONSTANT_COLOR,
+                                                                                           GL_ONE_MINUS_CONSTANT_COLOR,
+                                                                                           GL_CONSTANT_ALPHA,
+                                                                                           GL_ONE_MINUS_CONSTANT_ALPHA};
 
 template <>
-inline constexpr dutils::EnumArray<CompareFunc, GLenum> GLConstants<CompareFunc> = {
+inline constexpr dutils::EnumArray<CompareFunc, GLenum> gl_constants<CompareFunc> = {
     GL_NEVER, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL, GL_EQUAL, GL_NOTEQUAL, GL_ALWAYS};
 
 template <>
-inline constexpr dutils::EnumArray<CullFaceMode, GLenum> GLConstants<CullFaceMode> = {
+inline constexpr dutils::EnumArray<CullFaceMode, GLenum> gl_constants<CullFaceMode> = {
     GL_FRONT, GL_BACK, GL_FRONT_AND_BACK};
 
 template <>
-inline constexpr dutils::EnumArray<LogicOp, GLenum> GLConstants<LogicOp> = {GL_CLEAR,
-                                                                            GL_SET,
-                                                                            GL_COPY,
-                                                                            GL_COPY_INVERTED,
-                                                                            GL_NOOP,
-                                                                            GL_INVERT,
-                                                                            GL_AND,
-                                                                            GL_NAND,
-                                                                            GL_OR,
-                                                                            GL_NOR,
-                                                                            GL_XOR,
-                                                                            GL_EQUIV,
-                                                                            GL_AND_REVERSE,
-                                                                            GL_AND_INVERTED,
-                                                                            GL_OR_REVERSE,
-                                                                            GL_OR_INVERTED};
+inline constexpr dutils::EnumArray<LogicOp, GLenum> gl_constants<LogicOp> = {GL_CLEAR,
+                                                                             GL_SET,
+                                                                             GL_COPY,
+                                                                             GL_COPY_INVERTED,
+                                                                             GL_NOOP,
+                                                                             GL_INVERT,
+                                                                             GL_AND,
+                                                                             GL_NAND,
+                                                                             GL_OR,
+                                                                             GL_NOR,
+                                                                             GL_XOR,
+                                                                             GL_EQUIV,
+                                                                             GL_AND_REVERSE,
+                                                                             GL_AND_INVERTED,
+                                                                             GL_OR_REVERSE,
+                                                                             GL_OR_INVERTED};
 
 template <>
-inline constexpr dutils::EnumArray<PolygonSide, GLenum> GLConstants<PolygonSide> = {GL_FRONT, GL_BACK};
+inline constexpr dutils::EnumArray<PolygonSide, GLenum> gl_constants<PolygonSide> = {GL_FRONT, GL_BACK};
 
 template <>
-inline constexpr dutils::EnumArray<PolygonMode, GLenum> GLConstants<PolygonMode> = {
+inline constexpr dutils::EnumArray<PolygonMode, GLenum> gl_constants<PolygonMode> = {
     GL_POINT,
     GL_LINE,
     GL_FILL,
 };
 
 template <>
-inline constexpr dutils::EnumArray<StencilAction, GLenum> GLConstants<StencilAction> = {
+inline constexpr dutils::EnumArray<StencilAction, GLenum> gl_constants<StencilAction> = {
     GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_INCR_WRAP, GL_DECR, GL_DECR_WRAP, GL_INVERT};
 
 /// @brief Combines blending source and destination factors into a single type.
@@ -255,7 +255,7 @@ struct PolygonSideMode {
 
     std::tuple<GLenum, GLenum> toTuple() const
     {
-        return {GLConstants<PolygonSide>[v_side], GLConstants<PolygonMode>[mode]};
+        return {gl_constants<PolygonSide>[v_side], gl_constants<PolygonMode>[mode]};
     }
 };
 

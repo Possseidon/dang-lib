@@ -103,59 +103,60 @@ namespace dang::gl {
 
 /// @brief The GL-Constants for object types, which is mainly used to query the currently bound object.
 template <>
-inline constexpr dutils::EnumArray<ObjectType, GLenum> GLConstants<ObjectType> = {GL_BUFFER,
-                                                                                  GL_SHADER,
-                                                                                  GL_PROGRAM,
-                                                                                  GL_VERTEX_ARRAY,
-                                                                                  GL_QUERY,
-                                                                                  GL_PROGRAM_PIPELINE,
-                                                                                  GL_TRANSFORM_FEEDBACK,
-                                                                                  GL_SAMPLER,
-                                                                                  GL_TEXTURE,
-                                                                                  GL_RENDERBUFFER,
-                                                                                  GL_FRAMEBUFFER};
+inline constexpr dutils::EnumArray<ObjectType, GLenum> gl_constants<ObjectType> = {GL_BUFFER,
+                                                                                   GL_SHADER,
+                                                                                   GL_PROGRAM,
+                                                                                   GL_VERTEX_ARRAY,
+                                                                                   GL_QUERY,
+                                                                                   GL_PROGRAM_PIPELINE,
+                                                                                   GL_TRANSFORM_FEEDBACK,
+                                                                                   GL_SAMPLER,
+                                                                                   GL_TEXTURE,
+                                                                                   GL_RENDERBUFFER,
+                                                                                   GL_FRAMEBUFFER};
 
 /// @brief Maps from buffer targets to their respective constants, which need to be supplied to the glBindBuffer
 /// function.
 template <>
-inline constexpr dutils::EnumArray<BufferTarget, GLenum> GLConstants<BufferTarget> = {GL_ARRAY_BUFFER,
-                                                                                      GL_ATOMIC_COUNTER_BUFFER,
-                                                                                      GL_COPY_READ_BUFFER,
-                                                                                      GL_COPY_WRITE_BUFFER,
-                                                                                      GL_DISPATCH_INDIRECT_BUFFER,
-                                                                                      GL_DRAW_INDIRECT_BUFFER,
-                                                                                      GL_ELEMENT_ARRAY_BUFFER,
-                                                                                      GL_PIXEL_PACK_BUFFER,
-                                                                                      GL_PIXEL_UNPACK_BUFFER,
-                                                                                      GL_QUERY_BUFFER,
-                                                                                      GL_SHADER_STORAGE_BUFFER,
-                                                                                      GL_TEXTURE_BUFFER,
-                                                                                      GL_TRANSFORM_FEEDBACK_BUFFER,
-                                                                                      GL_UNIFORM_BUFFER};
+inline constexpr dutils::EnumArray<BufferTarget, GLenum> gl_constants<BufferTarget> = {GL_ARRAY_BUFFER,
+                                                                                       GL_ATOMIC_COUNTER_BUFFER,
+                                                                                       GL_COPY_READ_BUFFER,
+                                                                                       GL_COPY_WRITE_BUFFER,
+                                                                                       GL_DISPATCH_INDIRECT_BUFFER,
+                                                                                       GL_DRAW_INDIRECT_BUFFER,
+                                                                                       GL_ELEMENT_ARRAY_BUFFER,
+                                                                                       GL_PIXEL_PACK_BUFFER,
+                                                                                       GL_PIXEL_UNPACK_BUFFER,
+                                                                                       GL_QUERY_BUFFER,
+                                                                                       GL_SHADER_STORAGE_BUFFER,
+                                                                                       GL_TEXTURE_BUFFER,
+                                                                                       GL_TRANSFORM_FEEDBACK_BUFFER,
+                                                                                       GL_UNIFORM_BUFFER};
 
 /// @brief Maps from texture targets to their respective constants, which need to be supplied to the glBindTexture
 /// function.
 template <>
-inline constexpr dutils::EnumArray<TextureTarget, GLenum> GLConstants<TextureTarget> = {GL_TEXTURE_1D,
-                                                                                        GL_TEXTURE_1D_ARRAY,
-                                                                                        GL_TEXTURE_2D,
-                                                                                        GL_TEXTURE_2D_ARRAY,
-                                                                                        GL_TEXTURE_2D_MULTISAMPLE,
-                                                                                        GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
-                                                                                        GL_TEXTURE_3D,
-                                                                                        GL_TEXTURE_CUBE_MAP,
-                                                                                        GL_TEXTURE_RECTANGLE};
+inline constexpr dutils::EnumArray<TextureTarget, GLenum> gl_constants<TextureTarget> = {
+    GL_TEXTURE_1D,
+    GL_TEXTURE_1D_ARRAY,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_2D_ARRAY,
+    GL_TEXTURE_2D_MULTISAMPLE,
+    GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+    GL_TEXTURE_3D,
+    GL_TEXTURE_CUBE_MAP,
+    GL_TEXTURE_RECTANGLE};
 
 /// @brief Maps from framebuffer targets to their respective constants, which need to be supplied to the
 /// glBindFramebuffer function.
 template <>
-inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> GLConstants<FramebufferTarget> = {
+inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> gl_constants<FramebufferTarget> = {
     GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER};
 
 /// @brief Maps from renderbuffer targets to their respective constants, which need to be supplied to the
 /// glBindRenderbuffer function.
 template <>
-inline constexpr dutils::EnumArray<RenderbufferTarget, GLenum> GLConstants<RenderbufferTarget> = {GL_RENDERBUFFER};
+inline constexpr dutils::EnumArray<RenderbufferTarget, GLenum> gl_constants<RenderbufferTarget> = {GL_RENDERBUFFER};
 
 namespace detail {
 

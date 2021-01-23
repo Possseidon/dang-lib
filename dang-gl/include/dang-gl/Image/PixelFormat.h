@@ -44,23 +44,23 @@ namespace dang::gl {
 
 /// @brief The GL-Constants for the pixel formats.
 template <>
-inline constexpr dutils::EnumArray<PixelFormat, GLenum> GLConstants<PixelFormat> = {GL_RED,
-                                                                                    GL_RG,
-                                                                                    GL_RGB,
-                                                                                    GL_BGR,
-                                                                                    GL_RGBA,
-                                                                                    GL_BGRA,
+inline constexpr dutils::EnumArray<PixelFormat, GLenum> gl_constants<PixelFormat> = {GL_RED,
+                                                                                     GL_RG,
+                                                                                     GL_RGB,
+                                                                                     GL_BGR,
+                                                                                     GL_RGBA,
+                                                                                     GL_BGRA,
 
-                                                                                    GL_RED_INTEGER,
-                                                                                    GL_RG_INTEGER,
-                                                                                    GL_RGB_INTEGER,
-                                                                                    GL_BGR_INTEGER,
-                                                                                    GL_RGBA_INTEGER,
-                                                                                    GL_BGRA_INTEGER,
+                                                                                     GL_RED_INTEGER,
+                                                                                     GL_RG_INTEGER,
+                                                                                     GL_RGB_INTEGER,
+                                                                                     GL_BGR_INTEGER,
+                                                                                     GL_RGBA_INTEGER,
+                                                                                     GL_BGRA_INTEGER,
 
-                                                                                    GL_STENCIL_INDEX,
-                                                                                    GL_DEPTH_COMPONENT,
-                                                                                    GL_DEPTH_STENCIL};
+                                                                                     GL_STENCIL_INDEX,
+                                                                                     GL_DEPTH_COMPONENT,
+                                                                                     GL_DEPTH_STENCIL};
 
 /// @brief Provides info about a pixel format, like its component count, which is necessary to find out the storage
 /// size.

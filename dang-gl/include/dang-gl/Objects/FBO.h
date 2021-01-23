@@ -36,7 +36,7 @@ struct enum_count<dang::gl::BlitFilter> : default_enum_count<dang::gl::BlitFilte
 namespace dang::gl {
 
 template <>
-inline constexpr dutils::EnumArray<BlitFilter, GLenum> GLConstants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
+inline constexpr dutils::EnumArray<BlitFilter, GLenum> gl_constants<BlitFilter> = {GL_NEAREST, GL_LINEAR};
 
 /// @brief An error caused by an invalid FBO operation.
 class FramebufferError : public std::runtime_error {

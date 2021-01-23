@@ -104,30 +104,31 @@ struct enum_count<dang::gl::TextureWrap> : default_enum_count<dang::gl::TextureW
 namespace dang::gl {
 
 template <>
-inline constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> GLConstants<TextureDepthStencilMode> = {
+inline constexpr dutils::EnumArray<TextureDepthStencilMode, GLenum> gl_constants<TextureDepthStencilMode> = {
     GL_DEPTH_COMPONENT, GL_STENCIL_INDEX};
 
 template <>
-inline constexpr dutils::EnumArray<TextureMagFilter, GLenum> GLConstants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
+inline constexpr dutils::EnumArray<TextureMagFilter, GLenum> gl_constants<TextureMagFilter> = {GL_NEAREST, GL_LINEAR};
 
 template <>
-inline constexpr dutils::EnumArray<TextureMinFilter, GLenum> GLConstants<TextureMinFilter> = {GL_NEAREST,
-                                                                                              GL_LINEAR,
-                                                                                              GL_NEAREST_MIPMAP_NEAREST,
-                                                                                              GL_LINEAR_MIPMAP_NEAREST,
-                                                                                              GL_NEAREST_MIPMAP_LINEAR,
-                                                                                              GL_LINEAR_MIPMAP_LINEAR};
+inline constexpr dutils::EnumArray<TextureMinFilter, GLenum> gl_constants<TextureMinFilter> = {
+    GL_NEAREST,
+    GL_LINEAR,
+    GL_NEAREST_MIPMAP_NEAREST,
+    GL_LINEAR_MIPMAP_NEAREST,
+    GL_NEAREST_MIPMAP_LINEAR,
+    GL_LINEAR_MIPMAP_LINEAR};
 
 template <>
-inline constexpr dutils::EnumArray<TextureCompareFunc, GLenum> GLConstants<TextureCompareFunc> = {
+inline constexpr dutils::EnumArray<TextureCompareFunc, GLenum> gl_constants<TextureCompareFunc> = {
     GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS};
 
 template <>
-inline constexpr dutils::EnumArray<TextureSwizzle, GLenum> GLConstants<TextureSwizzle> = {
+inline constexpr dutils::EnumArray<TextureSwizzle, GLenum> gl_constants<TextureSwizzle> = {
     GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
 
 template <>
-inline constexpr dutils::EnumArray<TextureWrap, GLenum> GLConstants<TextureWrap> = {
+inline constexpr dutils::EnumArray<TextureWrap, GLenum> gl_constants<TextureWrap> = {
     GL_REPEAT, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_TO_EDGE};
 
 /*
