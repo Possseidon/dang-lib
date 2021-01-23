@@ -98,54 +98,54 @@ using SharedReference = std::shared_ptr<Reference>;
 using WeakReference = std::weak_ptr<Reference>;
 
 template <typename T>
-struct IsIndex : std::false_type {};
+struct is_index : std::false_type {};
 
 template <typename T>
-struct IsIndices : std::false_type {};
+struct is_indices : std::false_type {};
 
 template <typename T>
-struct IsIndexRange : std::false_type {};
+struct is_index_range : std::false_type {};
 
 template <typename T>
-struct IsStackIndex : std::false_type {};
+struct is_stack_index : std::false_type {};
 
 template <typename T>
-struct IsStackIndexResult : std::false_type {};
+struct is_stack_index_result : std::false_type {};
 
 template <typename T>
-struct IsStackIndices : std::false_type {};
+struct is_stack_indices : std::false_type {};
 
 template <typename T>
-struct IsStackIndicesResult : std::false_type {};
+struct is_stack_indices_result : std::false_type {};
 
 template <typename T>
-struct IsStackIndexRange : std::false_type {};
+struct is_stack_index_range : std::false_type {};
 
 template <typename T>
-struct IsStackIndexRangeResult : std::false_type {};
+struct is_stack_index_range_result : std::false_type {};
 
 template <typename T>
-struct IsPseudoIndex : std::false_type {};
+struct is_pseudo_index : std::false_type {};
 
 template <typename T>
-struct IsUpvalueIndex : std::false_type {};
+struct is_upvalue_index : std::false_type {};
 
 template <typename T>
-using IsAnyIndex = std::disjunction<IsIndex<T>, IsIndices<T>, IsIndexRange<T>>;
+using is_any_index = std::disjunction<is_index<T>, is_indices<T>, is_index_range<T>>;
 
 template <typename T>
-using IsAnyStackIndex = std::disjunction<IsStackIndex<T>, IsStackIndices<T>, IsStackIndexRange<T>>;
+using is_any_stack_index = std::disjunction<is_stack_index<T>, is_stack_indices<T>, is_stack_index_range<T>>;
 
 template <typename T>
-using IsAnyStackIndexResult =
-    std::disjunction<IsStackIndexResult<T>, IsStackIndicesResult<T>, IsStackIndexRangeResult<T>>;
+using is_any_stack_index_result =
+    std::disjunction<is_stack_index_result<T>, is_stack_indices_result<T>, is_stack_index_range_result<T>>;
 
 template <typename T>
-using IsAnyMovedStackIndexResult =
-    std::conjunction<IsAnyStackIndexResult<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
+using is_any_moved_stack_index_result =
+    std::conjunction<is_any_stack_index_result<std::remove_reference_t<T>>, std::is_rvalue_reference<T>>;
 
 template <typename T>
-using IsFixedSizeStackIndex = std::disjunction<IsStackIndex<T>, IsStackIndices<T>>;
+using is_fixed_size_stack_index = std::disjunction<is_stack_index<T>, is_stack_indices<T>>;
 
 namespace detail {
 
@@ -159,8 +159,8 @@ struct SignatureInfoBase {
     using Return = TRet;
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
-    static constexpr bool AnyFixedSizeStackArgs = (IsFixedSizeStackIndex<TArgs>::value || ...);
-    static constexpr bool AnyStateArgs = ((std::is_same_v<TArgs, State&> || IsAnyIndex<TArgs>::value) || ...);
+    static constexpr bool AnyFixedSizeStackArgs = (is_fixed_size_stack_index<TArgs>::value || ...);
+    static constexpr bool AnyStateArgs = ((std::is_same_v<TArgs, State&> || is_any_index<TArgs>::value) || ...);
 
 protected:
     /// @brief Calculates the index of the next argument from the given index list of all previous arguments.
@@ -1242,47 +1242,48 @@ using UpvalueIndexRange = detail::UpvalueIndexRange<State>;
 using ConstUpvalueIndexRange = detail::UpvalueIndexRange<const State>;
 
 template <typename TState, detail::StackIndexType v_type>
-struct IsIndex<detail::StackIndex<TState, v_type>> : std::true_type {};
+struct is_index<detail::StackIndex<TState, v_type>> : std::true_type {};
 template <typename TState>
-struct IsIndex<detail::RegistryIndex<TState>> : std::true_type {};
+struct is_index<detail::RegistryIndex<TState>> : std::true_type {};
 template <typename TState>
-struct IsIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+struct is_index<detail::UpvalueIndex<TState>> : std::true_type {};
 
 template <typename TState, int v_count, detail::StackIndexType v_type>
-struct IsIndices<detail::StackIndices<TState, v_count, v_type>> : std::true_type {};
+struct is_indices<detail::StackIndices<TState, v_count, v_type>> : std::true_type {};
 template <typename TState, int v_count>
-struct IsIndices<detail::UpvalueIndices<TState, v_count>> : std::true_type {};
+struct is_indices<detail::UpvalueIndices<TState, v_count>> : std::true_type {};
 
 template <typename TState, detail::StackIndexType v_type>
-struct IsIndexRange<detail::StackIndexRange<TState, v_type>> : std::true_type {};
+struct is_index_range<detail::StackIndexRange<TState, v_type>> : std::true_type {};
 template <typename TState>
-struct IsIndexRange<detail::UpvalueIndexRange<TState>> : std::true_type {};
+struct is_index_range<detail::UpvalueIndexRange<TState>> : std::true_type {};
 
 template <typename TState, detail::StackIndexType v_type>
-struct IsStackIndex<detail::StackIndex<TState, v_type>> : std::true_type {};
+struct is_stack_index<detail::StackIndex<TState, v_type>> : std::true_type {};
 
 template <typename TState>
-struct IsStackIndexResult<detail::StackIndex<TState, detail::StackIndexType::Result>> : std::true_type {};
+struct is_stack_index_result<detail::StackIndex<TState, detail::StackIndexType::Result>> : std::true_type {};
 
 template <typename TState, int v_count, detail::StackIndexType v_type>
-struct IsStackIndices<detail::StackIndices<TState, v_count, v_type>> : std::true_type {};
+struct is_stack_indices<detail::StackIndices<TState, v_count, v_type>> : std::true_type {};
 
 template <typename TState, int v_count>
-struct IsStackIndicesResult<detail::StackIndices<TState, v_count, detail::StackIndexType::Result>> : std::true_type {};
+struct is_stack_indices_result<detail::StackIndices<TState, v_count, detail::StackIndexType::Result>>
+    : std::true_type {};
 
 template <typename TState, detail::StackIndexType v_type>
-struct IsStackIndexRange<detail::StackIndexRange<TState, v_type>> : std::true_type {};
+struct is_stack_index_range<detail::StackIndexRange<TState, v_type>> : std::true_type {};
 
 template <typename TState>
-struct IsStackIndexRangeResult<detail::StackIndexRange<TState, detail::StackIndexType::Result>> : std::true_type {};
+struct is_stack_index_range_result<detail::StackIndexRange<TState, detail::StackIndexType::Result>> : std::true_type {};
 
 template <typename TState>
-struct IsPseudoIndex<detail::RegistryIndex<TState>> : std::true_type {};
+struct is_pseudo_index<detail::RegistryIndex<TState>> : std::true_type {};
 template <typename TState>
-struct IsPseudoIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+struct is_pseudo_index<detail::UpvalueIndex<TState>> : std::true_type {};
 
 template <typename TState>
-struct IsUpvalueIndex<detail::UpvalueIndex<TState>> : std::true_type {};
+struct is_upvalue_index<detail::UpvalueIndex<TState>> : std::true_type {};
 
 using Arg = StackIndexResult;
 template <std::size_t v_size>
@@ -1931,12 +1932,12 @@ public:
     void replace(TIndex&& index, TValue&& value)
     {
         static_assert(Convert<TValue>::push_count == 1, "Supplied value must take up a single stack position.");
-        static_assert(IsIndex<std::decay_t<TIndex>>::value, "Supplied index must be an index.");
+        static_assert(is_index<std::decay_t<TIndex>>::value, "Supplied index must be an index.");
 
-        if constexpr (IsIndex<std::decay_t<TValue>>::value) {
+        if constexpr (is_index<std::decay_t<TValue>>::value) {
             assertPushable();
             lua_copy(state_, value.index(), index.index());
-            if constexpr (IsAnyMovedStackIndexResult<TValue&&>)
+            if constexpr (is_any_moved_stack_index_result<TValue&&>)
                 if (value.isTop())
                     pop();
         }
@@ -2208,8 +2209,8 @@ public:
         static_assert(Convert<TLeft>::push_count == 1, "Left operand must take up a single stack position.");
         static_assert(Convert<TRight>::push_count == 1, "Right operand must take up a single stack position.");
 
-        constexpr bool left_is_index = IsIndex<std::decay_t<TLeft>>::value;
-        constexpr bool right_is_index = IsIndex<std::decay_t<TRight>>::value;
+        constexpr bool left_is_index = is_index<std::decay_t<TLeft>>::value;
+        constexpr bool right_is_index = is_index<std::decay_t<TRight>>::value;
         if constexpr (left_is_index) {
             if constexpr (right_is_index)
                 return lua_compare(state_, lhs.index(), rhs.index(), static_cast<int>(operation)) != 0;
@@ -2655,7 +2656,7 @@ private:
     template <typename TFirst, typename... TRest>
     void pushHelper(TFirst&& first, TRest&&... rest)
     {
-        if constexpr (IsAnyMovedStackIndexResult<TFirst&&>::value) {
+        if constexpr (is_any_moved_stack_index_result<TFirst&&>::value) {
             int skipped = 1;
             int top_offset = indexOffsetFromTop(first.last());
             if (top_offset > 0) {
@@ -2695,7 +2696,7 @@ private:
     template <typename TFirst, typename... TRest>
     void countSkipped(int& skipped, int& top_offset, [[maybe_unused]] TFirst&& first, [[maybe_unused]] TRest&&... rest)
     {
-        if constexpr (IsAnyMovedStackIndexResult<TFirst&&>::value) {
+        if constexpr (is_any_moved_stack_index_result<TFirst&&>::value) {
             skipped++;
             top_offset -= first.size();
             if (top_offset <= 0 || top_offset != indexOffsetFromTop(first.last()))
@@ -3144,7 +3145,7 @@ namespace detail {
 template <typename TLeft, typename TRight>
 inline auto& stateOf(TLeft& lhs, TRight& rhs)
 {
-    if constexpr (IsIndex<std::decay_t<TLeft>>::value)
+    if constexpr (is_index<std::decay_t<TLeft>>::value)
         return lhs.state();
     else
         return rhs.state();
@@ -3152,11 +3153,11 @@ inline auto& stateOf(TLeft& lhs, TRight& rhs)
 
 /// @brief Whether any of the type parameters is an index.
 template <typename... TArgs>
-using AnyIndex = std::disjunction<IsIndex<std::decay_t<TArgs>>...>;
+using any_is_index = std::disjunction<is_index<std::decay_t<TArgs>>...>;
 
 /// @brief Enable-if wrapper to check for any index and results in StackIndexResult.
 template <typename... TArgs>
-using EnableIfAnyIndex = std::enable_if_t<AnyIndex<TArgs...>::value, StackIndexResult>;
+using EnableIfAnyIndex = std::enable_if_t<any_is_index<TArgs...>::value, StackIndexResult>;
 
 } // namespace detail
 
@@ -3234,7 +3235,8 @@ std::forward<TRight>(rhs));
 
 template <typename TLeft, typename TRight>
 inline auto operator<<(TLeft&& lhs, TRight&& rhs)
-    -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value && !std::is_same_v<std::decay_t<TLeft>, std::ostream>,
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value &&
+                            !std::is_same_v<std::decay_t<TLeft>, std::ostream>,
                         StackIndexResult>
 {
     return detail::stateOf(lhs, rhs).template arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs),
@@ -3261,42 +3263,48 @@ inline auto operator~(T&& operand) -> detail::EnableIfAnyIndex<T>
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator==(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator==(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return detail::stateOf(left, right)
         .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator!=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator!=(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return !detail::stateOf(left, right)
                 .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator<(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator<(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return detail::stateOf(left, right)
         .compare(CompareOp::LessThan, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator<=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator<=(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return detail::stateOf(left, right)
         .compare(CompareOp::LessEqual, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator>(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator>(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return detail::stateOf(left, right)
         .compare(CompareOp::LessThan, std::forward<TRight>(right), std::forward<TLeft>(left));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator>=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::AnyIndex<TLeft, TRight>::value, bool>
+inline auto operator>=(TLeft&& left, TRight&& right)
+    -> std::enable_if_t<detail::any_is_index<TLeft, TRight>::value, bool>
 {
     return detail::stateOf(left, right)
         .compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
