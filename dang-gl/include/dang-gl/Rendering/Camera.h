@@ -65,13 +65,13 @@ private:
 /// @brief A perspective projection provider with field of view and near/far clipping.
 class PerspectiveProjection : public ProjectionProvider {
 public:
-    static constexpr float DefaultFieldOfView = 90.0f;
-    static constexpr bounds1 DefaultClip = {0.1f, 100.0f};
+    static constexpr float default_field_of_view = 90.0f;
+    static constexpr bounds1 default_clip = {0.1f, 100.0f};
 
     /// @brief Initializes the perspective projection with the given field of view and near/far clip.
-    PerspectiveProjection(float aspect, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
+    PerspectiveProjection(float aspect, float field_of_view = default_field_of_view, bounds1 clip = default_clip);
     /// @brief Initializes the perspective projection with the given field of view and near/far clip.
-    PerspectiveProjection(Context& context, float field_of_view = DefaultFieldOfView, bounds1 clip = DefaultClip);
+    PerspectiveProjection(Context& context, float field_of_view = default_field_of_view, bounds1 clip = default_clip);
 
     /// @brief Returns the current field of view.
     float fieldOfView() const;
@@ -103,12 +103,12 @@ private:
 /// the actual clipping planes also have the aspect applied.
 class OrthoProjection : public ProjectionProvider {
 public:
-    static constexpr bounds3 DefaultClip = {-1.0f, 1.0f};
+    static constexpr bounds3 default_clip = {-1.0f, 1.0f};
 
     /// @brief Initializes the orthogonal projection with the given clipping bounds.
-    OrthoProjection(float aspect, bounds3 clip = DefaultClip);
+    OrthoProjection(float aspect, bounds3 clip = default_clip);
     /// @brief Initializes the orthogonal projection with the given clipping bounds.
-    OrthoProjection(Context& context, bounds3 clip = DefaultClip);
+    OrthoProjection(Context& context, bounds3 clip = default_clip);
 
     /// @brief Returns the current clipping bounds.
     const bounds3& clip() const;
@@ -124,22 +124,22 @@ private:
 
 /// @brief A simple struct for all the different uniform names, which a camera can write to.
 struct CameraUniformNames {
-    std::string ProjectionMatrix;
-    std::string ModelTransform;
-    std::string ViewTransform;
-    std::string ModelViewTransform;
+    std::string projection_matrix;
+    std::string model_transform;
+    std::string view_transform;
+    std::string model_view_transform;
 };
 
 /// @brief The default names for all camera related uniforms.
 // TODO: C++20 use named initializers { .name = value }
-inline const CameraUniformNames DefaultCameraUniformNames = {
+inline const CameraUniformNames default_camera_uniform_names = {
     "projection_matrix", "model_transform", "view_transform", "modelview_transform"};
 
 /// @brief Contains references to camera related uniforms of a single GL-Program.
 class CameraUniforms {
 public:
     /// @brief Queries all relevant uniforms using the given uniform names.
-    CameraUniforms(Program& program, const CameraUniformNames& names = DefaultCameraUniformNames);
+    CameraUniforms(Program& program, const CameraUniformNames& names = default_camera_uniform_names);
 
     /// @brief Returns the associated GL-Program for the collection of uniforms.
     Program& program() const;
@@ -163,17 +163,17 @@ public:
 
     /// @brief Creates a new perspective camera with the given parameters.
     static Camera perspective(float aspect,
-                              float field_of_view = PerspectiveProjection::DefaultFieldOfView,
-                              bounds1 clip = PerspectiveProjection::DefaultClip);
+                              float field_of_view = PerspectiveProjection::default_field_of_view,
+                              bounds1 clip = PerspectiveProjection::default_clip);
     /// @brief Creates a new perspective camera with the given parameters.
     static Camera perspective(Context& context,
-                              float field_of_view = PerspectiveProjection::DefaultFieldOfView,
-                              bounds1 clip = PerspectiveProjection::DefaultClip);
+                              float field_of_view = PerspectiveProjection::default_field_of_view,
+                              bounds1 clip = PerspectiveProjection::default_clip);
 
     /// @brief Creates a new orthogonal camera with the given parameters.
-    static Camera ortho(float aspect, bounds3 clip = OrthoProjection::DefaultClip);
+    static Camera ortho(float aspect, bounds3 clip = OrthoProjection::default_clip);
     /// @brief Creates a new orthogonal camera with the given parameters.
-    static Camera ortho(Context& context, bounds3 clip = OrthoProjection::DefaultClip);
+    static Camera ortho(Context& context, bounds3 clip = OrthoProjection::default_clip);
 
     /// @brief Returns the projection provider of the camera.
     const SharedProjectionProvider& projectionProvider() const;

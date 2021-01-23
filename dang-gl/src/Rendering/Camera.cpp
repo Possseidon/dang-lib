@@ -134,10 +134,10 @@ mat4 OrthoProjection::calculateMatrix()
 
 CameraUniforms::CameraUniforms(Program& program, const CameraUniformNames& names)
     : program_(program)
-    , projection_uniform_(program.uniform<mat4>(names.ProjectionMatrix))
-    , transform_uniforms_{program.uniform<mat2x4>(names.ModelTransform),
-                          program.uniform<mat2x4>(names.ViewTransform),
-                          program.uniform<mat2x4>(names.ModelViewTransform)}
+    , projection_uniform_(program.uniform<mat4>(names.projection_matrix))
+    , transform_uniforms_{program.uniform<mat2x4>(names.model_transform),
+                          program.uniform<mat2x4>(names.view_transform),
+                          program.uniform<mat2x4>(names.model_view_transform)}
 {}
 
 Program& CameraUniforms::program() const { return program_; }
