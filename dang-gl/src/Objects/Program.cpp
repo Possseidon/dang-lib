@@ -410,7 +410,7 @@ std::string ShaderPreprocessor::result() const { return output_.str(); }
 
 void ShaderPreprocessor::process(const std::string& code, std::size_t compilation_unit)
 {
-    static const std::regex include_regex("^ *# *include *\"([A-Za-z0-9_.\\\\/ ]+)\" *$");
+    static const std::regex include_regex("^ *# *include *\"([\\w_\\.\\\\/ ]+)\" *$");
 
     std::string read_line;
     std::string full_line;
