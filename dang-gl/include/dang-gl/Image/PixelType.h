@@ -85,84 +85,91 @@ inline constexpr dutils::EnumArray<PixelType, GLenum> gl_constants<PixelType> = 
                                                                                  GL_FLOAT_32_UNSIGNED_INT_24_8_REV};
 
 template <PixelType>
-struct PixelTypeInfo {};
+struct underlying_pixel_type {};
+
+template <PixelType v_type>
+using underlying_pixel_type_t = typename underlying_pixel_type<v_type>::type;
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_BYTE> {
-    using Type = GLubyte;
+struct underlying_pixel_type<PixelType::UNSIGNED_BYTE> {
+    using type = GLubyte;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::BYTE> {
-    using Type = GLbyte;
+struct underlying_pixel_type<PixelType::BYTE> {
+    using type = GLbyte;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT> {
-    using Type = GLushort;
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT> {
+    using type = GLushort;
 };
 template <>
-struct PixelTypeInfo<PixelType::SHORT> {
-    using Type = GLshort;
-};
-
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT> {
-    using Type = GLuint;
+struct underlying_pixel_type<PixelType::SHORT> {
+    using type = GLshort;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::INT> {
-    using Type = GLint;
+struct underlying_pixel_type<PixelType::UNSIGNED_INT> {
+    using type = GLuint;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::HALF_FLOAT> {
-    using Type = GLhalf;
+struct underlying_pixel_type<PixelType::INT> {
+    using type = GLint;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::FLOAT> {
-    using Type = GLfloat;
+struct underlying_pixel_type<PixelType::HALF_FLOAT> {
+    using type = GLhalf;
 };
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_BYTE_3_3_2> : PixelTypeInfo<PixelType::UNSIGNED_BYTE> {};
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_BYTE_2_3_3_REV> : PixelTypeInfo<PixelType::UNSIGNED_BYTE> {};
+struct underlying_pixel_type<PixelType::FLOAT> {
+    using type = GLfloat;
+};
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_5_6_5> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_BYTE_3_3_2> : underlying_pixel_type<PixelType::UNSIGNED_BYTE> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_5_6_5_REV> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_4_4_4_4> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_4_4_4_4_REV> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_5_5_5_1> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
-template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_SHORT_1_5_5_5_REV> : PixelTypeInfo<PixelType::UNSIGNED_SHORT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_BYTE_2_3_3_REV> : underlying_pixel_type<PixelType::UNSIGNED_BYTE> {};
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_8_8_8_8> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_5_6_5> : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_8_8_8_8_REV> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_5_6_5_REV> : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_10_10_10_2> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_4_4_4_4> : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_2_10_10_10_REV> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_4_4_4_4_REV>
+    : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
+template <>
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_5_5_5_1> : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
+template <>
+struct underlying_pixel_type<PixelType::UNSIGNED_SHORT_1_5_5_5_REV>
+    : underlying_pixel_type<PixelType::UNSIGNED_SHORT> {};
 
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_24_8> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_8_8_8_8> : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_10F_11F_11F_REV> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_8_8_8_8_REV> : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
 template <>
-struct PixelTypeInfo<PixelType::UNSIGNED_INT_5_9_9_9_REV> : PixelTypeInfo<PixelType::UNSIGNED_INT> {};
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_10_10_10_2> : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
+template <>
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_2_10_10_10_REV>
+    : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
 
 template <>
-struct PixelTypeInfo<PixelType::FLOAT_32_UNSIGNED_INT_24_8_REV> {
-    struct Type {
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_24_8> : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
+template <>
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_10F_11F_11F_REV>
+    : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
+template <>
+struct underlying_pixel_type<PixelType::UNSIGNED_INT_5_9_9_9_REV> : underlying_pixel_type<PixelType::UNSIGNED_INT> {};
+
+template <>
+struct underlying_pixel_type<PixelType::FLOAT_32_UNSIGNED_INT_24_8_REV> {
+    struct type {
         GLfloat depth;
         // stencil only has 8 bit actually
         GLuint stencil;
