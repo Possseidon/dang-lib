@@ -6,7 +6,7 @@
 
 namespace dang::glfw {
 
-GLFW GLFW::Instance;
+GLFW GLFW::instance;
 
 void GLFW::setActiveWindow(Window* window)
 {
@@ -120,19 +120,19 @@ void GLFW::joystickCallback(int jid, int event)
 void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
 {
     if (event == GLFW_CONNECTED) {
-        Instance.monitors_.emplace_back(monitor);
-        Instance.onConnectMonitor(monitor);
+        instance.monitors_.emplace_back(monitor);
+        instance.onConnectMonitor(monitor);
     }
     else if (event == GLFW_DISCONNECTED) {
-        Instance.onDisconnectMonitor(monitor);
-        auto pos = std::find(Instance.monitors_.begin(), Instance.monitors_.end(), monitor);
-        if (pos != Instance.monitors_.end())
-            Instance.monitors_.erase(pos);
+        instance.onDisconnectMonitor(monitor);
+        auto pos = std::find(instance.monitors_.begin(), instance.monitors_.end(), monitor);
+        if (pos != instance.monitors_.end())
+            instance.monitors_.erase(pos);
     }
 
-    if (Instance.primary_monitor_ != monitor) {
-        Instance.primary_monitor_ = monitor;
-        Instance.onPrimaryMonitorChange(monitor);
+    if (instance.primary_monitor_ != monitor) {
+        instance.primary_monitor_ = monitor;
+        instance.onPrimaryMonitorChange(monitor);
     }
 }
 

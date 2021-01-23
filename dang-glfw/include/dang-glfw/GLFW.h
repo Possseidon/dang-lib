@@ -20,7 +20,7 @@ public:
     using MonitorEvent = dutils::Event<Monitor>;
 
     /// @brief The single GLFW singleton instance.
-    static GLFW Instance;
+    static GLFW instance;
 
     /// @brief Whether there is an active window/context.
     bool hasActiveWindow();
