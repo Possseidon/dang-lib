@@ -97,7 +97,7 @@ struct WindowInfo {
     } framebuffer;
 
     Monitor monitor;
-    std::optional<int> monitor_refresh_rate = std::nullopt;
+    std::optional<int> monitor_refresh_rate;
 
     ClientAPI client_api = ClientAPI::OpenGL;
 
