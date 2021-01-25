@@ -45,7 +45,7 @@ struct ObjectWrapper {
     }
 
     /// @brief Binds the given OpenGL object to the given binding target.
-    template <typename TTarget = ObjectTarget<v_type>>
+    template <typename TTarget = object_target_t<v_type>>
     static void bind(TTarget target, Handle handle)
     {
         detail::glBindObject<v_type>(toGLConstant(target), handle.unwrap());

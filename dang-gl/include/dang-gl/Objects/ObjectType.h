@@ -158,41 +158,35 @@ inline constexpr dutils::EnumArray<FramebufferTarget, GLenum> gl_constants<Frame
 template <>
 inline constexpr dutils::EnumArray<RenderbufferTarget, GLenum> gl_constants<RenderbufferTarget> = {GL_RENDERBUFFER};
 
-namespace detail {
-
-// Helper to select the matching target enum for a given object type
-
-template <ObjectType>
-struct TargetSelector {
-    using Type = void;
-};
-
-template <>
-struct TargetSelector<ObjectType::Buffer> {
-    using Type = BufferTarget;
-};
-
-template <>
-struct TargetSelector<ObjectType::Texture> {
-    using Type = TextureTarget;
-};
-
-template <>
-struct TargetSelector<ObjectType::Renderbuffer> {
-    using Type = FramebufferTarget;
-};
-
-template <>
-struct TargetSelector<ObjectType::Framebuffer> {
-    using Type = RenderbufferTarget;
-};
-
-} // namespace detail
-
 /// @brief Maps to the different enums for the various binding targets of the template specified object type.
 /// @remark Not all bindable objects support multiple targets.
+template <ObjectType>
+struct object_target {
+    using type = void;
+};
+
+template <>
+struct object_target<ObjectType::Buffer> {
+    using type = BufferTarget;
+};
+
+template <>
+struct object_target<ObjectType::Texture> {
+    using type = TextureTarget;
+};
+
+template <>
+struct object_target<ObjectType::Renderbuffer> {
+    using type = FramebufferTarget;
+};
+
+template <>
+struct object_target<ObjectType::Framebuffer> {
+    using type = RenderbufferTarget;
+};
+
 template <ObjectType v_type>
-using ObjectTarget = typename detail::TargetSelector<v_type>::Type;
+using object_target_t = typename object_target<v_type>::type;
 
 namespace detail {
 
