@@ -256,12 +256,13 @@ public:
 
     /// @brief Links all previously added shader stages together, cleans them up.
     /// @param attribute_order The order of the attributes of the Data struct, used in the VBO.
+    /// @param instanced_attribute_order A list of instanced attributes with their respective divisors.
     void link(const AttributeNames& attribute_order = {},
               const InstancedAttributeNames& instanced_attribute_order = {});
 
     /// @brief Should return the attributes in the same order as they show up in the Data struct, used in the VBO.
     const AttributeOrder& attributeOrder() const;
-    /// @brief TODO
+    /// @brief Should return a list of attribute orders for instanced attributes.
     const std::vector<AttributeOrder>& instancedAttributeOrder() const;
 
     /// @brief Returns a wrapper to a uniform of the templated type, name and optional array size.
