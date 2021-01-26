@@ -485,8 +485,8 @@ public:
     /// @brief Creates an empty texture.
     TextureBaseRegular() = default;
 
-    /// @brief Initializes a new texture with the given size, optional mipmap level count and internal format.
-    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
+    /// @brief Initializes a new texture with the given size.
+    /// @remarks mipmap_levels defaults to generating a full mipmap down to 1x1.
     explicit TextureBaseRegular(dmath::svec<v_dim> size,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
                                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -495,9 +495,9 @@ public:
         generate(size, mipmap_levels, internal_format);
     }
 
-    /// @brief Initializes a new texture with the given image data, optional mipmap level count and internal format.
-    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
-    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
+    /// @brief Initializes a new texture with the given image data.
+    /// @remarks mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remarks internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_format, PixelType v_type>
     explicit TextureBaseRegular(const Image<v_dim, v_format, v_type>& image,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
@@ -512,8 +512,8 @@ public:
     TextureBaseRegular(const TextureBaseRegular&) = delete;
     TextureBaseRegular& operator=(const TextureBaseRegular&) = delete;
 
-    /// @brief Generates storage for the specified size with optional mipmap level count and internal format.
-    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
+    /// @brief Generates storage for the specified size.
+    /// @remarks mipmap_levels defaults to generating a full mipmap down to 1x1.
     void generate(dmath::svec<v_dim> size,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -523,8 +523,8 @@ public:
     }
 
     /// @brief Generates texture storage and fills it with the provided image.
-    /// @param mipmap_levels Defaults to generating a full mipmap down to 1x1.
-    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
+    /// @remarks mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remarks internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_format, PixelType v_type>
     void generate(const Image<v_dim, v_format, v_type>& image,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
@@ -589,7 +589,7 @@ public:
     /// @brief Creates an empty multisampled texture.
     TextureBaseMultisample() = default;
 
-    /// @brief Initializes a new multisampled texture with the given size, sample count and optional internal format.
+    /// @brief Initializes a new multisampled texture with the given size, sample count.
     TextureBaseMultisample(dmath::svec<v_dim> size,
                            GLsizei samples,
                            bool fixed_sample_locations = true,
@@ -599,9 +599,8 @@ public:
         generate(size, samples, internal_format);
     }
 
-    /// @brief Initializes a new multisampled texture with the given image data, sample count and optional internal
-    /// format.
-    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
+    /// @brief Initializes a new multisampled texture with the given image data and sample count.
+    /// @remarks internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_format, PixelType v_type>
     explicit TextureBaseMultisample(const Image<v_dim, v_format, v_type>& image,
                                     GLsizei samples,
@@ -617,7 +616,7 @@ public:
     TextureBaseMultisample(const TextureBaseMultisample&) = delete;
     TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
 
-    /// @brief Generates storage for the specified size, samples and optional internal format.
+    /// @brief Generates storage for the specified size, samples.
     void generate(dmath::svec<v_dim> size,
                   GLsizei samples,
                   bool fixed_sample_locations = true,
@@ -628,7 +627,7 @@ public:
     }
 
     /// @brief Generates texture storage and fills it with the provided image.
-    /// @param internal_format Defaults to being chosen, based on the format of the provided image.
+    /// @remarks internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_format, PixelType v_type>
     void generate(const Image<v_dim, v_format, v_type>& image,
                   GLint samples,
