@@ -304,12 +304,12 @@ private:
     std::vector<AttributeOrder> instanced_attribute_order_;
 };
 
-/// @brief Processes shader source code for #include directives.
+/// @brief Processes shader source code for include directives.
 class ShaderPreprocessor {
 public:
     /// @brief Immediately processes the given code.
     ShaderPreprocessor(const Program& program, const std::string& code);
-    /// @brief Returns the final source code with all #include directive replaced by source code and #line directives.
+    /// @brief Returns the final source code with all include directive replaced by source code and line directives.
     std::string result() const;
 
 private:
