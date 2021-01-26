@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(dang-lib CXX)
+project(dang-lib VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -18,3 +18,5 @@ add_subdirectory(dang-glfw)
 add_subdirectory(dang-lua)
 add_subdirectory(dang-math)
 add_subdirectory(dang-utils)
+
+add_subdirectory(doc)
