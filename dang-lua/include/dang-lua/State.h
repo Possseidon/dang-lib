@@ -687,6 +687,28 @@ public:
     /// @brief Stores the element as a reference in the registry table and returns a wrapper.
     auto ref() { return this->state().ref(*this); }
 
+    // --- Debug ---
+
+    /// @brief Returns debug information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfo()
+    {
+        return this->state().template getFunctionInfo<TTypes...>(*this);
+    }
+
+    /// @brief Returns debug and line information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfoWithLines()
+    {
+        return this->state().template getFunctionInfoWithLines<TTypes...>(*this);
+    }
+
+    /// @brief Returns all debug information about the function.
+    auto getFullFunctionInfo() { return this->state().getFullFunctionInfo(*this); }
+
+    /// @brief Returns all debug and line information about the function.
+    auto getFullFunctionInfoWithLines() { return this->state().getFullFunctionInfoWithLines(*this); }
+
 private:
     int index_ = 0;
 };
@@ -1076,6 +1098,48 @@ public:
             index.popIfTop();
         return stream;
     }
+
+    // --- Debug ---
+
+    /// @brief Returns debug information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfo() &
+    {
+        return this->state().template getFunctionInfo<TTypes...>(*this);
+    }
+
+    /// @brief Returns debug information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfo() &&
+    {
+        return this->state().template getFunctionInfo<TTypes...>(std::move(*this));
+    }
+
+    /// @brief Returns debug and line information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfoWithLines() &
+    {
+        return this->state().template getFunctionInfoWithLines<TTypes...>(*this);
+    }
+
+    /// @brief Returns debug and line information about the function.
+    template <typename... TTypes>
+    auto getFunctionInfoWithLines() &&
+    {
+        return this->state().template getFunctionInfoWithLines<TTypes...>(std::move(*this));
+    }
+
+    /// @brief Returns all debug information about the function.
+    auto getFullFunctionInfo() & { return this->state().getFullFunctionInfo(*this); }
+
+    /// @brief Returns all debug information about the function.
+    auto getFullFunctionInfo() && { return this->state().getFullFunctionInfo(std::move(*this)); }
+
+    /// @brief Returns all debug and line information about the function.
+    auto getFullFunctionInfoWithLines() & { return this->state().getFullFunctionInfoWithLines(*this); }
+
+    /// @brief Returns all debug and line information about the function.
+    auto getFullFunctionInfoWithLines() && { return this->state().getFullFunctionInfoWithLines(std::move(*this)); }
 };
 
 /// @brief Wraps the registry pseudo index.
@@ -1345,6 +1409,137 @@ struct LoadInfo {
     const char* name;
     LoadMode mode;
 };
+
+struct DebugInfoHook {
+    DebugInfoHook(const lua_Debug& ar)
+        : event(static_cast<Hook>(ar.event))
+    {}
+
+    Hook event;
+};
+
+struct DebugInfoName {
+    DebugInfoName(const lua_Debug& ar)
+        : name(ar.name ? std::optional<std::string>(std::in_place, ar.name) : std::nullopt)
+        , name_what(ar.namewhat)
+    {}
+
+    std::optional<std::string> name;
+    std::string name_what;
+};
+
+struct DebugInfoSource {
+    DebugInfoSource(const lua_Debug& ar)
+        : what(ar.what)
+        , source(ar.source, ar.source + ar.srclen)
+        , line_defined(ar.linedefined)
+        , last_line_defined(ar.lastlinedefined)
+        , short_src(ar.short_src)
+    {}
+
+    std::string what;
+    std::string source;
+    int line_defined;
+    int last_line_defined;
+    std::string short_src;
+};
+
+struct DebugInfoLine {
+    DebugInfoLine(const lua_Debug& ar)
+        : current_line(ar.currentline)
+    {}
+
+    int current_line;
+};
+
+struct DebugInfoTailCall {
+    DebugInfoTailCall(const lua_Debug& ar)
+        : is_tail_call(ar.istailcall)
+    {}
+
+    bool is_tail_call;
+};
+
+struct DebugInfoUpvalues {
+    DebugInfoUpvalues(const lua_Debug& ar)
+        : upvalue_count(ar.nups)
+        , parameter_count(ar.nparams)
+        , is_var_arg(ar.isvararg)
+    {}
+
+    int upvalue_count;
+    int parameter_count;
+    bool is_var_arg;
+};
+
+struct DebugInfoTransfer {
+    DebugInfoTransfer(const lua_Debug& ar)
+        : first_transferred(ar.ftransfer)
+        , transferred_count(ar.ntransfer)
+    {}
+
+    int first_transferred;
+    int transferred_count;
+};
+
+template <typename... TTypes>
+struct DebugInfo : TTypes... {
+    DebugInfo(const lua_Debug& ar)
+        : TTypes(ar)...
+    {}
+};
+
+template <DebugInfoType>
+struct debug_info_type {};
+
+template <>
+struct debug_info_type<DebugInfoType::Line> {
+    using type = DebugInfoLine;
+};
+
+template <>
+struct debug_info_type<DebugInfoType::Name> {
+    using type = DebugInfoName;
+};
+
+template <>
+struct debug_info_type<DebugInfoType::Source> {
+    using type = DebugInfoSource;
+};
+
+template <>
+struct debug_info_type<DebugInfoType::TailCall> {
+    using type = DebugInfoTailCall;
+};
+
+template <>
+struct debug_info_type<DebugInfoType::Upvalues> {
+    using type = DebugInfoUpvalues;
+};
+
+template <DebugInfoType type>
+using debug_info_type_t = typename debug_info_type<type>::type;
+
+template <typename>
+struct debug_info_enum {};
+
+template <>
+struct debug_info_enum<DebugInfoLine> : dutils::constant<DebugInfoType::Line> {};
+
+template <>
+struct debug_info_enum<DebugInfoName> : dutils::constant<DebugInfoType::Name> {};
+
+template <>
+struct debug_info_enum<DebugInfoSource> : dutils::constant<DebugInfoType::Source> {};
+
+template <>
+struct debug_info_enum<DebugInfoTailCall> : dutils::constant<DebugInfoType::TailCall> {};
+
+template <>
+struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upvalues> {};
+
+template <typename T>
+inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
 
 /// @brief Wraps a Lua state or thread.
 class State {
@@ -2644,6 +2839,103 @@ public:
     /// @brief Returns the current debug hook mask.
     auto getHookMask() const { return Hooks::fromBits(lua_gethookmask(state_)); }
 
+    /// @brief Returns debug information about a function in the current callstack.
+    template <typename... TTypes>
+    auto getStackInfo(int stack_level = 0) const
+    {
+        return getStackInfoHelper<TTypes...>(stack_level);
+    }
+
+    /// @brief Returns debug information about a function in the current callstack and the function itself.
+    template <typename... TTypes>
+    auto getStackInfoWithFunction(int stack_level = 0)
+    {
+        return std::tuple{getStackInfoHelper<TTypes...>(stack_level, true, false), top().asResult()};
+    }
+
+    /// @brief Returns debug and line information about a function in the current callstack.
+    template <typename... TTypes>
+    auto getStackInfoWithLines(int stack_level = 0)
+    {
+        return std::tuple{getStackInfoHelper<TTypes...>(stack_level, false, true), top().asResult()};
+    }
+
+    /// @brief Returns debug information about a function in the current callstack, the function itself and line
+    /// information.
+    template <typename... TTypes>
+    auto getStackInfoWithFunctionAndLines(int stack_level = 0)
+    {
+        return std::tuple{getStackInfoHelper<TTypes...>(stack_level, true, true),
+                          stackIndex(size() - 1).asResult(),
+                          top().asResult()};
+    }
+
+    /// @brief Returns all debug information about a function in the current callstack.
+    auto getFullStackInfo(int stack_level = 0) const
+    {
+        return getStackInfo<DebugInfoLine, DebugInfoName, DebugInfoSource, DebugInfoTailCall, DebugInfoUpvalues>(
+            stack_level);
+    }
+
+    /// @brief Returns all debug information about a function in the current callstack and the function itself.
+    auto getFullStackInfoWithFunction(int stack_level = 0)
+    {
+        return getStackInfoWithFunction<DebugInfoLine,
+                                        DebugInfoName,
+                                        DebugInfoSource,
+                                        DebugInfoTailCall,
+                                        DebugInfoUpvalues>(stack_level);
+    }
+
+    /// @brief Returns all debug and line information about a function in the current callstack.
+    auto getFullStackInfoWithLines(int stack_level = 0)
+    {
+        return getStackInfoWithLines<DebugInfoLine,
+                                     DebugInfoName,
+                                     DebugInfoSource,
+                                     DebugInfoTailCall,
+                                     DebugInfoUpvalues>(stack_level);
+    }
+
+    /// @brief Returns all debug information about a function in the current callstack, the function itself and line
+    /// information.
+    auto getFullStackInfoWithFunctionAndLines(int stack_level = 0)
+    {
+        return getStackInfoWithFunctionAndLines<DebugInfoLine,
+                                                DebugInfoName,
+                                                DebugInfoSource,
+                                                DebugInfoTailCall,
+                                                DebugInfoUpvalues>(stack_level);
+    }
+
+    /// @brief Returns debug information about the given function.
+    template <typename... TTypes, typename TFunction>
+    auto getFunctionInfo(TFunction&& function)
+    {
+        return getFunctionInfoHelper<TTypes...>(std::forward<TFunction>(function), false);
+    }
+
+    /// @brief Returns debug and line information about the given function.
+    template <typename... TTypes, typename TFunction>
+    auto getFunctionInfoWithLines(TFunction&& function)
+    {
+        return std::tuple{getFunctionInfoHelper<TTypes...>(std::forward<TFunction>(function), true), top().asResult()};
+    }
+
+    /// @brief Returns all debug information about the given function.
+    template <typename TFunction>
+    auto getFullFunctionInfo(TFunction&& function)
+    {
+        return getFunctionInfo<DebugInfoSource, DebugInfoUpvalues>(std::forward<TFunction>(function));
+    }
+
+    /// @brief Returns all debug and line information about the given function.
+    template <typename TFunction>
+    auto getFullFunctionInfoWithLines(TFunction&& function)
+    {
+        return getFunctionInfoWithLines<DebugInfoSource, DebugInfoUpvalues>(std::forward<TFunction>(function));
+    }
+
 private:
     /// @brief Helper function for lua_gc which is const, since some options are, in fact, const.
     template <typename... TArgs>
@@ -2780,6 +3072,75 @@ private:
         else {
             return lua.push(std::apply(func, std::move(args))).size();
         }
+    }
+
+    /// @brief Builds the "what" string, used in lua_getinfo
+    /// @param stack_function Prefixes the string with a `>`.
+    /// @param types Which informations should be included in the activation record.
+    /// @param push_function Appends the string with a `f`.
+    /// @param push_lines Appends the string with a `L`.
+    static constexpr auto buildDebugInfoWhatString(bool stack_function,
+                                                   DebugInfoTypes types,
+                                                   bool push_function = false,
+                                                   bool push_lines = false)
+    {
+        // 1 stack_function
+        // 1 push_function
+        // 1 push_lines
+        // 1 null terminator
+        // -> types + 4
+        std::array<char, dutils::enum_count_v<DebugInfoType> + 4> result{};
+
+        auto pos = &result[0];
+        if (stack_function)
+            *(pos++) = '>';
+        for (auto type : types)
+            *(pos++) = debug_info_type_chars[type];
+        if (push_function)
+            *(pos++) = 'f';
+        if (push_lines)
+            *(pos++) = 'L';
+
+        return result;
+    }
+
+    /// @brief Returns debug information about a function in the current callstack.
+    template <typename... TTypes>
+    DebugInfo<TTypes...> getStackInfoHelper(int stack_level) const
+    {
+        auto what = buildDebugInfoWhatString(false, {debug_info_enum_v<TTypes>...});
+        lua_Debug ar;
+        lua_getstack(state_, stack_level, &ar);
+        lua_getinfo(state_, what.data(), &ar);
+        return DebugInfo<TTypes...>(ar);
+    }
+
+    /// @brief Returns debug information about a function in the current callstack.
+    /// @param push_function Additionally push the function on the stack.
+    /// @param push_lines Additionally push a set of line numbers for this function in form of a table.
+    template <typename... TTypes>
+    DebugInfo<TTypes...> getStackInfoHelper(int stack_level, bool push_function, bool push_lines)
+    {
+        auto what = buildDebugInfoWhatString(false, {debug_info_enum_v<TTypes>...}, push_function, push_lines);
+        lua_Debug ar;
+        lua_getstack(state_, stack_level, &ar);
+        lua_getinfo(state_, what.data(), &ar);
+        notifyPush(push_function + push_lines);
+        return DebugInfo<TTypes...>(ar);
+    }
+
+    /// @brief Returns debug information about the given function.
+    /// @param push_function Additionally push the function on the stack.
+    /// @param push_lines Additionally push a set of line numbers for this function in form of a table.
+    template <typename... TTypes, typename TFunction>
+    DebugInfo<TTypes...> getFunctionInfoHelper(TFunction&& function, bool push_lines)
+    {
+        auto what = buildDebugInfoWhatString(true, {debug_info_enum_v<TTypes>...}, false, push_lines);
+        lua_Debug ar;
+        push(std::forward<TFunction>(function));
+        auto x = lua_getinfo(state_, what.data(), &ar);
+        notifyPush(push_lines - 1);
+        return DebugInfo<TTypes...>(ar);
     }
 
     lua_State* state_;
