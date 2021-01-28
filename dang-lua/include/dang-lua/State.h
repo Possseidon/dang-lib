@@ -2630,7 +2630,7 @@ public:
         static_assert(Convert<T>::push_count == 1, "Supplied value must take up a single stack position.");
         push(std::forward<T>(value));
         notifyPush(-1);
-        return Reference(state());
+        return Reference(state_);
     }
 
 private:
