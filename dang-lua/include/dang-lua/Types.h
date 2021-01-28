@@ -83,6 +83,20 @@ enum class CompareOp {
     COUNT
 };
 
+/// @brief The different hook types of the Lua Debug library.
+enum class Hook {
+    Call = LUA_HOOKCALL,
+    Ret = LUA_HOOKRET,
+    Line = LUA_HOOKLINE,
+    Count = LUA_HOOKCOUNT,
+    TailCall = LUA_HOOKTAILCALL,
+
+    COUNT
+};
+
+/// @brief Possible queries for lua_getinfo.
+enum class DebugInfoType { Name, Source, Line, TailCall, Upvalues, COUNT };
+
 /// @brief A list of all Lua standard libraries.
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
@@ -103,6 +117,12 @@ template <>
 struct enum_count<dang::lua::CompareOp> : default_enum_count<dang::lua::CompareOp> {};
 
 template <>
+struct enum_count<dang::lua::Hook> : default_enum_count<dang::lua::Hook> {};
+
+template <>
+struct enum_count<dang::lua::DebugInfoType> : default_enum_count<dang::lua::DebugInfoType> {};
+
+template <>
 struct enum_count<dang::lua::StandardLibrary> : default_enum_count<dang::lua::StandardLibrary> {};
 
 template <>
@@ -111,6 +131,13 @@ struct enum_count<dang::lua::LoadMode> : default_enum_count<dang::lua::LoadMode>
 } // namespace dang::utils
 
 namespace dang::lua {
+
+// TODO: A hook mask cannot contain the tail call hook, yet this implementation allows it.
+using Hooks = dutils::EnumSet<Hook>;
+
+using DebugInfoTypes = dutils::EnumSet<DebugInfoType>;
+
+inline constexpr dutils::EnumArray<DebugInfoType, char> debug_info_type_chars = {'n', 'S', 'l', 't', 'u'};
 
 inline const dutils::EnumArray<StandardLibrary, lua_CFunction> library_functions = {luaopen_base,
                                                                                     luaopen_coroutine,
