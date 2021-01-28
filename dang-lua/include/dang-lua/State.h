@@ -2633,6 +2633,17 @@ public:
         return Reference(state_);
     }
 
+    // --- Debug ---
+
+    /// @brief Returns the current debug hook function.
+    auto getHook() const { return lua_gethook(state_); }
+
+    /// @brief Returns the current debug hook count.
+    auto getHookCount() const { return lua_gethookcount(state_); }
+
+    /// @brief Returns the current debug hook mask.
+    auto getHookMask() const { return Hooks::fromBits(lua_gethookmask(state_)); }
+
 private:
     /// @brief Helper function for lua_gc which is const, since some options are, in fact, const.
     template <typename... TArgs>
