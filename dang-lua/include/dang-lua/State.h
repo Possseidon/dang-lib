@@ -674,6 +674,8 @@ public:
         return this->state().next(index(), std::forward<TKey>(key));
     }
 
+    auto pairsRaw() { return this->state().pairsRaw(index()); }
+
     // --- Formatting ---
 
     /// @brief Converts the element to a string in a reasonable format using luaL_tolstring.
@@ -1540,6 +1542,8 @@ struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upva
 
 template <typename T>
 inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
+
+class RawPairsWrapper;
 
 /// @brief Wraps a Lua state or thread.
 class State {
@@ -2694,6 +2698,8 @@ public:
         return std::nullopt;
     }
 
+    RawPairsWrapper pairsRaw(int table_index);
+
     // --- Formatting ---
 
     /// @brief Converts the element at the given index to a string in a reasonable format using luaL_tolstring.
@@ -3290,6 +3296,66 @@ private:
     State& state_;
     int initially_pushed_;
 };
+
+// --- Iteration Wrappers ---
+
+class RawPairsWrapper {
+public:
+    class iterator {
+    public:
+        using difference_type = lua_Integer;
+        using value_type = StackIndicesResult<2>;
+        using pointer = value_type*;
+        using reference = value_type&;
+        using iterator_category = std::input_iterator_tag;
+
+        iterator() = default;
+
+        iterator(StackIndex table)
+            : table_(table)
+            , pair_(table_.next(nullptr))
+        {}
+
+        iterator operator++()
+        {
+            assert(pair_);
+            auto diff = table_.state().size() - (*pair_)[0].index();
+            assert(diff >= 0);
+            if (diff > 0)
+                table_.state().pop(diff);
+            if (!table_.next((*pair_)[0].asResult()))
+                pair_ = std::nullopt;
+            return *this;
+        }
+
+        bool operator==(const iterator& other) { return pair_.has_value() == other.pair_.has_value(); }
+
+        bool operator!=(const iterator& other) { return !(*this == other); }
+
+        value_type operator*() { return *pair_; }
+
+    private:
+        StackIndex table_;
+        std::optional<value_type> pair_;
+    };
+
+    RawPairsWrapper(StackIndex table)
+        : table_(table)
+    {}
+
+    auto begin() { return iterator(table_); }
+
+    auto end() { return iterator(); }
+
+private:
+    StackIndex table_;
+};
+
+// --- State Implementation ---
+
+inline RawPairsWrapper State::pairsRaw(int table_index) { return RawPairsWrapper(stackIndex(table_index)); }
+
+// --- Convert Specializations ---
 
 template <>
 struct Convert<Reference> {
