@@ -1199,6 +1199,13 @@ public:
         return StackIndices<TState, v_count, StackIndexType::Result>(DirectInit{}, this->state(), this->first());
     }
 
+    /// @brief For structured binding support.
+    template <std::size_t v_index>
+    auto get() const
+    {
+        return (*this)[v_index].asResult();
+    }
+
     // --- Formatting ---
 
     /// @brief Prints all indices to the stream, separated by comma (and space).
@@ -1223,6 +1230,13 @@ public:
         : MultiIndexImpl<TState, UpvalueIndex<TState>, v_count>(DirectInit{}, state, lua_upvalueindex(first))
     {
         assert(first >= 1);
+    }
+
+    /// @brief For structured binding support.
+    template <std::size_t v_index>
+    auto get() const
+    {
+        return (*this)[v_index];
     }
 };
 
@@ -3826,3 +3840,24 @@ extern const auto State_formatDebug = &State::formatDebug;
 */
 
 } // namespace dang::lua
+
+namespace std {
+
+template <typename TState, int v_count, dang::lua::detail::StackIndexType v_type>
+struct tuple_size<dang::lua::detail::StackIndices<TState, v_count, v_type>>
+    : std::integral_constant<std::size_t, v_count> {};
+
+template <std::size_t v_index, typename TState, int v_count, dang::lua::detail::StackIndexType v_type>
+struct tuple_element<v_index, dang::lua::detail::StackIndices<TState, v_count, v_type>> {
+    using type = dang::lua::detail::StackIndex<TState, dang::lua::detail::StackIndexType::Result>;
+};
+
+template <typename TState, int v_count>
+struct tuple_size<dang::lua::detail::UpvalueIndices<TState, v_count>> : std::integral_constant<std::size_t, v_count> {};
+
+template <std::size_t v_index, typename TState, int v_count>
+struct tuple_element<v_index, dang::lua::detail::UpvalueIndices<TState, v_count>> {
+    using type = dang::lua::detail::UpvalueIndex<TState>;
+};
+
+} // namespace std
