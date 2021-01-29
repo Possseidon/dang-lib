@@ -675,13 +675,13 @@ public:
     }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    auto pairsRaw() { return this->state().pairsRaw(index()); }
+    auto pairsRaw() { return this->state().pairsRaw(*this); }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    auto keysRaw() { return this->state().keysRaw(index()); }
+    auto keysRaw() { return this->state().keysRaw(*this); }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    auto valuesRaw() { return this->state().valuesRaw(index()); }
+    auto valuesRaw() { return this->state().valuesRaw(*this); }
 
     // --- Formatting ---
 
@@ -1082,6 +1082,24 @@ public:
         if constexpr (v_type == StackIndexType::Result)
             popIfTop();
     }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
+    auto pairsRaw() & { return this->state().pairsRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
+    auto pairsRaw() && { return this->state().pairsRaw(std::move(*this)); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
+    auto keysRaw() & { return this->state().keysRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
+    auto keysRaw() && { return this->state().keysRaw(std::move(*this)); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
+    auto valuesRaw() & { return this->state().valuesRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
+    auto valuesRaw() && { return this->state().valuesRaw(std::move(*this)); }
 
     // --- Reference ---
 
@@ -1564,11 +1582,16 @@ struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upva
 template <typename T>
 inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
 
-template <typename TIterator>
+template <typename TIndex, template <typename> typename TIterator>
 class IterationWrapper;
 
+template <typename TIndex>
 class next_pair_iterator;
+
+template <typename TIndex>
 class next_key_iterator;
+
+template <typename TIndex>
 class next_value_iterator;
 
 /// @brief Wraps a Lua state or thread.
@@ -2725,13 +2748,25 @@ public:
     }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    IterationWrapper<next_pair_iterator> pairsRaw(int table_index);
+    template <typename TTable>
+    auto pairsRaw(TTable&& table)
+    {
+        return IterationWrapper<TTable, next_pair_iterator>(table);
+    }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    IterationWrapper<next_key_iterator> keysRaw(int table_index);
+    template <typename TTable>
+    auto keysRaw(TTable&& table)
+    {
+        return IterationWrapper<TTable, next_key_iterator>(table);
+    }
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    IterationWrapper<next_value_iterator> valuesRaw(int table_index);
+    template <typename TTable>
+    auto valuesRaw(TTable&& table)
+    {
+        return IterationWrapper<TTable, next_value_iterator>(table);
+    }
 
     // --- Formatting ---
 
@@ -3333,7 +3368,7 @@ private:
 // --- Iteration Wrappers ---
 
 /// @brief Uses lua_next to iterate over a table.
-template <typename TValueType, bool pop_value>
+template <typename TIndex, typename TValueType, bool pop_value>
 class next_iterator {
 public:
     using difference_type = lua_Integer;
@@ -3342,13 +3377,13 @@ public:
     using reference = value_type&;
     using iterator_category = std::input_iterator_tag;
 
-    friend class next_pair_iterator;
-    friend class next_key_iterator;
-    friend class next_value_iterator;
+    friend class next_pair_iterator<TIndex>;
+    friend class next_key_iterator<TIndex>;
+    friend class next_value_iterator<TIndex>;
 
     next_iterator() = default;
 
-    next_iterator(StackIndex table)
+    next_iterator(TIndex table)
         : table_(table)
     {
         if (auto next = table_.next(nullptr)) {
@@ -3377,62 +3412,60 @@ public:
     bool operator!=(const next_iterator& other) { return !(*this == other); }
 
 private:
-    StackIndex table_;
+    TIndex table_;
     std::optional<int> key_index_;
 };
 
-class next_pair_iterator : public next_iterator<StackIndicesResult<2>, false> {
+template <typename TIndex>
+class next_pair_iterator : public next_iterator<TIndex, StackIndicesResult<2>, false> {
 public:
-    using next_iterator<StackIndicesResult<2>, false>::next_iterator;
+    using Base = next_iterator<TIndex, StackIndicesResult<2>, false>;
+    using Base::Base;
 
-    value_type operator*() { return table_.state().stackIndices<2>(*key_index_).asResults(); }
+    auto operator*() { return this->table_.state().template stackIndices<2>(*this->key_index_).asResults(); }
 };
 
-class next_key_iterator : public next_iterator<StackIndexResult, true> {
+template <typename TIndex>
+class next_key_iterator : public next_iterator<TIndex, StackIndexResult, true> {
 public:
-    using next_iterator<StackIndexResult, true>::next_iterator;
+    using Base = next_iterator<TIndex, StackIndexResult, true>;
+    using Base::Base;
 
-    value_type operator*() { return table_.state().stackIndex(*key_index_).asResult(); }
+    auto operator*() { return this->table_.state().stackIndex(*this->key_index_).asResult(); }
 };
 
-class next_value_iterator : public next_iterator<StackIndexResult, false> {
+template <typename TIndex>
+class next_value_iterator : public next_iterator<TIndex, StackIndexResult, false> {
 public:
-    using next_iterator<StackIndexResult, false>::next_iterator;
+    using Base = next_iterator<TIndex, StackIndexResult, false>;
+    using Base::Base;
 
-    value_type operator*() { return table_.state().stackIndex(*key_index_ + 1).asResult(); }
+    auto operator*() { return this->table_.state().stackIndex(*this->key_index_ + 1).asResult(); }
 };
 
-template <typename TIterator>
+template <typename TIndex, template <typename> typename TIterator>
 class IterationWrapper {
 public:
-    IterationWrapper(StackIndex table)
+    IterationWrapper(TIndex table)
         : table_(table)
     {}
 
-    auto begin() { return TIterator(table_); }
+    auto begin() { return TIterator<std::decay_t<TIndex>>(table_); }
 
-    auto end() { return TIterator(); }
+    auto end() { return TIterator<std::decay_t<TIndex>>(); }
 
 private:
-    StackIndex table_;
+    auto scopedOffset() const
+    {
+        if constexpr (is_any_moved_stack_index_result<TIndex&&>::value)
+            return table_.isTop() ? -1 : 0;
+        else
+            return 0;
+    }
+
+    TIndex table_;
+    ScopedStack scoped_stack_{table_.state(), scopedOffset()};
 };
-
-// --- State Implementation ---
-
-inline IterationWrapper<next_pair_iterator> State::pairsRaw(int table_index)
-{
-    return IterationWrapper<next_pair_iterator>(stackIndex(table_index));
-}
-
-inline IterationWrapper<next_key_iterator> State::keysRaw(int table_index)
-{
-    return IterationWrapper<next_key_iterator>(stackIndex(table_index));
-}
-
-inline IterationWrapper<next_value_iterator> State::valuesRaw(int table_index)
-{
-    return IterationWrapper<next_value_iterator>(stackIndex(table_index));
-}
 
 // --- Convert Specializations ---
 
