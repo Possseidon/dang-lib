@@ -2683,15 +2683,15 @@ public:
 
     /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
-    auto next(int table_index, TKey&& key)
+    std::optional<StackIndicesResult<2>> next(int table_index, TKey&& key)
     {
         push(std::forward<TKey>(key));
         if (lua_next(state_, table_index)) {
             notifyPush(1);
-            return top(2).asResults();
+            return top<2>().asResults();
         }
         notifyPush(-1);
-        return top(0).asResults();
+        return std::nullopt;
     }
 
     // --- Formatting ---
