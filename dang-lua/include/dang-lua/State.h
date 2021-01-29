@@ -674,7 +674,14 @@ public:
         return this->state().next(index(), std::forward<TKey>(key));
     }
 
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
     auto pairsRaw() { return this->state().pairsRaw(index()); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
+    auto keysRaw() { return this->state().keysRaw(index()); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
+    auto valuesRaw() { return this->state().valuesRaw(index()); }
 
     // --- Formatting ---
 
@@ -1543,7 +1550,12 @@ struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upva
 template <typename T>
 inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
 
-class RawPairsWrapper;
+template <typename TIterator>
+class IterationWrapper;
+
+class next_pair_iterator;
+class next_key_iterator;
+class next_value_iterator;
 
 /// @brief Wraps a Lua state or thread.
 class State {
@@ -2698,7 +2710,14 @@ public:
         return std::nullopt;
     }
 
-    RawPairsWrapper pairsRaw(int table_index);
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
+    IterationWrapper<next_pair_iterator> pairsRaw(int table_index);
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
+    IterationWrapper<next_key_iterator> keysRaw(int table_index);
+
+    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
+    IterationWrapper<next_value_iterator> valuesRaw(int table_index);
 
     // --- Formatting ---
 
@@ -3299,53 +3318,86 @@ private:
 
 // --- Iteration Wrappers ---
 
-class RawPairsWrapper {
+/// @brief Uses lua_next to iterate over a table.
+template <typename TValueType, bool pop_value>
+class next_iterator {
 public:
-    class iterator {
-    public:
-        using difference_type = lua_Integer;
-        using value_type = StackIndicesResult<2>;
-        using pointer = value_type*;
-        using reference = value_type&;
-        using iterator_category = std::input_iterator_tag;
+    using difference_type = lua_Integer;
+    using value_type = TValueType;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::input_iterator_tag;
 
-        iterator() = default;
+    friend class next_pair_iterator;
+    friend class next_key_iterator;
+    friend class next_value_iterator;
 
-        iterator(StackIndex table)
-            : table_(table)
-            , pair_(table_.next(nullptr))
-        {}
+    next_iterator() = default;
 
-        iterator operator++()
-        {
-            assert(pair_);
-            auto diff = table_.state().size() - (*pair_)[0].index();
-            assert(diff >= 0);
-            if (diff > 0)
-                table_.state().pop(diff);
-            if (!table_.next((*pair_)[0].asResult()))
-                pair_ = std::nullopt;
-            return *this;
+    next_iterator(StackIndex table)
+        : table_(table)
+    {
+        if (auto next = table_.next(nullptr)) {
+            key_index_ = next->first();
+            if constexpr (pop_value)
+                table_.state().pop();
         }
+    }
 
-        bool operator==(const iterator& other) { return pair_.has_value() == other.pair_.has_value(); }
+    next_iterator operator++()
+    {
+        assert(key_index_);
+        auto diff = table_.state().size() - *key_index_;
+        assert(diff >= 0);
+        if (diff > 0)
+            table_.state().pop(diff);
+        if (!table_.next(table_.state().stackIndex(*key_index_).asResult()))
+            key_index_.reset();
+        else if constexpr (pop_value)
+            table_.state().pop();
+        return *this;
+    }
 
-        bool operator!=(const iterator& other) { return !(*this == other); }
+    bool operator==(const next_iterator& other) { return key_index_.has_value() == other.key_index_.has_value(); }
 
-        value_type operator*() { return *pair_; }
+    bool operator!=(const next_iterator& other) { return !(*this == other); }
 
-    private:
-        StackIndex table_;
-        std::optional<value_type> pair_;
-    };
+private:
+    StackIndex table_;
+    std::optional<int> key_index_;
+};
 
-    RawPairsWrapper(StackIndex table)
+class next_pair_iterator : public next_iterator<StackIndicesResult<2>, false> {
+public:
+    using next_iterator<StackIndicesResult<2>, false>::next_iterator;
+
+    value_type operator*() { return table_.state().stackIndices<2>(*key_index_).asResults(); }
+};
+
+class next_key_iterator : public next_iterator<StackIndexResult, true> {
+public:
+    using next_iterator<StackIndexResult, true>::next_iterator;
+
+    value_type operator*() { return table_.state().stackIndex(*key_index_).asResult(); }
+};
+
+class next_value_iterator : public next_iterator<StackIndexResult, false> {
+public:
+    using next_iterator<StackIndexResult, false>::next_iterator;
+
+    value_type operator*() { return table_.state().stackIndex(*key_index_ + 1).asResult(); }
+};
+
+template <typename TIterator>
+class IterationWrapper {
+public:
+    IterationWrapper(StackIndex table)
         : table_(table)
     {}
 
-    auto begin() { return iterator(table_); }
+    auto begin() { return TIterator(table_); }
 
-    auto end() { return iterator(); }
+    auto end() { return TIterator(); }
 
 private:
     StackIndex table_;
@@ -3353,7 +3405,20 @@ private:
 
 // --- State Implementation ---
 
-inline RawPairsWrapper State::pairsRaw(int table_index) { return RawPairsWrapper(stackIndex(table_index)); }
+inline IterationWrapper<next_pair_iterator> State::pairsRaw(int table_index)
+{
+    return IterationWrapper<next_pair_iterator>(stackIndex(table_index));
+}
+
+inline IterationWrapper<next_key_iterator> State::keysRaw(int table_index)
+{
+    return IterationWrapper<next_key_iterator>(stackIndex(table_index));
+}
+
+inline IterationWrapper<next_value_iterator> State::valuesRaw(int table_index)
+{
+    return IterationWrapper<next_value_iterator>(stackIndex(table_index));
+}
 
 // --- Convert Specializations ---
 
