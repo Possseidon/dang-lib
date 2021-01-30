@@ -683,6 +683,12 @@ public:
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
     auto valuesRaw() { return this->state().valuesRaw(*this); }
 
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
+    auto ipairsRaw() { return this->state().ipairsRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
+    auto ivaluesRaw() { return this->state().ivaluesRaw(*this); }
+
     // --- Formatting ---
 
     /// @brief Converts the element to a string in a reasonable format using luaL_tolstring.
@@ -1100,6 +1106,18 @@ public:
 
     /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
     auto valuesRaw() && { return this->state().valuesRaw(std::move(*this)); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
+    auto ipairsRaw() & { return this->state().ipairsRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
+    auto ipairsRaw() && { return this->state().ipairsRaw(std::move(*this)); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
+    auto ivaluesRaw() & { return this->state().ivaluesRaw(*this); }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
+    auto ivaluesRaw() && { return this->state().ivaluesRaw(std::move(*this)); }
 
     // --- Reference ---
 
@@ -1582,9 +1600,6 @@ struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upva
 template <typename T>
 inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
 
-template <typename TIndex, template <typename> typename TIterator>
-class IterationWrapper;
-
 template <typename TIndex>
 class next_pair_iterator;
 
@@ -1593,6 +1608,18 @@ class next_key_iterator;
 
 template <typename TIndex>
 class next_value_iterator;
+
+template <typename TIndex, template <typename> typename TIterator>
+class IterationWrapper;
+
+template <typename TIndex>
+class raw_ipair_iterator;
+
+template <typename TIndex>
+class raw_ivalue_iterator;
+
+template <typename TIndex, template <typename> typename TIterator>
+class RawIndexIterationWrapper;
 
 /// @brief Wraps a Lua state or thread.
 class State {
@@ -2768,6 +2795,20 @@ public:
         return IterationWrapper<TTable, next_value_iterator>(table);
     }
 
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
+    template <typename TTable>
+    auto ipairsRaw(TTable&& table)
+    {
+        return RawIndexIterationWrapper<TTable, raw_ipair_iterator>(table);
+    }
+
+    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
+    template <typename TTable>
+    auto ivaluesRaw(TTable&& table)
+    {
+        return RawIndexIterationWrapper<TTable, raw_ivalue_iterator>(table);
+    }
+
     // --- Formatting ---
 
     /// @brief Converts the element at the given index to a string in a reasonable format using luaL_tolstring.
@@ -3368,7 +3409,7 @@ private:
 // --- Iteration Wrappers ---
 
 /// @brief Uses lua_next to iterate over a table.
-template <typename TIndex, typename TValueType, bool pop_value>
+template <typename TIndex, typename TValueType, bool v_pop_value>
 class next_iterator {
 public:
     using difference_type = lua_Integer;
@@ -3388,12 +3429,12 @@ public:
     {
         if (auto next = table_.next(nullptr)) {
             key_index_ = next->first();
-            if constexpr (pop_value)
+            if constexpr (v_pop_value)
                 table_.state().pop();
         }
     }
 
-    next_iterator operator++()
+    next_iterator& operator++()
     {
         assert(key_index_);
         auto diff = table_.state().size() - *key_index_;
@@ -3402,14 +3443,16 @@ public:
             table_.state().pop(diff);
         if (!table_.next(table_.state().stackIndex(*key_index_).asResult()))
             key_index_.reset();
-        else if constexpr (pop_value)
+        else if constexpr (v_pop_value)
             table_.state().pop();
         return *this;
     }
 
-    bool operator==(const next_iterator& other) { return key_index_.has_value() == other.key_index_.has_value(); }
+    void operator++(int) { ++*this; }
 
-    bool operator!=(const next_iterator& other) { return !(*this == other); }
+    bool operator==(const next_iterator& other) const { return key_index_.has_value() == other.key_index_.has_value(); }
+
+    bool operator!=(const next_iterator& other) const { return !(*this == other); }
 
 private:
     TIndex table_;
@@ -3422,7 +3465,7 @@ public:
     using Base = next_iterator<TIndex, StackIndicesResult<2>, false>;
     using Base::Base;
 
-    auto operator*() { return this->table_.state().template stackIndices<2>(*this->key_index_).asResults(); }
+    auto operator*() const { return this->table_.state().template stackIndices<2>(*this->key_index_).asResults(); }
 };
 
 template <typename TIndex>
@@ -3431,7 +3474,7 @@ public:
     using Base = next_iterator<TIndex, StackIndexResult, true>;
     using Base::Base;
 
-    auto operator*() { return this->table_.state().stackIndex(*this->key_index_).asResult(); }
+    auto operator*() const { return this->table_.state().stackIndex(*this->key_index_).asResult(); }
 };
 
 template <typename TIndex>
@@ -3440,19 +3483,18 @@ public:
     using Base = next_iterator<TIndex, StackIndexResult, false>;
     using Base::Base;
 
-    auto operator*() { return this->table_.state().stackIndex(*this->key_index_ + 1).asResult(); }
+    auto operator*() const { return this->table_.state().stackIndex(*this->key_index_ + 1).asResult(); }
 };
 
-template <typename TIndex, template <typename> typename TIterator>
-class IterationWrapper {
+template <typename TIndex>
+class IterationWrapperBase {
 public:
-    IterationWrapper(TIndex table)
+    IterationWrapperBase(TIndex table)
         : table_(table)
     {}
 
-    auto begin() { return TIterator<std::decay_t<TIndex>>(table_); }
-
-    auto end() { return TIterator<std::decay_t<TIndex>>(); }
+protected:
+    TIndex table_;
 
 private:
     auto scopedOffset() const
@@ -3463,8 +3505,95 @@ private:
             return 0;
     }
 
-    TIndex table_;
     ScopedStack scoped_stack_{table_.state(), scopedOffset()};
+};
+
+template <typename TIndex, template <typename> typename TIterator>
+class IterationWrapper : public IterationWrapperBase<TIndex> {
+public:
+    using IterationWrapperBase<TIndex>::IterationWrapperBase;
+
+    auto begin() { return TIterator<std::decay_t<TIndex>>(this->table_); }
+    auto end() { return TIterator<std::decay_t<TIndex>>(); }
+};
+
+template <typename TIndex, typename TValueType>
+class raw_index_iterator {
+public:
+    using difference_type = lua_Integer;
+    using value_type = TValueType;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::input_iterator_tag;
+
+    friend class raw_ipair_iterator<TIndex>;
+    friend class raw_ivalue_iterator<TIndex>;
+
+    raw_index_iterator() = default;
+
+    raw_index_iterator(TIndex table, lua_Unsigned index, bool is_end)
+        : table_(table)
+        , top_(table_.state().size())
+        , index_(index)
+    {
+        if (!is_end)
+            table_.rawGetTable(index_);
+    }
+
+    raw_index_iterator& operator++()
+    {
+        assert(index_);
+        auto diff = table_.state().size() - top_;
+        assert(diff >= 0);
+        if (diff > 0)
+            table_.state().pop(diff);
+        table_.rawGetTable(++index_);
+        return *this;
+    }
+
+    void operator++(int) { ++*this; }
+
+    bool operator==(const raw_index_iterator& other) const { return index_ == other.index_; }
+
+    bool operator!=(const raw_index_iterator& other) const { return !(*this == other); }
+
+private:
+    TIndex table_;
+    int top_;
+    lua_Integer index_;
+};
+
+template <typename TIndex>
+class raw_ipair_iterator : public raw_index_iterator<TIndex, std::pair<lua_Integer, StackIndexResult>> {
+public:
+    using Base = raw_index_iterator<TIndex, std::pair<lua_Integer, StackIndexResult>>;
+    using Base::Base;
+
+    auto operator*() const
+    {
+        return std::pair{this->index_, this->table_.state().stackIndex(this->top_ + 1).asResult()};
+    }
+};
+
+template <typename TIndex>
+class raw_ivalue_iterator : public raw_index_iterator<TIndex, StackIndexResult> {
+public:
+    using Base = raw_index_iterator<TIndex, StackIndexResult>;
+    using Base::Base;
+
+    auto operator*() const { return this->table_.state().stackIndex(this->top_ + 1).asResult(); }
+};
+
+template <typename TIndex, template <typename> typename TIterator>
+class RawIndexIterationWrapper : public IterationWrapperBase<TIndex> {
+public:
+    using IterationWrapperBase<TIndex>::IterationWrapperBase;
+
+    auto begin() { return TIterator<std::decay_t<TIndex>>(this->table_, 1, size_ == 0); }
+    auto end() { return TIterator<std::decay_t<TIndex>>(this->table_, size_ + 1, true); }
+
+private:
+    lua_Integer size_ = static_cast<lua_Integer>(this->table_.rawLength());
 };
 
 // --- Convert Specializations ---
