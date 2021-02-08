@@ -553,6 +553,9 @@ public:
         return this->state().pcallMultRet(*this, std::forward<TArgs>(args)...);
     }
 
+    /// @brief If a metafield with the given name exists, calls it and returns its result.
+    auto callMeta(const char* field) const { return this->state().callMeta(index(), field); }
+
     // --- Operations ---
 
     /// @brief Replaces the element with another value.
@@ -2381,6 +2384,16 @@ public:
             return Expected<VarArgs>{top(results).asResults()};
         else
             return Expected<VarArgs>{Error{status, top().asResult()}};
+    }
+
+    /// @brief If a metafield with the given name exists, calls it and returns its result.
+    std::optional<StackIndexResult> callMeta(int index, const char* field)
+    {
+        if (luaL_callmeta(state_, index, field)) {
+            notifyPush();
+            return top().asResult();
+        }
+        return std::nullopt;
     }
 
     // --- Compiling and Calling ---
