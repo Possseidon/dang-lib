@@ -854,6 +854,13 @@ public:
     /// @brief Returns a result index, for which rvalues can be consumed by some functions.
     auto asResult() { return StackIndex<TState, StackIndexType::Result>(DirectInit{}, this->state(), this->index()); }
 
+    /// @brief Assumes, that the value lies at the top of the stack and pops it.
+    void pop()
+    {
+        assert(this->isTop());
+        this->state().pop();
+    }
+
     /// @brief Pops the value if it lies at the top of the stack.
     void popIfTop()
     {
