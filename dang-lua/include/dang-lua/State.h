@@ -1035,100 +1035,6 @@ public:
             return this->state().template arith<ArithOp::BinaryXOr>(*this, std::forward<T>(other));
     }
 
-    /// @brief Returns the length of the element using luaL_len.
-    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.
-    auto length() const& { return this->state().length(this->index()); }
-
-    /// @brief Returns the length of the element using luaL_len.
-    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return a lua_Integer.
-    auto length() &&
-    {
-        auto result = this->state().length(this->index());
-        if constexpr (v_type == StackIndexType::Result)
-            popIfTop();
-        return result;
-    }
-
-    /// @brief Returns the raw length of the value, which does not invoke meta-methods.
-    auto rawLength() const& { return this->state().rawLength(this->index()); }
-
-    /// @brief Returns the raw length of the value, which does not invoke meta-methods.
-    auto rawLength() &&
-    {
-        auto result = this->state().rawLength(this->index());
-        if constexpr (v_type == StackIndexType::Result)
-            popIfTop();
-        return result;
-    }
-
-    // --- Table Access ---
-
-    /// @brief Sets a key of the element like a table to the given value.
-    /// @remark Can invoke the __newindex meta-method.
-    template <typename TKey, typename TValue>
-    void setTable(TKey&& key, TValue&& value) const&
-    {
-        this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
-    }
-
-    /// @brief Sets a key of the element like a table to the given value.
-    /// @remark Can invoke the __newindex meta-method.
-    template <typename TKey, typename TValue>
-    void setTable(TKey&& key, TValue&& value) &&
-    {
-        this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
-        // lua_settable doesn't actually pop the table, only the key and value
-        if constexpr (v_type == StackIndexType::Result)
-            popIfTop();
-    }
-
-    /// @brief Similar to setTable, but does not invoke meta-methods.
-    template <typename TKey, typename TValue>
-    void rawSetTable(TKey&& key, TValue&& value) const&
-    {
-        this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
-    }
-
-    /// @brief Similar to setTable, but does not invoke meta-methods.
-    template <typename TKey, typename TValue>
-    void rawSetTable(TKey&& key, TValue&& value) &&
-    {
-        this->state().rawSetTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
-        // lua_rawset doesn't actually pop the table, only the key and value
-        if constexpr (v_type == StackIndexType::Result)
-            popIfTop();
-    }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    auto pairsRaw() & { return this->state().pairsRaw(*this); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    auto pairsRaw() && { return this->state().pairsRaw(std::move(*this)); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    auto keysRaw() & { return this->state().keysRaw(*this); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    auto keysRaw() && { return this->state().keysRaw(std::move(*this)); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    auto valuesRaw() & { return this->state().valuesRaw(*this); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    auto valuesRaw() && { return this->state().valuesRaw(std::move(*this)); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
-    auto ipairsRaw() & { return this->state().ipairsRaw(*this); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
-    auto ipairsRaw() && { return this->state().ipairsRaw(std::move(*this)); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
-    auto ivaluesRaw() & { return this->state().ivaluesRaw(*this); }
-
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
-    auto ivaluesRaw() && { return this->state().ivaluesRaw(std::move(*this)); }
-
     // --- Reference ---
 
     /// @brief Stores the element as a reference in the registry table and returns a wrapper.
@@ -1141,17 +1047,6 @@ public:
             return this->state().ref(std::move(*this));
         else
             return this->state().ref(*this);
-    }
-
-    // --- Formatting ---
-
-    /// @brief Prints the element to the stream using the format function.
-    friend std::ostream& operator<<(std::ostream& stream, StackIndex&& index)
-    {
-        stream << index;
-        if constexpr (v_type == StackIndexType::Result)
-            index.popIfTop();
-        return stream;
     }
 
     // --- Debug ---
@@ -1251,18 +1146,6 @@ public:
     {
         return (*this)[v_index].asResult();
     }
-
-    // --- Formatting ---
-
-    /// @brief Prints all indices to the stream, separated by comma (and space).
-    friend std::ostream& operator<<(std::ostream& stream, StackIndices&& indices)
-    {
-        static_assert(v_type == StackIndexType::Result);
-        stream << indices;
-        if (indices.isTop())
-            indices.state().pop(indices.size());
-        return stream;
-    }
 };
 
 /// @brief Wraps a compile-time fixed size range of upvalues.
@@ -1307,18 +1190,6 @@ public:
     {
         return StackIndexRange<TState, StackIndexType::Result>(
             DirectInit{}, this->state(), this->first(), this->size());
-    }
-
-    // --- Formatting ---
-
-    /// @brief Prints all indices to the stream, separated by comma (and space).
-    friend std::ostream& operator<<(std::ostream& stream, StackIndexRange&& index_range)
-    {
-        static_assert(v_type == StackIndexType::Result);
-        stream << index_range;
-        if (index_range.isTop())
-            index_range.state().pop(index_range.size());
-        return stream;
     }
 };
 
@@ -2501,6 +2372,9 @@ public:
     template <typename TLeft, typename TRight>
     bool compare(CompareOp operation, TLeft&& lhs, TRight&& rhs) const
     {
+        // Even though lua_compare never actually consumes its arguments, this wrapper will pop temporarily converted
+        // values automatically. The reason for this is to keep the overloaded operators simple and intuitive.
+
         static_assert(Convert<TLeft>::push_count == 1, "Left operand must take up a single stack position.");
         static_assert(Convert<TRight>::push_count == 1, "Right operand must take up a single stack position.");
 
