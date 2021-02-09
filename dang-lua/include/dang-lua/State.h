@@ -672,7 +672,7 @@ public:
 
     /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
-    auto next(TKey&& key)
+    auto next(TKey&& key) const
     {
         return this->state().next(index(), std::forward<TKey>(key));
     }
