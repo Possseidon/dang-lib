@@ -3020,6 +3020,17 @@ private:
     /// @brief After some values got pushed (or popped) this function has to be called.
     void notifyPush(int count = 1)
     {
+        if constexpr (false) {
+            if (count < 0)
+                std::cout << "pop " << -count << '\n';
+            else if (count > 0) {
+                std::cout << "push " << format(top_);
+                for (int i = 1; i < count; i++)
+                    std::cout << ", " << format(top_ + i);
+                std::cout << '\n';
+            }
+        }
+
         assertPushable(count);
         top_ += count;
 #ifndef NDEBUG
