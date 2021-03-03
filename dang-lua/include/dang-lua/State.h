@@ -557,6 +557,12 @@ public:
         return this->state().pcallMultRet(*this, std::forward<TArgs>(args)...);
     }
 
+    /// @brief Returns a metafield including its type, if it exists.
+    auto getMetaFieldWithType(const char* field) const { return this->state().getMetaFieldWithType(index(), field); }
+
+    /// @brief Returns a metafield, if it exists.
+    auto getMetaField(const char* field) const { return this->state().getMetaField(index(), field); }
+
     /// @brief If a metafield with the given name exists, calls it and returns its result.
     auto callMeta(const char* field) const { return this->state().callMeta(index(), field); }
 
@@ -2281,6 +2287,27 @@ public:
             return Expected<VarArgs>{top(results).asResults()};
         else
             return Expected<VarArgs>{Error{status, top().asResult()}};
+    }
+
+    /// @brief Returns a metafield including its type, if it exists.
+    std::optional<std::tuple<Type, StackIndexResult>> getMetaFieldWithType(int index, const char* field)
+    {
+        assertPushableAuxiliary();
+        auto type = static_cast<Type>(luaL_getmetafield(state_, index, field));
+        if (type == Type::Nil)
+            return std::nullopt;
+        notifyPush(1);
+        return std::tuple{type, top().asResult()};
+    }
+
+    /// @brief Returns a metafield, if it exists.
+    std::optional<StackIndexResult> getMetaField(int index, const char* field)
+    {
+        if (auto result = getMetaFieldWithType(index, field)) {
+            auto [type, value] = *result;
+            return value;
+        }
+        return std::nullopt;
     }
 
     /// @brief If a metafield with the given name exists, calls it and returns its result.
