@@ -610,20 +610,20 @@ public:
     }
 
     /// @brief Pushes the length of the element on the stack.
-    /// @remark This can invoke the __len meta-method and therefore doesn't necessarily return an integer.
+    /// @remark This can invoke the __len metamethod and therefore doesn't necessarily return an integer.
     auto pushLength() const { return this->state().pushLength(index()); }
 
     /// @brief Returns the length of the element.
-    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return an integer.
+    /// @remark This can invoke the __len metamethod and raises an error if that doesn't return an integer.
     auto length() const { return this->state().length(index()); }
 
-    /// @brief Returns the raw length of the value, which does not invoke meta-method.
+    /// @brief Returns the raw length of the value, which does not invoke metamethod.
     auto rawLength() const { return this->state().rawLength(index()); }
 
     // --- Table Access ---
 
     /// @brief Queries the element like a table with the given key, returning both the type and the pushed value.
-    /// @remark Can invoke the __index meta-method.
+    /// @remark Can invoke the __index metamethod.
     template <typename TKey>
     auto getTableWithType(TKey&& key)
     {
@@ -631,7 +631,7 @@ public:
     }
 
     /// @brief Queries the element like a table with the given key, returning the pushed value.
-    /// @remark Can invoke the __index meta-method.
+    /// @remark Can invoke the __index metamethod.
     template <typename TKey>
     auto getTable(TKey&& key)
     {
@@ -646,28 +646,28 @@ public:
     }
 
     /// @brief Sets a key of the element like a table to the given value.
-    /// @remark Can invoke the __newindex meta-method.
+    /// @remark Can invoke the __newindex metamethod.
     template <typename TKey, typename TValue>
     void setTable(TKey&& key, TValue&& value)
     {
         this->state().setTable(*this, std::forward<TKey>(key), std::forward<TValue>(value));
     }
 
-    /// @brief Similar to getTableWithType, but does not invoke meta-methods.
+    /// @brief Similar to getTableWithType, but does not invoke metamethods.
     template <typename TKey>
     auto rawGetTableWithType(TKey&& key)
     {
         return this->state().rawGetTableWithType(*this, std::forward<TKey>(key));
     }
 
-    /// @brief Similar to getTable, but does not invoke meta-methods.
+    /// @brief Similar to getTable, but does not invoke metamethods.
     template <typename TKey>
     auto rawGetTable(TKey&& key)
     {
         return this->state().rawGetTable(*this, std::forward<TKey>(key));
     }
 
-    /// @brief Similar to setTable, but does not invoke meta-methods.
+    /// @brief Similar to setTable, but does not invoke metamethods.
     template <typename TKey, typename TValue>
     void rawSetTable(TKey&& key, TValue&& value)
     {
@@ -2480,7 +2480,7 @@ public:
     }
 
     /// @brief Pushes the length of the element at the given index on the stack.
-    /// @remark This can invoke the __len meta-method and therefore doesn't necessarily return an integer.
+    /// @remark This can invoke the __len metamethod and therefore doesn't necessarily return an integer.
     auto pushLength(int index)
     {
         lua_len(state_, index);
@@ -2489,20 +2489,20 @@ public:
     }
 
     /// @brief Returns the length of the element at the given index.
-    /// @remark This can invoke the __len meta-method and raises an error if that doesn't return an integer.
+    /// @remark This can invoke the __len metamethod and raises an error if that doesn't return an integer.
     auto length(int index) const
     {
         assertPushableAuxiliary();
         return luaL_len(state_, index);
     }
 
-    /// @brief Returns the raw length of the value, which does not invoke meta-method.
+    /// @brief Returns the raw length of the value, which does not invoke metamethod.
     auto rawLength(int index) const { return lua_rawlen(state_, index); }
 
     // --- Table Access ---
 
     /// @brief Queries the table with the given key, returning both the type and the pushed value.
-    /// @remark Can invoke the __index meta-method.
+    /// @remark Can invoke the __index metamethod.
     template <typename TTable, typename TKey>
     auto getTableWithType(TTable& table, TKey&& key)
     {
@@ -2539,7 +2539,7 @@ public:
     }
 
     /// @brief Queries the table with the given key, returning the pushed value.
-    /// @remark Can invoke the __index meta-method.
+    /// @remark Can invoke the __index metamethod.
     template <typename TTable, typename TKey>
     auto getTable(TTable& table, TKey&& key)
     {
@@ -2548,7 +2548,7 @@ public:
     }
 
     /// @brief Sets a key of the table to the given value.
-    /// @remark Can invoke the __newindex meta-method.
+    /// @remark Can invoke the __newindex metamethod.
     template <typename TTable, typename TKey, typename TValue>
     void setTable(TTable& table, TKey&& key, TValue&& value)
     {
@@ -2581,7 +2581,7 @@ public:
         }
     }
 
-    /// @brief Similar to getTableWithType, but does not invoke meta-methods.
+    /// @brief Similar to getTableWithType, but does not invoke metamethods.
     template <typename TTable, typename TKey>
     auto rawGetTableWithType(TTable& table, TKey&& key)
     {
@@ -2613,7 +2613,7 @@ public:
         }
     }
 
-    /// @brief Similar to getTable, but does not invoke meta-methods.
+    /// @brief Similar to getTable, but does not invoke metamethods.
     template <typename TTable, typename TKey>
     auto rawGetTable(TTable& table, TKey&& key)
     {
@@ -2621,7 +2621,7 @@ public:
         return index;
     }
 
-    /// @brief Similar to setTable, but does not invoke meta-methods.
+    /// @brief Similar to setTable, but does not invoke metamethods.
     template <typename TTable, typename TKey, typename TValue>
     void rawSetTable(TTable& table, TKey&& key, TValue&& value)
     {
