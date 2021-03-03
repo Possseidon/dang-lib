@@ -386,6 +386,10 @@ public:
     /// @remark Merely for compatibility with StackIndices and StackIndexRange.
     constexpr int size() const { return 1; }
 
+    /// @brief Returns false.
+    /// @remark Merely for compatibility with StackIndices and StackIndexRange.
+    constexpr bool empty() const { return size() == 0; }
+
     /// @brief Returns another index, which is offset by a given amount.
     /// @remark See: applyOffset
     auto offset(int offset) const { return TIndex(DirectInit{}, this->state(), this->applyOffset(index_, offset)); }
@@ -754,6 +758,9 @@ public:
     /// @brief Returns the size of the range.
     constexpr int size() const { return v_count; }
 
+    /// @brief Whether the size is zero.
+    constexpr bool empty() const { return size() == 0; }
+
 private:
     int first_ = 0;
 };
@@ -780,6 +787,9 @@ public:
 
     /// @brief Returns the size of the range.
     int size() const { return count_; }
+
+    /// @brief Whether the size is zero.
+    bool empty() const { return size() == 0; }
 
 private:
     int first_ = 0;
@@ -1774,6 +1784,9 @@ public:
 
     /// @brief The (cached) size of the stack, which is also the top index, as indices start at 1.
     int size() const { return top_; }
+
+    /// @brief Whether the stack is empty.
+    bool empty() const { return size() == 0; }
 
     /// @brief Returns the type of the element at the given index.
     Type type(int index) const { return static_cast<Type>(lua_type(state_, index)); }
