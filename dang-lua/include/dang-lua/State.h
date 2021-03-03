@@ -412,10 +412,10 @@ public:
     /// @brief Whether the index is the index for the registry table.
     bool isRegistry() const { return this->state().isRegistry(index()); }
 
-    /// @brief Wether the index (plus an optional offset) is at the bottom of the stack.
+    /// @brief Whether the index (plus an optional offset) is at the bottom of the stack.
     bool isBottom(int offset = 0) const { return this->state().isIndexBottom(index(), offset); }
 
-    /// @brief Wether the index (plus an optional offset) is at the top of the stack.
+    /// @brief Whether the index (plus an optional offset) is at the top of the stack.
     bool isTop(int offset = 0) const { return this->state().isIndexTop(index(), offset); }
 
     /// @brief Returns the (zero-based) offset from the bottom of the stack.
