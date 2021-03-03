@@ -684,6 +684,8 @@ public:
         this->state().setMetatable(index(), std::forward<TMetatable>(metatable));
     }
 
+    // --- Iteration ---
+
     /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
     auto next(TKey&& key) const
@@ -691,20 +693,68 @@ public:
         return this->state().next(index(), std::forward<TKey>(key));
     }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    auto pairsRaw() { return this->state().pairsRaw(*this); }
+    /// @copydoc dang::lua::State::pairs(int)
+    auto pairs() const { return this->state().pairs(index()); }
+    /// @copydoc dang::lua::State::keys(int)
+    auto keys() const { return this->state().keys(index()); }
+    /// @copydoc dang::lua::State::values(int)
+    auto values() const { return this->state().values(index()); }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    auto keysRaw() { return this->state().keysRaw(*this); }
+    /// @copydoc dang::lua::State::pairsRaw(int)
+    auto pairsRaw() const { return this->state().pairsRaw(index()); }
+    /// @copydoc dang::lua::State::keysRaw(int)
+    auto keysRaw() const { return this->state().keysRaw(index()); }
+    /// @copydoc dang::lua::State::valuesRaw(int)
+    auto valuesRaw() const { return this->state().valuesRaw(index()); }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    auto valuesRaw() { return this->state().valuesRaw(*this); }
+    /// @copydoc dang::lua::State::ipairs(int)
+    auto ipairs() const { return this->state().ipairs(index()); }
+    /// @copydoc dang::lua::State::ikeys(int)
+    auto ikeys() const { return this->state().ikeys(index()); }
+    /// @copydoc dang::lua::State::ivalues(int)
+    auto ivalues() const { return this->state().ivalues(index()); }
 
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
-    auto ipairsRaw() { return this->state().ipairsRaw(*this); }
+    /// @copydoc dang::lua::State::ipairsLen(int)
+    auto ipairsLen() const { return this->state().ipairsLen(index()); }
+    /// @copydoc dang::lua::State::ikeysLen(int)
+    auto ikeysLen() const { return this->state().ikeysLen(index()); }
+    /// @copydoc dang::lua::State::ivaluesLen(int)
+    auto ivaluesLen() const { return this->state().ivaluesLen(index()); }
 
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
-    auto ivaluesRaw() { return this->state().ivaluesRaw(*this); }
+    /// @copydoc dang::lua::State::ipairsRaw(int)
+    auto ipairsRaw() const { return this->state().ipairsRaw(index()); }
+    /// @copydoc dang::lua::State::ikeysRaw(int)
+    auto ikeysRaw() const { return this->state().ikeysRaw(index()); }
+    /// @copydoc dang::lua::State::ivaluesRaw(int)
+    auto ivaluesRaw() const { return this->state().ivaluesRaw(index()); }
+
+    /// @copydoc dang::lua::State::iterate(int,int)
+    template <int v_value_offset = 0>
+    auto iterate()
+    {
+        return this->state().template iterate<v_value_offset>(index(), 1);
+    }
+
+    /// @copydoc dang::lua::State::iterateMultiple(int,int)
+    template <int v_value_count, int v_value_offset = 0>
+    auto iterateMultiple()
+    {
+        return this->state().template iterateMultiple<v_value_count, v_value_offset>(index(), 1);
+    }
+
+    /// @copydoc dang::lua::State::iteratePair(int,int)
+    template <int v_value_offset = 0>
+    auto iteratePair()
+    {
+        return this->state().template iteratePair<v_value_offset>(index(), 1);
+    }
+
+    /// @copydoc dang::lua::State::iterateVarying(int,int)
+    template <int v_value_offset = 0>
+    auto iterateVarying()
+    {
+        return this->state().template iterateVarying<v_value_offset>(index(), 1);
+    }
 
     // --- Formatting ---
 
@@ -1507,26 +1557,99 @@ struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upva
 template <typename T>
 inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
 
-template <typename TIndex>
+template <typename TValue>
+class next_iterator;
+
 class next_pair_iterator;
 
-template <typename TIndex>
 class next_key_iterator;
 
-template <typename TIndex>
 class next_value_iterator;
 
-template <typename TIndex, template <typename> typename TIterator>
+template <typename TValue, bool v_raw>
+class index_length_iterator;
+
+template <bool v_raw>
+class index_length_pair_iterator;
+
+template <bool v_raw>
+class index_length_key_iterator;
+
+template <bool v_raw>
+class index_length_value_iterator;
+
+template <typename TValue, bool v_raw>
+class index_while_iterator;
+
+template <bool v_raw>
+class index_while_pair_iterator;
+
+template <bool v_raw>
+class index_while_key_iterator;
+
+template <bool v_raw>
+class index_while_value_iterator;
+
+template <typename TValue, int v_value_count, int v_value_offset>
+class generator_iterator;
+
+template <int v_value_offset>
+class generator_index_iterator;
+
+template <int v_value_count, int v_value_offset>
+class generator_indices_iterator;
+
+template <int v_value_offset>
+class generator_index_range_iterator;
+
+template <typename... TIterators>
+class iterator_variant;
+
+class IterationWrapperBase;
+
+template <typename TIterator>
 class IterationWrapper;
 
-template <typename TIndex>
-class raw_ipair_iterator;
+template <template <bool> typename TIterator, bool v_raw>
+class IndexLengthIterationWrapper;
 
-template <typename TIndex>
-class raw_ivalue_iterator;
+template <typename TIterator>
+class GeneratorIterationWrapper;
 
-template <typename TIndex, template <typename> typename TIterator>
-class RawIndexIterationWrapper;
+template <typename... TIterationWrappers>
+class IterationWrapperVariant;
+
+using PairsIterationWrapper = IterationWrapperVariant<GeneratorIterationWrapper<generator_indices_iterator<2, 0>>,
+                                                      IterationWrapper<next_pair_iterator>>;
+using KeysIterationWrapper = IterationWrapperVariant<GeneratorIterationWrapper<generator_index_iterator<0>>,
+                                                     IterationWrapper<next_key_iterator>>;
+using ValuesIterationWrapper = IterationWrapperVariant<GeneratorIterationWrapper<generator_index_iterator<1>>,
+                                                       IterationWrapper<next_value_iterator>>;
+
+using PairsRawIterationWrapper = IterationWrapper<next_pair_iterator>;
+using KeysRawIterationWrapper = IterationWrapper<next_key_iterator>;
+using ValuesRawIterationWrapper = IterationWrapper<next_value_iterator>;
+
+using IPairsIterationWrapper = IterationWrapper<index_while_pair_iterator<false>>;
+using IKeysIterationWrapper = IterationWrapper<index_while_key_iterator<false>>;
+using IValuesIterationWrapper = IterationWrapper<index_while_value_iterator<false>>;
+
+using IPairsLenIterationWrapper = IndexLengthIterationWrapper<index_length_pair_iterator, false>;
+using IKeysLenIterationWrapper = IndexLengthIterationWrapper<index_length_key_iterator, false>;
+using IValuesLenIterationWrapper = IndexLengthIterationWrapper<index_length_value_iterator, false>;
+
+using IPairsRawIterationWrapper = IndexLengthIterationWrapper<index_length_pair_iterator, true>;
+using IKeysRawIterationWrapper = IndexLengthIterationWrapper<index_length_key_iterator, true>;
+using IValuesRawIterationWrapper = IndexLengthIterationWrapper<index_length_value_iterator, true>;
+
+template <int v_value_offset>
+using IterateWrapper = GeneratorIterationWrapper<generator_index_iterator<v_value_offset>>;
+
+template <int v_value_count, int v_value_offset>
+using IterateMultipleWrapper = GeneratorIterationWrapper<generator_indices_iterator<v_value_count, v_value_offset>>;
+
+template <int v_value_offset>
+using IterateVaryingWrapper = GeneratorIterationWrapper<generator_index_range_iterator<v_value_offset>>;
 
 /// @brief Wraps a Lua state or thread.
 class State {
@@ -2713,6 +2836,8 @@ public:
         notifyPush(-1);
     }
 
+    // --- Iteration ---
+
     /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
     template <typename TKey>
     std::optional<StackIndicesResult<2>> next(int table_index, TKey&& key)
@@ -2726,39 +2851,179 @@ public:
         return std::nullopt;
     }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all key-value pairs.
-    template <typename TTable>
-    auto pairsRaw(TTable&& table)
+    /// @brief Can be used to iterate over a table similar to how `pairs` in Lua works.
+    /// ```lua
+    /// for key, value in pairs(table) do
+    ///   -- use key and value
+    /// end
+    /// ```
+    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    PairsIterationWrapper pairs(int index);
+
+    /// @copybrief dang::lua::State::pairs(int)
+    /// ```lua
+    /// for key in pairs(table) do
+    ///   -- use key
+    /// end
+    /// ```
+    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    KeysIterationWrapper keys(int index);
+
+    /// @copybrief dang::lua::State::pairs(int)
+    /// ```lua
+    /// for _, value in pairs(table) do
+    ///   -- use value
+    /// end
+    /// ```
+    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    ValuesIterationWrapper values(int index);
+
+    /// @brief Can be used to iterate over a table without invoking the `__pairs` metamethod.
+    /// ```lua
+    /// for key, value in next, table do
+    ///   -- use key and value
+    /// end
+    /// ```
+    PairsRawIterationWrapper pairsRaw(int index);
+
+    /// @copybrief dang::lua::State::pairsRaw(int)
+    /// ```lua
+    /// for key in next, table do
+    ///   -- use key
+    /// end
+    /// ```
+    KeysRawIterationWrapper keysRaw(int index);
+
+    /// @copybrief dang::lua::State::pairsRaw(int)
+    /// ```lua
+    /// for _, value in next, table do
+    ///   -- use value
+    /// end
+    /// ```
+    ValuesRawIterationWrapper valuesRaw(int index);
+
+    /// @brief Can be used to iterate over a table similar to how `ipairs` in Lua works.
+    /// ```lua
+    /// for index, value in ipairs(table) do
+    ///   -- use index and value
+    /// end
+    /// ```
+    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// table.
+    IPairsIterationWrapper ipairs(int index);
+
+    /// @copybrief dang::lua::State::ipairs(int)
+    /// ```lua
+    /// for index in ipairs(table) do
+    ///   -- use index
+    /// end
+    /// ```
+    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// table.
+    IKeysIterationWrapper ikeys(int index);
+
+    /// @copybrief dang::lua::State::ipairs(int)
+    /// ```lua
+    /// for _, value in ipairs(table) do
+    ///   -- use value
+    /// end
+    /// ```
+    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// table.
+    IValuesIterationWrapper ivalues(int index);
+
+    /// @brief Iterates over a table by querying its length in advance.
+    /// ```lua
+    /// for index = 1, #table do
+    ///   local value = table[index]
+    ///   -- use index and value
+    /// end
+    /// ```
+    IPairsLenIterationWrapper ipairsLen(int index);
+
+    /// @copybrief dang::lua::State::ipairsLen(int)
+    /// ```lua
+    /// for index = 1, #table do
+    ///   -- use index
+    /// end
+    /// ```
+    /// @remarks This is optimized in a way, so that it doesn't push anything on the stack.
+    IKeysLenIterationWrapper ikeysLen(int index);
+
+    /// @copybrief dang::lua::State::ipairsLen(int)
+    /// ```lua
+    /// for index = 1, #table do
+    ///   local value = table[index]
+    ///   -- use value
+    /// end
+    /// ```
+    IValuesLenIterationWrapper ivaluesLen(int index);
+
+    /// @brief Iterates over a table by querying its length in advance and without invoking any metamethods.
+    /// ```lua
+    /// for index = 1, rawlen(table) do
+    ///   local value = rawget(table, index)
+    ///   -- use index and value
+    /// end
+    /// ```
+    IPairsRawIterationWrapper ipairsRaw(int index);
+
+    /// @copybrief dang::lua::State::ipairsRaw(int)
+    /// ```lua
+    /// for index = 1, rawlen(table) do
+    ///   local value = rawget(table, index)
+    ///   -- use value
+    /// end
+    /// ```
+    /// @remarks This is optimized in a way, so that it doesn't push anything on the stack.
+    IKeysRawIterationWrapper ikeysRaw(int index);
+
+    /// @copybrief dang::lua::State::ipairsRaw(int)
+    /// ```lua
+    /// for index = 1, rawlen(table) do
+    ///   -- use index
+    /// end
+    /// ```
+    IValuesRawIterationWrapper ivaluesRaw(int index);
+
+    /// @brief Allows for iteration using generator functions, similar to how `for`-loops work in Lua.
+    /// ```lua
+    /// for value in generator[, state[, initial[, close]]] do
+    ///   -- use value
+    /// end
+    /// ```
+    /// - Calls `generator` until its first return value is `nil` or nothing is returned.
+    /// - When `state` is provided, it is passed as first argument to every call of `generator`.
+    /// - When `initial` is provided, it serves as the initial value for the control variable.
+    /// - When `close` is provided, it is marked as to-be-closed automatically.
+    template <int v_value_offset = 0>
+    IterateWrapper<v_value_offset> iterate(int index, int input_count)
     {
-        return IterationWrapper<TTable, next_pair_iterator>(table);
+        return {*this, index, input_count};
     }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all values.
-    template <typename TTable>
-    auto keysRaw(TTable&& table)
+    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @remarks Multiple return values can be used instead of just one.
+    template <int v_value_count, int v_value_offset = 0>
+    IterateMultipleWrapper<v_value_count, v_value_offset> iterateMultiple(int index, int input_count)
     {
-        return IterationWrapper<TTable, next_key_iterator>(table);
+        return {*this, index, input_count};
     }
 
-    /// @brief Returns an iteration wrapper, that uses lua_next to iterate over all keys.
-    template <typename TTable>
-    auto valuesRaw(TTable&& table)
+    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @remarks A pair of two return values can be used instead of just one.
+    template <int v_value_offset = 0>
+    auto iteratePair(int index, int input_count)
     {
-        return IterationWrapper<TTable, next_value_iterator>(table);
+        return iterateMultiple<2, v_value_offset>(index, input_count);
     }
 
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all index-value pairs.
-    template <typename TTable>
-    auto ipairsRaw(TTable&& table)
+    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @remarks A varying number of return values can be used instead of just one.
+    template <int v_value_offset = 0>
+    IterateVaryingWrapper<v_value_offset> iterateVarying(int index, int input_count)
     {
-        return RawIndexIterationWrapper<TTable, raw_ipair_iterator>(table);
-    }
-
-    /// @brief Returns an iteration wrapper, that uses lua_rawlen and lua_rawgeti to iterate over all values.
-    template <typename TTable>
-    auto ivaluesRaw(TTable&& table)
-    {
-        return RawIndexIterationWrapper<TTable, raw_ivalue_iterator>(table);
+        return {*this, index, input_count};
     }
 
     // --- Formatting ---
@@ -3378,43 +3643,58 @@ private:
 
 // --- Iteration Wrappers ---
 
-/// @brief Uses lua_next to iterate over a table.
-template <typename TIndex, typename TValueType, bool v_pop_value>
-class next_iterator {
+/// @brief Used as a non-polymorphic base class for table iterators.
+template <typename TValue>
+class table_iterator_base {
 public:
     using difference_type = lua_Integer;
-    using value_type = TValueType;
+    using value_type = TValue;
     using pointer = value_type*;
     using reference = value_type&;
     using iterator_category = std::input_iterator_tag;
 
-    friend class next_pair_iterator<TIndex>;
-    friend class next_key_iterator<TIndex>;
-    friend class next_value_iterator<TIndex>;
+    table_iterator_base() = default;
+
+    table_iterator_base(State& state, int table_index)
+        : state_(&state)
+        , table_index_(table_index)
+    {}
+
+    auto& state() const { return *state_; }
+
+    auto table() const { return state().stackIndex(table_index_); }
+
+private:
+    State* state_ = nullptr;
+    int table_index_;
+};
+
+/// @brief Uses lua_next to iterate over a table.
+template <typename TValue>
+class next_iterator : public table_iterator_base<TValue> {
+public:
+    friend class next_pair_iterator;
+    friend class next_key_iterator;
+    friend class next_value_iterator;
 
     next_iterator() = default;
 
-    next_iterator(TIndex table)
-        : table_(table)
+    next_iterator(State& state, int table_index)
+        : table_iterator_base<TValue>(state, table_index)
     {
-        if (auto next = table_.next(nullptr)) {
+        if (auto next = this->table().next(nullptr))
             key_index_ = next->first();
-            if constexpr (v_pop_value)
-                table_.state().pop();
-        }
     }
 
     next_iterator& operator++()
     {
         assert(key_index_);
-        auto diff = table_.state().size() - *key_index_;
+        auto diff = this->state().size() - *key_index_;
         assert(diff >= 0);
         if (diff > 0)
-            table_.state().pop(diff);
-        if (!table_.next(table_.state().stackIndex(*key_index_).asResult()))
+            this->state().pop(diff);
+        if (!this->table().next(this->state().stackIndex(*key_index_).asResult()))
             key_index_.reset();
-        else if constexpr (v_pop_value)
-            table_.state().pop();
         return *this;
     }
 
@@ -3425,145 +3705,539 @@ public:
     bool operator!=(const next_iterator& other) const { return !(*this == other); }
 
 private:
-    TIndex table_;
     std::optional<int> key_index_;
 };
 
-template <typename TIndex>
-class next_pair_iterator : public next_iterator<TIndex, StackIndicesResult<2>, false> {
+/// @brief Uses lua_next to iterate over all pairs of a table.
+class next_pair_iterator : public next_iterator<StackIndicesResult<2>> {
 public:
-    using Base = next_iterator<TIndex, StackIndicesResult<2>, false>;
-    using Base::Base;
+    using next_iterator<StackIndicesResult<2>>::next_iterator;
 
-    auto operator*() const { return this->table_.state().template stackIndices<2>(*this->key_index_).asResults(); }
+    auto operator*() const { return state().template stackIndices<2>(*key_index_).asResults(); }
 };
 
-template <typename TIndex>
-class next_key_iterator : public next_iterator<TIndex, StackIndexResult, true> {
+/// @brief Uses lua_next to iterate over all keys of a table.
+class next_key_iterator : public next_iterator<StackIndexResult> {
 public:
-    using Base = next_iterator<TIndex, StackIndexResult, true>;
-    using Base::Base;
+    using next_iterator<StackIndexResult>::next_iterator;
 
-    auto operator*() const { return this->table_.state().stackIndex(*this->key_index_).asResult(); }
+    auto operator*() const { return state().stackIndex(*key_index_).asResult(); }
 };
 
-template <typename TIndex>
-class next_value_iterator : public next_iterator<TIndex, StackIndexResult, false> {
+/// @brief Uses lua_next to iterate over all values of a table.
+class next_value_iterator : public next_iterator<StackIndexResult> {
 public:
-    using Base = next_iterator<TIndex, StackIndexResult, false>;
-    using Base::Base;
+    using next_iterator<StackIndexResult>::next_iterator;
 
-    auto operator*() const { return this->table_.state().stackIndex(*this->key_index_ + 1).asResult(); }
+    auto operator*() const { return state().stackIndex(*key_index_ + 1).asResult(); }
 };
 
-template <typename TIndex>
-class IterationWrapperBase {
+/// @brief Queries the table length once and iterates over the table.
+template <typename TValue, bool v_raw>
+class index_length_iterator : public table_iterator_base<TValue> {
 public:
-    IterationWrapperBase(TIndex table)
-        : table_(table)
-    {}
+    friend class index_length_pair_iterator<v_raw>;
+    friend class index_length_value_iterator<v_raw>;
 
-protected:
-    TIndex table_;
+    index_length_iterator() = default;
 
-private:
-    auto scopedOffset() const
-    {
-        if constexpr (is_any_moved_stack_index_result<TIndex&&>::value)
-            return table_.isTop() ? -1 : 0;
-        else
-            return 0;
-    }
-
-    ScopedStack scoped_stack_{table_.state(), scopedOffset()};
-};
-
-template <typename TIndex, template <typename> typename TIterator>
-class IterationWrapper : public IterationWrapperBase<TIndex> {
-public:
-    using IterationWrapperBase<TIndex>::IterationWrapperBase;
-
-    auto begin() { return TIterator<std::decay_t<TIndex>>(this->table_); }
-    auto end() { return TIterator<std::decay_t<TIndex>>(); }
-};
-
-template <typename TIndex, typename TValueType>
-class raw_index_iterator {
-public:
-    using difference_type = lua_Integer;
-    using value_type = TValueType;
-    using pointer = value_type*;
-    using reference = value_type&;
-    using iterator_category = std::input_iterator_tag;
-
-    friend class raw_ipair_iterator<TIndex>;
-    friend class raw_ivalue_iterator<TIndex>;
-
-    raw_index_iterator() = default;
-
-    raw_index_iterator(TIndex table, lua_Unsigned index, bool is_end)
-        : table_(table)
-        , top_(table_.state().size())
+    index_length_iterator(State& state, int table_index, lua_Integer index, lua_Integer size)
+        : table_iterator_base<TValue>(state, table_index)
+        , top_(state.size())
         , index_(index)
+        , size_(size)
     {
-        if (!is_end)
-            table_.rawGetTable(index_);
+        doGetTable();
     }
 
-    raw_index_iterator& operator++()
+    index_length_iterator& operator++()
     {
         assert(index_);
-        auto diff = table_.state().size() - top_;
+        auto diff = this->state().size() - top_;
         assert(diff >= 0);
         if (diff > 0)
-            table_.state().pop(diff);
-        table_.rawGetTable(++index_);
+            this->state().pop(diff);
+        ++index_;
+        doGetTable();
         return *this;
     }
 
     void operator++(int) { ++*this; }
 
-    bool operator==(const raw_index_iterator& other) const { return index_ == other.index_; }
+    bool operator==(const index_length_iterator& other) const { return index_ == other.index_; }
 
-    bool operator!=(const raw_index_iterator& other) const { return !(*this == other); }
+    bool operator!=(const index_length_iterator& other) const { return !(*this == other); }
 
 private:
-    TIndex table_;
+    void doGetTable()
+    {
+        if (index_ > size_)
+            return;
+        if constexpr (v_raw)
+            this->table().rawGetTable(index_);
+        else
+            this->table().getTable(index_);
+    }
+
     int top_;
     lua_Integer index_;
+    lua_Integer size_;
 };
 
-template <typename TIndex>
-class raw_ipair_iterator : public raw_index_iterator<TIndex, std::pair<lua_Integer, StackIndexResult>> {
+/// @brief Queries the table length once and iterates over all ipairs.
+template <bool v_raw>
+class index_length_pair_iterator : public index_length_iterator<std::pair<lua_Integer, StackIndexResult>, v_raw> {
 public:
-    using Base = raw_index_iterator<TIndex, std::pair<lua_Integer, StackIndexResult>>;
-    using Base::Base;
+    using index_length_iterator<std::pair<lua_Integer, StackIndexResult>, v_raw>::index_length_iterator;
+
+    auto operator*() const { return std::pair{this->index_, this->state().stackIndex(this->top_ + 1).asResult()}; }
+};
+
+/// @brief Queries the table length once and iterates over all ikeys.
+template <bool v_raw>
+class index_length_key_iterator {
+public:
+    using difference_type = lua_Integer;
+    using value_type = lua_Integer;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::random_access_iterator_tag;
+
+    index_length_key_iterator() = default;
+
+    index_length_key_iterator([[maybe_unused]] State& state,
+                              [[maybe_unused]] int table_index,
+                              lua_Unsigned index,
+                              [[maybe_unused]] bool is_end)
+        : index_(index)
+    {}
+
+    index_length_key_iterator& operator++()
+    {
+        index_++;
+        return *this;
+    }
+
+    index_length_key_iterator operator++(int)
+    {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+
+    index_length_key_iterator& operator--()
+    {
+        index_--;
+        return *this;
+    }
+
+    index_length_key_iterator operator--(int)
+    {
+        auto old = *this;
+        --*this;
+        return old;
+    }
+
+    index_length_key_iterator& operator+=(lua_Integer count)
+    {
+        index_ += count;
+        return *this;
+    }
+
+    index_length_key_iterator& operator-=(lua_Integer count)
+    {
+        index_ -= count;
+        return *this;
+    }
+
+    value_type& operator[](lua_Integer offset) { return *(*this + offset); }
+
+    bool operator==(const index_length_key_iterator& other) const { return index_ == other.index_; }
+    bool operator!=(const index_length_key_iterator& other) const { return index_ != other.index_; }
+    bool operator<(const index_length_key_iterator& other) const { return index_ < other.index_; }
+    bool operator<=(const index_length_key_iterator& other) const { return index_ <= other.index_; }
+    bool operator>(const index_length_key_iterator& other) const { return index_ > other.index_; }
+    bool operator>=(const index_length_key_iterator& other) const { return index_ >= other.index_; }
+
+    const value_type& operator*() const { return index_; }
+    const value_type* operator->() const { return &index_; }
+
+private:
+    value_type index_;
+};
+
+/// @brief Queries the table length once and iterates over all ivalues.
+template <bool v_raw>
+class index_length_value_iterator : public index_length_iterator<StackIndexResult, v_raw> {
+public:
+    using index_length_iterator<StackIndexResult, v_raw>::index_length_iterator;
+
+    auto operator*() const { return this->state().stackIndex(this->top_ + 1).asResult(); }
+};
+
+/// @brief Similar to ipairs, iterates over the table until nil is found.
+template <typename TValue, bool v_raw>
+class index_while_iterator : public table_iterator_base<TValue> {
+public:
+    friend class index_while_pair_iterator<v_raw>;
+    friend class index_while_key_iterator<v_raw>;
+    friend class index_while_value_iterator<v_raw>;
+
+    index_while_iterator() = default;
+
+    index_while_iterator(State& state, int table_index)
+        : table_iterator_base<TValue>(state, table_index)
+        , top_(state.size())
+        , index_(1)
+    {
+        doGetTable();
+    }
+
+    index_while_iterator& operator++()
+    {
+        assert(index_);
+        auto diff = this->state().size() - top_;
+        assert(diff >= 0);
+        if (diff > 0)
+            this->state().pop(diff);
+        ++*index_;
+        doGetTable();
+        return *this;
+    }
+
+    void operator++(int) { ++*this; }
+
+    bool operator==(const index_while_iterator& other) const { return index_.has_value() == other.index_.has_value(); }
+
+    bool operator!=(const index_while_iterator& other) const { return !(*this == other); }
+
+private:
+    void doGetTable()
+    {
+        auto [type, index] = [&] {
+            if constexpr (v_raw)
+                return this->table().rawGetTableWithType(*index_);
+            else
+                return this->table().getTableWithType(*index_);
+        }();
+
+        if (type == Type::Nil)
+            index_ = std::nullopt;
+    }
+
+    int top_;
+    std::optional<lua_Integer> index_;
+};
+
+/// @brief Similar to ipairs, iterates over all ipairs until nil is found.
+template <bool v_raw>
+class index_while_pair_iterator : public index_while_iterator<std::pair<lua_Integer, StackIndexResult>, v_raw> {
+public:
+    using index_while_iterator<std::pair<lua_Integer, StackIndexResult>, v_raw>::index_while_iterator;
+
+    auto operator*() const { return std::pair{*this->index_, this->state().stackIndex(this->top_ + 1).asResult()}; }
+};
+
+/// @brief Similar to ipairs, iterates over all ikeys until nil is found.
+template <bool v_raw>
+class index_while_key_iterator : public index_while_iterator<lua_Integer, v_raw> {
+public:
+    using index_while_iterator<lua_Integer, v_raw>::index_while_iterator;
+
+    auto operator*() const { return *this->index_; }
+};
+
+/// @brief Similar to ipairs, iterates over all ivalues until nil is found.
+template <bool v_raw>
+class index_while_value_iterator : public index_while_iterator<StackIndexResult, v_raw> {
+public:
+    using index_while_iterator<StackIndexResult, v_raw>::index_while_iterator;
+
+    auto operator*() const { return this->state().stackIndex(this->top_ + 1).asResult(); }
+};
+
+/// @brief A non-polymorphic CRTP base class for generic iteration using a generator function.
+template <typename TDerived, typename TValue, int v_value_count, int v_value_offset>
+class generator_iterator_base {
+public:
+    friend class generator_index_iterator<v_value_offset>;
+    friend class generator_indices_iterator<v_value_count - v_value_offset, v_value_offset>;
+    friend class generator_index_range_iterator<v_value_offset>;
+
+    using difference_type = lua_Integer;
+    using value_type = TValue;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::input_iterator_tag;
+
+    generator_iterator_base() = default;
+
+    /// @brief Takes up to 4 values being: `func`, `state`, `initial` and `close`.
+    generator_iterator_base(State& state, int base_index, int input_count)
+        : state_(&state)
+        , base_index_(base_index)
+        , input_count_(input_count)
+        , value_index_(input_count >= 3 ? std::optional{base_index + 2} : std::nullopt)
+    {
+        if (input_count >= 4)
+            state.toClose(base_index + 3);
+        generateNext();
+    }
+
+    TDerived& operator++()
+    {
+        assert(value_index_);
+        auto diff = state_->size() - *value_index_;
+        assert(diff >= 0);
+        if (diff > 0)
+            state_->pop(diff);
+        generateNext();
+        return static_cast<TDerived&>(*this);
+    }
+
+    void operator++(int) { ++*this; }
+
+    bool operator==(const generator_iterator_base& other) const
+    {
+        return value_index_.has_value() == other.value_index_.has_value();
+    }
+
+    bool operator!=(const generator_iterator_base& other) const { return !(*this == other); }
+
+private:
+    void generateNext()
+    {
+        auto values = [&] {
+            switch (input_count_) {
+            case 0:
+                return value_index_ ? state_->call<v_value_count>(nullptr, nullptr, state_->stackIndex(*value_index_))
+                                    : state_->call<v_value_count>(nullptr, nullptr, nullptr);
+            case 1:
+                return value_index_ ? state_->call<v_value_count>(
+                                          state_->stackIndex(base_index_), nullptr, state_->stackIndex(*value_index_))
+                                    : state_->call<v_value_count>(state_->stackIndex(base_index_), nullptr, nullptr);
+            default:
+                return value_index_ ? state_->call<v_value_count>(state_->stackIndex(base_index_),
+                                                                  state_->stackIndex(base_index_ + 1),
+                                                                  state_->stackIndex(*value_index_))
+                                    : state_->call<v_value_count>(state_->stackIndex(base_index_),
+                                                                  state_->stackIndex(base_index_ + 1),
+                                                                  nullptr);
+            }
+        }();
+
+        if (values.empty() || state_->isNil(values.first()))
+            value_index_ = std::nullopt;
+        else {
+            if (value_index_)
+                state_->remove(*value_index_);
+            else
+                value_index_ = values.first();
+            static_cast<TDerived&>(*this).setValueCount(values.size());
+        }
+    }
+
+    State* state_;
+    int base_index_;
+    int input_count_;
+    std::optional<int> value_index_;
+};
+
+/// @brief Uses a generator function to iterate over a fixed number of values.
+template <typename TValue, int v_value_count, int v_value_offset>
+class generator_iterator
+    : public generator_iterator_base<generator_iterator<TValue, v_value_count, v_value_offset>,
+                                     TValue,
+                                     v_value_count,
+                                     v_value_offset> {
+public:
+    using generator_iterator_base<generator_iterator<TValue, v_value_count, v_value_offset>,
+                                  TValue,
+                                  v_value_count,
+                                  v_value_offset>::generator_iterator_base;
+
+    friend class generator_iterator_base<generator_iterator<TValue, v_value_count, v_value_offset>,
+                                         TValue,
+                                         v_value_count,
+                                         v_value_offset>;
+
+private:
+    void setValueCount(int) {}
+};
+
+/// @brief Uses a generator function to iterate over a potentially varying number of values.
+template <typename TValue, int v_value_offset>
+class generator_iterator<TValue, LUA_MULTRET, v_value_offset>
+    : public generator_iterator_base<generator_iterator<TValue, LUA_MULTRET, v_value_offset>,
+                                     TValue,
+                                     LUA_MULTRET,
+                                     v_value_offset> {
+public:
+    using generator_iterator_base<generator_iterator<TValue, LUA_MULTRET, v_value_offset>,
+                                  TValue,
+                                  LUA_MULTRET,
+                                  v_value_offset>::generator_iterator_base;
+
+    friend class generator_iterator_base<generator_iterator<TValue, LUA_MULTRET, v_value_offset>,
+                                         TValue,
+                                         LUA_MULTRET,
+                                         v_value_offset>;
+
+    friend class generator_index_range_iterator<v_value_offset>;
+
+private:
+    void setValueCount(int value_count) { value_count_ = value_count; }
+
+    int value_count_;
+};
+
+/// @brief Uses a generator function to generate a single value on each step.
+template <int v_value_offset>
+class generator_index_iterator : public generator_iterator<StackIndexResult, 1 + v_value_offset, v_value_offset> {
+public:
+    using generator_iterator<StackIndexResult, 1 + v_value_offset, v_value_offset>::generator_iterator;
+
+    auto operator*() const { return this->state_->stackIndex(*this->value_index_ + v_value_offset).asResult(); }
+};
+
+/// @brief Uses a generator function to generate a fixed number of values on each step.
+template <int v_value_count, int v_value_offset>
+class generator_indices_iterator
+    : public generator_iterator<StackIndicesResult<v_value_count>, v_value_count + v_value_offset, v_value_offset> {
+public:
+    using generator_iterator<StackIndicesResult<v_value_count>, v_value_count + v_value_offset, v_value_offset>::
+        generator_iterator;
 
     auto operator*() const
     {
-        return std::pair{this->index_, this->table_.state().stackIndex(this->top_ + 1).asResult()};
+        return this->state_->template stackIndices<v_value_count>(*this->value_index_ + v_value_offset).asResults();
     }
 };
 
-template <typename TIndex>
-class raw_ivalue_iterator : public raw_index_iterator<TIndex, StackIndexResult> {
+/// @brief Uses a generator function to generate a varying numer of values on each step.
+template <int v_value_offset>
+class generator_index_range_iterator : public generator_iterator<StackIndexRangeResult, LUA_MULTRET, v_value_offset> {
 public:
-    using Base = raw_index_iterator<TIndex, StackIndexResult>;
-    using Base::Base;
+    using generator_iterator<StackIndexRangeResult, LUA_MULTRET, v_value_offset>::generator_iterator;
 
-    auto operator*() const { return this->table_.state().stackIndex(this->top_ + 1).asResult(); }
+    auto operator*() const
+    {
+        return this->state_->stackIndexRange(*this->value_index_ + v_value_offset, this->value_count_ - v_value_offset)
+            .asResults();
+    }
 };
 
-template <typename TIndex, template <typename> typename TIterator>
-class RawIndexIterationWrapper : public IterationWrapperBase<TIndex> {
+/// @brief Combines different iterators into a single type.
+/// @remarks For when the iterator is only known at runtime.
+template <typename... TIterators>
+class iterator_variant : public std::variant<TIterators...> {
 public:
-    using IterationWrapperBase<TIndex>::IterationWrapperBase;
+    using difference_type = lua_Integer;
+    using value_type = std::decay_t<decltype((*std::declval<TIterators>(), ...))>;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::input_iterator_tag;
 
-    auto begin() { return TIterator<std::decay_t<TIndex>>(this->table_, 1, size_ == 0); }
-    auto end() { return TIterator<std::decay_t<TIndex>>(this->table_, size_ + 1, true); }
+    using std::variant<TIterators...>::variant;
+
+    iterator_variant& operator++()
+    {
+        std::visit([](auto& iterator) { ++iterator; }, *this);
+        return *this;
+    }
+
+    void operator++(int) { ++*this; }
+
+    bool operator==(const iterator_variant& other) const
+    {
+        return std::visit(dutils::Overloaded{std::equal_to<TIterators>()..., [](...) { return false; }}, *this, other);
+    }
+
+    bool operator!=(const iterator_variant& other) const { return !(*this == other); }
+
+    auto operator*() const
+    {
+        return std::visit([](const auto& iterator) -> value_type { return *iterator; }, *this);
+    }
+};
+
+/// @brief A non-polymorphic base class for different iteration wrappers.
+class IterationWrapperBase {
+public:
+    IterationWrapperBase(State& state, int table_index)
+        : state_(state)
+        , table_index_(table_index)
+    {}
+
+protected:
+    State& state_;
+    int table_index_;
 
 private:
-    lua_Integer size_ = static_cast<lua_Integer>(this->table_.rawLength());
+    ScopedStack scoped_stack_{state_};
+};
+
+/// @brief Provides iteration functionality using the specified iterator.
+template <typename TIterator>
+class IterationWrapper : public IterationWrapperBase {
+public:
+    using IterationWrapperBase::IterationWrapperBase;
+
+    auto begin() const { return TIterator(state_, table_index_); }
+    auto end() const { return TIterator(); }
+};
+
+/// @brief Provides iteration functionality using the specified iterator, querying the table length in advance.
+template <template <bool> typename TIterator, bool v_raw>
+class IndexLengthIterationWrapper : public IterationWrapperBase {
+public:
+    using IterationWrapperBase::IterationWrapperBase;
+
+    auto begin() const { return TIterator<v_raw>(state_, table_index_, 1, size_); }
+    auto end() const { return TIterator<v_raw>(state_, table_index_, size_ + 1, size_); }
+
+private:
+    lua_Integer size_ = v_raw ? static_cast<lua_Integer>(state_.rawLength(table_index_)) : state_.length(table_index_);
+};
+
+/// @brief Provides iteration functionality for generator functions using the specified iterator.
+template <typename TIterator>
+class GeneratorIterationWrapper {
+public:
+    GeneratorIterationWrapper(State& state, int base_index, int input_count)
+        : state_(state)
+        , base_index_(base_index)
+        , input_count_(input_count)
+    {}
+
+    auto begin() const { return TIterator(state_, base_index_, input_count_); }
+    auto end() const { return TIterator(); }
+
+private:
+    State& state_;
+    ScopedStack scoped_stack_{state_};
+    int base_index_;
+    int input_count_;
+};
+
+/// @brief Combines different iterator wrappers into a single type.
+/// @remarks For when the iterator is only known at runtime.
+template <typename... TIterationWrappers>
+class IterationWrapperVariant : public std::variant<TIterationWrappers...> {
+public:
+    using std::variant<TIterationWrappers...>::variant;
+
+    using ResultType = iterator_variant<decltype(std::declval<const TIterationWrappers>().begin())...>;
+
+    ResultType begin() const
+    {
+        return std::visit([](const auto& wrapper) -> ResultType { return wrapper.begin(); }, *this);
+    }
+
+    ResultType end() const
+    {
+        return std::visit([](const auto& wrapper) -> ResultType { return wrapper.end(); }, *this);
+    }
 };
 
 // --- Convert Specializations ---
@@ -3958,6 +4632,59 @@ inline auto operator>=(TLeft&& left, TRight&& right)
     return detail::stateOf(left, right)
         .compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
 }
+
+// --- State Implementation ---
+
+inline PairsIterationWrapper State::pairs(int index)
+{
+    if (auto pairs = getMetaField(index, "__pairs")) {
+        auto result = std::move(*pairs).call<3>(stackIndex(index));
+        return GeneratorIterationWrapper<generator_indices_iterator<2, 0>>(*this, result.first(), result.size());
+    }
+    return pairsRaw(index);
+}
+
+inline KeysIterationWrapper State::keys(int index)
+{
+    if (auto pairs = getMetaField(index, "__pairs")) {
+        auto result = std::move(*pairs).call<3>(stackIndex(index));
+        return GeneratorIterationWrapper<generator_index_iterator<0>>(*this, result.first(), result.size());
+    }
+    return keysRaw(index);
+}
+
+inline ValuesIterationWrapper State::values(int index)
+{
+    if (auto pairs = getMetaField(index, "__pairs")) {
+        auto result = std::move(*pairs).call<3>(stackIndex(index));
+        return GeneratorIterationWrapper<generator_index_iterator<1>>(*this, result.first(), result.size());
+    }
+    return valuesRaw(index);
+}
+
+inline PairsRawIterationWrapper State::pairsRaw(int index) { return {*this, index}; }
+
+inline KeysRawIterationWrapper State::keysRaw(int index) { return {*this, index}; }
+
+inline ValuesRawIterationWrapper State::valuesRaw(int index) { return {*this, index}; }
+
+inline IPairsIterationWrapper State::ipairs(int index) { return {*this, index}; }
+
+inline IKeysIterationWrapper State::ikeys(int index) { return {*this, index}; }
+
+inline IValuesIterationWrapper State::ivalues(int index) { return {*this, index}; }
+
+inline IPairsLenIterationWrapper State::ipairsLen(int index) { return {*this, index}; }
+
+inline IKeysLenIterationWrapper State::ikeysLen(int index) { return {*this, index}; }
+
+inline IValuesLenIterationWrapper State::ivaluesLen(int index) { return {*this, index}; }
+
+inline IPairsRawIterationWrapper State::ipairsRaw(int index) { return {*this, index}; }
+
+inline IKeysRawIterationWrapper State::ikeysRaw(int index) { return {*this, index}; }
+
+inline IValuesRawIterationWrapper State::ivaluesRaw(int index) { return {*this, index}; }
 
 /*
 #ifdef _DEBUG
