@@ -2775,7 +2775,8 @@ public:
 
     /*
     /// @brief This version can be used by the debugger, as it returns references to up to 1024 formatted strings per
-    thread. const std::string& formatDebug(int index) const
+    /// thread.
+    const std::string& formatDebug(int index) const
     {
         thread_local std::size_t current = 0;
         thread_local std::vector<std::string> results(1024);
