@@ -709,6 +709,12 @@ public:
     /// @brief Stores the element as a reference in the registry table and returns a wrapper.
     auto ref() { return this->state().ref(*this); }
 
+    // --- To Close ---
+
+    /// @brief Marks the value as to-be-closed.
+    /// @see https://www.lua.org/manual/5.4/manual.html#lua_toclose
+    void toClose() { this->state().toClose(index_); }
+
     // --- Debug ---
 
     /// @brief Returns debug information about the function.
@@ -2849,6 +2855,12 @@ public:
         notifyPush(-1);
         return Reference(state_);
     }
+
+    // --- To Close ---
+
+    /// @brief Marks the value as to-be-closed.
+    /// @see https://www.lua.org/manual/5.4/manual.html#lua_toclose
+    void toClose(int index) { lua_toclose(state_, index); }
 
     // --- Debug ---
 
