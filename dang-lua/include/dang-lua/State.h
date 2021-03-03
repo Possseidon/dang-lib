@@ -584,6 +584,10 @@ public:
         return *this;
     }
 
+    /// @brief Removes the value from the stack, moving everything after, to fill the gap.
+    /// @remarks Invalidates any greater indices!
+    void remove() { this->state().remove(index()); }
+
     /// @brief Performs integer division with another value. (// in Lua)
     template <typename T>
     auto idiv(T&& other) const
@@ -2127,6 +2131,14 @@ public:
             Convert<TValue>::push(state_, std::forward<TValue>(value));
             lua_replace(state_, index.index());
         }
+    }
+
+    /// @brief Removes a value from the stack, moving everything after, to fill the gap.
+    /// @remarks Invalidates any greater indices!
+    void remove(int index)
+    {
+        lua_remove(state_, index);
+        notifyPush(-1);
     }
 
     // --- Error ---
