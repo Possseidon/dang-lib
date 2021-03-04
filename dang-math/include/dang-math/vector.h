@@ -258,7 +258,7 @@ struct Vector : std::array<T, v_dim> {
     /// @brief Provided as constexpr, as std::array does not.
     constexpr auto operator!=(const Vector& other) const { return notEqual(other).any(); }
 
-    /// @brief Whether all components satisfy a given predicate.
+    /// @brief Whether all components are true.
     constexpr auto all() const
     {
         static_assert(std::is_same_v<T, bool>);
@@ -268,7 +268,7 @@ struct Vector : std::array<T, v_dim> {
         return true;
     }
 
-    /// @brief Whether any component satisfies a given predicate.
+    /// @brief Whether any component is true.
     constexpr auto any() const
     {
         static_assert(std::is_same_v<T, bool>);
@@ -278,7 +278,7 @@ struct Vector : std::array<T, v_dim> {
         return false;
     }
 
-    /// @brief Whether no component satisfies a given predicate.
+    /// @brief Whether no component is true.
     constexpr auto none() const
     {
         static_assert(std::is_same_v<T, bool>);
