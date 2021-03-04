@@ -562,12 +562,12 @@ struct Vector : std::array<T, v_dim> {
 #define DMATH_DEFINE_SWIZZLE(name, ...)                                                                                \
     constexpr auto name() const                                                                                        \
     {                                                                                                                  \
-        static_assert(v_dim >= sizeof(#name) - 1);                                                                       \
+        static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
         return swizzle<__VA_ARGS__>();                                                                                 \
     }                                                                                                                  \
     void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                                        \
     {                                                                                                                  \
-        static_assert(v_dim >= sizeof(#name) - 1);                                                                       \
+        static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
         setSwizzle<__VA_ARGS__>(vector);                                                                               \
     }
 
