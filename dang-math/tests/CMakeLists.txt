@@ -7,7 +7,7 @@ include(Catch)
 
 add_executable(${PROJECT_NAME}
   main.cpp
-  vector.cpp
+  test-vector.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} 

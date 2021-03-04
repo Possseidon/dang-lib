@@ -6,8 +6,8 @@ find_package(Catch2 CONFIG REQUIRED)
 include(Catch)
 
 add_executable(${PROJECT_NAME}
-  event.cpp
   main.cpp
+  test-event.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} 

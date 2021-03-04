@@ -1,6 +1,5 @@
-#include "dang-math/vector.h"
-
 #include "dang-math/enums.h"
+#include "dang-math/vector.h"
 
 #include "catch2/catch.hpp"
 
