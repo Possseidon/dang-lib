@@ -4,7 +4,7 @@
 
 namespace dmath = dang::math;
 
-TEST_CASE("Vectors default to being zero initialized.", "[vector]")
+TEST_CASE("Vectors default to being zero initialized.", "[vector][initialization]")
 {
     CHECK(dmath::vec1() == dmath::vec1(0));
     CHECK(dmath::vec2() == dmath::vec2(0, 0));
@@ -12,7 +12,8 @@ TEST_CASE("Vectors default to being zero initialized.", "[vector]")
     CHECK(dmath::vec4() == dmath::vec4(0, 0, 0, 0));
 }
 
-TEST_CASE("Vectors can be initialized with a single value, which is used for all components.", "[vector]")
+TEST_CASE("Vectors can be initialized with a single value, which is used for all components.",
+          "[vector][initialization]")
 {
     CHECK(dmath::vec1(42) == dmath::vec1(42));
     CHECK(dmath::vec2(42) == dmath::vec2(42, 42));
@@ -20,7 +21,7 @@ TEST_CASE("Vectors can be initialized with a single value, which is used for all
     CHECK(dmath::vec4(42) == dmath::vec4(42, 42, 42, 42));
 }
 
-TEST_CASE("Vectors can be read using swizzles.", "[vector]")
+TEST_CASE("Vectors can be read using swizzles.", "[vector][swizzle]")
 {
     const dmath::vec4 a(1, 2, 3, 4);
 
@@ -45,7 +46,7 @@ TEST_CASE("Vectors can be read using swizzles.", "[vector]")
     }
 }
 
-TEST_CASE("Vectors can be assigned using swizzles.", "[vector]")
+TEST_CASE("Vectors can be assigned using swizzles.", "[vector][swizzle]")
 {
     dmath::vec4 a;
 
@@ -73,7 +74,7 @@ TEST_CASE("Vectors can be assigned using swizzles.", "[vector]")
     }
 }
 
-TEST_CASE("Vectors support component-wise operations.", "[vector]")
+TEST_CASE("Vectors support component-wise operations.", "[vector][operators]")
 {
     const dmath::vec3 a(6, 4, 6);
     const dmath::vec3 b(1, 2, 3);
@@ -86,7 +87,7 @@ TEST_CASE("Vectors support component-wise operations.", "[vector]")
     CHECK(a / b == dmath::vec3(6, 2, 2));
 }
 
-TEST_CASE("Vectors support component-wise compound assignment operations.", "[vector]")
+TEST_CASE("Vectors support component-wise compound assignment operations.", "[vector][operators]")
 {
     dmath::vec3 a(6, 4, 6);
     const dmath::vec3 b(1, 2, 3);
