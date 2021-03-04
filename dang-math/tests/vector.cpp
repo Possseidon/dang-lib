@@ -26,6 +26,20 @@ TEST_CASE("4-dimensional vectors can be initialized from 3-dimensional vectors."
     CHECK(dmath::vec4({1, 2, 3}, 4) == dmath::vec4(1, 2, 3, 4));
 }
 
+TEST_CASE("Vectors have various conversions.", "[vector][conversion]")
+{
+    SECTION("Explicit conversion between vectors of same size but different types.")
+    {
+        dmath::ivec3 ivec(1, 2, 3);
+        CHECK(dmath::vec3(ivec) == dmath::vec3(1, 2, 3));
+    }
+    SECTION("Explicit conversion from single-value vectors to their respective value type.")
+    {
+        dmath::vec1 value(42);
+        CHECK(float(value) == 42);
+    }
+}
+
 TEST_CASE("Vectors can be read using swizzles.", "[vector][access][swizzle]")
 {
     const dmath::vec4 a(1, 2, 3, 4);
