@@ -13,8 +13,7 @@ TEST_CASE("Vectors default to being zero initialized.", "[vector][initialization
     CHECK(dmath::vec4() == dmath::vec4(0, 0, 0, 0));
 }
 
-TEST_CASE("Vectors can be initialized with a single value, which is used for all components.",
-          "[vector][initialization]")
+TEST_CASE("Vectors can be initialized with a single value.", "[vector][initialization]")
 {
     CHECK(dmath::vec1(42) == dmath::vec1(42));
     CHECK(dmath::vec2(42) == dmath::vec2(42, 42));
