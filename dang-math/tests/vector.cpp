@@ -4,6 +4,47 @@
 
 namespace dmath = dang::math;
 
+TEST_CASE("Vectors default to being zero initialized.")
+{
+    CHECK(dmath::vec1() == dmath::vec1(0));
+    CHECK(dmath::vec2() == dmath::vec2(0, 0));
+    CHECK(dmath::vec3() == dmath::vec3(0, 0, 0));
+    CHECK(dmath::vec4() == dmath::vec4(0, 0, 0, 0));
+}
+
+TEST_CASE("Vectors can be initialized with a single value, which is used for all components.")
+{
+    CHECK(dmath::vec1(42) == dmath::vec1(42));
+    CHECK(dmath::vec2(42) == dmath::vec2(42, 42));
+    CHECK(dmath::vec3(42) == dmath::vec3(42, 42, 42));
+    CHECK(dmath::vec4(42) == dmath::vec4(42, 42, 42, 42));
+}
+
+TEST_CASE("Vectors can be read using swizzles.")
+{
+    const dmath::vec4 a(1, 2, 3, 4);
+
+    CAPTURE(a);
+
+    SECTION("Using singular swizzles.")
+    {
+        CHECK(a.x() == 1);
+        CHECK(a.y() == 2);
+        CHECK(a.z() == 3);
+        CHECK(a.w() == 4);
+    }
+    SECTION("Using combined swizzles.")
+    {
+        CHECK(a.xy() == dmath::vec2(1, 2));
+        CHECK(a.xyz() == dmath::vec3(1, 2, 3));
+        CHECK(a.xyzw() == a);
+
+        CHECK(a.yx() == dmath::vec2(2, 1));
+        CHECK(a.zxy() == dmath::vec3(3, 1, 2));
+        CHECK(a.wyzx() == dmath::vec4(4, 2, 3, 1));
+    }
+}
+
 TEST_CASE("Vectors support component-wise operations.")
 {
     const dmath::vec3 a(6, 4, 6);
