@@ -60,7 +60,7 @@ struct Vector : std::array<T, v_dim> {
         static_assert(v_dim == 4);
     }
 
-    /// @brief Allows explicit conversion between vector of same size but different types.
+    /// @brief Allows for explicit conversion between vectors of same size but different types.
     template <typename TFrom>
     explicit constexpr Vector(const Vector<TFrom, v_dim>& other)
         : Vector()
@@ -69,7 +69,7 @@ struct Vector : std::array<T, v_dim> {
             (*this)[i] = static_cast<T>(other[i]);
     }
 
-    /// @brief Allows for conversion from single-value vectors to their respective value type.
+    /// @brief Allows for explicit conversion from single-value vectors to their respective value type.
     explicit constexpr operator T()
     {
         static_assert(v_dim == 1);
