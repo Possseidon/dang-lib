@@ -50,12 +50,12 @@ struct BoundsIterator {
     using iterator_category = std::forward_iterator_tag;
     using value_type = Vector<T, v_dim>;
     using difference_type = std::ptrdiff_t;
-    using pointer = Vector<T, v_dim>*;
-    using reference = Vector<T, v_dim>&;
+    using pointer = value_type*;
+    using reference = value_type&;
 
     constexpr BoundsIterator() = default;
 
-    explicit constexpr BoundsIterator(Bounds<T, v_dim> bounds, Vector<T, v_dim> current)
+    explicit constexpr BoundsIterator(Bounds<T, v_dim> bounds, value_type current)
         : bounds_(bounds)
         , current_(current)
     {}
@@ -83,13 +83,13 @@ struct BoundsIterator {
 
     constexpr bool operator!=(const BoundsIterator& other) const { return current_ != other.current_; }
 
-    constexpr const Vector<T, v_dim>& operator*() const { return current_; }
+    constexpr const reference operator*() const { return current_; }
 
-    constexpr const Vector<T, v_dim>* operator->() const { return &current_; }
+    constexpr const pointer operator->() const { return &current_; }
 
 private:
     Bounds<T, v_dim> bounds_;
-    Vector<T, v_dim> current_;
+    value_type current_;
 };
 
 /// @brief Generic bounds with low and high values for any dimensional vectors.
