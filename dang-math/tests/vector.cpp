@@ -21,6 +21,11 @@ TEST_CASE("Vectors can be initialized with a single value, which is used for all
     CHECK(dmath::vec4(42) == dmath::vec4(42, 42, 42, 42));
 }
 
+TEST_CASE("4-dimensional vectors can be initialized from 3-dimensional vectors.", "[vector][initialization]")
+{
+    CHECK(dmath::vec4({1, 2, 3}, 4) == dmath::vec4(1, 2, 3, 4));
+}
+
 TEST_CASE("Vectors can be read using swizzles.", "[vector][access][swizzle]")
 {
     const dmath::vec4 a(1, 2, 3, 4);
