@@ -1,5 +1,7 @@
 #include "dang-math/vector.h"
 
+#include "dang-math/enums.h"
+
 #include "catch2/catch.hpp"
 
 namespace dmath = dang::math;
@@ -37,6 +39,48 @@ TEST_CASE("Vectors have various conversions.", "[vector][conversion]")
     {
         dmath::vec1 value(42);
         CHECK(float(value) == 42);
+    }
+}
+
+TEST_CASE("Vectors can be read using operator[].", "[vector][access]")
+{
+    const dmath::vec3 a(1, 2, 3);
+
+    SECTION("Using regular indexing.")
+    {
+        CHECK(a[0] == 1);
+        CHECK(a[1] == 2);
+        CHECK(a[2] == 3);
+    }
+    SECTION("Using the Axis enum.")
+    {
+        CHECK(a[dmath::Axis3::X] == 1);
+        CHECK(a[dmath::Axis3::Y] == 2);
+        CHECK(a[dmath::Axis3::Z] == 3);
+    }
+}
+
+TEST_CASE("Vectors can be assigned using operator[].", "[vector][access]")
+{
+    dmath::vec3 a;
+
+    SECTION("Using regular indexing.")
+    {
+        a[0] = 1;
+        CHECK(a == dmath::vec3(1, 0, 0));
+        a[1] = 2;
+        CHECK(a == dmath::vec3(1, 2, 0));
+        a[2] = 3;
+        CHECK(a == dmath::vec3(1, 2, 3));
+    }
+    SECTION("Using the Axis enum.")
+    {
+        a[dmath::Axis3::X] = 1;
+        CHECK(a == dmath::vec3(1, 0, 0));
+        a[dmath::Axis3::Y] = 2;
+        CHECK(a == dmath::vec3(1, 2, 0));
+        a[dmath::Axis3::Z] = 3;
+        CHECK(a == dmath::vec3(1, 2, 3));
     }
 }
 
