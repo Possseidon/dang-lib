@@ -21,7 +21,7 @@ TEST_CASE("Vectors can be initialized with a single value, which is used for all
     CHECK(dmath::vec4(42) == dmath::vec4(42, 42, 42, 42));
 }
 
-TEST_CASE("Vectors can be read using swizzles.", "[vector][swizzle]")
+TEST_CASE("Vectors can be read using swizzles.", "[vector][access][swizzle]")
 {
     const dmath::vec4 a(1, 2, 3, 4);
 
@@ -46,7 +46,7 @@ TEST_CASE("Vectors can be read using swizzles.", "[vector][swizzle]")
     }
 }
 
-TEST_CASE("Vectors can be assigned using swizzles.", "[vector][swizzle]")
+TEST_CASE("Vectors can be assigned using swizzles.", "[vector][access][swizzle]")
 {
     dmath::vec4 a;
 
