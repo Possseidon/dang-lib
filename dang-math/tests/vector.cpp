@@ -45,6 +45,34 @@ TEST_CASE("Vectors can be read using swizzles.", "[vector]")
     }
 }
 
+TEST_CASE("Vectors can be assigned using swizzles.", "[vector]")
+{
+    dmath::vec4 a;
+
+    SECTION("Using singular swizzles with direct assignment.")
+    {
+        a.x() = 1;
+        CHECK(a == dmath::vec4(1, 0, 0, 0));
+        a.y() = 2;
+        CHECK(a == dmath::vec4(1, 2, 0, 0));
+        a.z() = 3;
+        CHECK(a == dmath::vec4(1, 2, 3, 0));
+        a.w() = 4;
+        CHECK(a == dmath::vec4(1, 2, 3, 4));
+    }
+    SECTION("Using combined swizzles with set_<swizzle>.")
+    {
+        a.set_xy({1, 2});
+        CHECK(a == dmath::vec4(1, 2, 0, 0));
+        a.set_zx({3, 4});
+        CHECK(a == dmath::vec4(4, 2, 3, 0));
+        a.set_xyzw({5, 6, 7, 8});
+        CHECK(a == dmath::vec4(5, 6, 7, 8));
+        a.set_wxzy({1, 2, 3, 4});
+        CHECK(a == dmath::vec4(2, 4, 3, 1));
+    }
+}
+
 TEST_CASE("Vectors support component-wise operations.", "[vector]")
 {
     const dmath::vec3 a(6, 4, 6);
