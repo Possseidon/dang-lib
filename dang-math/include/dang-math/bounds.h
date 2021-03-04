@@ -83,9 +83,9 @@ struct BoundsIterator {
 
     constexpr bool operator!=(const BoundsIterator& other) const { return current_ != other.current_; }
 
-    constexpr const reference operator*() const { return current_; }
+    constexpr const value_type& operator*() const { return current_; }
 
-    constexpr const pointer operator->() const { return &current_; }
+    constexpr const value_type* operator->() const { return &current_; }
 
 private:
     Bounds<T, v_dim> bounds_;
