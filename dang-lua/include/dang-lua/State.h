@@ -3089,7 +3089,7 @@ public:
     template <typename T>
     void require(bool global = false)
     {
-        require(class_name<T>, wrap<&ClassInfo<T>::require>, global);
+        require(ClassInfo<T>::className(), wrap<&ClassInfo<T>::require>, global);
     }
 
     /// @brief Pushes a library with the given name, using the specified function on the stack, returns a wrapper to it
@@ -3105,7 +3105,7 @@ public:
     template <typename T>
     auto pushRequire(bool global = false)
     {
-        return pushRequire(class_name<T>, wrap<&ClassInfo<T>::require>, global);
+        return pushRequire(ClassInfo<T>::className(), wrap<&ClassInfo<T>::require>, global);
     }
 
     /// @brief Registers a function with a given name in the global table.

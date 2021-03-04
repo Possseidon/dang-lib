@@ -17,18 +17,16 @@ struct SubClasses : SubClassList<> {};
 template <typename T>
 constexpr SubClasses<T> SubClassesOf{};
 
-/// @brief Can be specialized to provide a customized name for a class.
-template <typename T>
-const char* class_name = typeid(T).name();
-
-/// @brief Can be specialized to provide a customized name for references to a class.
-template <typename T>
-const char* class_name_ref = typeid(T*).name();
-
-/// @brief Returns empty index and metatable.
+/// @brief Returns an empty index and metatable and does nothing when required.
+/// @remarks className() must provide a unique class name.
+/// @remarks classNameRef() shall be the class name followed by `&`.
 struct DefaultClassInfo {
+    // static constexpr const char* className();
+    // static constexpr const char* classNameRef();
+
     static constexpr std::array<luaL_Reg, 0> table() { return {}; }
     static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
+
     static void require() {}
 };
 
@@ -183,9 +181,9 @@ struct Convert {
     static StoreType type(lua_State* state, int pos)
     {
         static_assert(std::is_class_v<T>);
-        if (luaL_testudata(state, pos, class_name<T>))
+        if (luaL_testudata(state, pos, ClassInfo<T>::className()))
             return StoreType::Value;
-        if (luaL_testudata(state, pos, class_name_ref<T>))
+        if (luaL_testudata(state, pos, ClassInfo<T>::classNameRef()))
             return StoreType::Reference;
         return type(state, pos, SubClassesOf<T>);
     }
@@ -231,9 +229,9 @@ struct Convert {
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
-            if (void* value = luaL_testudata(state, pos, class_name<T>))
+            if (void* value = luaL_testudata(state, pos, ClassInfo<T>::className()))
                 return *static_cast<T*>(value);
-            if (void* pointer = luaL_testudata(state, pos, class_name_ref<T>))
+            if (void* pointer = luaL_testudata(state, pos, ClassInfo<T>::classNameRef()))
                 return **static_cast<T**>(pointer);
             return at(state, pos, SubClassesOf<T>);
         }
@@ -253,7 +251,7 @@ struct Convert {
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
                 return *result;
-            luaL_checkudata(state, arg, class_name<T>);
+            luaL_checkudata(state, arg, ClassInfo<T>::className());
             // luaL_checkudata should always cause an error here, yet still, sanity check
             detail::noreturn_luaL_error(state, "userdata suddenly of correct type - something went very wrong");
         }
@@ -291,7 +289,7 @@ struct Convert {
     static void pushValueMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, class_name<T>))
+        if (!luaL_newmetatable(state, ClassInfo<T>::className()))
             return;
         detail::setfuncs(state, class_metatable<T>);
         lua_pushcfunction(state, cleanup);
@@ -315,7 +313,7 @@ struct Convert {
     static void pushReferenceMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, class_name_ref<T>))
+        if (!luaL_newmetatable(state, ClassInfo<T>::classNameRef()))
             return;
         detail::setfuncs(state, class_metatable<T>);
         pushValueMetatable(state);
@@ -334,7 +332,7 @@ struct Convert {
     }
 
     /// @brief Returns the name of the class or enum.
-    static constexpr std::string_view getPushTypename() { return class_name<T>; }
+    static constexpr std::string_view getPushTypename() { return ClassInfo<T>::className(); }
 
     /// @brief Pushes the in place constructed value onto the stack.
     template <typename... TArgs>

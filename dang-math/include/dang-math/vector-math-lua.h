@@ -31,7 +31,7 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
     using DivideType = std::variant<T, Vector, dang::math::Matrix<T, v_dim>>;
     using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, v_dim>>>;
 
-    inline static const std::string base_name = [] {
+    inline static const std::string base_class_name = [] {
         using namespace std::literals;
         if constexpr (std::is_same_v<T, float>)
             return "vec"s;
@@ -49,8 +49,11 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
             return typeid(T).name() + " vec"s;
     }();
 
-    inline static const std::string name = base_name + std::to_string(v_dim);
-    inline static const std::string ref_name = name + '&';
+    inline static const std::string class_name = base_class_name + std::to_string(v_dim);
+    inline static const std::string class_name_ref = class_name + '&';
+
+    static const char* className() { return name.c_str(); }
+    static const char* classNameRef() { return name_ref.c_str(); }
 
     static constexpr auto table()
     {
@@ -363,12 +366,6 @@ private:
     };
 };
 
-template <typename T, std::size_t v_dim>
-const char* class_name<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::name.c_str();
-
-template <typename T, std::size_t v_dim>
-const char* class_name_ref<dang::math::Vector<T, v_dim>> = ClassInfo<dang::math::Vector<T, v_dim>>::ref_name.c_str();
-
 template <typename T, std::size_t v_cols, std::size_t v_rows>
 struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
     using Matrix = dang::math::Matrix<T, v_cols, v_rows>;
@@ -401,7 +398,7 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
                            std::variant<T, std::optional<Matrix>>,
                            std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, v_cols>>>>;
 
-    inline static const std::string base_name = [] {
+    inline static const std::string base_class_name = [] {
         using namespace std::literals;
         if constexpr (std::is_same_v<T, float>)
             return "mat"s;
@@ -411,9 +408,12 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
             return typeid(T).name() + " mat"s;
     }();
 
-    inline static const std::string name =
-        base_name + std::to_string(v_cols) + (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
-    inline static const std::string ref_name = name + '&';
+    inline static const std::string class_name =
+        base_class_name + std::to_string(v_cols) + (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
+    inline static const std::string class_name_ref = class_name + '&';
+
+    static const char* className() { return class_name.c_str(); }
+    static const char* classNameRef() { return class_name_ref.c_str(); }
 
     static constexpr auto table()
     {
@@ -640,13 +640,5 @@ private:
         }
     };
 };
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* class_name<dang::math::Matrix<T, v_cols, v_rows>> =
-    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::name.c_str();
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* class_name_ref<dang::math::Matrix<T, v_cols, v_rows>> =
-    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::ref_name.c_str();
 
 } // namespace dang::lua
