@@ -4,7 +4,7 @@
 
 namespace dutils = dang::utils;
 
-TEST_CASE("Events can have handlers that get called once triggered.")
+TEST_CASE("Events can have handlers that get called once triggered.", "[event]")
 {
     using Event = dutils::Event<>;
     using Values = std::vector<int>;
@@ -161,7 +161,7 @@ TEST_CASE("Events can have handlers that get called once triggered.")
     }
 }
 
-TEST_CASE("Event handlers can have less parameters than the event itself.")
+TEST_CASE("Event handlers can have less parameters than the event itself.", "[event]")
 {
     using Event = dutils::Event<int, int, int>;
     using Values = std::vector<std::vector<int>>;

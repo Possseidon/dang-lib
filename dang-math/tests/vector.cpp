@@ -4,7 +4,7 @@
 
 namespace dmath = dang::math;
 
-TEST_CASE("Vectors default to being zero initialized.")
+TEST_CASE("Vectors default to being zero initialized.", "[vector]")
 {
     CHECK(dmath::vec1() == dmath::vec1(0));
     CHECK(dmath::vec2() == dmath::vec2(0, 0));
@@ -12,7 +12,7 @@ TEST_CASE("Vectors default to being zero initialized.")
     CHECK(dmath::vec4() == dmath::vec4(0, 0, 0, 0));
 }
 
-TEST_CASE("Vectors can be initialized with a single value, which is used for all components.")
+TEST_CASE("Vectors can be initialized with a single value, which is used for all components.", "[vector]")
 {
     CHECK(dmath::vec1(42) == dmath::vec1(42));
     CHECK(dmath::vec2(42) == dmath::vec2(42, 42));
@@ -20,7 +20,7 @@ TEST_CASE("Vectors can be initialized with a single value, which is used for all
     CHECK(dmath::vec4(42) == dmath::vec4(42, 42, 42, 42));
 }
 
-TEST_CASE("Vectors can be read using swizzles.")
+TEST_CASE("Vectors can be read using swizzles.", "[vector]")
 {
     const dmath::vec4 a(1, 2, 3, 4);
 
@@ -45,7 +45,7 @@ TEST_CASE("Vectors can be read using swizzles.")
     }
 }
 
-TEST_CASE("Vectors support component-wise operations.")
+TEST_CASE("Vectors support component-wise operations.", "[vector]")
 {
     const dmath::vec3 a(6, 4, 6);
     const dmath::vec3 b(1, 2, 3);
@@ -58,7 +58,7 @@ TEST_CASE("Vectors support component-wise operations.")
     CHECK(a / b == dmath::vec3(6, 2, 2));
 }
 
-TEST_CASE("Vectors support component-wise compound assignment operations.")
+TEST_CASE("Vectors support component-wise compound assignment operations.", "[vector]")
 {
     dmath::vec3 a(6, 4, 6);
     const dmath::vec3 b(1, 2, 3);
