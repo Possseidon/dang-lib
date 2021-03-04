@@ -2,6 +2,8 @@
 
 #include "dang-lua/global.h"
 
+#include "dang-utils/utils.h"
+
 namespace dang::lua {
 
 /// @brief Serves as a container for typenames that represent subclasses.
@@ -32,7 +34,9 @@ struct DefaultClassInfo {
 
 /// @brief Can be specialized to provide an index and metatable of a wrapped class.
 template <typename T>
-struct ClassInfo : DefaultClassInfo {};
+struct ClassInfo {
+    static_assert(dutils::always_false_v<T>, "Type has no ClassInfo specialization.");
+};
 
 /// @brief Shorthand to access the index table of a wrapped class.
 template <typename T>
