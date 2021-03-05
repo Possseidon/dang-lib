@@ -210,20 +210,20 @@ Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(State& lua)
     if constexpr (v_dim == 2) {
         if constexpr (!std::is_same_v<T, bool>) {
             constexpr auto from_slope = +[](std::optional<T> slope) { return Vector::fromSlope(slope); };
-            result.rawSetTable("fromSlope", wrap<from_slope>);
+            result.setTable("fromSlope", wrap<from_slope>);
         }
 
         if constexpr (std::is_floating_point_v<T>) {
             constexpr auto from_angle_rad = +[](T radians) { return Vector::fromRadians(radians); };
-            result.rawSetTable("fromRadians", wrap<from_angle_rad>);
+            result.setTable("fromRadians", wrap<from_angle_rad>);
 
             constexpr auto from_angle = +[](T degrees) { return Vector::fromDegrees(degrees); };
-            result.rawSetTable("fromDegrees", wrap<from_angle>);
+            result.setTable("fromDegrees", wrap<from_angle>);
         }
     }
 
     auto result_mt = lua.pushTable();
-    result_mt.rawSetTable("__call", wrap<create>);
+    result_mt.setTable("__call", wrap<create>);
 
     result.setMetatable(std::move(result_mt));
     return result;
@@ -553,7 +553,6 @@ template <typename T, std::size_t v_cols, std::size_t v_rows>
 Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(State& lua)
 {
     constexpr auto create = +[](State& lua, Arg, VarArgs values) {
-        using namespace std::literals;
         if (values.size() == 0)
             return Matrix();
         if (values.size() == 1)
@@ -565,7 +564,7 @@ Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(State& lua)
                 result(col, row) = values[static_cast<int>(col * v_rows + row)].check<T>();
             return result;
         }
-        lua.error("0, 1 or "s + std::to_string(v_cols * v_rows) + " arguments expected, got "s +
+        lua.error("0, 1 or " + std::to_string(v_cols * v_rows) + " arguments expected, got " +
                   std::to_string(values.size()));
     };
 
@@ -573,10 +572,10 @@ Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(State& lua)
         +[](std::optional<T> value) { return value ? Matrix::identity(*value) : Matrix::identity(); };
 
     auto result = lua.pushTable();
-    result.rawSetTable("identity", wrap<identity>);
+    result.setTable("identity", wrap<identity>);
 
     auto result_mt = lua.pushTable();
-    result_mt.rawSetTable("__call", wrap<create>);
+    result_mt.setTable("__call", wrap<create>);
 
     result.setMetatable(std::move(result_mt));
     return result;
