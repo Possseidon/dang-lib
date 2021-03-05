@@ -1261,6 +1261,17 @@ public:
         assert(first > LUA_REGISTRYINDEX);
     }
 
+    /// @brief Allows for implicit conversion from StackIndex.
+    StackIndexRange(StackIndex<TState, v_type> index)
+        : StackIndexRange(index.state(), index.index(), 1)
+    {}
+
+    /// @brief Allows for implicit conversion from any StackIndices.
+    template <int v_count>
+    StackIndexRange(StackIndices<TState, v_count, v_type> indices)
+        : StackIndexRange(indices.state(), indices.first(), v_count)
+    {}
+
     /// @brief Returns result indices, for which rvalues can be consumed by some functions.
     auto asResults()
     {
@@ -1281,6 +1292,17 @@ public:
     {
         assert(first >= 1);
     }
+
+    /// @brief Allows for implicit conversion from UpvalueIndex.
+    UpvalueIndexRange(UpvalueIndex<TState> index)
+        : UpvalueIndexRange(index.state(), index.index(), 1)
+    {}
+
+    /// @brief Allows for implicit conversion from any UpvalueIndices.
+    template <int v_count>
+    UpvalueIndexRange(UpvalueIndices<TState, v_count> indices)
+        : UpvalueIndexRange(indices.state(), indices.first(), v_count)
+    {}
 };
 
 } // namespace detail
