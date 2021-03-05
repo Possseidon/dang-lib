@@ -52,8 +52,8 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
     inline static const std::string class_name = base_class_name + std::to_string(v_dim);
     inline static const std::string class_name_ref = class_name + '&';
 
-    static const char* className() { return name.c_str(); }
-    static const char* classNameRef() { return name_ref.c_str(); }
+    static const char* className() { return class_name.c_str(); }
+    static const char* classNameRef() { return class_name_ref.c_str(); }
 
     static constexpr auto table()
     {
@@ -144,7 +144,10 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
         };
 
         constexpr auto pairs = +[](State& lua, Arg vector) {
-            constexpr auto next = +[](Arg table, Arg key) { return table.next(std::move(key)); };
+            constexpr auto next = +[](State& lua, Arg table, Arg key) {
+                auto result = table.next(std::move(key));
+                return result ? VarArgs(*result) : VarArgs(lua(nullptr));
+            };
             auto metatable = vector.getMetatable();
             return std::tuple{wrap<next>, metatable ? (*metatable)["indextable"] : lua.pushNil()};
         };
@@ -517,7 +520,10 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
         };
 
         constexpr auto pairs = +[](State& lua, Arg matrix) {
-            constexpr auto next = +[](Arg table, Arg key) { return table.next(std::move(key)); };
+            constexpr auto next = +[](State& lua, Arg table, Arg key) {
+                auto result = table.next(std::move(key));
+                return result ? VarArgs(*result) : VarArgs(lua(nullptr));
+            };
             auto metatable = matrix.getMetatable();
             return std::tuple{wrap<next>, metatable ? (*metatable)["indextable"] : lua.pushNil()};
         };
