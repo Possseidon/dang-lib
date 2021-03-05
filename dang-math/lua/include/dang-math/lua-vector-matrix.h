@@ -5,6 +5,8 @@
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 
+#include "dang-utils/utils.h"
+
 namespace dang::lua {
 
 template <typename T, std::size_t v_dim>
@@ -15,21 +17,33 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
     using Swizzled = std::variant<T, dang::math::Vector<T, 2>, dang::math::Vector<T, 3>, dang::math::Vector<T, 4>>;
     using Key = std::variant<std::size_t, std::string_view>;
 
-    using MultiplyType = std::variant<T,
-                                      Vector,
-                                      dang::math::Matrix<T, 2, v_dim>,
-                                      dang::math::Matrix<T, 3, v_dim>,
-                                      dang::math::Matrix<T, 4, v_dim>>;
-    using MultiplyResult = std::variant<T,
-                                        dang::math::Vector<T, 2>,
-                                        dang::math::Vector<T, 3>,
-                                        dang::math::Vector<T, 4>,
-                                        dang::math::Matrix<T, 2, v_dim>,
-                                        dang::math::Matrix<T, 3, v_dim>,
-                                        dang::math::Matrix<T, 4, v_dim>>;
+    using MultiplyType = std::conditional_t<std::is_floating_point_v<T>,
+                                            std::variant<T,
+                                                         Vector,
+                                                         dang::math::Matrix<T, 2, v_dim>,
+                                                         dang::math::Matrix<T, 3, v_dim>,
+                                                         dang::math::Matrix<T, 4, v_dim>>,
+                                            std::variant<T, Vector>>;
 
-    using DivideType = std::variant<T, Vector, dang::math::Matrix<T, v_dim>>;
-    using DivideResult = std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, v_dim>>>;
+    using MultiplyResult = std::conditional_t<
+        std::is_floating_point_v<T>,
+        std::variant<T,
+                     dang::math::Vector<T, 2>,
+                     dang::math::Vector<T, 3>,
+                     dang::math::Vector<T, 4>,
+                     dang::math::Matrix<T, 2, v_dim>,
+                     dang::math::Matrix<T, 3, v_dim>,
+                     dang::math::Matrix<T, 4, v_dim>>,
+        std::variant<T, dang::math::Vector<T, 2>, dang::math::Vector<T, 3>, dang::math::Vector<T, 4>>>;
+
+    using DivideType = std::conditional_t<std::is_floating_point_v<T>,
+                                          std::variant<T, Vector, dang::math::Matrix<T, v_dim>>,
+                                          std::variant<T, Vector>>;
+
+    using DivideResult =
+        std::conditional_t<std::is_floating_point_v<T>,
+                           std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, v_dim>>>,
+                           std::variant<T, std::optional<Vector>>>;
 
     inline static const std::string base_class_name = [] {
         using namespace std::literals;
@@ -46,7 +60,7 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
         else if constexpr (std::is_same_v<T, bool>)
             return "bvec"s;
         else
-            return typeid(T).name() + " vec"s;
+            static_assert(dutils::always_false_v<T>, "unsupported vector type");
     }();
 
     inline static const std::string class_name = base_class_name + std::to_string(v_dim);
@@ -408,7 +422,7 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
         else if constexpr (std::is_same_v<T, double>)
             return "dmat"s;
         else
-            return typeid(T).name() + " mat"s;
+            static_assert(dutils::always_false_v<T>, "unsupported matrix type");
     }();
 
     inline static const std::string class_name =

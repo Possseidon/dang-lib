@@ -7,6 +7,7 @@ target_link_libraries(${PROJECT_NAME}-vector-matrix
   INTERFACE
     dang-lua
     dang-math
+    dang-utils
 ) 
 
 target_include_directories(${PROJECT_NAME}-vector-matrix 
