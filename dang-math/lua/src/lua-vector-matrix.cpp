@@ -46,6 +46,8 @@ const char* ClassInfo<dang::math::Vector<T, v_dim>>::classNameRef()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
 {
+    constexpr auto type = +[](State& lua) { return lua.pushRequire<Vector>(false); };
+
     constexpr auto set = +[](Vector& vec, Args<v_dim> values) {
         std::transform(values.begin(), values.end(), vec.begin(), ArgCheck<T>{});
     };
@@ -54,7 +56,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
 
     constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<v_dim>{}); };
 
-    std::vector result{reg<set>("set"),
+    std::vector result{reg<type>("type"),
+                       reg<set>("set"),
                        reg<copy>("copy"),
                        reg<unpack>("unpack"),
                        reg<&Vector::lessThan>("lessThan"),
@@ -414,6 +417,8 @@ const char* ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::classNameRef()
 template <typename T, std::size_t v_cols, std::size_t v_rows>
 std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
 {
+    constexpr auto type = +[](State& lua) { return lua.pushRequire<Matrix>(false); };
+
     constexpr auto set = +[](Matrix& mat, Args<v_cols> values) {
         std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, v_rows>>{});
     };
@@ -441,7 +446,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
         return mat.cofactor(pos);
     };
 
-    std::vector result{reg<set>("set"),
+    std::vector result{reg<type>("type"),
+                       reg<set>("set"),
                        reg<copy>("copy"),
                        reg<get_at>("getAt"),
                        reg<set_at>("setAt"),
