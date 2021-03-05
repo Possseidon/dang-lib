@@ -25,6 +25,8 @@ target_include_directories(${PROJECT_NAME}
     include
 )
 
+add_subdirectory(lua)
+
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
