@@ -99,6 +99,7 @@ template <typename T, std::size_t v_cols, std::size_t v_rows>
 struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
     using Matrix = dang::math::Matrix<T, v_cols, v_rows>;
     using MatrixOrScalar = std::variant<Matrix, T>;
+    using IndexPosOrString = std::variant<std::size_t, dang::math::svec2, const char*>;
     using IndexOrPos = std::variant<std::size_t, dang::math::svec2>;
     using IndexResult = std::variant<std::monostate, T, dang::math::Vector<T, v_rows>>;
 
@@ -156,6 +157,7 @@ private:
 
         IndexResult operator()(std::size_t index) const;
         IndexResult operator()(dang::math::svec2 pos) const;
+        IndexResult operator()(const char*) const;
     };
 
     struct NewIndex {

@@ -508,7 +508,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
     constexpr auto lt = +[](const Matrix& lhs, const Matrix& rhs) { return lhs < rhs; };
     constexpr auto le = +[](const Matrix& lhs, const Matrix& rhs) { return lhs <= rhs; };
 
-    constexpr auto index = +[](const Matrix& mat, const IndexOrPos& key) { return std::visit(Index{mat}, key); };
+    constexpr auto index = +[](const Matrix& mat, const IndexPosOrString& key) { return std::visit(Index{mat}, key); };
     constexpr auto newindex = +[](State& lua, Matrix& mat, const IndexOrPos& key, Arg value) {
         std::visit(NewIndex{lua, mat, value}, key);
     };
@@ -646,6 +646,13 @@ typename ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::IndexResult ClassInfo
 {
     if (pos.greaterThanEqual(1).all() && pos.lessThanEqual({v_cols, v_rows}).all())
         return matrix[pos - 1];
+    return {};
+}
+
+template <typename T, std::size_t v_cols, std::size_t v_rows>
+typename ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::IndexResult ClassInfo<
+    dang::math::Matrix<T, v_cols, v_rows>>::Index::operator()(const char*) const
+{
     return {};
 }
 
