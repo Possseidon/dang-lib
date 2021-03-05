@@ -27,7 +27,7 @@ target_link_libraries(${PROJECT_NAME}-vector-matrix
     dang-math
 ) 
 
-target_include_directories(${PROJECT_NAME}-vector-matrix 
+target_include_directories(${PROJECT_NAME}-vector-matrix
   PUBLIC
     include
 )
