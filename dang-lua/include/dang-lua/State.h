@@ -2740,7 +2740,7 @@ public:
             notifyPush();
             return std::tuple{type, top().asResult()};
         }
-        else if constexpr (std::is_pointer_v<TKey>) {
+        else if constexpr (std::is_same_v<TKey, void*> || std::is_same_v<TKey, const void*>) {
             assertPushable();
             auto type = static_cast<Type>(lua_rawgetp(state_, table.index(), key));
             // remove nothing, add value
@@ -2780,7 +2780,7 @@ public:
             // -1, +0
             notifyPush(-1);
         }
-        else if constexpr (std::is_pointer_v<TKey>) {
+        else if constexpr (std::is_same_v<TKey, void*> || std::is_same_v<TKey, const void*>) {
             push(std::forward<TValue>(value));
             lua_rawsetp(state_, table.index(), key);
             // remove value, push nothing
