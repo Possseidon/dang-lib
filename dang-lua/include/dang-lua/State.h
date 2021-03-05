@@ -3644,7 +3644,7 @@ public:
 class ScopedStack {
 public:
     /// @brief Constructs a scoped stack for the given stack.
-    ScopedStack(State& state, int offset = 0)
+    explicit ScopedStack(State& state, int offset = 0)
         : state_(state)
         , initially_pushed_(state.top_ + offset)
     {}
