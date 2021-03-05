@@ -31,3 +31,13 @@ target_include_directories(${PROJECT_NAME}-vector-matrix
   PUBLIC
     include
 )
+
+add_library(dmath SHARED
+  src/dmath.cpp
+)
+
+target_link_libraries(dmath
+  PRIVATE
+    dang-lua
+    ${PROJECT_NAME}-vector-matrix
+)
