@@ -716,6 +716,27 @@ struct Convert<const char*> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
+    /// @brief Whether the value at the given stack position is a string.
+    static bool isExact(lua_State* state, int pos) { return lua_type(state, pos) == LUA_TSTRING; }
+
+    /// @brief Whether the value at the given stack position is a string or a number.
+    static bool isValid(lua_State* state, int pos) { return lua_isstring(state, pos); }
+
+    /// @brief Checks, whether the given argument stack position is a string or number and returns std::nullopt on
+    /// failure.
+    /// @remark Numbers are actually converted to a string in place.
+    static std::optional<const char*> at(lua_State* state, int pos)
+    {
+        const char* string = lua_tostring(state, pos);
+        if (string)
+            return string;
+        return std::nullopt;
+    }
+
+    /// @brief Checks, whether the given argument stack position is a string or number and raises an error on failure.
+    /// @remark Numbers are actually converted to a string in place.
+    static const char* check(lua_State* state, int arg) { return luaL_checkstring(state, arg); }
+
     static constexpr std::string_view getPushTypename()
     {
         using namespace std::literals;
