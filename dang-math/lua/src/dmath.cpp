@@ -1,3 +1,4 @@
+#include "dang-math/lua-geometry.h"
 #include "dang-math/lua-vector-matrix.h"
 
 template <typename T>
@@ -57,6 +58,19 @@ extern "C" __declspec(dllexport) int luaopen_dmath(lua_State* L)
     add<dang::math::Matrix<double, 4, 2>>(lua, table);
     add<dang::math::Matrix<double, 4, 3>>(lua, table);
     add<dang::math::Matrix<double, 4, 4>>(lua, table);
+
+    add<dang::math::Line<float, 2>>(lua, table);
+    add<dang::math::Line<float, 3>>(lua, table);
+    add<dang::math::Line<double, 2>>(lua, table);
+    add<dang::math::Line<double, 3>>(lua, table);
+
+    add<dang::math::Plane<float, 2>>(lua, table);
+    add<dang::math::Plane<float, 3>>(lua, table);
+    add<dang::math::Plane<double, 2>>(lua, table);
+    add<dang::math::Plane<double, 3>>(lua, table);
+
+    add<dang::math::Spat<float, 3>>(lua, table);
+    add<dang::math::Spat<double, 3>>(lua, table);
 
     return 1;
 }

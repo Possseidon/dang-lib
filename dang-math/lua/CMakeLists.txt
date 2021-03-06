@@ -32,6 +32,34 @@ target_include_directories(${PROJECT_NAME}-vector-matrix
     include
 )
 
+add_library(${PROJECT_NAME}-geometry STATIC
+  src/lua-geometry.cpp
+)
+
+target_precompile_headers(${PROJECT_NAME}-geometry
+PRIVATE
+  <tuple>
+  <type_traits>
+  <utility>
+PUBLIC
+  <string>
+  <vector>
+)
+
+target_link_libraries(${PROJECT_NAME}-geometry
+  PRIVATE
+    dang-utils
+  PUBLIC
+    dang-lua
+    dang-math
+    ${PROJECT_NAME}-vector-matrix
+) 
+
+target_include_directories(${PROJECT_NAME}-geometry
+  PUBLIC
+    include
+)
+
 add_library(dmath SHARED
   src/dmath.cpp
 )
@@ -40,4 +68,5 @@ target_link_libraries(dmath
   PRIVATE
     dang-lua
     ${PROJECT_NAME}-vector-matrix
+    ${PROJECT_NAME}-geometry
 )
