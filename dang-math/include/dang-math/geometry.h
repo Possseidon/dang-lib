@@ -56,13 +56,14 @@ struct AxisSystemBase {
     /// @brief Converts two given direction vectors into a plane.
     constexpr Plane<T, v_dim> plane(std::size_t index1, std::size_t index2) const
     {
-        return Plane<T, v_dim>(support, {directions[index1], directions[index2]});
+        return Plane<T, v_dim>(support, Matrix<T, 2, v_dim>({directions[index1], directions[index2]}));
     }
 
     /// @brief Converts three given direction vectors into a spat.
     constexpr Spat<T, v_dim> spat(std::size_t index1, std::size_t index2, std::size_t index3) const
     {
-        return Spat<T, v_dim>(support, {directions[index1], directions[index2], directions[index3]});
+        return Spat<T, v_dim>(support,
+                              Matrix<T, 3, v_dim>({directions[index1], directions[index2], directions[index3]}));
     }
 
     /// @brief Returns a point in the axis-system by multiplying the factor onto the directions and adding the support
@@ -101,7 +102,7 @@ struct LineBase : AxisSystemBase<T, v_dim, 1> {
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
     constexpr LineBase(Vector<T, v_dim> support, Vector<T, v_dim> directions)
-        : AxisSystemBase<T, v_dim, 1>(support, directions)
+        : AxisSystemBase<T, v_dim, 1>(support, Matrix<T, 1, v_dim>(directions))
     {}
 
     /// @brief A simple shortcut, getting the only direction vector of the line.
@@ -362,7 +363,7 @@ struct Plane<T, 2> : detail::PlaneBase<T, 2> {
     {}
 
     /// @brief Returns the required factor to reach the specified point.
-    constexpr std::optional<Vector<T, 2>> factorAt(const Vector<T, 2>& point) const
+    constexpr std::optional<Vector<T, 2>> factorAt(Vector<T, 2> point) const
     {
         const auto& dx = this->directions[0];
         const auto& dy = this->directions[1];
