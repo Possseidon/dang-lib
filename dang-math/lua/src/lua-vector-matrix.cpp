@@ -131,7 +131,6 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
     constexpr auto le = +[](const Vector& lhs, const Vector& rhs) { return lhs <= rhs; };
 
     constexpr auto index = +[](State& lua, const Vector& vec, Key key) { return std::visit(Index{lua, vec}, key); };
-
     constexpr auto newindex = +[](State& lua, Vector& vec, Key key, const Swizzled& value) {
         std::visit(NewIndex{lua, vec, value}, key);
     };
@@ -139,10 +138,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
     constexpr auto pairs = +[](State& lua, Arg vector) {
         constexpr auto next = +[](State& lua, Arg table, Arg key) {
             auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua(nullptr));
+            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
         };
-        auto metatable = vector.getMetatable();
-        return std::tuple{wrap<next>, metatable ? (*metatable)["indextable"] : lua.pushNil()};
+        return std::tuple{wrap<next>, vector.getMetafield("indextable")};
     };
 
     std::vector result{reg<&Vector::format>("__tostring"),
@@ -197,12 +195,11 @@ Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(State& lua)
         }
 
         if constexpr (v_dim == 0)
-            lua.error("0 parameters expected, got " + std::to_string(values.size()));
+            lua.error("0 arguments expected, got " + std::to_string(values.size()));
         else if constexpr (v_dim == 1)
-            lua.error("0 or 1 parameters expected, got " + std::to_string(values.size()));
+            lua.error("0 or 1 arguments expected, got " + std::to_string(values.size()));
         else
-            lua.error("0, 1 or " + std::to_string(v_dim) + " parameters expected, got " +
-                      std::to_string(values.size()));
+            lua.error("0, 1 or " + std::to_string(v_dim) + " arguments expected, got " + std::to_string(values.size()));
     };
 
     auto result = lua.pushTable();
@@ -522,10 +519,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
     constexpr auto pairs = +[](State& lua, Arg matrix) {
         constexpr auto next = +[](State& lua, Arg table, Arg key) {
             auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua(nullptr));
+            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
         };
-        auto metatable = matrix.getMetatable();
-        return std::tuple{wrap<next>, metatable ? (*metatable)["indextable"] : lua.pushNil()};
+        return std::tuple{wrap<next>, matrix.getMetafield("indextable")};
     };
 
     std::vector result{reg<&Matrix::format>("__tostring"),

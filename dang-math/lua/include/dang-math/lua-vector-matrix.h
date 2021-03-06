@@ -44,7 +44,6 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
                            std::variant<T, std::optional<Vector>>>;
 
     static const std::string base_class_name;
-
     static const std::string class_name;
     static const std::string class_name_ref;
 
@@ -129,7 +128,6 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
                            std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, v_cols>>>>;
 
     static const std::string base_class_name;
-
     static const std::string class_name;
     static const std::string class_name_ref;
 
