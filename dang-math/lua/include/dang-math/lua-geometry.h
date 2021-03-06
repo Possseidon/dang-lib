@@ -7,7 +7,7 @@
 namespace dang::lua {
 
 template <>
-constexpr const char* enum_values<dang::math::LineSide>[] { "left", "hit", "right", nullptr };
+inline constexpr const char* enum_values<dang::math::LineSide>[] { "left", "hit", "right", nullptr };
 
 template <typename T, std::size_t v_dim>
 struct ClassInfo<dang::math::Line<T, v_dim>> {
