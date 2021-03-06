@@ -305,7 +305,7 @@ public:
     detail::StateFlag<GL_DITHER> dither{*this, true};
     detail::StateFlag<GL_FRAMEBUFFER_SRGB> framebuffer_srgb{*this};
     detail::StateFlag<GL_LINE_SMOOTH> line_smooth{*this};
-    detail::StateFlag<GL_MULTISAMPLE> multisample{*this};
+    detail::StateFlag<GL_MULTISAMPLE> multisample{*this, true};
     detail::StateFlag<GL_POLYGON_SMOOTH> polygon_smooth{*this};
     detail::StateFlag<GL_POLYGON_OFFSET_FILL> polygon_offset_fill{*this};
     detail::StateFlag<GL_POLYGON_OFFSET_LINE> polygon_offset_line{*this};
