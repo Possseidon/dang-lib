@@ -47,7 +47,7 @@ const auto class_metatable = ClassInfo<T>::metatable();
 /// @brief Can be specialized to provide an array of string names for a given enum to convert from and to Lua.
 /// @remark The array needs to end with a "null" entry.
 template <typename T>
-constexpr const char* enum_values[1]{};
+inline constexpr const char* enum_values[1]{};
 
 namespace detail {
 
