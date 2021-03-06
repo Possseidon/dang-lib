@@ -558,10 +558,10 @@ public:
     }
 
     /// @brief Returns a metafield including its type, if it exists.
-    auto getMetaFieldWithType(const char* field) const { return this->state().getMetaFieldWithType(index(), field); }
+    auto getMetafieldWithType(const char* field) const { return this->state().getMetafieldWithType(index(), field); }
 
     /// @brief Returns a metafield, if it exists.
-    auto getMetaField(const char* field) const { return this->state().getMetaField(index(), field); }
+    auto getMetafield(const char* field) const { return this->state().getMetafield(index(), field); }
 
     /// @brief If a metafield with the given name exists, calls it and returns its result.
     auto callMeta(const char* field) const { return this->state().callMeta(index(), field); }
@@ -2447,7 +2447,7 @@ public:
     }
 
     /// @brief Returns a metafield including its type, if it exists.
-    std::optional<std::tuple<Type, StackIndexResult>> getMetaFieldWithType(int index, const char* field)
+    std::optional<std::tuple<Type, StackIndexResult>> getMetafieldWithType(int index, const char* field)
     {
         assertPushableAuxiliary();
         auto type = static_cast<Type>(luaL_getmetafield(state_, index, field));
@@ -2458,9 +2458,9 @@ public:
     }
 
     /// @brief Returns a metafield, if it exists.
-    std::optional<StackIndexResult> getMetaField(int index, const char* field)
+    std::optional<StackIndexResult> getMetafield(int index, const char* field)
     {
-        if (auto result = getMetaFieldWithType(index, field)) {
+        if (auto result = getMetafieldWithType(index, field)) {
             auto [type, value] = *result;
             return value;
         }
@@ -4659,7 +4659,7 @@ inline auto operator>=(TLeft&& left, TRight&& right)
 
 inline PairsIterationWrapper State::pairs(int index)
 {
-    if (auto pairs = getMetaField(index, "__pairs")) {
+    if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
         return GeneratorIterationWrapper<generator_indices_iterator<2, 0>>(*this, result.first(), result.size());
     }
@@ -4668,7 +4668,7 @@ inline PairsIterationWrapper State::pairs(int index)
 
 inline KeysIterationWrapper State::keys(int index)
 {
-    if (auto pairs = getMetaField(index, "__pairs")) {
+    if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
         return GeneratorIterationWrapper<generator_index_iterator<0>>(*this, result.first(), result.size());
     }
@@ -4677,7 +4677,7 @@ inline KeysIterationWrapper State::keys(int index)
 
 inline ValuesIterationWrapper State::values(int index)
 {
-    if (auto pairs = getMetaField(index, "__pairs")) {
+    if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
         return GeneratorIterationWrapper<generator_index_iterator<1>>(*this, result.first(), result.size());
     }
