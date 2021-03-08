@@ -9,6 +9,9 @@ namespace dang::math {
 /// @brief The side of a two-dimensional line.
 enum class LineSide { Left, Hit, Right, COUNT };
 
+/// @brief The side of a three-dimensional plane.
+enum class PlaneSide { Top, Hit, Bottom, COUNT };
+
 } // namespace dang::math
 
 namespace dang::utils {
@@ -130,10 +133,32 @@ struct LineBase : AxisSystemBase<T, v_dim, 1> {
     /// @brief Shortcut to get the length of the direction vector.
     constexpr T length() const { return direction().length(); }
 
-    /// @brief Returns the factor of the closest point on the line for the given point.
-    constexpr T orthoProj(const Vector<T, v_dim>& point) const
+    /// @brief Returns the factor of the point on the line, which lies closest to the given point.
+    constexpr std::optional<T> closestFactorTo(const Vector<T, v_dim>& point) const
     {
-        return direction().dot(point - this->support) / direction().sqrdot();
+        auto div = direction().sqrdot();
+        if (div != T())
+            return direction().dot(point - this->support) / div;
+        return std::nullopt;
+    }
+
+    /// @brief Returns the point on the line, which lies closest to the given point.
+    constexpr std::optional<Vector<T, v_dim>> closestPointTo(const Vector<T, v_dim>& point) const
+    {
+        if (auto factor = closestFactorTo(point))
+            return (*this)[*factor];
+        return std::nullopt;
+    }
+
+    /// @brief Returns the point mirrored on an imaginary plane, which has this line as its perpendicular.
+    constexpr std::optional<Vector<T, v_dim>> mirror(const Vector<T, v_dim>& point) const
+    {
+        if (auto factor = closestFactorTo(point))
+            return point - direction() * *factor * 2;
+        return std::nullopt;
+        // Version using reflect, which is roughly 2 - 3 times slower.
+        // Probably, because this one uses std::sqrt, while the above does not.
+        // return (point - support).reflect(direction().normalize()) + support;
     }
 };
 
@@ -150,10 +175,10 @@ struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
     {}
 
     /// @brief Returns the area of the plane, seen as an n-dimensional parallelogram.
-    constexpr T area() { return this->directions[0].length() * this->directions[1].length(); }
+    constexpr T area() const { return this->directions[0].length() * this->directions[1].length(); }
 
-    /// @brief Returns the factors of the closest point on the plane for the given point.
-    constexpr std::optional<Vector<T, 2>> orthoProj(Vector<T, v_dim> point) const
+    /// @brief Returns the factors to the point on the plane, which lies closest to the given point.
+    constexpr std::optional<Vector<T, 2>> closestFactorTo(Vector<T, v_dim> point) const
     {
         auto dxs = this->directions[0].sqrdot();
         auto dys = this->directions[1].sqrdot();
@@ -169,8 +194,16 @@ struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
         return Vector<T, 2>(dys * dxp - dxy * dyp, dxs * dyp - dxy * dxp) / div;
     }
 
+    /// @brief Returns the point on the plane, which lies closest to the given point.
+    constexpr std::optional<Vector<T, v_dim>> closestPointTo(const Vector<T, v_dim>& point) const
+    {
+        if (auto factor = closestFactorTo(point))
+            return (*this)[*factor];
+        return std::nullopt;
+    }
+
     /// @brief Returns one of the four quad points of the plane.
-    constexpr Vector<T, v_dim> quadPoint(std::size_t index)
+    constexpr Vector<T, v_dim> quadPoint(std::size_t index) const
     {
         switch (index) {
         case 0:
@@ -183,11 +216,11 @@ struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
             return this->support + this->directions[1];
         }
         assert(false);
-        return {};
+        return T();
     }
 
     /// @brief Returns one of the three triangle points of the plane.
-    constexpr Vector<T, v_dim> trianglePoint(std::size_t index)
+    constexpr Vector<T, v_dim> trianglePoint(std::size_t index) const
     {
         switch (index) {
         case 0:
@@ -198,11 +231,11 @@ struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
             return this->support + this->directions[1];
         }
         assert(false);
-        return {};
+        return T();
     }
 
     /// @brief Returns one of the three inner angles in radians.
-    constexpr T innerRadians(std::size_t index)
+    constexpr T innerRadians(std::size_t index) const
     {
         switch (index) {
         case 0:
@@ -213,11 +246,11 @@ struct PlaneBase : AxisSystemBase<T, v_dim, 2> {
             return trianglePoint(2).vectorTo(trianglePoint(1)).radiansTo(-this->directions[1]);
         }
         assert(false);
-        return {};
+        return T();
     }
 
     /// @brief Returns one of the three inner angles in degrees.
-    constexpr T innerDegrees(std::size_t index) { return degrees(innerRadians(index)); }
+    constexpr T innerDegrees(std::size_t index) const { return degrees(innerRadians(index)); }
 };
 
 /// @brief Used as a base for spats, consisting of one support and three direction vectors.
@@ -273,22 +306,28 @@ struct Line<T, 2> : detail::LineBase<T, 2> {
         : detail::LineBase<T, 2>(support, directions)
     {}
 
-    /// @brief Returns the distance between the (infinite) line and given point.
-    constexpr T distanceTo(const Vector<T, 2>& point) const
+    /// @brief Returns the positive (left) or negative (right) distance between the (infinite) line and given point.
+    constexpr T heightTo(const Vector<T, 2>& point) const
     {
-        if (this->direction() == T())
-            return this->support.distanceTo(point);
-        Line<T, 2> rotated{this->support, this->direction().cross().normalize()};
-        return rotated.orthoProj(point);
+        if (auto distance = Line<T, 2>(this->support, this->direction().cross().normalize()).closestFactorTo(point))
+            return *distance;
+        return this->support.distanceTo(point);
+    }
+
+    /// @brief Returns the distance between the (infinite) line and given point.
+    constexpr T distanceTo(const Vector<T, 2> point) const
+    {
+        auto height = heightTo(point);
+        return height >= 0 ? height : -height;
     }
 
     /// @brief Returns the side of the line, where the point is positioned.
     constexpr LineSide sideOf(const Vector<T, 2>& point) const
     {
-        T sideFactor = distanceTo(point);
-        if (sideFactor > 0)
+        auto distance = heightTo(point);
+        if (distance > 0)
             return LineSide::Left;
-        else if (sideFactor != 0)
+        else if (distance != 0)
             return LineSide::Right;
         return LineSide::Hit;
     }
@@ -331,6 +370,34 @@ struct Line<T, 3> : detail::LineBase<T, 3> {
     constexpr Line(Vector<T, 3> support, Vector<T, 3> directions)
         : detail::LineBase<T, 3>(support, directions)
     {}
+
+    /// @brief Returns the distance between the (infinite) line and given point.
+    constexpr T distanceTo(const Vector<T, 3>& point) const
+    {
+        if (this->direction() == Vector<T, 3>())
+            return this->support.distanceTo(point);
+        return this->direction().cross(point.vectorTo(this->support)).length() / this->direction().length();
+    }
+
+    using detail::LineBase<T, 3>::closestFactorTo;
+
+    /// @brief Returns the factor to the point on this line, which lies closest to the given line.
+    constexpr std::optional<T> closestFactorTo(const Line& other) const
+    {
+        return Plane<T, 3>(this->support,
+                           Matrix<T, 2, 3>({this->direction(), this->direction().cross(other.direction())}))
+            .intersectionLineFactor(other);
+    }
+
+    using detail::LineBase<T, 3>::closestPointTo;
+
+    /// @brief Returns the point on this line, which lies closest to the given line.
+    constexpr std::optional<Vector<T, 3>> closestPointTo(const Line& other) const
+    {
+        if (auto factor = closestFactorTo(other))
+            return (*this)[*factor];
+        return std::nullopt;
+    }
 };
 
 using Line1 = Line<float, 1>;
@@ -363,14 +430,12 @@ struct Plane<T, 2> : detail::PlaneBase<T, 2> {
     {}
 
     /// @brief Returns the required factor to reach the specified point.
-    constexpr std::optional<Vector<T, 2>> factorAt(Vector<T, 2> point) const
+    constexpr Vector<T, 2> factorAt(Vector<T, 2> point) const
     {
         const auto& dx = this->directions[0];
         const auto& dy = this->directions[1];
 
         auto div = dx.cross(dy);
-        if (div == T())
-            return std::nullopt;
 
         point -= this->support;
 
@@ -380,10 +445,7 @@ struct Plane<T, 2> : detail::PlaneBase<T, 2> {
         const auto& y = dy.y();
         if ((x >= 0 ? x : -x) > (y >= 0 ? y : -y))
             return Vector<T, 2>(resultx, (point.x() - resultx * dx.x()) / x);
-        if (y != 0)
-            return Vector<T, 2>(resultx, (point.y() - resultx * dx.y()) / y);
-
-        return std::nullopt;
+        return Vector<T, 2>(resultx, (point.y() - resultx * dx.y()) / y);
     }
 };
 
@@ -403,11 +465,41 @@ struct Plane<T, 3> : detail::PlaneBase<T, 3> {
     /// @remark The length of the result is the area of the plane.
     constexpr Vector<T, 3> perpendicular() const { return this->directions[0].cross(this->directions[1]); }
 
+    /// @brief Returns the perpendicular of the plane as a line with the same support vector using the cross-product.
+    /// @remark The length of the result is the area of the plane.
+    constexpr Line<T, 3> perpendicularLine() const { return Line<T, 3>(this->support, perpendicular()); }
+
     /// @brief Returns a normalized perpendicular of the plane.
     constexpr Vector<T, 3> normal() const { return perpendicular().normalize(); }
 
-    /// @brief Returns the height from the plane to the given point.
-    constexpr T height(const Vector<T, 3>& point) const { return Line<T, 3>(this->support, normal()).orthoProj(point); }
+    /// @brief Returns a normalized perpendicular of the plane as a line with the same support vector.
+    constexpr Line<T, 3> normalLine() const { return Line<T, 3>(this->support, normal()); }
+
+    /// @brief Returns the positive (top) or negative (bottom) distance between the (infinite) plane and given point.
+    constexpr T heightTo(const Vector<T, 3>& point) const
+    {
+        if (auto distance = normalLine().closestFactorTo(point))
+            return *distance;
+        return this->support.distanceTo(point);
+    }
+
+    /// @brief Returns the distance between the (infinite) plane and given point.
+    constexpr T distanceTo(const Vector<T, 3> point) const
+    {
+        auto height = heightTo(point);
+        return height >= 0 ? height : -height;
+    }
+
+    /// @brief Returns the side of the plane, where the point is positioned.
+    constexpr PlaneSide sideOf(const Vector<T, 3>& point) const
+    {
+        auto distance = heightTo(point);
+        if (distance > 0)
+            return PlaneSide::Top;
+        else if (distance != 0)
+            return PlaneSide::Bottom;
+        return PlaneSide::Hit;
+    }
 
     /// @brief Builds a matrix, which can be used to calculate the intersection with a line.
     constexpr Matrix<T, 4, 3> intersectionMatrix(const Line<T, 3>& line) const
@@ -453,6 +545,48 @@ struct Plane<T, 3> : detail::PlaneBase<T, 3> {
         if (auto pos = plane.intersectionPoint(line))
             return Line<T, 3>(*pos, dir);
         return std::nullopt;
+    }
+
+    /// @brief Returns the cosine of the angle between the planes perpendicular and the given direction.
+    constexpr T cosAngleToPerpendicular(const Vector<T, 3>& direction) const
+    {
+        return perpendicular().cosAngleTo(direction);
+    }
+
+    /// @brief Returns the angle between the planes perpendicular and the given direction in radians.
+    constexpr T radiansToPerpendicular(const Vector<T, 3>& direction) const
+    {
+        return perpendicular().radiansTo(direction);
+    }
+
+    /// @brief Returns the angle between the planes perpendicular and the given direction in degrees.
+    constexpr T degreesToPerpendicular(const Vector<T, 3>& direction) const
+    {
+        return perpendicular().degreesTo(direction);
+    }
+
+    /// @brief Returns the angle between the plane and the given direction in radians.
+    constexpr T radiansTo(const Vector<T, 3>& direction) const
+    {
+        return pi_v<T> / T(2) - perpendicular().radiansTo(direction);
+    }
+
+    /// @brief Returns the angle between the plane and the given direction in degrees.
+    constexpr T degreesTo(const Vector<T, 3>& direction) const { return T(90) - perpendicular().degreesTo(direction); }
+
+    /// @brief Returns the cosine of the angle to the given plane.
+    constexpr T cosAngleTo(const Plane<T, 3>& other) const { return perpendicular().cosAngleTo(other.perpendicular()); }
+
+    /// @brief Returns the angle to the given plane in radians.
+    constexpr T radiansTo(const Plane<T, 3>& other) const { return perpendicular().radiansTo(other.perpendicular()); }
+
+    /// @brief Returns the angle to the given plane in degrees.
+    constexpr T degreesTo(const Plane<T, 3>& other) const { return perpendicular().degreesTo(other.perpendicular()); }
+
+    /// @brief Returns the point mirrored on the plane.
+    constexpr std::optional<Vector<T, 3>> mirror(const Vector<T, 3>& point) const
+    {
+        return perpendicularLine().mirror(point);
     }
 };
 
