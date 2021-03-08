@@ -204,6 +204,27 @@ Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(State& lua)
 
     auto result = lua.pushTable();
 
+    if constexpr (v_dim >= 1) {
+        Vector vec;
+        vec.x() = 1;
+        result.setTable("x", vec);
+    }
+    if constexpr (v_dim >= 2) {
+        Vector vec;
+        vec.y() = 1;
+        result.setTable("y", vec);
+    }
+    if constexpr (v_dim >= 3) {
+        Vector vec;
+        vec.z() = 1;
+        result.setTable("z", vec);
+    }
+    if constexpr (v_dim >= 4) {
+        Vector vec;
+        vec.w() = 1;
+        result.setTable("w", vec);
+    }
+
     if constexpr (v_dim == 2) {
         if constexpr (!std::is_same_v<T, bool>) {
             constexpr auto from_slope = +[](std::optional<T> slope) { return Vector::fromSlope(slope); };
