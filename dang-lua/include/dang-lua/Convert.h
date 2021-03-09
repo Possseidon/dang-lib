@@ -18,8 +18,8 @@ template <typename T>
 constexpr SubClasses<T> SubClassesOf{};
 
 /// @brief Returns an empty index and metatable and does nothing when required.
-/// @remarks className() must provide a unique class name.
-/// @remarks classNameRef() shall be the class name followed by `&`.
+/// @remark className() must provide a unique class name.
+/// @remark classNameRef() shall be the class name followed by `&`.
 struct DefaultClassInfo {
     // static constexpr const char* className();
     // static constexpr const char* classNameRef();

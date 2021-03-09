@@ -228,7 +228,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Reflects the vector on the given plane normal.
-    /// @remarks The normal is assumed to be normalized.
+    /// @remark The normal is assumed to be normalized.
     constexpr auto reflect(const Vector& normal) const
     {
         static_assert(!std::is_same_v<T, bool>);

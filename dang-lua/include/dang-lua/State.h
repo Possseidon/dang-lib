@@ -585,7 +585,7 @@ public:
     }
 
     /// @brief Removes the value from the stack, moving everything after, to fill the gap.
-    /// @remarks Invalidates any greater indices!
+    /// @remark Invalidates any greater indices!
     void remove() { this->state().remove(index()); }
 
     /// @brief Performs integer division with another value. (// in Lua)
@@ -2183,7 +2183,7 @@ public:
         return top().asResult();
     }
 
-    /// @brief Pushes a newly created table, containing the elements in the given range.
+    /// @brief Pushes a newly created table containing all elements in the given range.
     template <typename TIter>
     auto pushArray(TIter first, TIter last)
     {
@@ -2315,7 +2315,7 @@ public:
     }
 
     /// @brief Removes a value from the stack, moving everything after, to fill the gap.
-    /// @remarks Invalidates any greater indices!
+    /// @remark Invalidates any greater indices!
     void remove(int index)
     {
         lua_remove(state_, index);
@@ -2915,7 +2915,7 @@ public:
     ///   -- use key and value
     /// end
     /// ```
-    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    /// @remark Like Lua `pairs` this respects the `__pairs` metamethod.
     PairsIterationWrapper pairs(int index);
 
     /// @copybrief dang::lua::State::pairs(int)
@@ -2924,7 +2924,7 @@ public:
     ///   -- use key
     /// end
     /// ```
-    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    /// @remark Like Lua `pairs` this respects the `__pairs` metamethod.
     KeysIterationWrapper keys(int index);
 
     /// @copybrief dang::lua::State::pairs(int)
@@ -2933,7 +2933,7 @@ public:
     ///   -- use value
     /// end
     /// ```
-    /// @remarks Like Lua `pairs` this respects the `__pairs` metamethod.
+    /// @remark Like Lua `pairs` this respects the `__pairs` metamethod.
     ValuesIterationWrapper values(int index);
 
     /// @brief Can be used to iterate over a table without invoking the `__pairs` metamethod.
@@ -2966,7 +2966,7 @@ public:
     ///   -- use index and value
     /// end
     /// ```
-    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// @remark Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
     /// table.
     IPairsIterationWrapper ipairs(int index);
 
@@ -2976,7 +2976,7 @@ public:
     ///   -- use index
     /// end
     /// ```
-    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// @remark Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
     /// table.
     IKeysIterationWrapper ikeys(int index);
 
@@ -2986,7 +2986,7 @@ public:
     ///   -- use value
     /// end
     /// ```
-    /// @remarks Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
+    /// @remark Like Lua `ipairs` this iterates until a `nil` value is found, disregarding the actual length of the
     /// table.
     IValuesIterationWrapper ivalues(int index);
 
@@ -3005,7 +3005,7 @@ public:
     ///   -- use index
     /// end
     /// ```
-    /// @remarks This is optimized in a way, so that it doesn't push anything on the stack.
+    /// @remark This is optimized in a way, so that it doesn't push anything on the stack.
     IKeysLenIterationWrapper ikeysLen(int index);
 
     /// @copybrief dang::lua::State::ipairsLen(int)
@@ -3033,7 +3033,7 @@ public:
     ///   -- use value
     /// end
     /// ```
-    /// @remarks This is optimized in a way, so that it doesn't push anything on the stack.
+    /// @remark This is optimized in a way, so that it doesn't push anything on the stack.
     IKeysRawIterationWrapper ikeysRaw(int index);
 
     /// @copybrief dang::lua::State::ipairsRaw(int)
@@ -3061,7 +3061,7 @@ public:
     }
 
     /// @copydoc dang::lua::State::iterate(int,int)
-    /// @remarks Multiple return values can be used instead of just one.
+    /// @remark Multiple return values can be used instead of just one.
     template <int v_value_count, int v_value_offset = 0>
     IterateMultipleWrapper<v_value_count, v_value_offset> iterateMultiple(int index, int input_count)
     {
@@ -3069,7 +3069,7 @@ public:
     }
 
     /// @copydoc dang::lua::State::iterate(int,int)
-    /// @remarks A pair of two return values can be used instead of just one.
+    /// @remark A pair of two return values can be used instead of just one.
     template <int v_value_offset = 0>
     auto iteratePair(int index, int input_count)
     {
@@ -3077,7 +3077,7 @@ public:
     }
 
     /// @copydoc dang::lua::State::iterate(int,int)
-    /// @remarks A varying number of return values can be used instead of just one.
+    /// @remark A varying number of return values can be used instead of just one.
     template <int v_value_offset = 0>
     IterateVaryingWrapper<v_value_offset> iterateVarying(int index, int input_count)
     {
@@ -4186,7 +4186,7 @@ public:
 };
 
 /// @brief Combines different iterators into a single type.
-/// @remarks For when the iterator is only known at runtime.
+/// @remark For when the iterator is only known at runtime.
 template <typename... TIterators>
 class iterator_variant : public std::variant<TIterators...> {
 public:
@@ -4279,7 +4279,7 @@ private:
 };
 
 /// @brief Combines different iterator wrappers into a single type.
-/// @remarks For when the iterator is only known at runtime.
+/// @remark For when the iterator is only known at runtime.
 template <typename... TIterationWrappers>
 class IterationWrapperVariant : public std::variant<TIterationWrappers...> {
 public:
