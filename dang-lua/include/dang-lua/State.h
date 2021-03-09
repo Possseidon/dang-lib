@@ -2187,17 +2187,7 @@ public:
     template <typename TIter>
     auto pushArray(TIter first, TIter last)
     {
-        auto array_hint = [&] {
-            if constexpr (std::is_same_v<typename std::iterator_traits<TIter>::iterator_category,
-                                         std::random_access_iterator_tag>) {
-                constexpr auto max = std::numeric_limits<int>::max();
-                auto size = std::distance(first, last);
-                return size < max ? int(size) : max;
-            }
-            else
-                return 0;
-        }();
-        auto result = pushTable(array_hint);
+        auto result = pushTable(getTableHint(first, last));
         lua_Integer index = 1;
         std::for_each(first, last, [&](const auto& item) { result.setTable(index++, item); });
         return result;
@@ -3549,6 +3539,20 @@ private:
         auto x = lua_getinfo(state_, what.data(), &ar);
         notifyPush(push_lines - 1);
         return DebugInfo<TTypes...>(ar);
+    }
+
+    /// @brief Returns a suggested array hint to use when creating a table from a range.
+    template <typename TIter>
+    constexpr auto getTableHint(TIter first, TIter last)
+    {
+        if constexpr (std::is_convertible_v<typename std::iterator_traits<TIter>::iterator_category,
+                                            std::random_access_iterator_tag>) {
+            constexpr auto max = std::numeric_limits<int>::max();
+            auto size = std::distance(first, last);
+            return size < max ? int(size) : max;
+        }
+        else
+            return 0;
     }
 
     lua_State* state_;
