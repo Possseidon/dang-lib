@@ -2237,6 +2237,34 @@ public:
         return pushSet(begin(collection), end(collection), value);
     }
 
+    /// @brief Pushes a newly created table containing all key-value pairs in the given range.
+    template <typename TIter>
+    auto pushMap(TIter first, TIter last)
+    {
+        auto result = pushTable(0, getTableHint(first, last));
+        std::for_each(first, last, [&](const auto& pair) {
+            const auto& [key, value] = pair;
+            result.setTable(key, value);
+        });
+        return result;
+    }
+
+    /// @brief Pushes a newly created table containing all key-value pairs in the given initializer list.
+    template <typename TKey, typename TValue>
+    auto pushMap(std::initializer_list<std::pair<TKey, TValue>> collection)
+    {
+        return pushMap(begin(collection), end(collection));
+    }
+
+    /// @brief Pushes a newly created table containing all key-value pairs in the given collection.
+    template <typename T>
+    auto pushMap(const T& collection)
+    {
+        using std::begin;
+        using std::end;
+        return pushMap(begin(collection), end(collection));
+    }
+
     /// @brief Pushes a newly created thread on the stack.
     auto pushThread()
     {
