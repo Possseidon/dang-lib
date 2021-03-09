@@ -2209,6 +2209,34 @@ public:
         return pushArray(begin(collection), end(collection));
     }
 
+    /// @brief Pushes a newly created table containing keys for all elements in the given range.
+    /// @remark By default, each entry's value is set to `true`, but another value can be provided.
+    template <typename TIter, typename TValue = bool>
+    auto pushSet(TIter first, TIter last, const TValue& value = true)
+    {
+        auto result = pushTable(0, getTableHint(first, last));
+        std::for_each(first, last, [&](const auto& item) { result.setTable(item, value); });
+        return result;
+    }
+
+    /// @brief Pushes a newly created table containing keys for all elements in the given initializer list.
+    /// @remark By default, each entry's value is set to `true`, but another value can be provided.
+    template <typename T, typename TValue = bool>
+    auto pushSet(std::initializer_list<T> collection, const TValue& value = true)
+    {
+        return pushSet(begin(collection), end(collection), value);
+    }
+
+    /// @brief Pushes a newly created table containing keys for all elements in the given collection.
+    /// @remark By default, each entry's value is set to `true`, but another value can be provided.
+    template <typename T, typename TValue = bool>
+    auto pushSet(const T& collection, const TValue& value = true)
+    {
+        using std::begin;
+        using std::end;
+        return pushSet(begin(collection), end(collection), value);
+    }
+
     /// @brief Pushes a newly created thread on the stack.
     auto pushThread()
     {
