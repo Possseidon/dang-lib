@@ -2183,6 +2183,42 @@ public:
         return top().asResult();
     }
 
+    /// @brief Pushes a newly created table, containing the elements in the given range.
+    template <typename TIter>
+    auto pushArray(TIter first, TIter last)
+    {
+        auto array_hint = [&] {
+            if constexpr (std::is_same_v<typename std::iterator_traits<TIter>::iterator_category,
+                                         std::random_access_iterator_tag>) {
+                constexpr auto max = std::numeric_limits<int>::max();
+                auto size = std::distance(first, last);
+                return size < max ? int(size) : max;
+            }
+            else
+                return 0;
+        }();
+        auto result = pushTable(array_hint);
+        lua_Integer index = 1;
+        std::for_each(first, last, [&](const auto& item) { result.setTable(index++, item); });
+        return result;
+    }
+
+    /// @brief Pushes a newly created table containing all elements in the given initializer list.
+    template <typename T>
+    auto pushArray(std::initializer_list<T> collection)
+    {
+        return pushArray(begin(collection), end(collection));
+    }
+
+    /// @brief Pushes a newly created table containing all elements in the given collection.
+    template <typename T>
+    auto pushArray(const T& collection)
+    {
+        using std::begin;
+        using std::end;
+        return pushArray(begin(collection), end(collection));
+    }
+
     /// @brief Pushes a newly created thread on the stack.
     auto pushThread()
     {
