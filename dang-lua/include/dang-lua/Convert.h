@@ -285,38 +285,19 @@ struct Convert {
         return 1;
     }
 
-    /// @brief Pushes the metatable for a value instance onto the stack.
-    static void pushValueMetatable(lua_State* state)
+    /// @brief Pushes the metatable for a value or reference instance onto the stack.
+    template <bool v_reference>
+    static void pushMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, ClassInfo<T>::className()))
+        if (!luaL_newmetatable(state, v_reference ? ClassInfo<T>::classNameRef() : ClassInfo<T>::className()))
             return;
         detail::setfuncs(state, class_metatable<T>);
-        lua_pushcfunction(state, cleanup);
-        lua_setfield(state, -2, "__gc");
-        pushReferenceMetatable(state);
-        if (!luaL_getmetafield(state, -1, "__index")) {
-            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
-            detail::setfuncs(state, class_table<T>);
-            lua_pushvalue(state, -1);
-            lua_setfield(state, -4, "indextable");
+        if constexpr (!v_reference) {
+            lua_pushcfunction(state, cleanup);
+            lua_setfield(state, -2, "__gc");
         }
-        if (lua_getfield(state, -3, "__index") != LUA_TNIL)
-            lua_pushcclosure(state, customIndex, 2);
-        else
-            lua_pop(state, 1);
-        lua_setfield(state, -3, "__index");
-        lua_pop(state, 1);
-    }
-
-    /// @brief Pushes the metatable for a reference instance onto the stack.
-    static void pushReferenceMetatable(lua_State* state)
-    {
-        static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, ClassInfo<T>::classNameRef()))
-            return;
-        detail::setfuncs(state, class_metatable<T>);
-        pushValueMetatable(state);
+        pushMetatable<!v_reference>(state);
         if (!luaL_getmetafield(state, -1, "__index")) {
             lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
             detail::setfuncs(state, class_table<T>);
@@ -343,7 +324,7 @@ struct Convert {
         if constexpr (std::is_class_v<T>) {
             T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
             new (userdata) T(std::forward<TArgs>(values)...);
-            pushValueMetatable(state);
+            pushMetatable<false>(state);
             lua_setmetatable(state, -2);
         }
         else if constexpr (std::is_enum_v<T>) {
@@ -364,7 +345,7 @@ struct Convert {
         static_assert(std::is_class_v<T>);
         T** userdata = static_cast<T**>(lua_newuserdata(state, sizeof(T*)));
         *userdata = &value;
-        pushReferenceMetatable(state);
+        pushMetatable<true>(state);
         lua_setmetatable(state, -2);
     }
 };
