@@ -4576,6 +4576,16 @@ struct ValueTo {
     }
 };
 
+/// @brief Can be used to provide __pairs for custom ClassInfo specializations.
+auto indextable_pairs(State& lua, Arg value)
+{
+    constexpr auto next = +[](State& lua, Arg table, Arg key) {
+        auto result = table.next(std::move(key));
+        return result ? VarArgs(*result) : VarArgs(lua.pushNil());
+    };
+    return std::tuple{wrap<next>, value.getMetafield("indextable")};
+};
+
 namespace detail {
 
 /// @brief Requires either of the two arguments to be an index and returns the associated state.

@@ -100,15 +100,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metatable()
                           factor);
     };
     constexpr auto eq = +[](const Line& lhs, const Line& rhs) { return lhs == rhs; };
-    constexpr auto pairs = +[](State& lua, Arg line) {
-        constexpr auto next = +[](State& lua, Arg table, Arg key) {
-            auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
-        };
-        return std::tuple{wrap<next>, line.getMetafield("indextable")};
-    };
 
-    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<pairs>("__pairs")};
+    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
 }
 
 template <typename T, std::size_t v_dim>
@@ -271,15 +264,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metatable()
             factor);
     };
     constexpr auto eq = +[](const Plane& lhs, const Plane& rhs) { return lhs == rhs; };
-    constexpr auto pairs = +[](State& lua, Arg plane) {
-        constexpr auto next = +[](State& lua, Arg table, Arg key) {
-            auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
-        };
-        return std::tuple{wrap<next>, plane.getMetafield("indextable")};
-    };
 
-    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<pairs>("__pairs")};
+    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
 }
 
 template <typename T, std::size_t v_dim>
@@ -395,15 +381,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metatable()
             factor);
     };
     constexpr auto eq = +[](const Spat& lhs, const Spat& rhs) { return lhs == rhs; };
-    constexpr auto pairs = +[](State& lua, Arg plane) {
-        constexpr auto next = +[](State& lua, Arg table, Arg key) {
-            auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
-        };
-        return std::tuple{wrap<next>, plane.getMetafield("indextable")};
-    };
 
-    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<pairs>("__pairs")};
+    return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
 }
 
 template <typename T, std::size_t v_dim>

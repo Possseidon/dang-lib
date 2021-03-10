@@ -135,14 +135,6 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
         std::visit(NewIndex{lua, vec, value}, key);
     };
 
-    constexpr auto pairs = +[](State& lua, Arg vector) {
-        constexpr auto next = +[](State& lua, Arg table, Arg key) {
-            auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
-        };
-        return std::tuple{wrap<next>, vector.getMetafield("indextable")};
-    };
-
     std::vector result{reg<&Vector::format>("__tostring"),
                        reg<len>("__len"),
                        reg<eq>("__eq"),
@@ -150,7 +142,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
                        reg<le>("__le"),
                        reg<index>("__index"),
                        reg<newindex>("__newindex"),
-                       reg<pairs>("__pairs")};
+                       reg<indextable_pairs>("__pairs")};
 
     if constexpr (!std::is_same_v<T, bool>) {
         constexpr auto add = +[](const VectorOrScalar& lhs, const VectorOrScalar& rhs) {
@@ -537,14 +529,6 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
         std::visit(NewIndex{lua, mat, value}, key);
     };
 
-    constexpr auto pairs = +[](State& lua, Arg matrix) {
-        constexpr auto next = +[](State& lua, Arg table, Arg key) {
-            auto result = table.next(std::move(key));
-            return result ? VarArgs(*result) : VarArgs(lua.pushNil());
-        };
-        return std::tuple{wrap<next>, matrix.getMetafield("indextable")};
-    };
-
     std::vector result{reg<&Matrix::format>("__tostring"),
                        reg<add>("__add"),
                        reg<sub>("__sub"),
@@ -556,7 +540,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
                        reg<le>("__le"),
                        reg<index>("__index"),
                        reg<newindex>("__newindex"),
-                       reg<pairs>("__pairs")};
+                       reg<indextable_pairs>("__pairs")};
 
     if constexpr (std::is_signed_v<T>) {
         constexpr auto unm = +[](const Matrix& mat) { return -mat; };
