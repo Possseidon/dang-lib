@@ -309,6 +309,8 @@ struct Convert {
         else
             lua_pop(state, 1);
         lua_setfield(state, -3, "__index");
+        lua_pushboolean(state, false);
+        lua_setfield(state, -3, "__metatable");
         lua_pop(state, 1);
     }
 
