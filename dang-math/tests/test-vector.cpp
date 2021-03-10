@@ -264,7 +264,7 @@ TEST_CASE("Vectors support binary component-wise operations.", "[vector][operati
     STATIC_REQUIRE(dmath::vec3(1, 2, 3).max({3, 2, 1}) == dmath::vec3(3, 2, 3));
 }
 
-TEST_CASE("Vectors support trinary component-wise operations.", "[vector][operations]")
+TEST_CASE("Vectors support ternary component-wise operations.", "[vector][operations]")
 {
     STATIC_REQUIRE(dmath::vec3(1, 2, 3).clamp({2, 1, 1}, {3, 3, 2}) == dmath::vec3(2, 2, 2));
 }

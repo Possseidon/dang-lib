@@ -22,7 +22,7 @@ public:
     virtual bool isVisible() const;
     /// @brief An optional transformation, describing where to render the object.
     virtual SharedTransform transform() const;
-    /// @brief Returns the GL-Program, which is used in the draw method, so that uniforms can be upated.
+    /// @brief Returns the GL-Program, which is used in the draw method, so that uniforms can be updated.
     virtual Program& program() const = 0;
     /// @brief Draws the object.
     virtual void draw() const = 0;

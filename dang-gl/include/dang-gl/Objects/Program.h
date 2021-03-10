@@ -46,7 +46,7 @@ inline constexpr dutils::EnumArray<ShaderType, GLenum> gl_constants<ShaderType> 
                                                                                    GL_TESS_EVALUATION_SHADER,
                                                                                    GL_COMPUTE_SHADER};
 
-/// @brief Human-readable names for each sahder stage.
+/// @brief Human-readable names for each shader stage.
 const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames{"Vertex-Shader",
                                                                  "Fragment-Shader",
                                                                  "Geometry-Shader",
@@ -242,7 +242,7 @@ public:
     Program& operator=(const Program&) = delete;
     Program& operator=(Program&&) = default;
 
-    /// @brief Adds an include with the given name and code, which is used by the custom shader pre-processor.
+    /// @brief Adds an include with the given name and code, which is used by the custom shader preprocessor.
     void addInclude(const std::string& name, std::string code);
     /// @brief Adds an include from the given path, using the filename as include name.
     void addIncludeFromFile(const fs::path& path);

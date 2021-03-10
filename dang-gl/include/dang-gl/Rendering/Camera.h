@@ -47,7 +47,7 @@ public:
     /// @remark This value will only be overwritten on the next context resize, if a context was provided.
     void setAspect(float aspect);
 
-    /// @brief Returns the projection matrix, which is lazily evaulated.
+    /// @brief Returns the projection matrix, which is lazily evaluated.
     const mat4& matrix();
 
 protected:

@@ -70,7 +70,7 @@ public:
 
     /// @brief Returns the current render mode, which is used in draw calls.
     BeginMode mode() const;
-    /// @brief Although not always senseful, allows to modify the render mode after construction.
+    /// @brief Although not always sensible, allows to modify the render mode after construction.
     /// @remark Different render modes require very different data layouts, often making it impossible to use the same
     /// data with different modes.
     void setMode(BeginMode mode);
@@ -93,7 +93,7 @@ template <typename TData, typename... TInstanceData>
 class VAO : public VAOBase {
 public:
     /// @brief Creates a new VAO and binds it to the given GL-Program, VBO and potential additional VBOs for instancing.
-    /// @remark Various debug assertings check, that the GL-Program and VBOs match.
+    /// @remark Various debug assertions check, that the GL-Program and VBOs match.
     VAO(Program& program,
         VBO<TData>& data_vbo,
         VBO<TInstanceData>&... instance_vbo,

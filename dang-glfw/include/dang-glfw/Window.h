@@ -253,15 +253,15 @@ public:
 
     /// @brief Returns the currently set optional width/height ratio to force the window into.
     std::optional<dmath::ivec2> aspectRatio() const;
-    /// @brief Sets the optional width/height ratio, which the the window should be forced into.
+    /// @brief Sets the optional width/height ratio, which the window should be forced into.
     void setAspectRatio(std::optional<dmath::ivec2> aspect_ratio);
     /// @brief Sets the width/height ratio of the window to the current framebuffer size, effectively freezing the
     /// current ratio.
     void freezeAspectRatio();
 
-    /// @brief Returns the opcacity of the window.
+    /// @brief Returns the opacity of the window.
     float opacity() const;
-    /// @brief Sets the opactity of the window.
+    /// @brief Sets the opacity of the window.
     void setOpacity(float new_opacity);
 
     /// @brief Whether the window is currently iconified/minimized.
@@ -337,7 +337,7 @@ public:
 
     /// @brief Returns the current clear mask, which is used at the beginning of a render call.
     dgl::BufferMask clearMask() const;
-    /// @brief Setst the clear mask, which is used at the beginning of a render call.
+    /// @brief Sets the clear mask, which is used at the beginning of a render call.
     void setClearMask(dgl::BufferMask mask);
 
     /// @brief Whether the window should call glFinish after SwapBuffers.
@@ -416,7 +416,7 @@ public:
 
     /// @brief Returns the current delta time to the last call to update.
     float deltaTime() const;
-    /// @brief Returns the FPS, which is smoothed out to accommodate for both low and high framerates.
+    /// @brief Returns the FPS, which is smoothed out to accommodate for both low and high frame rates.
     float fps() const;
     /// @brief Sets the V-Sync mode of the window to the given value.
     void setVSync(VSync vsync);
@@ -425,7 +425,7 @@ public:
 
     /// @brief Called in the update method.
     WindowEvent onUpdate;
-    /// @brief Called by the render method inbetween clear and buffer swapping.
+    /// @brief Called by the render method in between clear and buffer swapping.
     WindowEvent onRender;
 
     /// @brief Triggered, when the user attempts to close the window.

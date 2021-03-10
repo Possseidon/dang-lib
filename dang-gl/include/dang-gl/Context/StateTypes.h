@@ -102,7 +102,7 @@ enum class PolygonSide {
     COUNT
 };
 
-/// @brief Specfies, whether polygons should render full faces, the outline or just corner points.
+/// @brief Specifies whether polygons should render full faces, the outline or just corner points.
 enum class PolygonMode {
     Point,
     Line,

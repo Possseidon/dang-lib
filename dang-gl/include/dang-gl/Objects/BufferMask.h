@@ -4,7 +4,7 @@
 
 namespace dang::gl {
 
-/// @brief Wraps the bitfield representing the three buffers of framebuffer objects.
+/// @brief Wraps the bit field representing the three buffers of framebuffer objects.
 enum class BufferMask : GLbitfield {
     NONE = 0,
     Color = GL_COLOR_BUFFER_BIT,

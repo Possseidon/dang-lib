@@ -60,8 +60,8 @@ enum class TextureTarget {
 };
 
 /// @brief The different framebuffer targets, which can be specified in glBindFramebuffer.
-/// @remark "Framebuffer" means both draw AND read framebuffers.</para>
-/// @remark If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.</para>
+/// @remark "Framebuffer" means both draw AND read framebuffers.
+/// @remark If "both" doesn't make sense in the given context, it usually refers to the draw framebuffer.
 enum class FramebufferTarget {
     Framebuffer,
     DrawFramebuffer,

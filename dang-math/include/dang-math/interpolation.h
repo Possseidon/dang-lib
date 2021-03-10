@@ -33,7 +33,7 @@ auto cosine = [](auto x) { return (1 - std::cos(x * pi_v<decltype(x)>)) / 2; };
 
 /// @brief Alias for cubic.
 auto smooth = cubic;
-/// @brief Alias for quadtratic.
+/// @brief Alias for quadratic.
 auto smooth_start = quadratic;
 /// @brief Alias for inv_quadtratic.
 auto smooth_end = inv_quadratic;

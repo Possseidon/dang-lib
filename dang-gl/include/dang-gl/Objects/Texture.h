@@ -478,7 +478,7 @@ private:
     TextureWrap wrap_r_ = TextureWrap::Repeat;
 };
 
-/// @brief Base class for all regluar, non-multisampled textures.
+/// @brief Base class for all regular, non-multisampled textures.
 template <std::size_t v_dim, TextureTarget v_target>
 class TextureBaseRegular : public TextureBaseTyped<v_dim, v_target> {
 public:

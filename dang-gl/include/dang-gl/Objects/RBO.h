@@ -9,7 +9,7 @@
 
 namespace dang::gl {
 
-/// @brief A renderbuffer object containing image data, specifially used together with framebuffer objects.
+/// @brief A renderbuffer object containing image data, specifically used together with framebuffer objects.
 /// @remark Natively supports multisampling.
 class RBO : public ObjectBindable<ObjectType::Renderbuffer> {
 public:

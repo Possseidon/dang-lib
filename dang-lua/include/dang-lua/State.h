@@ -8,14 +8,10 @@
 
 namespace dang::lua {
 
-// Forward declaration technically doesn't seem to be necessary, but it prevents IntelliSense from spamming errors (and
-// it doesn't hurt)
 class State;
 
-/// @brief The amount of stack slots auxiliary library functions are allowed to use before they call checkstack
-/// themselves.
-/// @remark This information can only be found in the documentation, there does not seem to be any constant for this
-/// defined.
+/// @brief The amount of stack slots auxiliary library functions can use before they call lua_checkstack themselves.
+/// @remark There is no constant for this defined and this value can only be found in the documentation.
 constexpr int auxiliary_required_pushable = 4;
 
 // --- Utility Structs ---
@@ -1731,7 +1727,7 @@ public:
     /// @brief Replaces the panic function with the given function, returning the old one.
     auto replacePanicFunction(lua_CFunction panic_function) { return lua_atpanic(state_, panic_function); }
 
-    // TODO: Somehow make this more typesafe.
+    // TODO: Somehow make this more type safe.
     /// @brief Returns a reference to a pointer that can be used freely.
     void*& extraspace() { return *static_cast<void**>(lua_getextraspace(state_)); }
 
@@ -1759,13 +1755,13 @@ public:
     /// @brief Restarts the garbage collector.
     void gcRestart() { gc(GCOption::Restart); }
 
-    /// @brief Returns the current amount of memory (in Kbytes) in use by Lua.
+    /// @brief Returns the current amount of memory (in KiB) in use by Lua.
     int gcCount() const { return gc(GCOption::Count); }
 
     /// @brief Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.
     int gcCountBytes() const { return gc(GCOption::CountBytes); }
 
-    /// @brief Performs an incremental step of garbage collection, corresponding to the allocation of stepsize Kbytes.
+    /// @brief Performs an incremental step of garbage collection, corresponding to the allocation of step size KiB.
     void gcStep(int stepsize) { gc(GCOption::Step, stepsize); }
 
     /// @brief Whether the collector is running (i.e., not stopped).
@@ -2092,7 +2088,7 @@ public:
     /// @brief Asserts, whether it is possible to call an auxiliary function with the current stack.
     void assertPushableAuxiliary() const { assertPushable(auxiliary_required_pushable); }
 
-    /// @brief Trys to ensure, that it is possible to push a given number of values, returning false if it can't.
+    /// @brief Tries to ensure, that it is possible to push a given number of values, returning false if it can't.
     bool checkPushable(int count = 1) const
     {
         if (!lua_checkstack(state_, count))
@@ -2103,7 +2099,7 @@ public:
         return true;
     }
 
-    /// @brief Trys to ensures, that an auxiliary library function can be called, retunring false if it can't.
+    /// @brief Tries to ensures, that an auxiliary library function can be called, returning false if it can't.
     bool checkPushableAuxiliary() const { return checkPushable(auxiliary_required_pushable); }
 
     /// @brief Ensures, that it is possible to push a given number of values, raising a Lua error if it can't.
@@ -2508,7 +2504,7 @@ public:
     }
 
     /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a
-    /// specfied number of results.
+    /// specified number of results.
     template <typename TFunc, typename... TArgs>
     auto pcallReturning(int results, TFunc&& func, TArgs&&... args)
     {
@@ -3282,28 +3278,28 @@ public:
     /// @brief Returns the current debug hook mask.
     auto getHookMask() const { return Hooks::fromBits(lua_gethookmask(state_)); }
 
-    /// @brief Returns debug information about a function in the current callstack.
+    /// @brief Returns debug information about a function in the current call stack.
     template <typename... TTypes>
     auto getStackInfo(int stack_level = 0) const
     {
         return getStackInfoHelper<TTypes...>(stack_level);
     }
 
-    /// @brief Returns debug information about a function in the current callstack and the function itself.
+    /// @brief Returns debug information about a function in the current call stack and the function itself.
     template <typename... TTypes>
     auto getStackInfoWithFunction(int stack_level = 0)
     {
         return std::tuple{getStackInfoHelper<TTypes...>(stack_level, true, false), top().asResult()};
     }
 
-    /// @brief Returns debug and line information about a function in the current callstack.
+    /// @brief Returns debug and line information about a function in the current call stack.
     template <typename... TTypes>
     auto getStackInfoWithLines(int stack_level = 0)
     {
         return std::tuple{getStackInfoHelper<TTypes...>(stack_level, false, true), top().asResult()};
     }
 
-    /// @brief Returns debug information about a function in the current callstack, the function itself and line
+    /// @brief Returns debug information about a function in the current call stack, the function itself and line
     /// information.
     template <typename... TTypes>
     auto getStackInfoWithFunctionAndLines(int stack_level = 0)
@@ -3313,14 +3309,14 @@ public:
                           top().asResult()};
     }
 
-    /// @brief Returns all debug information about a function in the current callstack.
+    /// @brief Returns all debug information about a function in the current call stack.
     auto getFullStackInfo(int stack_level = 0) const
     {
         return getStackInfo<DebugInfoLine, DebugInfoName, DebugInfoSource, DebugInfoTailCall, DebugInfoUpvalues>(
             stack_level);
     }
 
-    /// @brief Returns all debug information about a function in the current callstack and the function itself.
+    /// @brief Returns all debug information about a function in the current call stack and the function itself.
     auto getFullStackInfoWithFunction(int stack_level = 0)
     {
         return getStackInfoWithFunction<DebugInfoLine,
@@ -3330,7 +3326,7 @@ public:
                                         DebugInfoUpvalues>(stack_level);
     }
 
-    /// @brief Returns all debug and line information about a function in the current callstack.
+    /// @brief Returns all debug and line information about a function in the current call stack.
     auto getFullStackInfoWithLines(int stack_level = 0)
     {
         return getStackInfoWithLines<DebugInfoLine,
@@ -3340,7 +3336,7 @@ public:
                                      DebugInfoUpvalues>(stack_level);
     }
 
-    /// @brief Returns all debug information about a function in the current callstack, the function itself and line
+    /// @brief Returns all debug information about a function in the current call stack, the function itself and line
     /// information.
     auto getFullStackInfoWithFunctionAndLines(int stack_level = 0)
     {
@@ -3558,7 +3554,7 @@ private:
         return result;
     }
 
-    /// @brief Returns debug information about a function in the current callstack.
+    /// @brief Returns debug information about a function in the current call stack.
     template <typename... TTypes>
     DebugInfo<TTypes...> getStackInfoHelper(int stack_level) const
     {
@@ -3569,7 +3565,7 @@ private:
         return DebugInfo<TTypes...>(ar);
     }
 
-    /// @brief Returns debug information about a function in the current callstack.
+    /// @brief Returns debug information about a function in the current call stack.
     /// @param push_function Additionally push the function on the stack.
     /// @param push_lines Additionally push a set of line numbers for this function in form of a table.
     template <typename... TTypes>
@@ -4232,7 +4228,7 @@ public:
     }
 };
 
-/// @brief Uses a generator function to generate a varying numer of values on each step.
+/// @brief Uses a generator function to generate a varying number of values on each step.
 template <int v_value_offset>
 class generator_index_range_iterator : public generator_iterator<StackIndexRangeResult, LUA_MULTRET, v_value_offset> {
 public:

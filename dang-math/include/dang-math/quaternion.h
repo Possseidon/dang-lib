@@ -194,13 +194,13 @@ struct Quaternion : private Vector<T, 4> {
         return vector + T(2) * ((quaternion.scalar() * uv) + u.cross(uv));
     }
 
-    /// @brief Applies the transformation of the conjuagted quaternion to the given vector.
+    /// @brief Applies the transformation of the conjugated quaternion to the given vector.
     friend constexpr Vector<T, 3> operator*(const Vector<T, 3>& vector, const Quaternion& quaternion)
     {
         return quaternion.conjugate() * vector;
     }
 
-    /// @brief Applies the transformation of the conjuagted quaternion onto the given vector.
+    /// @brief Applies the transformation of the conjugated quaternion onto the given vector.
     friend constexpr Vector<T, 3>& operator*=(Vector<T, 3>& vector, const Quaternion& quaternion)
     {
         return vector = vector * quaternion;

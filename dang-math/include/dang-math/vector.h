@@ -51,7 +51,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
-    /// @remark GLSL allows this kind of concatentation for any number and size of vectors, however, this is tedious to
+    /// @remark GLSL allows this kind of concatenation for any number and size of vectors, however, this is tedious to
     /// implement in C++.
     /// @remark Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
     constexpr Vector(Vector<T, 3> vector, T w)

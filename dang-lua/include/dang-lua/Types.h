@@ -23,11 +23,11 @@ enum class GCOption {
     Collect = LUA_GCCOLLECT, // Performs a full garbage-collection cycle.
     Stop = LUA_GCSTOP,       // Stops the garbage collector.
     Restart = LUA_GCRESTART, // Restarts the garbage collector.
-    Count = LUA_GCCOUNT,     // Returns the current amount of memory (in Kbytes) in use by Lua.
+    Count = LUA_GCCOUNT,     // Returns the current amount of memory (in KiB) in use by Lua.
     CountBytes =
         LUA_GCCOUNTB,  // Returns the remainder of dividing the current amount of bytes of memory in use by Lua by 1024.
     Step = LUA_GCSTEP, // gc(..., int stepsize); Performs an incremental step of garbage collection, corresponding to
-                       // the allocation of stepsize Kbytes.
+                       // the allocation of stepsize KiB.
     IsRunning = LUA_GCISRUNNING, // Returns a boolean that tells whether the collector is running (i.e., not stopped).
     Incremental = LUA_GCINC, // gc(..., int pause, int stepmul, int stepsize); Changes the collector to incremental mode
                              // with the given parameters and returns the previous mode.
@@ -100,7 +100,7 @@ enum class DebugInfoType { Name, Source, Line, TailCall, Upvalues, COUNT };
 /// @brief A list of all Lua standard libraries.
 enum class StandardLibrary { Base, Coroutine, Table, IO, OS, String, Utf8, Math, Debug, Package, COUNT };
 
-/// @brief Wether to load Lua code only as text or binary, or accept both.
+/// @brief Whether to load Lua code only as text or binary, or accept both.
 enum class LoadMode { Default, Binary, Text, Both, COUNT };
 
 } // namespace dang::lua

@@ -6,7 +6,7 @@
 namespace dang::gl {
 
 /// @brief A list of all data types, which can be used in GLSL.
-/// @remark Not using gl_constants, as this also has to be querried, which is faster this way.
+/// @remark Not using gl_constants, as this also has to be queried, which is faster this way.
 enum class DataType {
     None = 0,
 

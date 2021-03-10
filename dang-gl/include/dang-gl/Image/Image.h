@@ -36,7 +36,7 @@ public:
         , data_(first, std::next(first, size))
     {}
 
-    /// @brief Initializes the image using the given size and pre-existing vector of data, which should match the size.
+    /// @brief Initializes the image using the given size and preexisting vector of data, which should match the size.
     /// @remark Highly consider passing the data as an r-value using std::move to avoid a copy.
     Image(dmath::svec<v_dim> size, std::vector<Pixel> data)
         : size_(size)

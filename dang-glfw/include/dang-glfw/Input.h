@@ -203,12 +203,12 @@ enum class Key : int {
 /// @brief Wraps a key and an optional scancode.
 class KeyData {
 public:
-    /// @brief Initializes the key data with the given key and optional pre-supplied scancode.
+    /// @brief Initializes the key data with the given key and optional scancode, if it is already known.
     KeyData(Key key, int scancode = 0);
 
     /// @brief Returns the keyboard key.
     Key key() const;
-    /// @brief Returns the scancode of the key attempting to query it, if it has not been supplied in the constuctor.
+    /// @brief Returns the scancode of the key attempting to query it, if it has not been supplied in the constructor.
     int scancode();
     /// @brief Returns a displayable name for the key or an empty string.
     std::string name() const;

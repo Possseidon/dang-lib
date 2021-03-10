@@ -37,7 +37,7 @@ struct Spat;
 
 namespace detail {
 
-/// @brief Used as a base for axis-sytems, consisting of one support vector and an arbitrary amount of direction
+/// @brief Used as a base for axis-systems, consisting of one support vector and an arbitrary amount of direction
 /// vectors.
 template <typename T, std::size_t v_dim, std::size_t v_axis_count>
 struct AxisSystemBase {
@@ -619,7 +619,7 @@ struct Spat<T, 3> : detail::SpatBase<T, 3> {
         : detail::SpatBase<T, 3>(support, directions)
     {}
 
-    /// @brief Returns the triple product (aka Spat-Produkt) of the spat.
+    /// @brief Returns the triple product (aka Spatprodukt) of the spat.
     constexpr T tripleProduct() const { return this->directions.determinant(); }
 };
 

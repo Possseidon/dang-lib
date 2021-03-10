@@ -251,7 +251,7 @@ public:
         EnumSet result;
         result.words_[0] = static_cast<Word>(bits);
         assert(result.trimmed());
-        // TIntegral might've been bigger, some bits might've gotten chopped off
+        // TIntegral might have been bigger, some bits might have gotten chopped off.
         assert(static_cast<TIntegral>(result.words_[0]) == bits);
         return result;
     }
