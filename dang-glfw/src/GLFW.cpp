@@ -6,7 +6,26 @@
 
 namespace dang::glfw {
 
-GLFW GLFW::instance;
+GLFW* GLFW::instance_ = nullptr;
+
+GLFW::GLFW()
+{
+    if (instance_)
+        throw GLFWError("GLFW already initialized.");
+    instance_ = this;
+    glfwSetErrorCallback(exitingErrorCallback);
+    glfwInit();
+    glfwSetErrorCallback(throwingErrorCallback);
+    glfwSetJoystickCallback(joystickCallback);
+    glfwSetMonitorCallback(monitorCallback);
+    initializeMonitors();
+}
+
+GLFW::~GLFW()
+{
+    glfwTerminate();
+    instance_ = nullptr;
+}
 
 void GLFW::setActiveWindow(Window* window)
 {
@@ -63,18 +82,6 @@ Window& GLFW::activeWindow()
     return *active_window_;
 }
 
-GLFW::GLFW()
-{
-    glfwSetErrorCallback(exitingErrorCallback);
-    glfwInit();
-    glfwSetErrorCallback(throwingErrorCallback);
-    glfwSetJoystickCallback(joystickCallback);
-    glfwSetMonitorCallback(monitorCallback);
-    initializeMonitors();
-}
-
-GLFW::~GLFW() { glfwTerminate(); }
-
 void GLFW::initializeGlad()
 {
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
@@ -120,20 +127,26 @@ void GLFW::joystickCallback(int jid, int event)
 void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
 {
     if (event == GLFW_CONNECTED) {
-        instance.monitors_.emplace_back(monitor);
-        instance.onConnectMonitor(monitor);
+        instance().monitors_.emplace_back(monitor);
+        instance().onConnectMonitor(monitor);
     }
     else if (event == GLFW_DISCONNECTED) {
-        instance.onDisconnectMonitor(monitor);
-        auto pos = std::find(instance.monitors_.begin(), instance.monitors_.end(), monitor);
-        if (pos != instance.monitors_.end())
-            instance.monitors_.erase(pos);
+        instance().onDisconnectMonitor(monitor);
+        auto pos = std::find(instance().monitors_.begin(), instance().monitors_.end(), monitor);
+        if (pos != instance().monitors_.end())
+            instance().monitors_.erase(pos);
     }
 
-    if (instance.primary_monitor_ != monitor) {
-        instance.primary_monitor_ = monitor;
-        instance.onPrimaryMonitorChange(monitor);
+    if (instance().primary_monitor_ != monitor) {
+        instance().primary_monitor_ = monitor;
+        instance().onPrimaryMonitorChange(monitor);
     }
+}
+
+GLFW& instance()
+{
+    assert(GLFW::instance_);
+    return *GLFW::instance_;
 }
 
 } // namespace dang::glfw

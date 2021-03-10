@@ -74,7 +74,7 @@ Window::Window(const WindowInfo& info)
 {
     glfwSetWindowUserPointer(handle_, this);
     registerCallbacks();
-    last_time_ = GLFW::instance.timerValue();
+    last_time_ = instance().timerValue();
 }
 
 Window::~Window() { glfwDestroyWindow(handle_); }
@@ -141,7 +141,7 @@ Monitor Window::fullscreenMonitor() const { return glfwGetWindowMonitor(handle_)
 
 void Window::makeFullscreen(std::optional<dmath::ivec2> size, std::optional<int> refresh_rate)
 {
-    makeFullscreen(GLFW::instance.primaryMonitor(), size, refresh_rate);
+    makeFullscreen(instance().primaryMonitor(), size, refresh_rate);
 }
 
 void Window::makeFullscreen(Monitor monitor, std::optional<dmath::ivec2> size, std::optional<int> refresh_rate)
@@ -384,7 +384,7 @@ void Window::setRawMouseMotion(bool raw_mouse_motion)
 
 bool Window::supportsRawMouseMotion() { return glfwRawMouseMotionSupported(); }
 
-void Window::activate() { GLFW::instance.setActiveWindow(this); }
+void Window::activate() { instance().setActiveWindow(this); }
 
 void Window::update()
 {
@@ -593,8 +593,8 @@ void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
 
 void Window::updateDeltaTime()
 {
-    uint64_t now = GLFW::instance.timerValue();
-    delta_time_ = static_cast<float>(now - last_time_) / GLFW::instance.timerFrequency();
+    uint64_t now = instance().timerValue();
+    delta_time_ = static_cast<float>(now - last_time_) / instance().timerFrequency();
     last_time_ = now;
 
     float new_fps = 1 / delta_time_;
