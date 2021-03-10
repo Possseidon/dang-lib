@@ -22,18 +22,9 @@ const std::string ClassInfo<dang::math::Line<T, v_dim>>::class_name =
     ClassInfo<dang::math::Line<T, v_dim>>::base_class_name + std::to_string(v_dim);
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Line<T, v_dim>>::class_name_ref;
-
-template <typename T, std::size_t v_dim>
 const char* ClassInfo<dang::math::Line<T, v_dim>>::className()
 {
     return class_name.c_str();
-}
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Line<T, v_dim>>::classNameRef()
-{
-    return class_name_ref.c_str();
 }
 
 template <typename T, std::size_t v_dim>
@@ -146,19 +137,9 @@ const std::string ClassInfo<dang::math::Plane<T, v_dim>>::class_name =
     ClassInfo<dang::math::Plane<T, v_dim>>::base_class_name + std::to_string(v_dim);
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Plane<T, v_dim>>::class_name_ref =
-    ClassInfo<dang::math::Plane<T, v_dim>>::class_name + '&';
-
-template <typename T, std::size_t v_dim>
 const char* ClassInfo<dang::math::Plane<T, v_dim>>::className()
 {
     return class_name.c_str();
-}
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Plane<T, v_dim>>::classNameRef()
-{
-    return class_name_ref.c_str();
 }
 
 template <typename T, std::size_t v_dim>
@@ -311,19 +292,9 @@ const std::string ClassInfo<dang::math::Spat<T, v_dim>>::class_name =
     ClassInfo<dang::math::Spat<T, v_dim>>::base_class_name + std::to_string(v_dim);
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Spat<T, v_dim>>::class_name_ref =
-    ClassInfo<dang::math::Spat<T, v_dim>>::class_name + '&';
-
-template <typename T, std::size_t v_dim>
 const char* ClassInfo<dang::math::Spat<T, v_dim>>::className()
 {
     return class_name.c_str();
-}
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Spat<T, v_dim>>::classNameRef()
-{
-    return class_name_ref.c_str();
 }
 
 template <typename T, std::size_t v_dim>

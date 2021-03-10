@@ -18,11 +18,9 @@ template <typename T>
 constexpr SubClasses<T> SubClassesOf{};
 
 /// @brief Returns an empty index and metatable and does nothing when required.
-/// @remark className() must provide a unique class name.
-/// @remark classNameRef() shall be the class name followed by `&`.
+/// @remark className() will be used in error messages.
 struct DefaultClassInfo {
     // static constexpr const char* className();
-    // static constexpr const char* classNameRef();
 
     static constexpr std::array<luaL_Reg, 0> table() { return {}; }
     static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
@@ -155,6 +153,20 @@ struct Convert<T> {
 /// @brief A Lua class instance can either be its own value or reference an existing instance.
 enum class StoreType { None, Value, Reference };
 
+namespace detail {
+
+/// @brief Used to generate unique names for each ClassInfo specialization.
+inline static std::size_t class_counter = 1;
+
+/// @brief Provides a unique name and reference name for any given type.
+template <typename T>
+struct UniqueClassInfo {
+    static inline const std::string name = "dang" + std::to_string(class_counter++);
+    static inline const std::string name_ref = "dang" + std::to_string(class_counter++);
+};
+
+} // namespace detail
+
 /// @brief Converts instances of classes and enums to and from Lua as either value or reference.
 template <typename T>
 struct Convert {
@@ -181,9 +193,9 @@ struct Convert {
     static StoreType type(lua_State* state, int pos)
     {
         static_assert(std::is_class_v<T>);
-        if (luaL_testudata(state, pos, ClassInfo<T>::className()))
+        if (luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name.c_str()))
             return StoreType::Value;
-        if (luaL_testudata(state, pos, ClassInfo<T>::classNameRef()))
+        if (luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name_ref.c_str()))
             return StoreType::Reference;
         return type(state, pos, SubClassesOf<T>);
     }
@@ -229,9 +241,9 @@ struct Convert {
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
-            if (void* value = luaL_testudata(state, pos, ClassInfo<T>::className()))
+            if (void* value = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name.c_str()))
                 return *static_cast<T*>(value);
-            if (void* pointer = luaL_testudata(state, pos, ClassInfo<T>::classNameRef()))
+            if (void* pointer = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name_ref.c_str()))
                 return **static_cast<T**>(pointer);
             return at(state, pos, SubClassesOf<T>);
         }
@@ -251,9 +263,7 @@ struct Convert {
         if constexpr (std::is_class_v<T>) {
             if (auto result = at(state, arg))
                 return *result;
-            luaL_checkudata(state, arg, ClassInfo<T>::className());
-            // luaL_checkudata should always cause an error here, yet still, sanity check
-            detail::noreturn_luaL_error(state, "userdata suddenly of correct type - something went very wrong");
+            detail::noreturn_luaL_typeerror(state, arg, ClassInfo<T>::className());
         }
         else if constexpr (std::is_enum_v<T>) {
             return static_cast<T>(luaL_checkoption(state, arg, nullptr, enum_values<T>));
@@ -290,7 +300,8 @@ struct Convert {
     static void pushMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(state, v_reference ? ClassInfo<T>::classNameRef() : ClassInfo<T>::className()))
+        if (!luaL_newmetatable(
+                state, (v_reference ? detail::UniqueClassInfo<T>::name_ref : detail::UniqueClassInfo<T>::name).c_str()))
             return;
         detail::setfuncs(state, class_metatable<T>);
         if constexpr (!v_reference) {
@@ -311,6 +322,9 @@ struct Convert {
         lua_setfield(state, -3, "__index");
         lua_pushboolean(state, false);
         lua_setfield(state, -3, "__metatable");
+        // Overwrite automatically generated unique name with a pretty name.
+        lua_pushstring(state, ClassInfo<T>::className());
+        lua_setfield(state, -3, "__name");
         lua_pop(state, 1);
     }
 

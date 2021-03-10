@@ -28,19 +28,9 @@ const std::string ClassInfo<dang::math::Vector<T, v_dim>>::class_name =
     ClassInfo<dang::math::Vector<T, v_dim>>::base_class_name + std::to_string(v_dim);
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Vector<T, v_dim>>::class_name_ref =
-    ClassInfo<dang::math::Vector<T, v_dim>>::class_name + '&';
-
-template <typename T, std::size_t v_dim>
 const char* ClassInfo<dang::math::Vector<T, v_dim>>::className()
 {
     return class_name.c_str();
-}
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Vector<T, v_dim>>::classNameRef()
-{
-    return class_name_ref.c_str();
 }
 
 template <typename T, std::size_t v_dim>
@@ -409,19 +399,9 @@ const std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::class_name =
     (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-const std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::class_name_ref =
-    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::class_name + '&';
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
 const char* ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::className()
 {
     return class_name.c_str();
-}
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::classNameRef()
-{
-    return class_name_ref.c_str();
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>

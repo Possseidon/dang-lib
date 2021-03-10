@@ -45,10 +45,8 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> {
 
     static const std::string base_class_name;
     static const std::string class_name;
-    static const std::string class_name_ref;
 
     static const char* className();
-    static const char* classNameRef();
 
     static std::vector<luaL_Reg> table();
     static std::vector<luaL_Reg> metatable();
@@ -129,10 +127,8 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
 
     static const std::string base_class_name;
     static const std::string class_name;
-    static const std::string class_name_ref;
 
     static const char* className();
-    static const char* classNameRef();
 
     static std::vector<luaL_Reg> table();
     static std::vector<luaL_Reg> metatable();
