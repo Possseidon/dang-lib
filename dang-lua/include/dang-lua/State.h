@@ -4577,7 +4577,7 @@ struct ValueTo {
 };
 
 /// @brief Can be used to provide __pairs for custom ClassInfo specializations.
-auto indextable_pairs(State& lua, Arg value)
+inline auto indextable_pairs(State& lua, Arg value)
 {
     constexpr auto next = +[](State& lua, Arg table, Arg key) {
         auto result = table.next(std::move(key));
