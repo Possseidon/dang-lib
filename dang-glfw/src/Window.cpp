@@ -350,6 +350,26 @@ dmath::dvec2 Window::cursorPos() const
 
 void Window::setCursorPos(dmath::dvec2 cursor_pos) { glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y()); }
 
+dmath::vec2 Window::normalizePos(dmath::dvec2 window_pos) const
+{
+    dmath::dvec2 window_size = dmath::dvec2(framebufferSize());
+    dmath::dvec2 normalized_pos = window_pos * 2 / window_size.y() - dmath::dvec2(aspect(), 1);
+    normalized_pos.y() = -normalized_pos.y();
+    return dmath::vec2(normalized_pos);
+}
+
+dmath::dvec2 Window::denormalizePos(dmath::vec2 normalized_pos) const
+{
+    dmath::dvec2 window_size = dmath::dvec2(framebufferSize());
+    dmath::dvec2 window_pos = dmath::dvec2(normalized_pos);
+    window_pos.y() = -window_pos.y();
+    return (window_pos + dmath::dvec2(aspect(), 1) * 2) * window_size.y() / 2;
+}
+
+dmath::vec2 Window::normalizedCursorPos() const { return normalizePos(cursorPos()); }
+
+void Window::setNormalizedCursorPos(dmath::vec2 cursor_pos) { setCursorPos(denormalizePos(cursor_pos)); }
+
 CursorMode Window::cursorMode() const { return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR)); }
 
 void Window::setCursorMode(CursorMode cursor_mode)
@@ -483,11 +503,7 @@ void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    dmath::dvec2 window_pos(xpos, ypos);
-    dmath::dvec2 window_size = static_cast<dmath::dvec2>(window.framebufferSize());
-    dmath::dvec2 pos = (window_pos * 2) / window_size.y() - dmath::dvec2(window.aspect(), 1);
-    pos.y() = -pos.y();
-    window.onCursorMove({window, window_pos, static_cast<dmath::vec2>(pos)});
+    window.onCursorMove({window, {xpos, ypos}});
 }
 
 void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[])

@@ -132,8 +132,7 @@ struct WindowEventInfo {
 };
 
 struct CursorMoveInfo : WindowEventInfo {
-    dmath::dvec2 window_pos;
-    dmath::vec2 pos;
+    dmath::dvec2 pos;
 };
 
 struct ScrollInfo : WindowEventInfo {
@@ -367,6 +366,16 @@ public:
     dmath::dvec2 cursorPos() const;
     /// @brief Sets the cursor position to the given value, using the top left of the window as origin.
     void setCursorPos(dmath::dvec2 cursor_pos);
+
+    /// @brief Normalizes the given window position to `-aspect` to `+aspect` for x and `-1` to `+1` (flipped) for y.
+    dmath::vec2 normalizePos(dmath::dvec2 window_pos) const;
+    /// @brief Inverse operation to normalizePos.
+    dmath::dvec2 denormalizePos(dmath::vec2 normalized_pos) const;
+
+    /// @brief Returns the normalized cursor position using normalizePos.
+    dmath::vec2 normalizedCursorPos() const;
+    /// @brief Sets cursor position using denormalizePos.
+    void setNormalizedCursorPos(dmath::vec2 cursor_pos);
 
     /// @brief Whether the cursor is normal, hidden or disabled.
     CursorMode cursorMode() const;
