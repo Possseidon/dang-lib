@@ -64,3 +64,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
     include
 )
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
