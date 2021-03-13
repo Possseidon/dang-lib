@@ -11,7 +11,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_precompile_headers(${PROJECT_NAME}
-  PUBLIC
+  PRIVATE
     <filesystem>
     <fstream>
 )

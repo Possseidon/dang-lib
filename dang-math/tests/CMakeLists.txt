@@ -10,8 +10,14 @@ add_executable(${PROJECT_NAME}
   test-vector.cpp
 )
 
+target_precompile_headers(${PROJECT_NAME}
+  PRIVATE
+    <optional>
+    <cmath>
+)
+
 target_link_libraries(${PROJECT_NAME} 
-  PRIVATE 
+  PRIVATE
     dang-math
     Catch2::Catch2
 )
