@@ -25,7 +25,7 @@ target_precompile_headers(${PROJECT_NAME}
     <variant>
 )
 
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME}
   INTERFACE
     dang-utils
     ${LUA_LIBRARIES}

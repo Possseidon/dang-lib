@@ -15,8 +15,8 @@ target_precompile_headers(${PROJECT_NAME}
     <vector>
 )
 
-target_link_libraries(${PROJECT_NAME} 
-  PRIVATE 
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
     dang-utils
     Catch2::Catch2
 )

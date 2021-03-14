@@ -25,7 +25,7 @@ target_link_libraries(${PROJECT_NAME}-vector-matrix
   PUBLIC
     dang-lua
     dang-math
-) 
+)
 
 target_include_directories(${PROJECT_NAME}-vector-matrix
   PUBLIC
@@ -53,7 +53,7 @@ target_link_libraries(${PROJECT_NAME}-geometry
     dang-lua
     dang-math
     ${PROJECT_NAME}-vector-matrix
-) 
+)
 
 target_include_directories(${PROJECT_NAME}-geometry
   PUBLIC

@@ -29,7 +29,7 @@ target_precompile_headers(${PROJECT_NAME}
 )
 
 if(MSVC)
-  target_compile_definitions(${PROJECT_NAME} 
+  target_compile_definitions(${PROJECT_NAME}
     PUBLIC
       _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
   )

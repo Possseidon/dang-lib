@@ -16,8 +16,8 @@ target_precompile_headers(${PROJECT_NAME}
     <fstream>
 )
 
-target_link_libraries(${PROJECT_NAME} 
-  PRIVATE 
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
     dang-gl
     Catch2::Catch2
 )
@@ -29,7 +29,7 @@ if(NOT EXISTS PngSuite.zip)
   file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip PngSuite.zip)
 endif()
 
-file(ARCHIVE_EXTRACT 
-  INPUT PngSuite.zip 
+file(ARCHIVE_EXTRACT
+  INPUT PngSuite.zip
   DESTINATION PngSuite
 )

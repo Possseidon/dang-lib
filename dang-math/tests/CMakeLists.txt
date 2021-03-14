@@ -16,7 +16,7 @@ target_precompile_headers(${PROJECT_NAME}
     <cmath>
 )
 
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME}
   PRIVATE
     dang-math
     Catch2::Catch2

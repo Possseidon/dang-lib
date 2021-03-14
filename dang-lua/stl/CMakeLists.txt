@@ -11,7 +11,7 @@ target_precompile_headers(${PROJECT_NAME}
     <string>
 )
 
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME}
   INTERFACE
     dang-lua
 )
