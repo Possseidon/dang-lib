@@ -58,6 +58,7 @@ public:
     inline static Context* current = nullptr;
 
     Context(svec2 size);
+    ~Context();
 
     State& state() { return state_; }
 

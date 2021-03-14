@@ -18,6 +18,8 @@ Context::Context(svec2 size)
     glDebugMessageCallback(debugMessageCallback, this);
 }
 
+Context::~Context() { glDebugMessageCallback(nullptr, nullptr); }
+
 template <ObjectType... v_types>
 void Context::createContexts(dutils::EnumSequence<ObjectType, v_types...>)
 {
