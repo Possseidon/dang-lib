@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "dang-utils/global.h"
+#include "dang-utils/utils.h"
 
 namespace dang::utils {
 
@@ -542,43 +543,6 @@ public:
     }
 
 private:
-    // TODO: C++20 replace with std::popcount
-    static constexpr int popcount(Word word)
-    {
-        // Modified version of an algorithm taken from:
-        // https://en.wikipedia.org/wiki/Hamming_weight
-        constexpr Word m1 = static_cast<Word>(0x5555555555555555);
-        constexpr Word m2 = static_cast<Word>(0x3333333333333333);
-        constexpr Word m4 = static_cast<Word>(0x0f0f0f0f0f0f0f0f);
-        constexpr Word h01 = static_cast<Word>(0x0101010101010101);
-        word -= (word >> 1) & m1;
-        word = (word & m2) + ((word >> 2) & m2);
-        word = (word + (word >> 4)) & m4;
-        return static_cast<int>(static_cast<Word>(word * h01) >> (word_bits - 8));
-    }
-
-    // TODO: C++20 replace with std::countl_zero
-    static constexpr int countl_zero(Word word)
-    {
-        int count = 0;
-        while (word) {
-            word = static_cast<Word>(word >> 1);
-            count++;
-        }
-        return word_bits - count;
-    }
-
-    // TODO: C++20 replace with std::countr_zero
-    static constexpr int countr_zero(Word word)
-    {
-        int count = 0;
-        while (word) {
-            word = static_cast<Word>(word << 1);
-            count++;
-        }
-        return word_bits - count;
-    }
-
     static constexpr std::size_t wordIndex(T value) { return static_cast<std::size_t>(value) / word_bits; }
 
     static constexpr std::size_t wordOffset(T value)

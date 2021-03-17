@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "dang-utils/global.h"
 
 namespace dang::utils {
@@ -91,5 +93,50 @@ struct is_greater_equal_comparable<TLeft,
 
 template <typename TLeft, typename TRight = TLeft>
 inline constexpr auto is_greater_equal_comparable_v = is_greater_equal_comparable<TLeft, TRight>::value;
+
+// TODO: C++20 replace with std::popcount
+template <typename T>
+constexpr int popcount(T value)
+{
+    static_assert(std::is_unsigned_v<T>);
+    static_assert(CHAR_BIT == 8);
+    constexpr std::size_t bits = sizeof(T) * CHAR_BIT;
+    // Modified version of an algorithm taken from:
+    // https://en.wikipedia.org/wiki/Hamming_weight
+    constexpr auto m1 = static_cast<T>(0x5555555555555555);
+    constexpr auto m2 = static_cast<T>(0x3333333333333333);
+    constexpr auto m4 = static_cast<T>(0x0f0f0f0f0f0f0f0f);
+    constexpr auto h01 = static_cast<T>(0x0101010101010101);
+    value -= (value >> 1) & m1;
+    value = (value & m2) + ((value >> 2) & m2);
+    value = (value + (value >> 4)) & m4;
+    return static_cast<int>(static_cast<T>(value * h01) >> (bits - 8));
+}
+
+// TODO: C++20 replace with std::countl_zero
+template <typename T>
+constexpr int countl_zero(T value)
+{
+    static_assert(std::is_unsigned_v<T>);
+    int count = sizeof(T) * CHAR_BIT;
+    while (value) {
+        value = static_cast<T>(value >> 1);
+        count--;
+    }
+    return count;
+}
+
+// TODO: C++20 replace with std::countr_zero
+template <typename T>
+constexpr int countr_zero(T value)
+{
+    static_assert(std::is_unsigned_v<T>);
+    int count = sizeof(T) * CHAR_BIT;
+    while (value) {
+        value = static_cast<T>(value << 1);
+        count--;
+    }
+    return count;
+}
 
 } // namespace dang::utils
