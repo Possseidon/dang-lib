@@ -206,6 +206,41 @@ struct Vector : std::array<T, v_dim> {
         return variadicOp([](T a) { return std::ceil(a); });
     }
 
+    /// @brief Returns the axis with the lowest value.
+    constexpr auto minAxis() const
+    {
+        auto min_iter = std::min_element(begin(), end());
+        return static_cast<Axis<v_dim>>(std::distance(begin(), min_iter));
+    }
+
+    /// @brief Returns the axis with the highest value.
+    constexpr auto maxAxis() const
+    {
+        auto max_iter = std::max_element(begin(), end());
+        return static_cast<Axis<v_dim>>(std::distance(begin(), max_iter));
+    }
+
+    /// @brief Returns a pair of the two axes with the lowest and highest values.
+    constexpr auto minMaxAxis() const
+    {
+        auto [min_iter, max_iter] = std::minmax_element(begin(), end());
+        return std::pair{static_cast<Axis<v_dim>>(std::distance(begin(), min_iter)),
+                         static_cast<Axis<v_dim>>(std::distance(begin(), max_iter))};
+    }
+
+    /// @brief Returns the value of the lowest component.
+    constexpr auto minValue() const { return (*this)[minAxis()]; }
+
+    /// @brief Returns the value of the highest component.
+    constexpr auto maxValue() const { return (*this)[maxAxis()]; }
+
+    /// @brief Returns a pair of the two values for the lowest and highest components.
+    constexpr auto minMaxValue() const
+    {
+        auto [min_axis, max_axis] = minMaxAxis();
+        return std::pair{(*this)[min_axis], (*this)[max_axis]};
+    }
+
     /// @brief Returns a vector, only taking the smaller components of both vectors.
     constexpr auto min(const Vector& other) const
     {

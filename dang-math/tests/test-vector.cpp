@@ -238,6 +238,14 @@ TEST_CASE("Vectors support unary component-wise operations.", "[vector][operatio
     CHECK(dmath::vec3(1.1, 2.5, 3.9).floor() == dmath::vec3(1, 2, 3));
     CHECK(dmath::vec3(1.1, 2.5, 3.9).ceil() == dmath::vec3(2, 3, 4));
 
+    CHECK(dmath::vec3(2, 1, 3).minAxis() == dmath::Axis3::Y);
+    CHECK(dmath::vec3(2, 1, 3).maxAxis() == dmath::Axis3::Z);
+    CHECK(dmath::vec3(3, 2, 1).minMaxAxis() == std::pair{dmath::Axis3::Z, dmath::Axis3::X});
+
+    CHECK(dmath::vec3(2, 1, 3).minValue() == 1);
+    CHECK(dmath::vec3(2, 1, 3).maxValue() == 3);
+    CHECK(dmath::vec3(3, 2, 1).minMaxValue() == std::pair{1.0f, 3.0f});
+
     constexpr dmath::vec3 deg1(180, 360, 720);
     constexpr dmath::vec3 rad1 = deg1.radians();
 
