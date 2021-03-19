@@ -118,12 +118,12 @@ template <typename T>
 constexpr int countl_zero(T value)
 {
     static_assert(std::is_unsigned_v<T>);
-    int count = sizeof(T) * CHAR_BIT;
+    int count = 0;
     while (value) {
         value = static_cast<T>(value >> 1);
-        count--;
+        count++;
     }
-    return count;
+    return sizeof(T) * CHAR_BIT - count;
 }
 
 // TODO: C++20 replace with std::countr_zero
@@ -131,12 +131,12 @@ template <typename T>
 constexpr int countr_zero(T value)
 {
     static_assert(std::is_unsigned_v<T>);
-    int count = sizeof(T) * CHAR_BIT;
+    int count = 0;
     while (value) {
         value = static_cast<T>(value << 1);
-        count--;
+        count++;
     }
-    return count;
+    return sizeof(T) * CHAR_BIT - count;
 }
 
 } // namespace dang::utils
