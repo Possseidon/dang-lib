@@ -12,8 +12,6 @@
 #include "dang-gl/Objects/TextureContext.h"
 #include "dang-gl/global.h"
 
-#include "dang-math/vector.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::gl {
@@ -233,13 +231,11 @@ public:
     TextureBaseTyped& operator=(const TextureBaseTyped&) = delete;
 
     /// @brief Returns the size of the image along each axis.
-    dmath::svec<v_dim> size() const { return size_; }
+    svec<v_dim> size() const { return size_; }
 
     /// @brief Modifies a part of the stored texture at the optional given offset and mipmap level.
     template <std::size_t v_image_dim, PixelFormat v_format, PixelType v_type>
-    void modify(const Image<v_image_dim, v_format, v_type>& image,
-                dmath::svec<v_dim> offset = {},
-                GLint mipmap_level = 0)
+    void modify(const Image<v_image_dim, v_format, v_type>& image, ivec<v_dim> offset = {}, GLint mipmap_level = 0)
     {
         this->bind();
         subImage(std::make_index_sequence<v_dim>(), image, offset, mipmap_level);
@@ -432,18 +428,19 @@ protected:
     TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
 
     /// @brief Sets the internal size to the given value.
-    void setSize(dmath::svec<v_dim> size) { size_ = size; }
+    void setSize(svec<v_dim> size) { size_ = size; }
 
     /// @brief Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.
     template <std::size_t v_image_dim, PixelFormat v_format, PixelType v_type, std::size_t... v_indices>
     void subImage(std::index_sequence<v_indices...>,
                   const Image<v_image_dim, v_format, v_type>& image,
-                  dmath::svec<v_dim> offset = {},
+                  ivec<v_dim> offset = {},
                   GLint mipmap_level = 0)
     {
+        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
         glTexSubImage<v_dim>(toGLConstant(v_target),
                              mipmap_level,
-                             static_cast<GLint>(offset[v_indices])...,
+                             offset[v_indices]...,
                              static_cast<GLsizei>(v_indices < image.size().size() ? image.size()[v_indices] : 1)...,
                              toGLConstant(v_format),
                              toGLConstant(v_type),
@@ -451,7 +448,7 @@ protected:
     }
 
 private:
-    dmath::svec<v_dim> size_;
+    svec<v_dim> size_;
 
     vec4 border_color_;
 
@@ -487,7 +484,7 @@ public:
 
     /// @brief Initializes a new texture with the given size.
     /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
-    explicit TextureBaseRegular(dmath::svec<v_dim> size,
+    explicit TextureBaseRegular(svec<v_dim> size,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
                                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
         : TextureBaseRegular()
@@ -514,7 +511,7 @@ public:
 
     /// @brief Generates storage for the specified size.
     /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
-    void generate(dmath::svec<v_dim> size,
+    void generate(svec<v_dim> size,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
@@ -530,8 +527,10 @@ public:
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
+        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
         this->bind();
-        storage(std::make_index_sequence<v_dim>(), image.size(), mipmap_levels, internal_format);
+        storage(
+            std::make_index_sequence<v_dim>(), static_cast<svec<v_dim>>(image.size()), mipmap_levels, internal_format);
         this->subImage(std::make_index_sequence<v_dim>(), image);
         glGenerateMipmap(toGLConstant(v_target));
     }
@@ -543,41 +542,41 @@ protected:
 private:
     /// @brief Returns the biggest component of a given vector.
     template <std::size_t... v_indices>
-    static std::size_t maxSize(dmath::svec<v_dim> size, std::index_sequence<v_indices...>)
+    static GLsizei maxSize(svec<v_dim> size, std::index_sequence<v_indices...>)
     {
-        std::size_t result = 0;
+        GLsizei result = 0;
         ((result = std::max(result, size[v_indices])), ...);
         return result;
     }
 
     /// @brief Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given
     /// size.
-    static std::size_t mipmapCount(std::size_t value)
+    static GLsizei mipmapCount(GLsizei value)
     {
         // TODO: Use std::bit_width in C++20
-        std::size_t result = 1;
+        GLsizei result = 1;
         while (value >>= 1)
             result++;
         return result;
     }
 
     /// @brief Returns the required count to generate a full mipmap down to 1x1 for the given size.
-    GLsizei maxMipmapLevelsFor(dmath::svec<v_dim> size)
+    GLsizei maxMipmapLevelsFor(svec<v_dim> size)
     {
-        return static_cast<GLsizei>(mipmapCount(maxSize(size, std::make_index_sequence<v_dim>())));
+        return mipmapCount(maxSize(size, std::make_index_sequence<v_dim>()));
     }
 
     /// @brief Calls glTexStorage with the provided parameters and index sequence of the textures dimension.
     template <std::size_t... v_indices>
     void storage(std::index_sequence<v_indices...>,
-                 dmath::svec<v_dim> size,
+                 svec<v_dim> size,
                  std::optional<GLsizei> mipmap_levels = std::nullopt,
                  PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
         glTexStorage<v_dim>(toGLConstant(v_target),
                             mipmap_levels.value_or(maxMipmapLevelsFor(size)),
                             toGLConstant(internal_format),
-                            static_cast<GLsizei>(size[v_indices])...);
+                            size[v_indices]...);
         this->setSize(size);
     }
 };
@@ -590,7 +589,7 @@ public:
     TextureBaseMultisample() = default;
 
     /// @brief Initializes a new multisampled texture with the given size, sample count.
-    TextureBaseMultisample(dmath::svec<v_dim> size,
+    TextureBaseMultisample(svec<v_dim> size,
                            GLsizei samples,
                            bool fixed_sample_locations = true,
                            PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -617,7 +616,7 @@ public:
     TextureBaseMultisample& operator=(const TextureBaseMultisample&) = delete;
 
     /// @brief Generates storage for the specified size, samples.
-    void generate(dmath::svec<v_dim> size,
+    void generate(svec<v_dim> size,
                   GLsizei samples,
                   bool fixed_sample_locations = true,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -634,9 +633,13 @@ public:
                   bool fixed_sample_locations = true,
                   PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
+        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
         this->bind();
-        storageMultisample(
-            std::make_index_sequence<v_dim>(), image.size(), samples, fixed_sample_locations, internal_format);
+        storageMultisample(std::make_index_sequence<v_dim>(),
+                           static_cast<svec<v_dim>>(image.size()),
+                           samples,
+                           fixed_sample_locations,
+                           internal_format);
         this->texSubImage(std::make_index_sequence<v_dim>(), image);
     }
 
@@ -648,7 +651,7 @@ private:
     /// @brief Calls glTexStorageMultisample with the provided parameters and index sequence of the textures dimension.
     template <std::size_t... v_indices>
     void storageMultisample(std::index_sequence<v_indices...>,
-                            dmath::svec<v_dim> size,
+                            svec<v_dim> size,
                             GLsizei samples,
                             bool fixed_sample_locations = true,
                             PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
