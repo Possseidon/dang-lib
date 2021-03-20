@@ -146,4 +146,67 @@ template <typename T>
     return sizeof(T) * CHAR_BIT - count;
 }
 
+template <typename T>
+[[nodiscard]] constexpr int ilog2(T value)
+{
+    return bit_width(value) - 1;
+}
+
+/// @brief Removes every odd bit, shifting over every even bit into the less significant half of the value.
+/// @remark Inverse operation to interleaveBits.
+template <typename T>
+[[nodiscard]] constexpr T removeOddBits(T value)
+{
+    static_assert(std::is_unsigned_v<T>);
+
+    constexpr auto bits = sizeof(T) * CHAR_BIT;
+    static_assert(bits <= 64);
+
+    if constexpr (bits >= 2)
+        value &= static_cast<T>(0x5555555555555555);
+    if constexpr (bits >= 4)
+        value = (value | value >> 1) & static_cast<T>(0x3333333333333333);
+    if constexpr (bits >= 8)
+        value = (value | value >> 2) & static_cast<T>(0x0F0F0F0F0F0F0F0F);
+    if constexpr (bits >= 16)
+        value = (value | value >> 4) & static_cast<T>(0x00FF00FF00FF00FF);
+    if constexpr (bits >= 32)
+        value = (value | value >> 8) & static_cast<T>(0x0000FFFF0000FFFF);
+    if constexpr (bits >= 64)
+        value = (value | value >> 16) & static_cast<T>(0x00000000FFFFFFFF);
+
+    return value;
+}
+
+/// @brief Interleaves zeros in between every existing bit.
+/// @remark Inverse operation to removeOddBits.
+/// @remark The more significant half of the value should be filled with zero.
+template <typename T>
+[[nodiscard]] constexpr T interleaveZeros(T value)
+{
+    static_assert(std::is_unsigned_v<T>);
+
+    constexpr auto bits = sizeof(T) * CHAR_BIT;
+    static_assert(bits <= 64);
+
+    if constexpr (bits >= 64)
+        value = (value | value << 16) & static_cast<T>(0x0000FFFF0000FFFF);
+    if constexpr (bits >= 32)
+        value = (value | value << 8) & static_cast<T>(0x00FF00FF00FF00FF);
+    if constexpr (bits >= 16)
+        value = (value | value << 4) & static_cast<T>(0x0F0F0F0F0F0F0F0F);
+    if constexpr (bits >= 8)
+        value = (value | value << 2) & static_cast<T>(0x3333333333333333);
+    if constexpr (bits >= 4)
+        value = (value | value << 1) & static_cast<T>(0x5555555555555555);
+
+    return value;
+}
+
+template <typename T>
+[[nodiscard]] constexpr T sqr(T value)
+{
+    return value * value;
+}
+
 } // namespace dang::utils
