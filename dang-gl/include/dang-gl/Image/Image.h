@@ -6,6 +6,9 @@
 #include "dang-gl/Image/PixelType.h"
 #include "dang-gl/global.h"
 
+#include "dang-math/bounds.h"
+#include "dang-math/vector.h"
+
 namespace dang::gl {
 
 /// @brief Stores pixels data for an n-dimensional image in a template specified type.
@@ -13,36 +16,47 @@ template <std::size_t v_dim, PixelFormat v_format = PixelFormat::RGBA, PixelType
 class Image {
 public:
     using Pixel = Pixel<v_format, v_type>;
+    using Size = dmath::svec<v_dim>;
+    using Bounds = dmath::sbounds<v_dim>;
 
     /// @brief Initializes the image with a width and height of zero.
     Image() = default;
 
     /// @brief Initializes the image using the given size with zero.
-    explicit Image(dmath::svec<v_dim> size)
+    explicit Image(const Size& size)
         : size_(size)
         , data_(size)
     {}
 
     /// @brief Initializes the image using the given size and fills it with the value.
-    Image(dmath::svec<v_dim> size, const Pixel& value)
+    Image(const Size& size, const Pixel& value)
         : size_(size)
         , data_(size, value)
     {}
 
     /// @brief Initializes the image using the given size and data iterator.
     template <typename TIter>
-    Image(dmath::svec<v_dim> size, TIter first)
+    Image(const Size& size, TIter first)
         : size_(size)
         , data_(first, std::next(first, size))
     {}
 
     /// @brief Initializes the image using the given size and preexisting vector of data, which should match the size.
     /// @remark Highly consider passing the data as an r-value using std::move to avoid a copy.
-    Image(dmath::svec<v_dim> size, std::vector<Pixel> data)
+    Image(const Size& size, std::vector<Pixel> data)
         : size_(size)
         , data_(std::move(data))
     {
         assert(data_.size() == size.product());
+    }
+
+    /// @brief Creates a new image from a subsection of an existing image.
+    Image(const Image& image, const Bounds& bounds)
+        : size_(bounds.size())
+    {
+        data_.reserve(count());
+        for (const auto& pos : bounds)
+            data_.push_back(image[pos]);
     }
 
     /// @brief Loads a PNG image from the given stream and returns it.
@@ -69,7 +83,7 @@ public:
     }
 
     /// @brief Returns the size of the image along each axis.
-    dmath::svec<v_dim> size() const { return size_; }
+    const Size& size() const { return size_; }
 
     /// @brief Returns the total count of pixels.
     std::size_t count() const { return size_.product(); }
@@ -78,10 +92,23 @@ public:
     std::size_t byteSize() const { return count() * sizeof(Pixel); }
 
     /// @brief Provides access for a single pixel at the given position.
-    Pixel& operator[](dmath::svec<v_dim> pos) { return data_[posToIndex(pos)]; }
+    Pixel& operator[](const Size& pos) { return data_[posToIndex(pos)]; }
 
     /// @brief Provides access for a single pixel at the given position.
-    const Pixel& operator[](dmath::svec<v_dim> pos) const { return data_[posToIndex(pos)]; }
+    const Pixel& operator[](const Size& pos) const { return data_[posToIndex(pos)]; }
+
+    /// @brief Creates a new image from a subsection.
+    Image operator[](const Bounds& bounds) const { return Image(*this, bounds); }
+
+    /// @brief Copies pixels from a subsection of an existing image with a given offset.
+    void setSubImage(const Size& offset, const Image& image, const Bounds& bounds)
+    {
+        for (const auto& pos : bounds)
+            (*this)[pos + offset] = image[pos];
+    }
+
+    /// @brief Copies pixels from an existing image with a given offset.
+    void setSubImage(const Size& offset, const Image& image) { setSubImage(offset, image, Bounds(image.size())); }
 
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
     Pixel* data() { return data_.data(); }
@@ -92,7 +119,7 @@ public:
 private:
     /// @brief A helper function, which calculates the position offset of a single dimension.
     template <std::size_t v_first, std::size_t... v_indices>
-    std::size_t posToIndexHelperMul(dmath::svec<v_dim> pos, std::index_sequence<v_indices...>)
+    std::size_t posToIndexHelperMul(const Size& pos, std::index_sequence<v_indices...>) const
     {
         assert(pos[v_first] < size_[v_first]);
         return pos[v_first] * (size_[v_indices] * ... * 1);
@@ -100,15 +127,15 @@ private:
 
     /// @brief A helper function, which takes an index sequence of v_dim as start parameter.
     template <std::size_t... v_indices>
-    std::size_t posToIndexHelper(dmath::svec<v_dim> pos, std::index_sequence<v_indices...>)
+    std::size_t posToIndexHelper(const Size& pos, std::index_sequence<v_indices...>) const
     {
         return (posToIndexHelperMul<v_indices>(pos, std::make_index_sequence<v_indices>()) + ...);
     }
 
     /// @brief Converts the given pixel position into an index to the data.
-    std::size_t posToIndex(dmath::svec<v_dim> pos) { return posToIndexHelper(pos, std::make_index_sequence<v_dim>()); }
+    std::size_t posToIndex(const Size& pos) const { return posToIndexHelper(pos, std::make_index_sequence<v_dim>()); }
 
-    dmath::svec<v_dim> size_;
+    Size size_;
     std::vector<Pixel> data_;
 };
 
