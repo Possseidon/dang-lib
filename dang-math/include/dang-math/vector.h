@@ -209,23 +209,23 @@ struct Vector : std::array<T, v_dim> {
     /// @brief Returns the axis with the lowest value.
     constexpr auto minAxis() const
     {
-        auto min_iter = std::min_element(begin(), end());
-        return static_cast<Axis<v_dim>>(std::distance(begin(), min_iter));
+        auto min_iter = std::min_element(this->begin(), this->end());
+        return static_cast<Axis<v_dim>>(std::distance(this->begin(), min_iter));
     }
 
     /// @brief Returns the axis with the highest value.
     constexpr auto maxAxis() const
     {
-        auto max_iter = std::max_element(begin(), end());
-        return static_cast<Axis<v_dim>>(std::distance(begin(), max_iter));
+        auto max_iter = std::max_element(this->begin(), this->end());
+        return static_cast<Axis<v_dim>>(std::distance(this->begin(), max_iter));
     }
 
     /// @brief Returns a pair of the two axes with the lowest and highest values.
     constexpr auto minMaxAxis() const
     {
-        auto [min_iter, max_iter] = std::minmax_element(begin(), end());
-        return std::pair{static_cast<Axis<v_dim>>(std::distance(begin(), min_iter)),
-                         static_cast<Axis<v_dim>>(std::distance(begin(), max_iter))};
+        auto [min_iter, max_iter] = std::minmax_element(this->begin(), this->end());
+        return std::pair{static_cast<Axis<v_dim>>(std::distance(this->begin(), min_iter)),
+                         static_cast<Axis<v_dim>>(std::distance(this->begin(), max_iter))};
     }
 
     /// @brief Returns the value of the lowest component.
