@@ -10,6 +10,8 @@
 
 namespace dang::gl {
 
+Context* Context::current_ = nullptr;
+
 Context::Context(svec2 size)
     : state_(size)
     , size_(size)
@@ -41,6 +43,14 @@ void Context::debugMessageCallback(GLenum source,
                               id,
                               static_cast<DebugSeverity>(severity),
                               std::string(message, message + length)});
+}
+
+void setContext(Context* context) { Context::current_ = context; }
+
+Context& context()
+{
+    assert(Context::current_);
+    return *Context::current_;
 }
 
 } // namespace dang::gl

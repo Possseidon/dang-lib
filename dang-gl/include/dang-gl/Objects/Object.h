@@ -68,7 +68,7 @@ public:
 
 protected:
     Object()
-        : context_(Context::current)
+        : context_(&dang::gl::context())
         , handle_(Wrapper::create())
     {
         assert(context_);

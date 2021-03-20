@@ -52,13 +52,17 @@ struct DebugMessageInfo {
 using DebugMessageEvent = dutils::Event<DebugMessageInfo>;
 
 class Context {
+private:
+    static Context* current_;
+
 public:
     using Event = dutils::Event<Context>;
 
-    inline static Context* current = nullptr;
-
     Context(svec2 size);
     ~Context();
+
+    friend void setContext(Context* context);
+    friend Context& context();
 
     State& state() { return state_; }
 
@@ -115,5 +119,8 @@ private:
     dutils::EnumArray<ObjectType, std::unique_ptr<ObjectContextBase>> object_contexts_;
     svec2 size_;
 };
+
+void setContext(Context* context);
+Context& context();
 
 } // namespace dang::gl

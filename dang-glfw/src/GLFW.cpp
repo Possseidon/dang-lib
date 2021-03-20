@@ -34,7 +34,7 @@ void GLFW::setActiveWindow(Window* window)
 
     active_window_ = window;
     glfwMakeContextCurrent(window ? window->handle() : nullptr);
-    dgl::Context::current = &window->context();
+    dgl::setContext(&window->context());
 
     if (!glad_initialized_ && window)
         initializeGlad();
