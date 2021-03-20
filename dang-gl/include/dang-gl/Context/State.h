@@ -343,6 +343,9 @@ public:
 
     detail::Constant<GLint, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS> max_combined_texture_image_units;
     detail::Constant<GLint, GL_MAX_COLOR_ATTACHMENTS> max_color_attachments;
+    detail::Constant<GLint, GL_MAX_TEXTURE_SIZE> max_texture_size;
+    detail::Constant<GLint, GL_MAX_3D_TEXTURE_SIZE> max_3d_texture_size;
+    detail::Constant<GLint, GL_MAX_ARRAY_TEXTURE_LAYERS> max_array_texture_layers;
 
 private:
     /// @brief If the property hasn't been backed up yet, it gets added to the top of the state backup stack.
