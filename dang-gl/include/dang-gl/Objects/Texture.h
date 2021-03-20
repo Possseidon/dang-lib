@@ -437,7 +437,7 @@ protected:
                   ivec<v_dim> offset = {},
                   GLint mipmap_level = 0)
     {
-        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
+        assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
         glTexSubImage<v_dim>(toGLConstant(v_target),
                              mipmap_level,
                              offset[v_indices]...,
@@ -527,7 +527,7 @@ public:
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
-        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
+        assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
         this->bind();
         storage(
             std::make_index_sequence<v_dim>(), static_cast<svec<v_dim>>(image.size()), mipmap_levels, internal_format);
@@ -633,7 +633,7 @@ public:
                   bool fixed_sample_locations = true,
                   PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
     {
-        assert(image.size().lessThan(std::numeric_limits<GLsizei>::max()).all());
+        assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
         this->bind();
         storageMultisample(std::make_index_sequence<v_dim>(),
                            static_cast<svec<v_dim>>(image.size()),
