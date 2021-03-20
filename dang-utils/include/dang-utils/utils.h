@@ -96,7 +96,7 @@ inline constexpr auto is_greater_equal_comparable_v = is_greater_equal_comparabl
 
 // TODO: C++20 replace with std::popcount
 template <typename T>
-constexpr int popcount(T value)
+[[nodiscard]] constexpr int popcount(T value)
 {
     static_assert(std::is_unsigned_v<T>);
     static_assert(CHAR_BIT == 8);
@@ -113,9 +113,9 @@ constexpr int popcount(T value)
     return static_cast<int>(static_cast<T>(value * h01) >> (bits - 8));
 }
 
-// TODO: C++20 replace with std::countl_zero
+// TODO: C++20 replace with std::bit_width
 template <typename T>
-constexpr int countl_zero(T value)
+[[nodiscard]] constexpr int bit_width(T value)
 {
     static_assert(std::is_unsigned_v<T>);
     int count = 0;
@@ -123,12 +123,19 @@ constexpr int countl_zero(T value)
         value = static_cast<T>(value >> 1);
         count++;
     }
-    return sizeof(T) * CHAR_BIT - count;
+    return count;
+}
+
+// TODO: C++20 replace with std::countl_zero
+template <typename T>
+[[nodiscard]] constexpr int countl_zero(T value)
+{
+    return sizeof(T) * CHAR_BIT - bit_width(value);
 }
 
 // TODO: C++20 replace with std::countr_zero
 template <typename T>
-constexpr int countr_zero(T value)
+[[nodiscard]] constexpr int countr_zero(T value)
 {
     static_assert(std::is_unsigned_v<T>);
     int count = 0;
