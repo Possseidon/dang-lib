@@ -577,6 +577,30 @@ struct Vector : std::array<T, v_dim> {
                             (*this)[0] * other[1] - (*this)[1] * other[0]};
     }
 
+    /// @brief Rotates the vector around the given axis, which must be normalized.
+    constexpr auto rotateRadians(const Vector<T, 3>& axis, T radians) const
+    {
+        static_assert(v_dim == 3);
+        static_assert(!std::is_same_v<T, bool>);
+        auto axis_sqr = axis.sqrdot();
+        if (axis_sqr == T())
+            return *this;
+        auto uz = cross(axis);
+        auto ux = uz.cross(axis);
+        auto ux_sqr = ux.sqrdot();
+        if (ux_sqr == T())
+            return *this;
+        auto vx = dot(ux) / ux_sqr;
+        auto vy = dot(axis) / axis_sqr;
+        return std::cos(radians) * vx * ux + vy * axis + std::sin(radians) * vx * uz;
+    }
+
+    /// @brief Rotates the vector around the given axis, which must be normalized.
+    constexpr auto rotateDegrees(const Vector<T, 3>& axis, T degrees) const
+    {
+        return rotateRadians(axis, dang::math::radians(degrees));
+    }
+
     // --- Vector<T, 4> ---
 
     /// @brief The w-component of the vector.

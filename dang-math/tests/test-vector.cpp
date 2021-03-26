@@ -385,4 +385,17 @@ TEST_CASE("Vectors support 2-dimensional operations.", "[vector][operations]")
 TEST_CASE("Vectors support 3-dimensional operations.", "[vector][operations]")
 {
     STATIC_REQUIRE(dmath::vec3(1, 0, 0).cross(dmath::vec3(0, 1, 0)) == dmath::vec3(0, 0, 1));
+
+    const dmath::vec3 point(1, 2, 3);
+    const dmath::vec3 axis(0, 1, 0);
+
+    const dmath::vec3 rotated_rad = point.rotateRadians(axis, dmath::pi_v<float> / 2);
+    CHECK(rotated_rad.x() == Approx(3));
+    CHECK(rotated_rad.y() == Approx(2));
+    CHECK(rotated_rad.z() == Approx(-1));
+
+    const dmath::vec3 rotated_deg = point.rotateDegrees(axis, -90);
+    CHECK(rotated_deg.x() == Approx(-3));
+    CHECK(rotated_deg.y() == Approx(2));
+    CHECK(rotated_deg.z() == Approx(1));
 }
