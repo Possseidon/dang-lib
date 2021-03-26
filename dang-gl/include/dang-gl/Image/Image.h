@@ -25,13 +25,13 @@ public:
     /// @brief Initializes the image using the given size with zero.
     explicit Image(const Size& size)
         : size_(size)
-        , data_(size)
+        , data_(count())
     {}
 
     /// @brief Initializes the image using the given size and fills it with the value.
     Image(const Size& size, const Pixel& value)
         : size_(size)
-        , data_(size, value)
+        , data_(count(), value)
     {}
 
     /// @brief Initializes the image using the given size and data iterator.
