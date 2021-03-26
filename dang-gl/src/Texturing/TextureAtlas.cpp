@@ -105,13 +105,13 @@ void TextureAtlas::Layer::drawTile(TileData& tile, Texture2DArray& texture) cons
         texture.modify(image[dmath::sbounds2({width - 1, height - 1}, {width, height})], position + svec3{0, 0, 0}, 0);
 
         // left -> right
-        texture.modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width + 1, 0, 0}, 0);
+        texture.modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width + 1, 1, 0}, 0);
         // right -> left
-        texture.modify(image[dmath::sbounds2({width - 1, 0}, {width, height})], position + svec3{0, 0, 0}, 0);
+        texture.modify(image[dmath::sbounds2({width - 1, 0}, {width, height})], position + svec3{0, 1, 0}, 0);
         // top -> bottom
-        texture.modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{0, s_height + 1, 0}, 0);
+        texture.modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{1, s_height + 1, 0}, 0);
         // bottom -> top
-        texture.modify(image[dmath::sbounds2({0, height - 1}, {width, height})], position + svec3{0, 0, 0}, 0);
+        texture.modify(image[dmath::sbounds2({0, height - 1}, {width, height})], position + svec3{1, 0, 0}, 0);
 
         break;
     }
