@@ -38,11 +38,15 @@ namespace dang::gl {
 //      -> Add a function to query if it is frozen.
 //      -> Throw an error if a new tile is added while the atlas is frozen.
 
+// TODO: Make it more testable.
+//      -> Separate out whole generation into different class that has no requirement on a Texture2DArray.
+
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Implemented using a 2D array texture.
 /// @remark Supports automatic border generation on only positive or all sides.
 class TextureAtlas {
 public:
+    /// @brief On which sides of a texture to copy the opposite side for better tilling.
     enum class TileBorderGeneration { None, Positive, All };
 
     class TileHandle;
@@ -89,7 +93,7 @@ private:
     class Layer {
     public:
         /// @brief Creates a new layer with the given tile size, specified as log2.
-        explicit Layer(GLsizei tile_size_log2, std::size_t max_texture_size);
+        explicit Layer(const svec2& tile_size_log2, std::size_t max_texture_size);
 
         Layer(const Layer&) = delete;
         Layer(Layer&&) = default;
@@ -97,11 +101,11 @@ private:
         Layer& operator=(Layer&&) = default;
 
         /// @brief Returns the log2 of the pixel size of a tile.
-        GLsizei tileSizeLog2() const;
+        svec2 tileSizeLog2() const;
         /// @brief Returns the pixel size of a single tile.
-        GLsizei tileSize() const;
-        /// @brief Calculates the required grid size to fit all tiles.
-        GLsizei requiredGridSize() const;
+        svec2 tileSize() const;
+        /// @brief Calculates the required grid size (for the longer side) to fit all tiles.
+        GLsizei requiredGridSizeLog2() const;
         /// @brief Calculates the required texture size to fit all tiles.
         GLsizei requiredTextureSize() const;
 
@@ -120,12 +124,15 @@ private:
         /// @brief Draws a single tile onto the texture, also taking the tiles border generation into account.
         void drawTile(TileData& tile, Texture2DArray& texture) const;
 
-        /// @brief Inverse pairing function, returning only even/odd bits as x/y.
-        static constexpr svec2 indexToPosition(std::size_t index);
-        /// @brief Pairing function, interleaving x/y as odd/even bits of the resulting integer.
-        static constexpr std::size_t positionToIndex(svec2 position);
+        /// @brief Returns the maximum number of tiles, that can fit in a square texture of the given size.
+        std::size_t calculateMaxTiles(std::size_t max_texture_size) const;
 
-        GLsizei tile_size_log2_;
+        /// @brief Inverse pairing function, returning only even/odd bits as x/y.
+        svec2 indexToPosition(std::size_t index);
+        /// @brief Pairing function, interleaving x/y as odd/even bits of the resulting integer.
+        std::size_t positionToIndex(svec2 position);
+
+        svec2 tile_size_log2_;
         std::vector<TileData*> tiles_;
         std::size_t first_free_tile_ = 0;
         std::size_t max_tiles_;
@@ -201,8 +208,8 @@ public:
     /// @remark Returns false if there is no tile with the given name.
     bool remove(const std::string& name);
 
-    /// @brief Draws all tiles that haven't yet been written to the array texture.
-    void drawTiles();
+    /// @brief Resizes the array texture if necessary and draws all yet to be written tiles on it.
+    void generateTexture();
 
     // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
     //      -> Only a select few are probably important.

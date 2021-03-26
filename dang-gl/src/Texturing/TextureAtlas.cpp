@@ -21,22 +21,28 @@ TextureAtlas::TileData::~TileData()
     // just set data_ to nullptr instead manually
 }
 
-TextureAtlas::Layer::Layer(GLsizei tile_size_log2, std::size_t max_texture_size)
+TextureAtlas::Layer::Layer(const svec2& tile_size_log2, std::size_t max_texture_size)
     : tile_size_log2_(tile_size_log2)
-    , max_tiles_((assert(tileSize() <= max_texture_size),
-                  dutils::sqr(std::size_t{1} << dutils::ilog2(max_texture_size >> tileSizeLog2()))))
+    , max_tiles_(calculateMaxTiles(max_texture_size))
 {}
 
-GLsizei TextureAtlas::Layer::tileSizeLog2() const { return tile_size_log2_; }
+svec2 TextureAtlas::Layer::tileSizeLog2() const { return tile_size_log2_; }
 
-GLsizei TextureAtlas::Layer::tileSize() const { return static_cast<GLsizei>(1 << tile_size_log2_); }
-
-GLsizei TextureAtlas::Layer::requiredGridSize() const
+svec2 TextureAtlas::Layer::tileSize() const
 {
-    return tiles_.empty() ? 0 : 1 << static_cast<GLsizei>(dutils::bit_width((tiles_.size() - 1) << 1) >> 1);
+    return {GLsizei{1} << tile_size_log2_.x(), GLsizei{1} << tile_size_log2_.y()};
 }
 
-GLsizei TextureAtlas::Layer::requiredTextureSize() const { return tileSize() * requiredGridSize(); }
+GLsizei TextureAtlas::Layer::requiredGridSizeLog2() const
+{
+    if (tiles_.empty())
+        return 0;
+    auto diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
+    auto square_tiles = ((tiles_.size() - 1) >> diff_log2) + 1;
+    return (dutils::ilog2ceil(square_tiles) + 1) >> 1;
+}
+
+GLsizei TextureAtlas::Layer::requiredTextureSize() const { return tileSize().maxValue() << requiredGridSizeLog2(); }
 
 bool TextureAtlas::Layer::full() const { return first_free_tile_ == max_tiles_; }
 
@@ -121,6 +127,14 @@ void TextureAtlas::Layer::drawTile(TileData& tile, Texture2DArray& texture) cons
     tile.placement.written = true;
 }
 
+std::size_t TextureAtlas::Layer::calculateMaxTiles(std::size_t max_texture_size) const
+{
+    assert(tileSize().maxValue() <= max_texture_size);
+    auto x_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.x());
+    auto y_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.y());
+    return x_tiles * y_tiles;
+}
+
 void TextureAtlas::Layer::drawTiles(Texture2DArray& texture) const
 {
     for (auto tile : tiles_) {
@@ -132,16 +146,27 @@ void TextureAtlas::Layer::drawTiles(Texture2DArray& texture) const
     }
 }
 
-constexpr svec2 TextureAtlas::Layer::indexToPosition(std::size_t index)
+svec2 TextureAtlas::Layer::indexToPosition(std::size_t index)
 {
-    return {static_cast<GLsizei>(dutils::removeOddBits(index)),
-            static_cast<GLsizei>(dutils::removeOddBits(index >> 1))};
+    auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
+    auto flip = tile_size_log2_.x() < tile_size_log2_.y();
+    auto x = static_cast<GLsizei>(dutils::removeOddBits(index >> size_diff_log2));
+    auto y = static_cast<GLsizei>(dutils::removeOddBits(index >> (size_diff_log2 + 1)));
+    y <<= size_diff_log2;
+    y |= index & ~(~std::size_t{0} << size_diff_log2);
+    return flip ? svec2(y, x) : svec2(x, y);
 }
 
-constexpr std::size_t TextureAtlas::Layer::positionToIndex(svec2 position)
+std::size_t TextureAtlas::Layer::positionToIndex(svec2 position)
 {
-    return dutils::interleaveZeros(static_cast<std::size_t>(position.x())) |
-           (dutils::interleaveZeros(static_cast<std::size_t>(position.y())) << 1);
+    auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
+    auto flip = tile_size_log2_.x() < tile_size_log2_.y();
+    position = flip ? position.yx() : position;
+    auto result = position.y() & ~(~std::size_t{0} << size_diff_log2);
+    position.y() >>= size_diff_log2;
+    result |= dutils::interleaveZeros(static_cast<std::size_t>(position.x())) << size_diff_log2;
+    result |= dutils::interleaveZeros(static_cast<std::size_t>(position.y())) << (size_diff_log2 + 1);
+    return result;
 }
 
 TextureAtlas::TileHandle::~TileHandle() noexcept { reset(); }
@@ -289,7 +314,7 @@ bool TextureAtlas::remove(const std::string& name)
     //       This causes all tiles in successive layers to decrease their layer and therefore get invalidated.
 }
 
-void TextureAtlas::drawTiles()
+void TextureAtlas::generateTexture()
 {
     ensureTextureSize();
     for (auto& layer : layers_)
@@ -303,8 +328,7 @@ void TextureAtlas::ensureTextureSize()
     // Texture width and height are always the same; only check width.
     if (required_size == texture_.size().x() && layers == texture_.size().z())
         return;
-    texture_.generate({required_size, required_size, layers}, 1);
-    // Generate invalidates all tiles.
+    texture_ = Texture2DArray({required_size, required_size, layers}, 1);
     for (auto& [name, tile] : tiles_)
         tile.placement.written = false;
 }
@@ -319,9 +343,11 @@ GLsizei TextureAtlas::maxLayerSize() const
 
 std::pair<std::size_t, TextureAtlas::Layer*> TextureAtlas::layerForTile(const TileData& tile)
 {
-    auto size_with_border = sizeWithBorder(static_cast<GLsizei>(tile.image.size().maxValue()), tile.border);
-    auto unsigned_size = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border);
-    auto tile_size_log2 = static_cast<GLsizei>(dutils::ilog2(unsigned_size));
+    auto size_with_border = sizeWithBorder(static_cast<svec2>(tile.image.size()), tile.border);
+    auto unsigned_width = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border.x());
+    auto unsigned_height = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border.y());
+    auto tile_size_log2 = svec2(static_cast<GLsizei>(dutils::ilog2ceil(unsigned_width)),
+                                static_cast<GLsizei>(dutils::ilog2ceil(unsigned_height)));
     auto layer_iter = std::find_if(begin(layers_), end(layers_), [&](const Layer& layer) {
         return !layer.full() && layer.tileSizeLog2() == tile_size_log2;
     });
@@ -336,7 +362,7 @@ TextureAtlas::EmplaceResult TextureAtlas::emplaceTile(std::string&& name,
                                                       std::optional<TileBorderGeneration> border)
 {
     assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
-    // Explicit copy to have two objects to move from.
+    // Explicit copy to have two strings to move from.
     std::string key = name;
     auto [iter, ok] =
         tiles_.try_emplace(std::move(key),
