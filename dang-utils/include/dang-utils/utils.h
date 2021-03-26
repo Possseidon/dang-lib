@@ -149,7 +149,15 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr int ilog2(T value)
 {
+    assert(value > 0);
     return bit_width(value) - 1;
+}
+
+template <typename T>
+[[nodiscard]] constexpr int ilog2ceil(T value)
+{
+    assert(value > 0);
+    return bit_width(value - 1);
 }
 
 /// @brief Removes every odd bit, shifting over every even bit into the less significant half of the value.
