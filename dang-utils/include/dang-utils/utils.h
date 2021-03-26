@@ -212,7 +212,7 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] constexpr T sqr(T value)
+[[nodiscard]] constexpr auto sqr(const T& value)
 {
     return value * value;
 }
