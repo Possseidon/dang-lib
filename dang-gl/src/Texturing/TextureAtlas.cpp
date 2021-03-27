@@ -309,9 +309,6 @@ bool TextureAtlas::remove(const std::string& name)
         return false;
     tiles_.erase(iter);
     return true;
-
-    // TODO: If the corresponding layer is empty after this, it can be removed.
-    //       This causes all tiles in successive layers to decrease their layer and therefore get invalidated.
 }
 
 void TextureAtlas::generateTexture()

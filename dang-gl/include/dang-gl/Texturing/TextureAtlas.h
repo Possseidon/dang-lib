@@ -7,40 +7,6 @@
 
 namespace dang::gl {
 
-// TODO: Create GitHub issues for these:
-
-// TODO: Support mip-mapping.
-
-// TODO: Support unnamed tiles.
-//      -> These tiles can only be used via handle (or using SubTile, see below).
-//      -> Own tiles in a vector of unique_ptr instead.
-//      -> Current named tile map only references these.
-
-// TODO: Support SubTiles (e.g. for fonts).
-//      -> Tiles have an optional reference to a list of other related tiles.
-//      -> These lists are owned by the atlas itself.
-
-// TODO: Similar facility to ".info" files in Pengine to copy specific subsections from a larger image into SubTiles.
-//      -> Do not add file related functions to atlas though.
-//      -> Keep this ".info" thing separate and not rely on actual files at all.
-
-// TODO: Support SubTextures (e.g. for diffuse, ambient, specular, ...).
-//      -> Simply have a vector of Texture2DArray, where all SubTextures share the same coordinates.
-
-// TODO: Actually use "max_layer_count_" and throw an error or something.
-
-// TODO: Allow for custom "max_3d_texture_size_" to allow enforcing of smaller layers.
-
-// TODO: Add a way to free all image data.
-//      -> This has to freeze the atlas, as it won't be able to regenerate anymore.
-//      -> Theoretically it might be possible to add more images until a layer is full and needs resizing...
-//      -> But this might be very unpredictable, therefore just freeze it right away.
-//      -> Add a function to query if it is frozen.
-//      -> Throw an error if a new tile is added while the atlas is frozen.
-
-// TODO: Make it more testable.
-//      -> Separate out whole generation into different class that has no requirement on a Texture2DArray.
-
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Implemented using a 2D array texture.
 /// @remark Supports automatic border generation on only positive or all sides.
@@ -161,8 +127,6 @@ public:
 
         friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept;
         friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept;
-
-        // TODO: More functionality, most importantly querying the texture bounds for VBO generation.
 
     private:
         TileData::TileHandles::iterator find() const;
