@@ -1,5 +1,7 @@
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
 
+#include "dang-utils/utils.h"
+
 namespace dang::gl {
 
 TextureAtlasTiles::TilePlacement::TilePlacement(std::size_t index, svec2 position, GLsizei layer)
@@ -73,7 +75,7 @@ void TextureAtlasTiles::Layer::removeTile(TileData& tile)
     tiles_[index] = nullptr;
 }
 
-void TextureAtlasTiles::Layer::drawTile(TileData& tile, Texture2DArray& texture) const
+void TextureAtlasTiles::Layer::drawTile(TileData& tile, const TextureModifyFunction& modify) const
 {
     const auto& image = tile.image;
     const auto& position = tile.placement.position;
@@ -87,40 +89,40 @@ void TextureAtlasTiles::Layer::drawTile(TileData& tile, Texture2DArray& texture)
     switch (tile.border) {
     case TileBorderGeneration::Positive: {
         // left top -> right bottom
-        texture.modify(image[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width, s_height, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width, s_height, 0}, 0);
         // left -> right
-        texture.modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width, 0, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width, 0, 0}, 0);
         // top -> bottom
-        texture.modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{0, s_height, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{0, s_height, 0}, 0);
 
         [[fallthrough]];
     }
     case TileBorderGeneration::None: {
         // full image
-        texture.modify(image, position, 0);
+        modify(image, position, 0);
         break;
     }
     case TileBorderGeneration::All: {
         // full image (offset by 1)
-        texture.modify(image, position + svec3{1, 1, 0}, 0);
+        modify(image, position + svec3{1, 1, 0}, 0);
 
         // left top -> right bottom
-        texture.modify(image[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width + 1, s_height + 1, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width + 1, s_height + 1, 0}, 0);
         // right top -> left bottom
-        texture.modify(image[dmath::sbounds2({width - 1, 0}, {width, 1})], position + svec3{0, s_height + 1, 0}, 0);
+        modify(image[dmath::sbounds2({width - 1, 0}, {width, 1})], position + svec3{0, s_height + 1, 0}, 0);
         // left bottom -> right top
-        texture.modify(image[dmath::sbounds2({0, height - 1}, {1, height})], position + svec3{s_width + 1, 0, 0}, 0);
+        modify(image[dmath::sbounds2({0, height - 1}, {1, height})], position + svec3{s_width + 1, 0, 0}, 0);
         // right bottom -> left top
-        texture.modify(image[dmath::sbounds2({width - 1, height - 1}, {width, height})], position + svec3{0, 0, 0}, 0);
+        modify(image[dmath::sbounds2({width - 1, height - 1}, {width, height})], position + svec3{0, 0, 0}, 0);
 
         // left -> right
-        texture.modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width + 1, 1, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width + 1, 1, 0}, 0);
         // right -> left
-        texture.modify(image[dmath::sbounds2({width - 1, 0}, {width, height})], position + svec3{0, 1, 0}, 0);
+        modify(image[dmath::sbounds2({width - 1, 0}, {width, height})], position + svec3{0, 1, 0}, 0);
         // top -> bottom
-        texture.modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{1, s_height + 1, 0}, 0);
+        modify(image[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{1, s_height + 1, 0}, 0);
         // bottom -> top
-        texture.modify(image[dmath::sbounds2({0, height - 1}, {width, height})], position + svec3{1, 0, 0}, 0);
+        modify(image[dmath::sbounds2({0, height - 1}, {width, height})], position + svec3{1, 0, 0}, 0);
 
         break;
     }
@@ -138,14 +140,14 @@ std::size_t TextureAtlasTiles::Layer::calculateMaxTiles(std::size_t max_texture_
     return x_tiles * y_tiles;
 }
 
-void TextureAtlasTiles::Layer::drawTiles(Texture2DArray& texture) const
+void TextureAtlasTiles::Layer::drawTiles(const TextureModifyFunction& modify) const
 {
     for (auto tile : tiles_) {
         if (tile == nullptr)
             continue;
         if (tile->placement.written)
             continue;
-        drawTile(*tile, texture);
+        drawTile(*tile, modify);
     }
 }
 
@@ -235,6 +237,10 @@ TextureAtlasTiles::TileHandle::TileHandle(const TileData* data)
     if (data)
         data->handles.push_back(this);
 }
+TextureAtlasTiles::TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count)
+    : max_texture_size_(max_texture_size)
+    , max_layer_count_(max_layer_count)
+{}
 
 TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::guessTileBorderGeneration(GLsizei size) const
 {
@@ -314,21 +320,19 @@ bool TextureAtlasTiles::remove(const std::string& name)
     return true;
 }
 
-void TextureAtlasTiles::generateTexture()
+void TextureAtlasTiles::updateTexture(const TextureResizeFunction& resize, const TextureModifyFunction& modify)
 {
-    ensureTextureSize();
+    ensureTextureSize(resize);
     for (auto& layer : layers_)
-        layer.drawTiles(texture_);
+        layer.drawTiles(modify);
 }
 
-void TextureAtlasTiles::ensureTextureSize()
+void TextureAtlasTiles::ensureTextureSize(const TextureResizeFunction& resize)
 {
     auto required_size = maxLayerSize();
     auto layers = static_cast<GLsizei>(layers_.size());
-    // Texture width and height are always the same; only check width.
-    if (required_size == texture_.size().x() && layers == texture_.size().z())
+    if (!resize(required_size, layers, 1))
         return;
-    texture_ = Texture2DArray({required_size, required_size, layers}, 1);
     for (auto& [name, tile] : tiles_)
         tile.placement.written = false;
 }

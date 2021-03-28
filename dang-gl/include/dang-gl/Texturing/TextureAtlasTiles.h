@@ -1,19 +1,24 @@
 #pragma once
 
-#include "dang-gl/Context/State.h"
-#include "dang-gl/Objects/Texture.h"
-
-#include "dang-utils/utils.h"
+#include "dang-gl/Image/Image.h"
+#include "dang-gl/Math/MathTypes.h"
 
 namespace dang::gl {
 
 /// @brief Can store a large number of named textures in multiple layers of grids.
-/// @remark Implemented using a 2D array texture.
+/// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
 /// @remark Supports automatic border generation on only positive or all sides.
 class TextureAtlasTiles {
 public:
     /// @brief On which sides of a texture to copy the opposite side for better tilling.
     enum class TileBorderGeneration { None, Positive, All };
+
+    /// @brief A function that is called with required size (width and height), layers and mipmap levels.
+    /// @remarks Returns whether actual resizing occurred.
+    using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
+
+    /// @brief A function that uploads the image to a specific position and mipmap level of a texture.
+    using TextureModifyFunction = std::function<void(const Image2D&, ivec3, GLint)>;
 
     class TileHandle;
 
@@ -84,11 +89,11 @@ private:
         void removeTile(TileData& tile);
 
         /// @brief Draws all tiles that haven't been written on the given layer of the array texture.
-        void drawTiles(Texture2DArray& texture) const;
+        void drawTiles(const TextureModifyFunction& modify) const;
 
     private:
         /// @brief Draws a single tile onto the texture, also taking the tiles border generation into account.
-        void drawTile(TileData& tile, Texture2DArray& texture) const;
+        void drawTile(TileData& tile, const TextureModifyFunction& modify) const;
 
         /// @brief Returns the maximum number of tiles, that can fit in a square texture of the given size.
         std::size_t calculateMaxTiles(std::size_t max_texture_size) const;
@@ -136,6 +141,9 @@ public:
         const TileData* data_ = nullptr;
     };
 
+    /// @brief Creates a new instance of TextureAtlasTiles with the given maximum dimensions.
+    TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count);
+
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
     TileBorderGeneration guessTileBorderGeneration(GLsizei size) const;
@@ -172,20 +180,12 @@ public:
     /// @remark Returns false if there is no tile with the given name.
     bool remove(const std::string& name);
 
-    /// @brief Resizes the array texture if necessary and draws all yet to be written tiles on it.
-    void generateTexture();
-
-    // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
-    //      -> Only a select few are probably important.
-    //      -> Do not expose Texture2DArray completely.
-    //      -> Add a way to send the texture to a shader uniform.
-
-    // TODO: Temporary; remove this.
-    Texture2DArray& texture() { return texture_; }
+    /// @brief Calls "resize" with the current size and uses "modify" to upload the texture data.
+    void updateTexture(const TextureResizeFunction& resize, const TextureModifyFunction& modify);
 
 private:
-    /// @brief Ensures that the texture is big enough for all layers.
-    void ensureTextureSize();
+    /// @brief Calls "resize" to resize the texture and invalidates all tiles if a resize occurred.
+    void ensureTextureSize(const TextureResizeFunction& resize);
 
     /// @brief Finds the maximum layer size.
     GLsizei maxLayerSize() const;
@@ -201,9 +201,8 @@ private:
                               Image2D&& image,
                               std::optional<TileBorderGeneration> border = std::nullopt);
 
-    GLsizei max_layer_count_ = context()->max_array_texture_layers;
-    GLsizei max_texture_size_ = context()->max_3d_texture_size;
-    Texture2DArray texture_;
+    GLsizei max_texture_size_;
+    GLsizei max_layer_count_;
     Tiles tiles_;
     std::vector<Layer> layers_;
     TileBorderGeneration default_border_ = TileBorderGeneration::None;
