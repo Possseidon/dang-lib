@@ -10,7 +10,7 @@ namespace dang::gl {
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Implemented using a 2D array texture.
 /// @remark Supports automatic border generation on only positive or all sides.
-class TextureAtlas {
+class TextureAtlasTiles {
 public:
     /// @brief On which sides of a texture to copy the opposite side for better tilling.
     enum class TileBorderGeneration { None, Positive, All };
@@ -108,7 +108,7 @@ public:
     /// @brief A smart handle to a tile, which is invalidated when the tile is removed.
     class TileHandle {
     public:
-        friend TextureAtlas;
+        friend TextureAtlasTiles;
         friend TileData;
 
         TileHandle() = default;
@@ -191,7 +191,7 @@ private:
     GLsizei maxLayerSize() const;
 
     /// @brief Returns a index and pointer to a (possibly newly created) layer for the given tile.
-    std::pair<std::size_t, TextureAtlas::Layer*> layerForTile(const TileData& tile);
+    std::pair<std::size_t, TextureAtlasTiles::Layer*> layerForTile(const TileData& tile);
 
     using Tiles = std::unordered_map<std::string, TileData>;
     using EmplaceResult = std::pair<TileData*, bool>;
@@ -209,7 +209,9 @@ private:
     TileBorderGeneration default_border_ = TileBorderGeneration::None;
 };
 
-[[nodiscard]] bool operator==(const TextureAtlas::TileHandle& lhs, const TextureAtlas::TileHandle& rhs) noexcept;
-[[nodiscard]] bool operator!=(const TextureAtlas::TileHandle& lhs, const TextureAtlas::TileHandle& rhs) noexcept;
+[[nodiscard]] bool operator==(const TextureAtlasTiles::TileHandle& lhs,
+                              const TextureAtlasTiles::TileHandle& rhs) noexcept;
+[[nodiscard]] bool operator!=(const TextureAtlasTiles::TileHandle& lhs,
+                              const TextureAtlasTiles::TileHandle& rhs) noexcept;
 
 } // namespace dang::gl

@@ -1,19 +1,19 @@
-#include "dang-gl/Texturing/TextureAtlas.h"
+#include "dang-gl/Texturing/TextureAtlasTiles.h"
 
 namespace dang::gl {
 
-TextureAtlas::TilePlacement::TilePlacement(std::size_t index, svec2 position, GLsizei layer)
+TextureAtlasTiles::TilePlacement::TilePlacement(std::size_t index, svec2 position, GLsizei layer)
     : index(index)
     , position(position.x(), position.y(), layer)
 {}
 
-TextureAtlas::TileData::TileData(std::string&& name, Image2D&& image, TileBorderGeneration border)
+TextureAtlasTiles::TileData::TileData(std::string&& name, Image2D&& image, TileBorderGeneration border)
     : name(std::move(name))
     , image(std::move(image))
     , border(border)
 {}
 
-TextureAtlas::TileData::~TileData()
+TextureAtlasTiles::TileData::~TileData()
 {
     for (auto& handle : handles)
         handle->data_ = nullptr;
@@ -21,19 +21,19 @@ TextureAtlas::TileData::~TileData()
     // just set data_ to nullptr instead manually
 }
 
-TextureAtlas::Layer::Layer(const svec2& tile_size_log2, std::size_t max_texture_size)
+TextureAtlasTiles::Layer::Layer(const svec2& tile_size_log2, std::size_t max_texture_size)
     : tile_size_log2_(tile_size_log2)
     , max_tiles_(calculateMaxTiles(max_texture_size))
 {}
 
-svec2 TextureAtlas::Layer::tileSizeLog2() const { return tile_size_log2_; }
+svec2 TextureAtlasTiles::Layer::tileSizeLog2() const { return tile_size_log2_; }
 
-svec2 TextureAtlas::Layer::tileSize() const
+svec2 TextureAtlasTiles::Layer::tileSize() const
 {
     return {GLsizei{1} << tile_size_log2_.x(), GLsizei{1} << tile_size_log2_.y()};
 }
 
-GLsizei TextureAtlas::Layer::requiredGridSizeLog2() const
+GLsizei TextureAtlasTiles::Layer::requiredGridSizeLog2() const
 {
     if (tiles_.empty())
         return 0;
@@ -42,11 +42,14 @@ GLsizei TextureAtlas::Layer::requiredGridSizeLog2() const
     return (dutils::ilog2ceil(square_tiles) + 1) >> 1;
 }
 
-GLsizei TextureAtlas::Layer::requiredTextureSize() const { return tileSize().maxValue() << requiredGridSizeLog2(); }
+GLsizei TextureAtlasTiles::Layer::requiredTextureSize() const
+{
+    return tileSize().maxValue() << requiredGridSizeLog2();
+}
 
-bool TextureAtlas::Layer::full() const { return first_free_tile_ == max_tiles_; }
+bool TextureAtlasTiles::Layer::full() const { return first_free_tile_ == max_tiles_; }
 
-void TextureAtlas::Layer::addTile(TileData& tile, GLsizei layer)
+void TextureAtlasTiles::Layer::addTile(TileData& tile, GLsizei layer)
 {
     assert(!full());
     tile.placement = TilePlacement(first_free_tile_, tileSize() * indexToPosition(first_free_tile_), layer);
@@ -63,14 +66,14 @@ void TextureAtlas::Layer::addTile(TileData& tile, GLsizei layer)
     }
 }
 
-void TextureAtlas::Layer::removeTile(TileData& tile)
+void TextureAtlasTiles::Layer::removeTile(TileData& tile)
 {
     auto index = tile.placement.index;
     first_free_tile_ = std::min(first_free_tile_, index);
     tiles_[index] = nullptr;
 }
 
-void TextureAtlas::Layer::drawTile(TileData& tile, Texture2DArray& texture) const
+void TextureAtlasTiles::Layer::drawTile(TileData& tile, Texture2DArray& texture) const
 {
     const auto& image = tile.image;
     const auto& position = tile.placement.position;
@@ -127,7 +130,7 @@ void TextureAtlas::Layer::drawTile(TileData& tile, Texture2DArray& texture) cons
     tile.placement.written = true;
 }
 
-std::size_t TextureAtlas::Layer::calculateMaxTiles(std::size_t max_texture_size) const
+std::size_t TextureAtlasTiles::Layer::calculateMaxTiles(std::size_t max_texture_size) const
 {
     assert(tileSize().maxValue() <= max_texture_size);
     auto x_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.x());
@@ -135,7 +138,7 @@ std::size_t TextureAtlas::Layer::calculateMaxTiles(std::size_t max_texture_size)
     return x_tiles * y_tiles;
 }
 
-void TextureAtlas::Layer::drawTiles(Texture2DArray& texture) const
+void TextureAtlasTiles::Layer::drawTiles(Texture2DArray& texture) const
 {
     for (auto tile : tiles_) {
         if (tile == nullptr)
@@ -146,7 +149,7 @@ void TextureAtlas::Layer::drawTiles(Texture2DArray& texture) const
     }
 }
 
-svec2 TextureAtlas::Layer::indexToPosition(std::size_t index)
+svec2 TextureAtlasTiles::Layer::indexToPosition(std::size_t index)
 {
     auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
     auto flip = tile_size_log2_.x() < tile_size_log2_.y();
@@ -157,7 +160,7 @@ svec2 TextureAtlas::Layer::indexToPosition(std::size_t index)
     return flip ? svec2(y, x) : svec2(x, y);
 }
 
-std::size_t TextureAtlas::Layer::positionToIndex(svec2 position)
+std::size_t TextureAtlasTiles::Layer::positionToIndex(svec2 position)
 {
     auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
     auto flip = tile_size_log2_.x() < tile_size_log2_.y();
@@ -169,13 +172,13 @@ std::size_t TextureAtlas::Layer::positionToIndex(svec2 position)
     return result;
 }
 
-TextureAtlas::TileHandle::~TileHandle() noexcept { reset(); }
+TextureAtlasTiles::TileHandle::~TileHandle() noexcept { reset(); }
 
-TextureAtlas::TileHandle::TileHandle(const TileHandle& tile_handle)
+TextureAtlasTiles::TileHandle::TileHandle(const TileHandle& tile_handle)
     : TileHandle(tile_handle.data_)
 {}
 
-TextureAtlas::TileHandle::TileHandle(TileHandle&& tile_handle) noexcept
+TextureAtlasTiles::TileHandle::TileHandle(TileHandle&& tile_handle) noexcept
     : data_(tile_handle.data_)
 {
     if (!tile_handle)
@@ -185,7 +188,7 @@ TextureAtlas::TileHandle::TileHandle(TileHandle&& tile_handle) noexcept
     tile_handle.data_ = nullptr;
 }
 
-TextureAtlas::TileHandle& TextureAtlas::TileHandle::operator=(const TileHandle& tile_handle)
+TextureAtlasTiles::TileHandle& TextureAtlasTiles::TileHandle::operator=(const TileHandle& tile_handle)
 {
     reset();
     if (!tile_handle)
@@ -195,7 +198,7 @@ TextureAtlas::TileHandle& TextureAtlas::TileHandle::operator=(const TileHandle& 
     return *this;
 }
 
-TextureAtlas::TileHandle& TextureAtlas::TileHandle::operator=(TileHandle&& tile_handle) noexcept
+TextureAtlasTiles::TileHandle& TextureAtlasTiles::TileHandle::operator=(TileHandle&& tile_handle) noexcept
 {
     reset();
     if (!tile_handle)
@@ -207,7 +210,7 @@ TextureAtlas::TileHandle& TextureAtlas::TileHandle::operator=(TileHandle&& tile_
     return *this;
 }
 
-void TextureAtlas::TileHandle::reset() noexcept
+void TextureAtlasTiles::TileHandle::reset() noexcept
 {
     if (!*this)
         return;
@@ -217,23 +220,23 @@ void TextureAtlas::TileHandle::reset() noexcept
     data_ = nullptr;
 }
 
-TextureAtlas::TileHandle::operator bool() const noexcept { return data_ != nullptr; }
+TextureAtlasTiles::TileHandle::operator bool() const noexcept { return data_ != nullptr; }
 
-const std::string& TextureAtlas::TileHandle::name() const noexcept { return data_->name; }
+const std::string& TextureAtlasTiles::TileHandle::name() const noexcept { return data_->name; }
 
-TextureAtlas::TileData::TileHandles::iterator TextureAtlas::TileHandle::find() const
+TextureAtlasTiles::TileData::TileHandles::iterator TextureAtlasTiles::TileHandle::find() const
 {
     return std::find(begin(data_->handles), end(data_->handles), this);
 }
 
-TextureAtlas::TileHandle::TileHandle(const TileData* data)
+TextureAtlasTiles::TileHandle::TileHandle(const TileData* data)
     : data_(data)
 {
     if (data)
         data->handles.push_back(this);
 }
 
-TextureAtlas::TileBorderGeneration TextureAtlas::guessTileBorderGeneration(GLsizei size) const
+TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::guessTileBorderGeneration(GLsizei size) const
 {
     auto usize = static_cast<std::make_unsigned_t<GLsizei>>(size);
     if (dutils::popcount(usize) == 1)
@@ -245,12 +248,12 @@ TextureAtlas::TileBorderGeneration TextureAtlas::guessTileBorderGeneration(GLsiz
     return default_border_;
 }
 
-TextureAtlas::TileBorderGeneration TextureAtlas::guessTileBorderGeneration(svec2 size) const
+TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::guessTileBorderGeneration(svec2 size) const
 {
     return guessTileBorderGeneration(size.maxValue());
 }
 
-GLsizei TextureAtlas::sizeWithBorder(GLsizei size, TileBorderGeneration border)
+GLsizei TextureAtlasTiles::sizeWithBorder(GLsizei size, TileBorderGeneration border)
 {
     switch (border) {
     case TileBorderGeneration::None:
@@ -265,36 +268,36 @@ GLsizei TextureAtlas::sizeWithBorder(GLsizei size, TileBorderGeneration border)
     }
 }
 
-svec2 TextureAtlas::sizeWithBorder(svec2 size, TileBorderGeneration border)
+svec2 TextureAtlasTiles::sizeWithBorder(svec2 size, TileBorderGeneration border)
 {
     return {sizeWithBorder(size.x(), border), sizeWithBorder(size.y(), border)};
 }
 
-TextureAtlas::TileBorderGeneration TextureAtlas::defaultBorderGeneration() const { return default_border_; }
+TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::defaultBorderGeneration() const { return default_border_; }
 
-void TextureAtlas::setDefaultBorderGeneration(TileBorderGeneration border) { default_border_ = border; }
+void TextureAtlasTiles::setDefaultBorderGeneration(TileBorderGeneration border) { default_border_ = border; }
 
-bool TextureAtlas::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
+bool TextureAtlasTiles::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
 {
     auto [iter, ok] = emplaceTile(std::move(name), std::move(image), border);
     return ok;
 }
 
-TextureAtlas::TileHandle TextureAtlas::addWithHandle(std::string name,
-                                                     Image2D image,
-                                                     std::optional<TileBorderGeneration> border)
+TextureAtlasTiles::TileHandle TextureAtlasTiles::addWithHandle(std::string name,
+                                                               Image2D image,
+                                                               std::optional<TileBorderGeneration> border)
 {
     auto [tile, ok] = emplaceTile(std::move(name), std::move(image), border);
     return ok ? TileHandle(tile) : TileHandle();
 }
 
-bool TextureAtlas::exists(const std::string& name) const
+bool TextureAtlasTiles::exists(const std::string& name) const
 {
     auto iter = tiles_.find(name);
     return iter != tiles_.end();
 }
 
-TextureAtlas::TileHandle TextureAtlas::operator[](const std::string& name) const
+TextureAtlasTiles::TileHandle TextureAtlasTiles::operator[](const std::string& name) const
 {
     auto iter = tiles_.find(name);
     if (iter != tiles_.end())
@@ -302,7 +305,7 @@ TextureAtlas::TileHandle TextureAtlas::operator[](const std::string& name) const
     return TileHandle();
 }
 
-bool TextureAtlas::remove(const std::string& name)
+bool TextureAtlasTiles::remove(const std::string& name)
 {
     auto iter = tiles_.find(name);
     if (iter == tiles_.end())
@@ -311,14 +314,14 @@ bool TextureAtlas::remove(const std::string& name)
     return true;
 }
 
-void TextureAtlas::generateTexture()
+void TextureAtlasTiles::generateTexture()
 {
     ensureTextureSize();
     for (auto& layer : layers_)
         layer.drawTiles(texture_);
 }
 
-void TextureAtlas::ensureTextureSize()
+void TextureAtlasTiles::ensureTextureSize()
 {
     auto required_size = maxLayerSize();
     auto layers = static_cast<GLsizei>(layers_.size());
@@ -330,7 +333,7 @@ void TextureAtlas::ensureTextureSize()
         tile.placement.written = false;
 }
 
-GLsizei TextureAtlas::maxLayerSize() const
+GLsizei TextureAtlasTiles::maxLayerSize() const
 {
     GLsizei result = 0;
     for (auto& layer : layers_)
@@ -338,7 +341,7 @@ GLsizei TextureAtlas::maxLayerSize() const
     return result;
 }
 
-std::pair<std::size_t, TextureAtlas::Layer*> TextureAtlas::layerForTile(const TileData& tile)
+std::pair<std::size_t, TextureAtlasTiles::Layer*> TextureAtlasTiles::layerForTile(const TileData& tile)
 {
     auto size_with_border = sizeWithBorder(static_cast<svec2>(tile.image.size()), tile.border);
     auto unsigned_width = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border.x());
@@ -354,9 +357,9 @@ std::pair<std::size_t, TextureAtlas::Layer*> TextureAtlas::layerForTile(const Ti
     return {layer_index, &layers_.emplace_back(tile_size_log2, max_texture_size_)};
 }
 
-TextureAtlas::EmplaceResult TextureAtlas::emplaceTile(std::string&& name,
-                                                      Image2D&& image,
-                                                      std::optional<TileBorderGeneration> border)
+TextureAtlasTiles::EmplaceResult TextureAtlasTiles::emplaceTile(std::string&& name,
+                                                                Image2D&& image,
+                                                                std::optional<TileBorderGeneration> border)
 {
     assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
     // Explicit copy to have two strings to move from.
@@ -374,12 +377,12 @@ TextureAtlas::EmplaceResult TextureAtlas::emplaceTile(std::string&& name,
     return {&tile, ok};
 }
 
-bool operator==(const TextureAtlas::TileHandle& lhs, const TextureAtlas::TileHandle& rhs) noexcept
+bool operator==(const TextureAtlasTiles::TileHandle& lhs, const TextureAtlasTiles::TileHandle& rhs) noexcept
 {
     return lhs.data_ == rhs.data_;
 }
 
-bool operator!=(const TextureAtlas::TileHandle& lhs, const TextureAtlas::TileHandle& rhs) noexcept
+bool operator!=(const TextureAtlasTiles::TileHandle& lhs, const TextureAtlasTiles::TileHandle& rhs) noexcept
 {
     return !(lhs == rhs);
 }
