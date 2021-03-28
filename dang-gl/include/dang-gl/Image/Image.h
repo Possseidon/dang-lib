@@ -116,6 +116,19 @@ public:
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
     const Pixel* data() const { return data_.data(); }
 
+    /// @brief Frees all image data, but leaves texture width and height intact.
+    void free() { data_.clear(); }
+
+    /// @brief Frees all image data and sets the texture width and height to zero.
+    void clear()
+    {
+        free();
+        size_ = {};
+    }
+
+    /// @brief Whether the image contains any actual data.
+    explicit operator bool() const { return !data_.empty(); }
+
 private:
     /// @brief A helper function, which calculates the position offset of a single dimension.
     template <std::size_t v_first, std::size_t... v_indices>
