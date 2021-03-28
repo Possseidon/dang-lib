@@ -2171,6 +2171,9 @@ public:
     /// @brief Pushes nil on the stack.
     auto pushNil() { return push(nullptr); }
 
+    /// @brief Pushes the `fail` value on the stack.
+    auto pushFail() { return push(fail); }
+
     /// @brief Pushes a newly created table with optional hints for the size of its array and record parts.
     auto pushTable(int array_hint = 0, int record_hint = 0)
     {

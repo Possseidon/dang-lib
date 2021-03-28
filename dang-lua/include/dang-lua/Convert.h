@@ -427,6 +427,21 @@ struct Convert<std::nullopt_t> : ConvertNil<std::nullopt_t> {};
 template <>
 struct Convert<std::monostate> : ConvertNil<std::monostate> {};
 
+/// @brief Tag struct for Lua's `fail` value.
+struct Fail {};
+
+inline constexpr Fail fail;
+
+/// @brief Allows for pushing of the `fail` value, which is currently just `nil`.
+template <>
+struct Convert<Fail> {
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
+
+    /// @brief Pushes the `fail` value on the stack.
+    static void push(lua_State* state, Fail = {}) { luaL_pushfail(state); }
+};
+
 /// @brief Allows for conversion between Lua boolean and C++ bool.
 template <>
 struct Convert<bool> {
