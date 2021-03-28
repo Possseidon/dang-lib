@@ -78,6 +78,8 @@ void TextureAtlasTiles::Layer::removeTile(TileData& tile)
 void TextureAtlasTiles::Layer::drawTile(TileData& tile, const TextureModifyFunction& modify) const
 {
     const auto& image = tile.image;
+    assert(image);
+
     const auto& position = tile.placement.position;
 
     auto width = image.size().x();
@@ -140,7 +142,7 @@ std::size_t TextureAtlasTiles::Layer::calculateMaxTiles(std::size_t max_texture_
     return x_tiles * y_tiles;
 }
 
-void TextureAtlasTiles::Layer::drawTiles(const TextureModifyFunction& modify) const
+void TextureAtlasTiles::Layer::drawTiles(const TextureModifyFunction& modify, bool freeze) const
 {
     for (auto tile : tiles_) {
         if (tile == nullptr)
@@ -148,6 +150,9 @@ void TextureAtlasTiles::Layer::drawTiles(const TextureModifyFunction& modify) co
         if (tile->placement.written)
             continue;
         drawTile(*tile, modify);
+        assert(tile->placement.written);
+        if (freeze)
+            tile->image.free();
     }
 }
 
@@ -324,7 +329,16 @@ void TextureAtlasTiles::updateTexture(const TextureResizeFunction& resize, const
 {
     ensureTextureSize(resize);
     for (auto& layer : layers_)
-        layer.drawTiles(modify);
+        layer.drawTiles(modify, false);
+}
+
+FrozenTextureAtlasTiles TextureAtlasTiles::freeze(const TextureResizeFunction& resize,
+                                                  const TextureModifyFunction& modify) &&
+{
+    ensureTextureSize(resize);
+    for (auto& layer : layers_)
+        layer.drawTiles(modify, true);
+    return FrozenTextureAtlasTiles(std::move(*this));
 }
 
 void TextureAtlasTiles::ensureTextureSize(const TextureResizeFunction& resize)
@@ -380,6 +394,17 @@ TextureAtlasTiles::EmplaceResult TextureAtlasTiles::emplaceTile(std::string&& na
     }
     return {&tile, ok};
 }
+
+bool FrozenTextureAtlasTiles::exists(const std::string& name) const { return tiles_.exists(name); }
+
+TextureAtlasTiles::TileHandle FrozenTextureAtlasTiles::operator[](const std::string& name) const
+{
+    return tiles_[name];
+}
+
+FrozenTextureAtlasTiles::FrozenTextureAtlasTiles(TextureAtlasTiles&& tiles)
+    : tiles_(std::move(tiles))
+{}
 
 bool operator==(const TextureAtlasTiles::TileHandle& lhs, const TextureAtlasTiles::TileHandle& rhs) noexcept
 {

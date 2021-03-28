@@ -6,6 +6,8 @@
 
 namespace dang::gl {
 
+class FrozenTextureAtlas;
+
 class TextureAtlas {
 public:
     using TileBorderGeneration = TextureAtlasTiles::TileBorderGeneration;
@@ -31,6 +33,7 @@ public:
     bool remove(const std::string& name);
 
     void updateTexture();
+    FrozenTextureAtlas freeze() &&;
 
     // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
     //      -> Only a select few are probably important.
@@ -41,7 +44,32 @@ public:
     Texture2DArray& texture() { return texture_; }
 
 private:
+    template <bool v_freeze>
+    std::conditional_t<v_freeze, FrozenTextureAtlas, void> updateTextureHelper();
+
     TextureAtlasTiles tiles_;
+
+    // TODO: Move texture and related functions into a base class.
+    Texture2DArray texture_;
+};
+
+class FrozenTextureAtlas {
+public:
+    using TileBorderGeneration = TextureAtlas::TileBorderGeneration;
+    using TileHandle = TextureAtlas::TileHandle;
+
+    friend class TextureAtlas;
+
+    [[nodiscard]] bool exists(const std::string& name) const;
+    [[nodiscard]] TileHandle operator[](const std::string& name) const;
+
+    // TODO: Temporary; remove this.
+    Texture2DArray& texture() { return texture_; }
+
+private:
+    FrozenTextureAtlas(FrozenTextureAtlasTiles&& tiles, Texture2DArray&& texture);
+
+    FrozenTextureAtlasTiles tiles_;
     Texture2DArray texture_;
 };
 

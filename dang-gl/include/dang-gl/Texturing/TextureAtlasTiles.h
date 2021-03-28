@@ -5,6 +5,8 @@
 
 namespace dang::gl {
 
+class FrozenTextureAtlasTiles;
+
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
 /// @remark Supports automatic border generation on only positive or all sides.
@@ -88,8 +90,8 @@ private:
         /// @brief Removes a single tile, opening a gap, as all other tiles stay untouched.
         void removeTile(TileData& tile);
 
-        /// @brief Draws all tiles that haven't been written on the given layer of the array texture.
-        void drawTiles(const TextureModifyFunction& modify) const;
+        /// @brief Draws all tiles that haven't been written yet and optionally frees their resources.
+        void drawTiles(const TextureModifyFunction& modify, bool freeze) const;
 
     private:
         /// @brief Draws a single tile onto the texture, also taking the tiles border generation into account.
@@ -144,6 +146,11 @@ public:
     /// @brief Creates a new instance of TextureAtlasTiles with the given maximum dimensions.
     TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count);
 
+    TextureAtlasTiles(const TextureAtlasTiles&) = delete;
+    TextureAtlasTiles(TextureAtlasTiles&&) = default;
+    TextureAtlasTiles& operator=(const TextureAtlasTiles&) = delete;
+    TextureAtlasTiles& operator=(TextureAtlasTiles&&) = default;
+
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
     TileBorderGeneration guessTileBorderGeneration(GLsizei size) const;
@@ -182,6 +189,8 @@ public:
 
     /// @brief Calls "resize" with the current size and uses "modify" to upload the texture data.
     void updateTexture(const TextureResizeFunction& resize, const TextureModifyFunction& modify);
+    /// @brief Similar to updateTexture, but also frees image data and returns a frozen atlas.
+    FrozenTextureAtlasTiles freeze(const TextureResizeFunction& resize, const TextureModifyFunction& modify) &&;
 
 private:
     /// @brief Calls "resize" to resize the texture and invalidates all tiles if a resize occurred.
@@ -206,6 +215,27 @@ private:
     Tiles tiles_;
     std::vector<Layer> layers_;
     TileBorderGeneration default_border_ = TileBorderGeneration::None;
+};
+
+/// @brief A facade over a texture atlas, whose image data has been freed, preventing further modifications.
+class FrozenTextureAtlasTiles {
+public:
+    using TileHandle = TextureAtlasTiles::TileHandle;
+
+    FrozenTextureAtlasTiles(const FrozenTextureAtlasTiles&) = delete;
+    FrozenTextureAtlasTiles(FrozenTextureAtlasTiles&&) = default;
+    FrozenTextureAtlasTiles& operator=(const FrozenTextureAtlasTiles&) = delete;
+    FrozenTextureAtlasTiles& operator=(FrozenTextureAtlasTiles&&) = default;
+
+    friend class TextureAtlasTiles;
+
+    [[nodiscard]] bool exists(const std::string& name) const;
+    [[nodiscard]] TileHandle operator[](const std::string& name) const;
+
+private:
+    FrozenTextureAtlasTiles(TextureAtlasTiles&& tiles);
+
+    TextureAtlasTiles tiles_;
 };
 
 [[nodiscard]] bool operator==(const TextureAtlasTiles::TileHandle& lhs,

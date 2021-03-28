@@ -48,7 +48,12 @@ TextureAtlas::TileHandle TextureAtlas::operator[](const std::string& name) const
 
 bool TextureAtlas::remove(const std::string& name) { return tiles_.remove(name); }
 
-void TextureAtlas::updateTexture()
+void TextureAtlas::updateTexture() { updateTextureHelper<false>(); }
+
+FrozenTextureAtlas TextureAtlas::freeze() && { return updateTextureHelper<true>(); }
+
+template <bool v_freeze>
+std::conditional_t<v_freeze, FrozenTextureAtlas, void> TextureAtlas::updateTextureHelper()
 {
     auto resize = [&](GLsizei required_size, GLsizei layers, GLsizei mipmap_levels) {
         assert(texture_.size().x() == texture_.size().y());
@@ -62,7 +67,19 @@ void TextureAtlas::updateTexture()
         return texture_.modify(image, offset, mipmap_level);
     };
 
-    tiles_.updateTexture(resize, modify);
+    if constexpr (v_freeze)
+        return FrozenTextureAtlas(std::move(tiles_).freeze(resize, modify), std::move(texture_));
+    else
+        tiles_.updateTexture(resize, modify);
 }
+
+bool FrozenTextureAtlas::exists(const std::string& name) const { return tiles_.exists(name); }
+
+TextureAtlas::TileHandle FrozenTextureAtlas::operator[](const std::string& name) const { return tiles_[name]; }
+
+FrozenTextureAtlas::FrozenTextureAtlas(FrozenTextureAtlasTiles&& tiles, Texture2DArray&& texture)
+    : tiles_(std::move(tiles))
+    , texture_(std::move(texture))
+{}
 
 } // namespace dang::gl
