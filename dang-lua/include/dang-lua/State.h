@@ -1391,12 +1391,23 @@ using VarArgs = StackIndexRangeResult;
 // --- State ---
 
 /// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
+/// @remark Unlike wrap, this does not catch exceptions, which can lead to unexpected results.
 template <auto v_func>
-inline int wrap(lua_State* state);
+int wrapUnsafe(lua_State* state);
+
+/// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
+/// @remark Forwards exceptions of any type as Lua errors.
+template <auto v_func>
+int wrap(lua_State* state);
+
+/// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
+/// @remark If an exception is thrown the function returns the `fail` value plus the exception message.
+template <auto v_func>
+int wrapReturnException(lua_State* state);
 
 /// @brief Returns a luaL_Reg with the wrapped template supplied function and given name.
 template <auto v_func>
-inline constexpr luaL_Reg reg(const char* name);
+constexpr luaL_Reg reg(const char* name);
 
 struct Error {
     Status status;
@@ -3618,7 +3629,7 @@ private:
 };
 
 template <auto v_func>
-inline int wrap(lua_State* state)
+inline int wrapUnsafe(lua_State* state)
 {
     using Info = detail::SignatureInfo<decltype(v_func)>;
 
@@ -3670,6 +3681,38 @@ inline int wrap(lua_State* state)
                 return push_count;
             }
         }
+    }
+}
+
+template <auto v_func>
+inline int wrap(lua_State* state)
+{
+    try {
+        return wrapUnsafe<v_func>(state);
+    }
+    catch (const std::exception& e) {
+        detail::noreturn_luaL_error(state, e.what());
+    }
+    catch (...) {
+        detail::noreturn_luaL_error(state, "unknown error");
+    }
+}
+
+template <auto v_func>
+inline int wrapReturnException(lua_State* state)
+{
+    try {
+        return wrapUnsafe<v_func>(state);
+    }
+    catch (const std::exception& e) {
+        luaL_pushfail(state);
+        lua_pushstring(state, e.what());
+        return 2;
+    }
+    catch (...) {
+        luaL_pushfail(state);
+        lua_pushstring(state, "unknown error");
+        return 2;
     }
 }
 

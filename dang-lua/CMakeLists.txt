@@ -12,6 +12,7 @@ target_precompile_headers(${PROJECT_NAME}
     <cassert>
     <cstdint>
     <cstring>
+    <exception>
     <functional>
     <iostream>
     <limits>
