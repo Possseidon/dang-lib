@@ -22,7 +22,7 @@ public:
     TileBorderGeneration defaultBorderGeneration() const;
     void setDefaultBorderGeneration(TileBorderGeneration border);
 
-    bool add(std::string name, Image2D image, std::optional<TileBorderGeneration> border = std::nullopt);
+    void add(std::string name, Image2D image, std::optional<TileBorderGeneration> border = std::nullopt);
     [[nodiscard]] TileHandle addWithHandle(std::string name,
                                            Image2D image,
                                            std::optional<TileBorderGeneration> border = std::nullopt);
@@ -30,7 +30,8 @@ public:
     [[nodiscard]] bool exists(const std::string& name) const;
     [[nodiscard]] TileHandle operator[](const std::string& name) const;
 
-    bool remove(const std::string& name);
+    bool tryRemove(const std::string& name);
+    void remove(const std::string& name);
 
     void updateTexture();
     FrozenTextureAtlas freeze() &&;

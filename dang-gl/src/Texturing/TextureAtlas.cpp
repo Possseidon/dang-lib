@@ -30,9 +30,9 @@ void TextureAtlas::setDefaultBorderGeneration(TileBorderGeneration border)
     tiles_.setDefaultBorderGeneration(border);
 }
 
-bool TextureAtlas::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
+void TextureAtlas::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
 {
-    return tiles_.add(std::move(name), std::move(image), border);
+    tiles_.add(std::move(name), std::move(image), border);
 }
 
 TextureAtlas::TileHandle TextureAtlas::addWithHandle(std::string name,
@@ -46,7 +46,9 @@ bool TextureAtlas::exists(const std::string& name) const { return tiles_.exists(
 
 TextureAtlas::TileHandle TextureAtlas::operator[](const std::string& name) const { return tiles_[name]; }
 
-bool TextureAtlas::remove(const std::string& name) { return tiles_.remove(name); }
+bool TextureAtlas::tryRemove(const std::string& name) { return tiles_.tryRemove(name); }
+
+void TextureAtlas::remove(const std::string& name) { tiles_.remove(name); }
 
 void TextureAtlas::updateTexture() { updateTextureHelper<false>(); }
 

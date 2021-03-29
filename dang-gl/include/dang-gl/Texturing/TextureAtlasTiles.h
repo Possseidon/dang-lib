@@ -144,6 +144,7 @@ public:
     };
 
     /// @brief Creates a new instance of TextureAtlasTiles with the given maximum dimensions.
+    /// @exception std::invalid_argument if either maximum is less than zero.
     TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count);
 
     TextureAtlasTiles(const TextureAtlasTiles&) = delete;
@@ -153,10 +154,12 @@ public:
 
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
+    /// @exception std::invalid_argument if the size is negative.
     TileBorderGeneration guessTileBorderGeneration(GLsizei size) const;
 
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
+    /// @exception std::invalid_argument if either value of size is negative.
     TileBorderGeneration guessTileBorderGeneration(svec2 size) const;
 
     /// @brief Adds the given border generation to the size.
@@ -170,22 +173,38 @@ public:
     void setDefaultBorderGeneration(TileBorderGeneration border);
 
     /// @brief Adds a new tile with a given name and border generation.
-    /// @remark Returns false if the given name is already in use.
-    bool add(std::string name, Image2D image, std::optional<TileBorderGeneration> border = std::nullopt);
+    /// @exception std::invalid_argument if the name is empty.
+    /// @exception std::invalid_argument if the name already exists.
+    /// @exception std::invalid_argument if the image does not contain any data.
+    /// @exception std::invalid_argument if the image is too big.
+    /// @exception std::length_error if a new layer would exceed the maximum layer count.
+    void add(std::string name, Image2D image, std::optional<TileBorderGeneration> border = std::nullopt);
     /// @brief Adds a new tile with a given name and border generation and returns a handle to it.
     /// @remark Returns an empty handle if the given name is already in use.
+    /// @exception std::invalid_argument if the name is empty.
+    /// @exception std::invalid_argument if the name already exists.
+    /// @exception std::invalid_argument if the image does not contain any data.
+    /// @exception std::invalid_argument if the image is too big.
+    /// @exception std::length_error if a new layer would exceed the maximum layer count.
     [[nodiscard]] TileHandle addWithHandle(std::string name,
                                            Image2D image,
                                            std::optional<TileBorderGeneration> border = std::nullopt);
 
     /// @brief Checks if a tile with the given name exists.
+    /// @exception std::invalid_argument if the name is empty.
     [[nodiscard]] bool exists(const std::string& name) const;
     /// @brief Returns a (possibly empty) handle to the tile with the given name.
+    /// @exception std::invalid_argument if the name is empty.
     [[nodiscard]] TileHandle operator[](const std::string& name) const;
 
     /// @brief Removes the tile with the given name.
     /// @remark Returns false if there is no tile with the given name.
-    bool remove(const std::string& name);
+    /// @exception std::invalid_argument if the name is empty.
+    bool tryRemove(const std::string& name);
+    /// @brief Removes the tile with the given name.
+    /// @exception std::invalid_argument if the name is empty.
+    /// @exception std::invalid_argument if the name doesn't exist.
+    void remove(const std::string& name);
 
     /// @brief Calls "resize" with the current size and uses "modify" to upload the texture data.
     void updateTexture(const TextureResizeFunction& resize, const TextureModifyFunction& modify);
@@ -199,20 +218,25 @@ private:
     /// @brief Finds the maximum layer size.
     GLsizei maxLayerSize() const;
 
-    /// @brief Returns a index and pointer to a (possibly newly created) layer for the given tile.
-    std::pair<std::size_t, TextureAtlasTiles::Layer*> layerForTile(const TileData& tile);
+    using LayerResult = std::pair<TextureAtlasTiles::Layer*, std::size_t>;
 
-    using Tiles = std::unordered_map<std::string, TileData>;
-    using EmplaceResult = std::pair<TileData*, bool>;
+    /// @brief Returns a pointer to a (possibly newly created) layer for the given tile size and its index.
+    /// @remark The pointer can be null, in which case a new layer would have exceeded the maximum layer count.
+    LayerResult layerForTile(const svec2& size);
 
     /// @brief Creates a new tile and adds it to a (possibly newly created) layer.
-    EmplaceResult emplaceTile(std::string&& name,
-                              Image2D&& image,
-                              std::optional<TileBorderGeneration> border = std::nullopt);
+    /// @exception std::invalid_argument if the name is empty.
+    /// @exception std::invalid_argument if the name already exists.
+    /// @exception std::invalid_argument if the image does not contain any data.
+    /// @exception std::invalid_argument if the image is too big.
+    /// @exception std::length_error if a new layer would exceed the maximum layer count.
+    const TileData* emplaceTile(std::string&& name,
+                                Image2D&& image,
+                                std::optional<TileBorderGeneration> border = std::nullopt);
 
     GLsizei max_texture_size_;
     GLsizei max_layer_count_;
-    Tiles tiles_;
+    std::unordered_map<std::string, TileData> tiles_;
     std::vector<Layer> layers_;
     TileBorderGeneration default_border_ = TileBorderGeneration::None;
 };

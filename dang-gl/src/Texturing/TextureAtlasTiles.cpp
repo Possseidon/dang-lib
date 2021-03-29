@@ -245,10 +245,17 @@ TextureAtlasTiles::TileHandle::TileHandle(const TileData* data)
 TextureAtlasTiles::TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count)
     : max_texture_size_(max_texture_size)
     , max_layer_count_(max_layer_count)
-{}
+{
+    if (max_texture_size < 0)
+        throw std::invalid_argument("Maximum texture size cannot be negative.");
+    if (max_layer_count < 0)
+        throw std::invalid_argument("Maximum layer count cannot be negative.");
+}
 
 TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::guessTileBorderGeneration(GLsizei size) const
 {
+    if (size < 0)
+        throw std::invalid_argument("Size cannot be negative.");
     auto usize = static_cast<std::make_unsigned_t<GLsizei>>(size);
     if (dutils::popcount(usize) == 1)
         return TileBorderGeneration::None;
@@ -288,41 +295,51 @@ TextureAtlasTiles::TileBorderGeneration TextureAtlasTiles::defaultBorderGenerati
 
 void TextureAtlasTiles::setDefaultBorderGeneration(TileBorderGeneration border) { default_border_ = border; }
 
-bool TextureAtlasTiles::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
+void TextureAtlasTiles::add(std::string name, Image2D image, std::optional<TileBorderGeneration> border)
 {
-    auto [iter, ok] = emplaceTile(std::move(name), std::move(image), border);
-    return ok;
+    emplaceTile(std::move(name), std::move(image), border);
 }
 
 TextureAtlasTiles::TileHandle TextureAtlasTiles::addWithHandle(std::string name,
                                                                Image2D image,
                                                                std::optional<TileBorderGeneration> border)
 {
-    auto [tile, ok] = emplaceTile(std::move(name), std::move(image), border);
-    return ok ? TileHandle(tile) : TileHandle();
+    return TileHandle(emplaceTile(std::move(name), std::move(image), border));
 }
 
 bool TextureAtlasTiles::exists(const std::string& name) const
 {
+    if (name.empty())
+        throw std::invalid_argument("Tile name is empty.");
     auto iter = tiles_.find(name);
     return iter != tiles_.end();
 }
 
 TextureAtlasTiles::TileHandle TextureAtlasTiles::operator[](const std::string& name) const
 {
+    if (name.empty())
+        throw std::invalid_argument("Tile name is empty.");
     auto iter = tiles_.find(name);
     if (iter != tiles_.end())
         return TileHandle(&iter->second);
     return TileHandle();
 }
 
-bool TextureAtlasTiles::remove(const std::string& name)
+bool TextureAtlasTiles::tryRemove(const std::string& name)
 {
+    if (name.empty())
+        throw std::invalid_argument("Tile name is empty.");
     auto iter = tiles_.find(name);
     if (iter == tiles_.end())
         return false;
     tiles_.erase(iter);
     return true;
+}
+
+void TextureAtlasTiles::remove(const std::string& name)
+{
+    if (!tryRemove(name))
+        throw std::invalid_argument("Tile with name \"" + name + "\" doesn't exist.");
 }
 
 void TextureAtlasTiles::updateTexture(const TextureResizeFunction& resize, const TextureModifyFunction& modify)
@@ -359,11 +376,10 @@ GLsizei TextureAtlasTiles::maxLayerSize() const
     return result;
 }
 
-std::pair<std::size_t, TextureAtlasTiles::Layer*> TextureAtlasTiles::layerForTile(const TileData& tile)
+TextureAtlasTiles::LayerResult TextureAtlasTiles::layerForTile(const svec2& size)
 {
-    auto size_with_border = sizeWithBorder(static_cast<svec2>(tile.image.size()), tile.border);
-    auto unsigned_width = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border.x());
-    auto unsigned_height = static_cast<std::make_unsigned_t<GLsizei>>(size_with_border.y());
+    auto unsigned_width = static_cast<std::make_unsigned_t<GLsizei>>(size.x());
+    auto unsigned_height = static_cast<std::make_unsigned_t<GLsizei>>(size.y());
     auto tile_size_log2 = svec2(static_cast<GLsizei>(dutils::ilog2ceil(unsigned_width)),
                                 static_cast<GLsizei>(dutils::ilog2ceil(unsigned_height)));
     auto layer_iter = std::find_if(begin(layers_), end(layers_), [&](const Layer& layer) {
@@ -371,28 +387,38 @@ std::pair<std::size_t, TextureAtlasTiles::Layer*> TextureAtlasTiles::layerForTil
     });
     auto layer_index = std::distance(begin(layers_), layer_iter);
     if (layer_iter != end(layers_))
-        return {layer_index, &*layer_iter};
-    return {layer_index, &layers_.emplace_back(tile_size_log2, max_texture_size_)};
+        return {&*layer_iter, layer_index};
+    if (layer_index >= max_layer_count_)
+        return {nullptr, 0};
+    return {&layers_.emplace_back(tile_size_log2, max_texture_size_), layer_index};
 }
 
-TextureAtlasTiles::EmplaceResult TextureAtlasTiles::emplaceTile(std::string&& name,
-                                                                Image2D&& image,
-                                                                std::optional<TileBorderGeneration> border)
+const TextureAtlasTiles::TileData* TextureAtlasTiles::emplaceTile(std::string&& name,
+                                                                  Image2D&& image,
+                                                                  std::optional<TileBorderGeneration> border)
 {
-    assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
+    if (name.empty())
+        throw std::invalid_argument("Tile name is empty.");
+
+    if (!image)
+        throw std::invalid_argument("Image does not contain data.");
+    if (image.size().greaterThan(max_texture_size_).any())
+        throw std::invalid_argument("Image is too big for texture atlas. (" + image.size().format() + " > " +
+                                    std::to_string(max_texture_size_) + ")");
+
+    auto actual_border = border ? *border : guessTileBorderGeneration(static_cast<svec2>(image.size()));
+    auto [layer, index] = layerForTile(sizeWithBorder(static_cast<svec2>(image.size()), actual_border));
+    if (!layer)
+        throw std::length_error("Too many texture atlas layers. (max " + std::to_string(max_layer_count_) + ")");
+
     // Explicit copy to have two strings to move from.
     std::string key = name;
-    auto [iter, ok] =
-        tiles_.try_emplace(std::move(key),
-                           std::move(name),
-                           std::move(image),
-                           border ? *border : guessTileBorderGeneration(static_cast<svec2>(image.size())));
+    auto [iter, ok] = tiles_.try_emplace(std::move(key), std::move(name), std::move(image), actual_border);
+    if (!ok)
+        throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
     auto& tile = iter->second;
-    if (ok) {
-        auto [index, layer] = layerForTile(tile);
-        layer->addTile(tile, index);
-    }
-    return {&tile, ok};
+    layer->addTile(tile, index);
+    return &tile;
 }
 
 bool FrozenTextureAtlasTiles::exists(const std::string& name) const { return tiles_.exists(name); }
