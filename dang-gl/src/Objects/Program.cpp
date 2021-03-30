@@ -21,7 +21,7 @@ std::string Program::replaceInfoLogShaderNames(std::string info_log) const
     return info_log;
 }
 
-void Program::checkShaderStatusAndInfoLog(Handle shader_handle, ShaderType type)
+void Program::checkShaderStatusAndInfoLog(ShaderHandle shader_handle, ShaderType type)
 {
     GLint status;
     glGetShaderiv(shader_handle.unwrap(), GL_COMPILE_STATUS, &status);
@@ -150,7 +150,7 @@ void Program::addIncludeFromFile(const fs::path& path, const std::string& name)
 
 void Program::addShader(ShaderType type, const std::string& shader_code)
 {
-    Handle shader_handle{glCreateShader(toGLConstant(type))};
+    ShaderHandle shader_handle{glCreateShader(toGLConstant(type))};
     shader_handles_.push_back(shader_handle);
 
     std::string preprocessed = ShaderPreprocessor(*this, shader_code).result();

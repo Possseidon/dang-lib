@@ -4,6 +4,7 @@
 #include "dang-gl/Objects/DataTypes.h"
 #include "dang-gl/Objects/Object.h"
 #include "dang-gl/Objects/ObjectContext.h"
+#include "dang-gl/Objects/ObjectHandle.h"
 #include "dang-gl/Objects/ObjectType.h"
 #include "dang-gl/Objects/ProgramContext.h"
 #include "dang-gl/Objects/Texture.h"
@@ -280,6 +281,8 @@ public:
     ShaderUniformSampler& uniformSampler(const std::string& name, GLint count = 1);
 
 private:
+    using ShaderHandle = ObjectHandle<ObjectType::Shader>;
+
     /// @brief Replaces source integer with the actual name of the source file.
     /// @remark Supports NVIDIA's 1(23) and Intel's 1:23 style.
     std::string replaceInfoLogShaderNames(std::string info_log) const;
@@ -289,7 +292,7 @@ private:
 
     /// @brief Throws ShaderCompilationError if the shader could not compile or writes to std::cerr, in case of success
     /// but an existing info log.
-    void checkShaderStatusAndInfoLog(Handle shader_handle, ShaderType type);
+    void checkShaderStatusAndInfoLog(ShaderHandle shader_handle, ShaderType type);
     /// @brief Throws ShaderLinkError if the program could not link or writes to std::cerr, in case of success but an
     /// existing info log.
     void checkLinkStatusAndInfoLog();
@@ -302,7 +305,7 @@ private:
     void setAttributeOrder(const AttributeNames& attribute_order,
                            const InstancedAttributeNames& instanced_attribute_order);
 
-    std::vector<Handle> shader_handles_;
+    std::vector<ShaderHandle> shader_handles_;
     std::map<std::string, std::string> includes_;
     std::map<std::string, ShaderAttribute> attributes_;
     std::map<std::string, std::unique_ptr<ShaderUniformBase>> uniforms_;
