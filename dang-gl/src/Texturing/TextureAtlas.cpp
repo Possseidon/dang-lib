@@ -79,7 +79,7 @@ bool FrozenTextureAtlas::exists(const std::string& name) const { return tiles_.e
 
 TextureAtlas::TileHandle FrozenTextureAtlas::operator[](const std::string& name) const { return tiles_[name]; }
 
-FrozenTextureAtlas::FrozenTextureAtlas(FrozenTextureAtlasTiles&& tiles, Texture2DArray&& texture)
+FrozenTextureAtlas::FrozenTextureAtlas(Tiles&& tiles, Texture2DArray&& texture)
     : tiles_(std::move(tiles))
     , texture_(std::move(texture))
 {}

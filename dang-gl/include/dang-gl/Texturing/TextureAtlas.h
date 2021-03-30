@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-gl/Context/Context.h"
+#include "dang-gl/Image/Image.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
 
@@ -10,8 +11,9 @@ class FrozenTextureAtlas;
 
 class TextureAtlas {
 public:
-    using TileBorderGeneration = TextureAtlasTiles::TileBorderGeneration;
-    using TileHandle = TextureAtlasTiles::TileHandle;
+    using Tiles = TextureAtlasTiles<Image2D>;
+    using TileBorderGeneration = Tiles::TileBorderGeneration;
+    using TileHandle = Tiles::TileHandle;
 
     explicit TextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
                           std::optional<GLsizei> max_layer_count = std::nullopt);
@@ -48,7 +50,7 @@ private:
     template <bool v_freeze>
     std::conditional_t<v_freeze, FrozenTextureAtlas, void> updateTextureHelper();
 
-    TextureAtlasTiles tiles_;
+    Tiles tiles_;
 
     // TODO: Move texture and related functions into a base class.
     Texture2DArray texture_ = empty_object;
@@ -56,6 +58,7 @@ private:
 
 class FrozenTextureAtlas {
 public:
+    using Tiles = FrozenTextureAtlasTiles<Image2D>;
     using TileBorderGeneration = TextureAtlas::TileBorderGeneration;
     using TileHandle = TextureAtlas::TileHandle;
 
@@ -68,9 +71,9 @@ public:
     Texture2DArray& texture() { return texture_; }
 
 private:
-    FrozenTextureAtlas(FrozenTextureAtlasTiles&& tiles, Texture2DArray&& texture);
+    FrozenTextureAtlas(Tiles&& tiles, Texture2DArray&& texture);
 
-    FrozenTextureAtlasTiles tiles_;
+    Tiles tiles_;
     Texture2DArray texture_;
 };
 
