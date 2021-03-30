@@ -183,6 +183,11 @@ protected:
         , target_(target)
     {}
 
+    TextureBase(EmptyObject, TextureTarget target)
+        : Object<ObjectType::Texture>(empty_object)
+        , target_(target)
+    {}
+
     TextureBase(TextureBase&&) = default;
     TextureBase& operator=(TextureBase&&) = default;
 
@@ -424,6 +429,10 @@ protected:
         : TextureBase(v_target)
     {}
 
+    TextureBaseTyped(EmptyObject)
+        : TextureBase(empty_object, v_target)
+    {}
+
     TextureBaseTyped(TextureBaseTyped&&) = default;
     TextureBaseTyped& operator=(TextureBaseTyped&&) = default;
 
@@ -481,6 +490,10 @@ class TextureBaseRegular : public TextureBaseTyped<v_dim, v_target> {
 public:
     /// @brief Creates an empty texture.
     TextureBaseRegular() = default;
+
+    TextureBaseRegular(EmptyObject)
+        : TextureBaseTyped<v_dim, v_target>(empty_object)
+    {}
 
     /// @brief Initializes a new texture with the given size.
     /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
@@ -587,6 +600,10 @@ class TextureBaseMultisample : public TextureBaseTyped<v_dim, v_target> {
 public:
     /// @brief Creates an empty multisampled texture.
     TextureBaseMultisample() = default;
+
+    TextureBaseMultisample(EmptyObject)
+        : TextureBaseTyped<v_dim, v_target>(empty_object)
+    {}
 
     /// @brief Initializes a new multisampled texture with the given size, sample count.
     TextureBaseMultisample(svec<v_dim> size,

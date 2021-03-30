@@ -32,6 +32,10 @@ public:
 protected:
     BufferBase() = default;
 
+    BufferBase(EmptyObject)
+        : Object<ObjectType::Buffer>(empty_object)
+    {}
+
     BufferBase(BufferBase&&) = default;
     BufferBase& operator=(BufferBase&&) = default;
 };

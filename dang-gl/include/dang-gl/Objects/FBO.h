@@ -74,6 +74,11 @@ public:
     };
 
     FBO() = default;
+
+    FBO(EmptyObject)
+        : Object<ObjectType::Framebuffer>(empty_object)
+    {}
+
     /// @brief Resets the bound framebuffer of the context, in case of the framebuffer still being bound.
     ~FBO();
 

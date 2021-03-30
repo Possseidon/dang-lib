@@ -8,6 +8,10 @@
 
 namespace dang::gl {
 
+/// @brief Tag struct to creates empty GL-Objects, not calling the corresponding glGen function.
+struct EmptyObject {};
+inline constexpr EmptyObject empty_object;
+
 /// @brief Serves as a base class for all GL-Objects of the template specified type.
 template <ObjectType v_type>
 class Object {
@@ -74,6 +78,8 @@ protected:
         assert(context_);
     }
 
+    Object(EmptyObject) {}
+
     Object(Object&& other) noexcept
         : context_(std::move(other.context_))
         , handle_(std::exchange(other.handle_, {}))
@@ -116,6 +122,10 @@ public:
 
 protected:
     ObjectBindable() = default;
+
+    ObjectBindable(EmptyObject)
+        : Object<v_type>(empty_object)
+    {}
 
     ObjectBindable(ObjectBindable&&) = default;
     ObjectBindable& operator=(ObjectBindable&&) = default;

@@ -178,6 +178,11 @@ public:
     static_assert(std::is_standard_layout_v<T>, "VBO-Data must be a standard-layout type");
 
     VBO() = default;
+
+    VBO(EmptyObject)
+        : BufferBase<BufferTarget::ArrayBuffer>(empty_object)
+    {}
+
     ~VBO() = default;
 
     VBO(const VBO&) = delete;

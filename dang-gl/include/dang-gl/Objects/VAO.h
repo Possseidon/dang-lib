@@ -80,6 +80,10 @@ protected:
     /// commonly used "triangles" mode.
     VAOBase(Program& program, BeginMode mode = BeginMode::Triangles);
 
+    VAOBase(EmptyObject)
+        : ObjectBindable<ObjectType::VertexArray>(empty_object)
+    {}
+
     VAOBase(VAOBase&&) = default;
     VAOBase& operator=(VAOBase&&) = default;
 
@@ -105,6 +109,10 @@ public:
         assert(program.instancedAttributeOrder().size() == sizeof...(TInstanceData));
         enableAttributes(std::index_sequence_for<TInstanceData...>());
     }
+
+    VAO(EmptyObject)
+        : VAOBase(empty_object)
+    {}
 
     ~VAO() = default;
 

@@ -51,7 +51,7 @@ private:
     TextureAtlasTiles tiles_;
 
     // TODO: Move texture and related functions into a base class.
-    Texture2DArray texture_;
+    Texture2DArray texture_ = empty_object;
 };
 
 class FrozenTextureAtlas {

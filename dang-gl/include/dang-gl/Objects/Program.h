@@ -235,6 +235,11 @@ public:
     using InstancedAttributeNames = std::vector<InstancedAttributes>;
 
     Program() = default;
+
+    Program(EmptyObject)
+        : ObjectBindable<ObjectType::Program>(empty_object)
+    {}
+
     ~Program() = default;
 
     Program(const Program&) = delete;

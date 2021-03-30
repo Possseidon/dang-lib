@@ -13,8 +13,13 @@ namespace dang::gl {
 /// @remark Natively supports multisampling.
 class RBO : public ObjectBindable<ObjectType::Renderbuffer> {
 public:
+    RBO(EmptyObject)
+        : ObjectBindable<ObjectType::Renderbuffer>(empty_object)
+    {}
+
     /// @brief Initializes the renderbuffer with the given size, format and optional multisampling-count.
-    explicit RBO(svec2 size, GLsizei samples, PixelInternalFormat format);
+    RBO(svec2 size, GLsizei samples, PixelInternalFormat format);
+
     ~RBO() = default;
 
     RBO(const RBO&) = delete;
