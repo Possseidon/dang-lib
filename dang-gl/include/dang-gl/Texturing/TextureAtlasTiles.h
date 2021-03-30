@@ -127,6 +127,9 @@ private:
         /// @brief Calculates the required texture size to fit all tiles.
         GLsizei requiredTextureSize() const { return tileSize().maxValue() << requiredGridSizeLog2(); }
 
+        /// @brief Whether the grid is empty.
+        bool empty() const { return tiles_.empty(); }
+
         /// @brief Whether the grid is filled completely.
         bool full() const { return first_free_tile_ == max_tiles_; }
 
@@ -154,6 +157,8 @@ private:
             auto index = tile.placement.index;
             first_free_tile_ = std::min(first_free_tile_, index);
             tiles_[index] = nullptr;
+            auto last_not_null = std::find_if(rbegin(tiles_), rend(tiles_), [](auto tile) { return tile != nullptr; });
+            tiles_.erase(last_not_null.base(), end(tiles_));
         }
 
         /// @brief Draws all tiles that haven't been written yet and optionally frees their resources.
@@ -169,6 +174,14 @@ private:
                 if (freeze)
                     tile->image_data.free();
             }
+        }
+
+        /// @brief Shifts all tiles in the layer down by one.
+        void shiftDown()
+        {
+            for (auto tile : tiles_)
+                if (tile)
+                    tile->placement.position.z()--;
         }
 
     private:
@@ -481,7 +494,15 @@ public:
         auto iter = tiles_.find(name);
         if (iter == tiles_.end())
             return false;
+        auto layer_index = iter->second.placement.position.z();
+        auto& layer = layers_[layer_index];
+        layer.removeTile(iter->second);
         tiles_.erase(iter);
+        if (layer.empty()) {
+            layers_.erase(begin(layers_) + layer_index);
+            for (auto layer_iter = begin(layers_) + layer_index; layer_iter != end(layers_); layer_iter++)
+                layer_iter->shiftDown();
+        }
         return true;
     }
 
