@@ -18,6 +18,7 @@ add_library(${PROJECT_NAME}
     src/Rendering/Camera.cpp
     src/Rendering/Renderable.cpp
     src/Texturing/TextureAtlas.cpp
+    src/Texturing/TextureAtlasBase.cpp
     src/Texturing/TextureAtlasTiles.cpp
 )
 
