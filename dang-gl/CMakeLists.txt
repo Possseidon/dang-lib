@@ -30,6 +30,7 @@ target_precompile_headers(${PROJECT_NAME}
     <cmath>
     <cstddef>
     <cstdint>
+    <cstring>
     <filesystem>
     <fstream>
     <functional>

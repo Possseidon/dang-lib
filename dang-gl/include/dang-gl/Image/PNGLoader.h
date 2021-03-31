@@ -48,11 +48,14 @@ public:
     /// @brief After initialization, returns the width and height of the image.
     dmath::svec2 size() const;
 
+    /// @brief Returns the total count of pixels.
+    std::size_t count() const { return size_.product(); }
+
     /// @brief Converts the data into the specified format and returns a consecutive vector of pixels.
     /// @remark Use the size method to query the width and height of the returned data.
     /// @param flip Whether to flip the top and bottom of the PNG.
-    template <PixelFormat v_format = PixelFormat::RGBA>
-    std::vector<Pixel<v_format>> read(std::size_t row_alignment, bool flip = false);
+    template <PixelFormat v_format = PixelFormat::RGBA, std::size_t row_alignment = 4>
+    std::unique_ptr<std::byte[]> read(bool flip = false);
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
     PNGWarningEvent onWarning;
@@ -87,6 +90,36 @@ private:
         return ptr;
     }
 
+    /// @brief The width of the image in bytes.
+    template <PixelFormat v_format>
+    std::size_t byteWidth() const
+    {
+        return size_[0] * sizeof(Pixel<v_format>);
+    }
+
+    /// @brief The width of the image in bytes, but aligned.
+    template <PixelFormat v_format, std::size_t v_row_alignment>
+    std::size_t alignedByteWidth() const
+    {
+        return (byteWidth<v_format>() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
+    }
+
+    /// @brief The size of the image, but with width as the aligned byte width.
+    template <PixelFormat v_format, std::size_t v_row_alignment>
+    dmath::svec2 alignedByteSize() const
+    {
+        auto result = size_;
+        result[0] = alignedByteWidth<v_format, v_row_alignment>();
+        return result;
+    }
+
+    /// @brief The size of the image in bytes.
+    template <PixelFormat v_format, std::size_t v_row_alignment>
+    std::size_t byteCount() const
+    {
+        return alignedByteSize<v_format, v_row_alignment>().product();
+    }
+
     /// @brief Cleans up the libpng handles.
     void cleanup();
 
@@ -104,8 +137,8 @@ private:
     png_byte bit_depth_ = 0;
 };
 
-template <PixelFormat v_format>
-inline std::vector<Pixel<v_format>> PNGLoader::read(std::size_t row_alignment, bool flip)
+template <PixelFormat v_format, std::size_t v_row_alignment>
+inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
 {
     if (!initialized_)
         throw PNGError("PNG not initialized.");
@@ -134,20 +167,23 @@ inline std::vector<Pixel<v_format>> PNGLoader::read(std::size_t row_alignment, b
     if (rowbytes != size_.x() * pixel_format_component_count_v<v_format>)
         throw PNGError("Cannot convert PNG to correct format.");
 
-    auto aligned_width = (size_.x() - 1) / row_alignment * row_alignment + row_alignment;
-    auto height = size_.y();
-    std::vector<Pixel<v_format>> image(aligned_width * height);
+    auto aligned_width = alignedByteWidth<v_format, v_row_alignment>();
+    auto image = std::make_unique<std::byte[]>(byteCount<v_format, v_row_alignment>());
 
     // fill offsets with the row-pointers to the actual image data
     std::vector<png_bytep> offsets(size_.y());
 
-    png_bytep current = reinterpret_cast<png_bytep>(image.data());
+    png_bytep current = reinterpret_cast<png_bytep>(image.get());
     auto fill = [&] { return std::exchange(current, current + aligned_width); };
 
     if (flip)
         std::generate(offsets.rbegin(), offsets.rend(), fill);
     else
         std::generate(offsets.begin(), offsets.end(), fill);
+
+    for (auto offset : offsets)
+        for (std::size_t x = 0; x < size_.x(); x++)
+            new (offset + x * sizeof(Pixel<v_format>)) Pixel<v_format>;
 
     png_read_image(png_ptr_, offsets.data());
     png_read_end(png_ptr_, nullptr);

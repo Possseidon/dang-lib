@@ -22,6 +22,9 @@ public:
     using Size = dmath::svec<v_dim>;
     using Bounds = dmath::sbounds<v_dim>;
 
+    static_assert(std::is_trivially_copy_assignable_v<Pixel>);
+    static_assert(std::is_trivially_destructible_v<Pixel>);
+
     static constexpr auto pixel_format = v_format;
     static constexpr auto pixel_type = v_type;
     static constexpr auto row_alignment = v_row_alignment;
@@ -29,43 +32,56 @@ public:
     /// @brief Initializes the image with a width and height of zero.
     Image() = default;
 
-    /// @brief Initializes the image using the given size with zero.
-    explicit Image(const Size& size)
-        : size_(size)
-        , data_(alignedCount())
-    {}
+    Image(const Image& other)
+        : size_(other.size_)
+    {
+        std::memcpy(data_.get(), other.data_.get(), byteCount());
+    }
+
+    Image(Image&&) = default;
+
+    Image& operator=(const Image& other)
+    {
+        size_ = other.size_;
+        auto byte_count = byteCount();
+        data_ = std::make_unique<std::byte[]>(byte_count);
+        std::memcpy(data_.get(), other.data_.get(), byte_count);
+    }
+
+    Image& operator=(Image&&) = default;
 
     /// @brief Initializes the image using the given size and fills it with the value.
-    Image(const Size& size, const Pixel& value)
+    Image(const Size& size, const Pixel& value = {})
         : size_(size)
-        , data_(alignedCount(), value)
-    {}
+    {
+        for (const auto& pos : Bounds(size_))
+            new (&(*this)[pos]) Pixel(value);
+    }
 
-    /// @brief Initializes the image using the given size and data iterator.
-    /// @remark Make sure, that the data is properly aligned.
+    /// @brief Initializes the image using the given size and pixel iterator.
     template <typename TIter>
     Image(const Size& size, TIter first)
         : size_(size)
-        , data_(first, std::next(first, alignedCount()))
-    {}
+    {
+        for (const auto& pos : Bounds(size_))
+            new (&(*this)[pos]) Pixel(first++);
+    }
 
-    /// @brief Initializes the image using the given size and preexisting vector of data, which should match the size.
-    /// @remark Highly consider passing the data as an r-value using std::move to avoid a copy.
+    /// @brief Initializes the image using the given size and preexisting chunk of data, which should match the size.
+    /// @remark The array has to contain actual pixels that were created with placement new of Pixel.
+    /// @remark Highly consider passing the data as an rvalue using std::move to avoid a copy.
     /// @remark Make sure, that the data is properly aligned.
-    Image(const Size& size, std::vector<Pixel> data)
+    Image(const Size& size, std::unique_ptr<std::byte[]> data)
         : size_(size)
         , data_(std::move(data))
-    {
-        assert(data_.size() == alignedCount());
-    }
+    {}
 
     /// @brief Creates a new image from a subsection of an existing image.
     Image(const Image& image, const Bounds& bounds)
         : size_(bounds.size())
     {
-        data_.resize(alignedCount());
         for (const auto& pos : bounds)
-            (*this)[pos - bounds.low] = image[pos];
+            new (&(*this)[pos - bounds.low]) Pixel(image[pos]);
     }
 
     /// @brief Loads a PNG image from the given stream and returns it.
@@ -77,8 +93,8 @@ public:
         // TODO: Better logging
         png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << '\n'; });
         png_loader.init(stream);
-        std::vector<Pixel> data = png_loader.read<v_format>(v_row_alignment, true);
-        return Image(png_loader.size(), data);
+        auto data = png_loader.read<v_format, v_row_alignment>(true);
+        return Image(png_loader.size(), std::move(data));
     }
 
     /// @brief Loads a PNG image from the given file and returns it.
@@ -95,28 +111,34 @@ public:
     /// @brief Returns the size of the image along each axis.
     const Size& size() const { return size_; }
 
-    /// @brief Returns the size, but with the first component aligned.
-    Size alignedSize() const
-    {
-        auto result = size_;
-        result[0] = (result[0] - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
-        return result;
-    }
-
     /// @brief Returns the total count of pixels.
     std::size_t count() const { return size_.product(); }
 
-    /// @brief Returns the total count of pixels with alignment.
-    std::size_t alignedCount() const { return alignedSize().product(); }
+    /// @brief The width of the image in bytes.
+    std::size_t byteWidth() const { return size_[0] * sizeof(Pixel); }
 
-    /// @brief Returns the actual size of the image (with alignment) in bytes.
-    std::size_t byteSize() const { return alignedCount() * sizeof(Pixel); }
+    /// @brief The width of the image in bytes, but aligned.
+    std::size_t alignedByteWidth() const
+    {
+        return (byteWidth() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
+    }
+
+    /// @brief The size of the image, but with width as the aligned byte width.
+    dmath::svec2 alignedByteSize() const
+    {
+        auto result = size();
+        result[0] = alignedByteWidth();
+        return result;
+    }
+
+    /// @brief Returns the byte count of the image.
+    std::size_t byteCount() const { return alignedByteSize().product(); }
 
     /// @brief Provides access for a single pixel at the given position.
-    Pixel& operator[](const Size& pos) { return data_[posToIndex(pos)]; }
+    Pixel& operator[](const Size& pos) { return *reinterpret_cast<Pixel*>(&data_[posToIndex(pos)]); }
 
     /// @brief Provides access for a single pixel at the given position.
-    const Pixel& operator[](const Size& pos) const { return data_[posToIndex(pos)]; }
+    const Pixel& operator[](const Size& pos) const { return *reinterpret_cast<const Pixel*>(&data_[posToIndex(pos)]); }
 
     /// @brief Creates a new image from a subsection.
     Image operator[](const Bounds& bounds) const { return Image(*this, bounds); }
@@ -132,13 +154,13 @@ public:
     void setSubImage(const Size& offset, const Image& image) { setSubImage(offset, image, Bounds(image.size())); }
 
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
-    Pixel* data() { return data_.data(); }
+    void* data() { return data_.get(); }
 
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
-    const Pixel* data() const { return data_.data(); }
+    const void* data() const { return data_.get(); }
 
     /// @brief Frees all image data, but leaves texture width and height intact.
-    void free() { data_.clear(); }
+    void free() { data_ = nullptr; }
 
     /// @brief Frees all image data and sets the texture width and height to zero.
     void clear()
@@ -148,30 +170,31 @@ public:
     }
 
     /// @brief Whether the image contains any actual data.
-    explicit operator bool() const { return !data_.empty(); }
+    explicit operator bool() const { return bool{data_}; }
 
 private:
     /// @brief A helper function, which calculates the position offset of a single dimension.
     template <std::size_t v_first, std::size_t... v_indices>
     std::size_t posToIndexHelperMul(const Size& pos, std::index_sequence<v_indices...>) const
     {
-        auto aligned_size = alignedSize();
-        assert(pos[v_first] < aligned_size[v_first]);
-        return pos[v_first] * (aligned_size[v_indices] * ... * 1);
+        return pos[v_first] * (alignedByteSize()[v_indices] * ... * 1);
     }
 
     /// @brief A helper function, which takes an index sequence of v_dim as start parameter.
     template <std::size_t... v_indices>
     std::size_t posToIndexHelper(const Size& pos, std::index_sequence<v_indices...>) const
     {
-        return (posToIndexHelperMul<v_indices>(pos, std::make_index_sequence<v_indices>()) + ...);
+        return (posToIndexHelperMul<v_indices + 1>(pos, std::make_index_sequence<v_indices + 1>()) + ...);
     }
 
     /// @brief Converts the given pixel position into an index to the data.
-    std::size_t posToIndex(const Size& pos) const { return posToIndexHelper(pos, std::make_index_sequence<v_dim>()); }
+    std::size_t posToIndex(const Size& pos) const
+    {
+        return pos[0] * sizeof(Pixel) + posToIndexHelper(pos, std::make_index_sequence<v_dim - 1>());
+    }
 
     Size size_;
-    std::vector<Pixel> data_;
+    std::unique_ptr<std::byte[]> data_ = std::make_unique<std::byte[]>(byteCount());
 };
 
 using Image1D = Image<1>;
