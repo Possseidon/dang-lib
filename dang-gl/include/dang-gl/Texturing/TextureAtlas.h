@@ -9,10 +9,10 @@ namespace dang::gl {
 
 namespace detail {
 
-template <PixelFormat v_format, PixelType v_type>
+template <PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
 class TextureAtlasSingleTexture {
 public:
-    using ImageData = Image<2, v_format, v_type>;
+    using ImageData = Image<2, v_format, v_type, v_row_alignment>;
 
     // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
     //      -> Only a select few are probably important.
@@ -43,11 +43,15 @@ protected:
 
 } // namespace detail
 
-template <PixelFormat v_format = Image2D::pixel_format, PixelType v_type = Image2D::pixel_type>
+template <PixelFormat v_format = Image2D::pixel_format,
+          PixelType v_type = Image2D::pixel_type,
+          std::size_t v_row_alignment = 4>
 class TextureAtlas
-    : public TextureAtlasBase<Image<2, v_format, v_type>, detail::TextureAtlasSingleTexture<v_format, v_type>> {
+    : public TextureAtlasBase<Image<2, v_format, v_type, v_row_alignment>,
+                              detail::TextureAtlasSingleTexture<v_format, v_type, v_row_alignment>> {
 public:
-    using Base = TextureAtlasBase<Image<2, v_format, v_type>, detail::TextureAtlasSingleTexture<v_format, v_type>>;
+    using Base = TextureAtlasBase<Image<2, v_format, v_type, v_row_alignment>,
+                                  detail::TextureAtlasSingleTexture<v_format, v_type, v_row_alignment>>;
 
     explicit TextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
                           std::optional<GLsizei> max_layer_count = std::nullopt)
@@ -59,8 +63,11 @@ public:
     }
 };
 
-template <PixelFormat v_format = Image2D::pixel_format, PixelType v_type = Image2D::pixel_type>
+template <PixelFormat v_format = Image2D::pixel_format,
+          PixelType v_type = Image2D::pixel_type,
+          std::size_t v_row_alignment = 4>
 using FrozenTextureAtlas =
-    BasicFrozenTextureAtlas<Image<2, v_format, v_type>, detail::TextureAtlasSingleTexture<v_format, v_type>>;
+    BasicFrozenTextureAtlas<Image<2, v_format, v_type, v_row_alignment>,
+                            detail::TextureAtlasSingleTexture<v_format, v_type, v_row_alignment>>;
 
 } // namespace dang::gl
