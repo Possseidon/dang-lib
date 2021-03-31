@@ -19,6 +19,9 @@ public:
     using Size = dmath::svec<v_dim>;
     using Bounds = dmath::sbounds<v_dim>;
 
+    static constexpr auto pixel_format = v_format;
+    static constexpr auto pixel_type = v_type;
+
     /// @brief Initializes the image with a width and height of zero.
     Image() = default;
 
