@@ -63,7 +63,7 @@ public:
     }
 
     /// @brief Loads a PNG image from the given stream and returns it.
-    /// @remark Throws a PNGError if the stream does not contain a valid PNG.
+    /// @exception PNGError if the stream does not contain a valid PNG.
     static Image loadFromPNG(std::istream& stream)
     {
         static_assert(v_type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
@@ -76,7 +76,8 @@ public:
     }
 
     /// @brief Loads a PNG image from the given file and returns it.
-    /// @remark Throws a PNGError if the file does not represent a valid PNG.
+    /// @exception PNGError if the file cannot be opened.
+    /// @exception PNGError if the file does not represent a valid PNG.
     static Image loadFromPNG(const fs::path& path)
     {
         std::ifstream stream(path, std::ios::binary);
