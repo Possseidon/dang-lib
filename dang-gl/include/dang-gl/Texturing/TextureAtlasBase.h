@@ -23,7 +23,6 @@ template <typename TImageData, typename TTextureBase>
 class TextureAtlasBase : public TTextureBase {
 public:
     using Tiles = TextureAtlasTiles<TImageData>;
-    using TileBorderGeneration = typename Tiles::TileBorderGeneration;
     using TileHandle = typename Tiles::TileHandle;
     using Frozen = BasicFrozenTextureAtlas<TImageData, TTextureBase>;
 
@@ -31,24 +30,32 @@ public:
         : tiles_(max_texture_size, max_layer_count)
     {}
 
-    TileBorderGeneration guessTileBorderGeneration(GLsizei size) const
+    TextureAtlasTileBorderGeneration guessTileBorderGeneration(GLsizei size) const
     {
         return tiles_.guessTileBorderGeneration(size);
     }
 
-    TileBorderGeneration guessTileBorderGeneration(svec2 size) const { return tiles_.guessTileBorderGeneration(size); }
+    TextureAtlasTileBorderGeneration guessTileBorderGeneration(svec2 size) const
+    {
+        return tiles_.guessTileBorderGeneration(size);
+    }
 
-    TileBorderGeneration defaultBorderGeneration() const { return tiles_.defaultBorderGeneration(); }
-    void setDefaultBorderGeneration(TileBorderGeneration border) { tiles_.setDefaultBorderGeneration(border); }
+    TextureAtlasTileBorderGeneration defaultBorderGeneration() const { return tiles_.defaultBorderGeneration(); }
+    void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border)
+    {
+        tiles_.setDefaultBorderGeneration(border);
+    }
 
-    void add(std::string name, TImageData image_data, std::optional<TileBorderGeneration> border = std::nullopt)
+    void add(std::string name,
+             TImageData image_data,
+             std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         tiles_.add(std::move(name), std::move(image_data), border);
     }
 
     [[nodiscard]] TileHandle addWithHandle(std::string name,
                                            TImageData image_data,
-                                           std::optional<TileBorderGeneration> border = std::nullopt)
+                                           std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         return tiles_.addWithHandle(std::move(name), std::move(image_data), border);
     }

@@ -25,15 +25,15 @@ The ImageData concept:
 
 */
 
+/// @brief On which sides of a texture to copy the opposite side for better tilling.
+enum class TextureAtlasTileBorderGeneration { None, Positive, All };
+
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
 /// @remark Supports automatic border generation on only positive or all sides.
 template <typename TImageData>
 class TextureAtlasTiles {
 public:
-    /// @brief On which sides of a texture to copy the opposite side for better tilling.
-    enum class TileBorderGeneration { None, Positive, All };
-
     /// @brief A function that is called with required size (width and height), layers and mipmap levels.
     /// @remarks Returns whether actual resizing occurred.
     using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
@@ -71,10 +71,10 @@ private:
         mutable TileHandles handles;
         std::string name;
         TImageData image_data;
-        TileBorderGeneration border;
+        TextureAtlasTileBorderGeneration border;
         TilePlacement placement;
 
-        TileData(std::string&& name, TImageData&& image_data, TileBorderGeneration border)
+        TileData(std::string&& name, TImageData&& image_data, TextureAtlasTileBorderGeneration border)
             : name(std::move(name))
             , image_data(std::move(image_data))
             , border(border)
@@ -200,7 +200,7 @@ private:
             auto s_height = static_cast<GLsizei>(height);
 
             switch (tile.border) {
-            case TileBorderGeneration::Positive: {
+            case TextureAtlasTileBorderGeneration::Positive: {
                 // left top -> right bottom
                 modify(image_data[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width, s_height, 0}, 0);
                 // left -> right
@@ -210,12 +210,12 @@ private:
 
                 [[fallthrough]];
             }
-            case TileBorderGeneration::None: {
+            case TextureAtlasTileBorderGeneration::None: {
                 // full image
                 modify(image_data, position, 0);
                 break;
             }
-            case TileBorderGeneration::All: {
+            case TextureAtlasTileBorderGeneration::All: {
                 // full image (offset by 1)
                 modify(image_data, position + svec3{1, 1, 0}, 0);
 
@@ -388,37 +388,37 @@ public:
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
     /// @exception std::invalid_argument if the size is negative.
-    TileBorderGeneration guessTileBorderGeneration(GLsizei size) const
+    TextureAtlasTileBorderGeneration guessTileBorderGeneration(GLsizei size) const
     {
         if (size < 0)
             throw std::invalid_argument("Size cannot be negative.");
         auto usize = static_cast<std::make_unsigned_t<GLsizei>>(size);
         if (dutils::popcount(usize) == 1)
-            return TileBorderGeneration::None;
+            return TextureAtlasTileBorderGeneration::None;
         if (dutils::popcount(usize + 1) == 1)
-            return TileBorderGeneration::Positive;
+            return TextureAtlasTileBorderGeneration::Positive;
         if (dutils::popcount(usize + 2) == 1)
-            return TileBorderGeneration::All;
+            return TextureAtlasTileBorderGeneration::All;
         return default_border_;
     }
 
     /// @brief Guesses a generation method for a given image size.
     /// @remark Gives the method that will result in a final power of two size.
     /// @exception std::invalid_argument if either value of size is negative.
-    TileBorderGeneration guessTileBorderGeneration(svec2 size) const
+    TextureAtlasTileBorderGeneration guessTileBorderGeneration(svec2 size) const
     {
         return guessTileBorderGeneration(size.maxValue());
     }
 
     /// @brief Adds the given border generation to the size.
-    static GLsizei sizeWithBorder(GLsizei size, TileBorderGeneration border)
+    static GLsizei sizeWithBorder(GLsizei size, TextureAtlasTileBorderGeneration border)
     {
         switch (border) {
-        case TileBorderGeneration::None:
+        case TextureAtlasTileBorderGeneration::None:
             return size;
-        case TileBorderGeneration::Positive:
+        case TextureAtlasTileBorderGeneration::Positive:
             return size + 1;
-        case TileBorderGeneration::All:
+        case TextureAtlasTileBorderGeneration::All:
             return size + 2;
         default:
             assert(false);
@@ -427,15 +427,15 @@ public:
     }
 
     /// @brief Adds the given border generation to both components of the size.
-    static svec2 sizeWithBorder(svec2 size, TileBorderGeneration border)
+    static svec2 sizeWithBorder(svec2 size, TextureAtlasTileBorderGeneration border)
     {
         return {sizeWithBorder(size.x(), border), sizeWithBorder(size.y(), border)};
     }
 
     /// @brief The current default border generation method.
-    TileBorderGeneration defaultBorderGeneration() const { return default_border_; }
+    TextureAtlasTileBorderGeneration defaultBorderGeneration() const { return default_border_; }
     /// @brief Sets the default border generation method.
-    void setDefaultBorderGeneration(TileBorderGeneration border) { default_border_ = border; }
+    void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border) { default_border_ = border; }
 
     /// @brief Adds a new tile with a given name and border generation.
     /// @exception std::invalid_argument if the name is empty.
@@ -443,7 +443,9 @@ public:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    void add(std::string name, TImageData image_data, std::optional<TileBorderGeneration> border = std::nullopt)
+    void add(std::string name,
+             TImageData image_data,
+             std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         emplaceTile(std::move(name), std::move(image_data), border);
     }
@@ -457,7 +459,7 @@ public:
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
     [[nodiscard]] TileHandle addWithHandle(std::string name,
                                            TImageData image_data,
-                                           std::optional<TileBorderGeneration> border = std::nullopt)
+                                           std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         return TileHandle(emplaceTile(std::move(name), std::move(image_data), border));
     }
@@ -583,7 +585,7 @@ private:
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
     const TileData* emplaceTile(std::string&& name,
                                 TImageData&& image_data,
-                                std::optional<TileBorderGeneration> border = std::nullopt)
+                                std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         if (name.empty())
             throw std::invalid_argument("Tile name is empty.");
@@ -613,7 +615,7 @@ private:
     GLsizei max_layer_count_;
     std::unordered_map<std::string, TileData> tiles_;
     std::vector<Layer> layers_;
-    TileBorderGeneration default_border_ = TileBorderGeneration::None;
+    TextureAtlasTileBorderGeneration default_border_ = TextureAtlasTileBorderGeneration::None;
 };
 
 /// @brief A facade over a texture atlas, whose image data has been freed, preventing further modifications.
