@@ -28,6 +28,7 @@ protected:
         assert(texture_.size().x() == texture_.size().y());
         if (required_size == texture_.size().x() && layers == texture_.size().z())
             return false;
+        // /!\ Resets all texture parameters!
         texture_ =
             Texture2DArray({required_size, required_size, layers}, mipmap_levels, pixel_format_internal_v<v_format>);
         return true;
