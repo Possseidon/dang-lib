@@ -120,7 +120,7 @@ struct Quaternion : private Vector<T, 4> {
     constexpr Quaternion inverseFast() const { return conjugate(); }
 
     /// @brief Returns the inverse of the quaternion, even if the quaternion is not normalized.
-    constexpr Quaternion inverseSafe() const { return conjugate() / Base::sqrdot(); }
+    constexpr Quaternion inverseSafe() const { return conjugate() / sqrdot(); }
 
     /// @brief Converts the quaternion into a simple xyzw-vector.
     constexpr const Vector<T, 4>& asVector() const { return *this; }
