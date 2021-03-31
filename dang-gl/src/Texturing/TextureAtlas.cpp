@@ -2,6 +2,14 @@
 
 namespace dang::gl {
 
+namespace detail {
+
+TextureAtlasBase::TextureAtlasBase(Texture2DArray&& texture)
+    : texture_(std::move(texture))
+{}
+
+} // namespace detail
+
 TextureAtlas::TextureAtlas(std::optional<GLsizei> max_texture_size, std::optional<GLsizei> max_layer_count)
     : tiles_(max_texture_size.value_or(context()->max_3d_texture_size),
              max_layer_count.value_or(context()->max_array_texture_layers))
@@ -80,8 +88,8 @@ bool FrozenTextureAtlas::exists(const std::string& name) const { return tiles_.e
 TextureAtlas::TileHandle FrozenTextureAtlas::operator[](const std::string& name) const { return tiles_[name]; }
 
 FrozenTextureAtlas::FrozenTextureAtlas(Tiles&& tiles, Texture2DArray&& texture)
-    : tiles_(std::move(tiles))
-    , texture_(std::move(texture))
+    : detail::TextureAtlasBase(std::move(texture))
+    , tiles_(std::move(tiles))
 {}
 
 } // namespace dang::gl
