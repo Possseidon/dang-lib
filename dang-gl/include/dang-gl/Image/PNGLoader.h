@@ -52,7 +52,7 @@ public:
     /// @remark Use the size method to query the width and height of the returned data.
     /// @param flip Whether to flip the top and bottom of the PNG.
     template <PixelFormat v_format = PixelFormat::RGBA>
-    std::vector<Pixel<v_format>> read(bool flip = false);
+    std::vector<Pixel<v_format>> read(std::size_t row_alignment, bool flip = false);
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
     PNGWarningEvent onWarning;
@@ -105,7 +105,7 @@ private:
 };
 
 template <PixelFormat v_format>
-inline std::vector<Pixel<v_format>> PNGLoader::read(bool flip)
+inline std::vector<Pixel<v_format>> PNGLoader::read(std::size_t row_alignment, bool flip)
 {
     if (!initialized_)
         throw PNGError("PNG not initialized.");
@@ -134,13 +134,15 @@ inline std::vector<Pixel<v_format>> PNGLoader::read(bool flip)
     if (rowbytes != size_.x() * pixel_format_component_count_v<v_format>)
         throw PNGError("Cannot convert PNG to correct format.");
 
-    std::vector<Pixel<v_format>> image(size_.product());
+    auto aligned_width = (size_.x() - 1) / row_alignment * row_alignment + row_alignment;
+    auto height = size_.y();
+    std::vector<Pixel<v_format>> image(aligned_width * height);
 
     // fill offsets with the row-pointers to the actual image data
     std::vector<png_bytep> offsets(size_.y());
 
     png_bytep current = reinterpret_cast<png_bytep>(image.data());
-    auto fill = [&] { return std::exchange(current, current + rowbytes); };
+    auto fill = [&] { return std::exchange(current, current + aligned_width); };
 
     if (flip)
         std::generate(offsets.rbegin(), offsets.rend(), fill);

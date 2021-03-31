@@ -12,7 +12,10 @@
 namespace dang::gl {
 
 /// @brief Stores pixels data for an n-dimensional image in a template specified type.
-template <std::size_t v_dim, PixelFormat v_format = PixelFormat::RGBA, PixelType v_type = PixelType::UNSIGNED_BYTE>
+template <std::size_t v_dim,
+          PixelFormat v_format = PixelFormat::RGBA,
+          PixelType v_type = PixelType::UNSIGNED_BYTE,
+          std::size_t v_row_alignment = 4>
 class Image {
 public:
     using Pixel = Pixel<v_format, v_type>;
@@ -21,6 +24,7 @@ public:
 
     static constexpr auto pixel_format = v_format;
     static constexpr auto pixel_type = v_type;
+    static constexpr auto row_alignment = v_row_alignment;
 
     /// @brief Initializes the image with a width and height of zero.
     Image() = default;
@@ -28,38 +32,40 @@ public:
     /// @brief Initializes the image using the given size with zero.
     explicit Image(const Size& size)
         : size_(size)
-        , data_(count())
+        , data_(alignedCount())
     {}
 
     /// @brief Initializes the image using the given size and fills it with the value.
     Image(const Size& size, const Pixel& value)
         : size_(size)
-        , data_(count(), value)
+        , data_(alignedCount(), value)
     {}
 
     /// @brief Initializes the image using the given size and data iterator.
+    /// @remark Make sure, that the data is properly aligned.
     template <typename TIter>
     Image(const Size& size, TIter first)
         : size_(size)
-        , data_(first, std::next(first, size))
+        , data_(first, std::next(first, alignedCount()))
     {}
 
     /// @brief Initializes the image using the given size and preexisting vector of data, which should match the size.
     /// @remark Highly consider passing the data as an r-value using std::move to avoid a copy.
+    /// @remark Make sure, that the data is properly aligned.
     Image(const Size& size, std::vector<Pixel> data)
         : size_(size)
         , data_(std::move(data))
     {
-        assert(data_.size() == size.product());
+        assert(data_.size() == alignedCount());
     }
 
     /// @brief Creates a new image from a subsection of an existing image.
     Image(const Image& image, const Bounds& bounds)
         : size_(bounds.size())
     {
-        data_.reserve(count());
+        data_.resize(alignedCount());
         for (const auto& pos : bounds)
-            data_.push_back(image[pos]);
+            (*this)[pos - bounds.low] = image[pos];
     }
 
     /// @brief Loads a PNG image from the given stream and returns it.
@@ -71,7 +77,7 @@ public:
         // TODO: Better logging
         png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << '\n'; });
         png_loader.init(stream);
-        std::vector<Pixel> data = png_loader.read<v_format>(true);
+        std::vector<Pixel> data = png_loader.read<v_format>(v_row_alignment, true);
         return Image(png_loader.size(), data);
     }
 
@@ -89,11 +95,22 @@ public:
     /// @brief Returns the size of the image along each axis.
     const Size& size() const { return size_; }
 
+    /// @brief Returns the size, but with the first component aligned.
+    Size alignedSize() const
+    {
+        auto result = size_;
+        result[0] = (result[0] - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
+        return result;
+    }
+
     /// @brief Returns the total count of pixels.
     std::size_t count() const { return size_.product(); }
 
-    /// @brief Returns the actual size of the image in bytes.
-    std::size_t byteSize() const { return count() * sizeof(Pixel); }
+    /// @brief Returns the total count of pixels with alignment.
+    std::size_t alignedCount() const { return alignedSize().product(); }
+
+    /// @brief Returns the actual size of the image (with alignment) in bytes.
+    std::size_t byteSize() const { return alignedCount() * sizeof(Pixel); }
 
     /// @brief Provides access for a single pixel at the given position.
     Pixel& operator[](const Size& pos) { return data_[posToIndex(pos)]; }
@@ -138,8 +155,9 @@ private:
     template <std::size_t v_first, std::size_t... v_indices>
     std::size_t posToIndexHelperMul(const Size& pos, std::index_sequence<v_indices...>) const
     {
-        assert(pos[v_first] < size_[v_first]);
-        return pos[v_first] * (size_[v_indices] * ... * 1);
+        auto aligned_size = alignedSize();
+        assert(pos[v_first] < aligned_size[v_first]);
+        return pos[v_first] * (aligned_size[v_indices] * ... * 1);
     }
 
     /// @brief A helper function, which takes an index sequence of v_dim as start parameter.
