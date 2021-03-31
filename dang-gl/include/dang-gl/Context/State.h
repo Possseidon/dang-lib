@@ -341,6 +341,23 @@ public:
     detail::StateFunc<&glClearDepth, GLfloat> clear_depth{*this, 0.0f};
     detail::StateFunc<&glClearStencil, GLint> clear_stencil{*this, 0};
 
+    detail::StateFunc<&glPixelStorei, bool, GL_PACK_SWAP_BYTES> pack_swap_bytes{*this, false};
+    detail::StateFunc<&glPixelStorei, bool, GL_PACK_LSB_FIRST> pack_lsb_first{*this, false};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_ROW_LENGTH> pack_row_length{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_IMAGE_HEIGHT> pack_image_height{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_SKIP_ROWS> pack_skip_rows{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_SKIP_PIXELS> pack_skip_pixels{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_SKIP_IMAGES> pack_skip_images{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_PACK_ALIGNMENT> pack_alignment{*this, 4};
+    detail::StateFunc<&glPixelStorei, bool, GL_UNPACK_SWAP_BYTES> unpack_swap_bytes{*this, false};
+    detail::StateFunc<&glPixelStorei, bool, GL_UNPACK_LSB_FIRST> unpack_lsb_first{*this, false};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_ROW_LENGTH> unpack_row_length{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_IMAGE_HEIGHT> unpack_image_height{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_SKIP_ROWS> unpack_skip_rows{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_SKIP_PIXELS> unpack_skip_pixels{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_SKIP_IMAGES> unpack_skip_images{*this, 0};
+    detail::StateFunc<&glPixelStorei, GLint, GL_UNPACK_ALIGNMENT> unpack_alignment{*this, 4};
+
     detail::Constant<GLint, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS> max_combined_texture_image_units;
     detail::Constant<GLint, GL_MAX_COLOR_ATTACHMENTS> max_color_attachments;
     detail::Constant<GLint, GL_MAX_TEXTURE_SIZE> max_texture_size;
