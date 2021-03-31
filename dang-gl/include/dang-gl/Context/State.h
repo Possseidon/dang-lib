@@ -112,7 +112,7 @@ protected:
 
 /// @brief A state property, which calls a template supplied function with a single enum, arithmetic value or struct
 /// with a toTuple method.
-template <auto v_func, typename T>
+template <auto v_func, typename T, auto... v_constants>
 class StateFunc : public StateProperty<T> {
 public:
     using StateProperty<T>::StateProperty;
@@ -129,11 +129,11 @@ protected:
     void update() override
     {
         if constexpr (std::is_enum_v<T>)
-            (*v_func)(toGLConstant(**this));
+            (*v_func)(v_constants..., toGLConstant(**this));
         else if constexpr (std::is_arithmetic_v<T>)
-            (*v_func)(**this);
+            (*v_func)(v_constants..., **this);
         else
-            std::apply(*v_func, (*this)->toTuple());
+            std::apply(*v_func, v_constants..., (*this)->toTuple());
     }
 };
 
