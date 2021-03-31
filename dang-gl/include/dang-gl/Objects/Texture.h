@@ -450,7 +450,7 @@ protected:
         glTexSubImage<v_dim>(toGLConstant(v_target),
                              mipmap_level,
                              offset[v_indices]...,
-                             static_cast<GLsizei>(v_indices < image.size().size() ? image.size()[v_indices] : 1)...,
+                             static_cast<GLsizei>(v_indices < v_image_dim ? image.size()[v_indices] : 1)...,
                              toGLConstant(v_format),
                              toGLConstant(v_type),
                              image.data());
