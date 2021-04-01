@@ -239,8 +239,8 @@ public:
     svec<v_dim> size() const { return size_; }
 
     /// @brief Modifies a part of the stored texture at the optional given offset and mipmap level.
-    template <std::size_t v_image_dim, PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
-    void modify(const Image<v_image_dim, v_format, v_type, v_row_alignment>& image,
+    template <std::size_t v_image_dim, PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
+    void modify(const Image<v_image_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                 ivec<v_dim> offset = {},
                 GLint mipmap_level = 0)
     {
@@ -443,12 +443,12 @@ protected:
 
     /// @brief Calls glTexSubImage with the provided parameters and index sequence of the textures dimension.
     template <std::size_t v_image_dim,
-              PixelFormat v_format,
-              PixelType v_type,
+              PixelFormat v_pixel_format,
+              PixelType v_pixel_type,
               std::size_t v_row_alignment,
               std::size_t... v_indices>
     void subImage(std::index_sequence<v_indices...>,
-                  const Image<v_image_dim, v_format, v_type, v_row_alignment>& image,
+                  const Image<v_image_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                   ivec<v_dim> offset = {},
                   GLint mipmap_level = 0)
     {
@@ -460,8 +460,8 @@ protected:
                              mipmap_level,
                              offset[v_indices]...,
                              static_cast<GLsizei>(v_indices < v_image_dim ? image.size()[v_indices] : 1)...,
-                             toGLConstant(v_format),
-                             toGLConstant(v_type),
+                             toGLConstant(v_pixel_format),
+                             toGLConstant(v_pixel_type),
                              image.data());
     }
 
@@ -517,10 +517,10 @@ public:
     /// @brief Initializes a new texture with the given image data.
     /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
-    explicit TextureBaseRegular(const Image<v_dim, v_format, v_type, v_row_alignment>& image,
+    template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
+    explicit TextureBaseRegular(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
-                                PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
+                                PixelInternalFormat internal_format = pixel_format_internal_v<v_pixel_format>)
         : TextureBaseRegular()
     {
         generate(image, mipmap_levels, internal_format);
@@ -544,10 +544,10 @@ public:
     /// @brief Generates texture storage and fills it with the provided image.
     /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
-    void generate(const Image<v_dim, v_format, v_type, v_row_alignment>& image,
+    template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
+    void generate(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
-                  PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
+                  PixelInternalFormat internal_format = pixel_format_internal_v<v_pixel_format>)
     {
         assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
         this->bind();
@@ -626,11 +626,11 @@ public:
 
     /// @brief Initializes a new multisampled texture with the given image data and sample count.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
-    explicit TextureBaseMultisample(const Image<v_dim, v_format, v_type, v_row_alignment>& image,
+    template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
+    explicit TextureBaseMultisample(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                                     GLsizei samples,
                                     bool fixed_sample_locations = true,
-                                    PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
+                                    PixelInternalFormat internal_format = pixel_format_internal_v<v_pixel_format>)
         : TextureBaseMultisample()
     {
         generate(image, samples, fixed_sample_locations, internal_format);
@@ -653,11 +653,11 @@ public:
 
     /// @brief Generates texture storage and fills it with the provided image.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
-    template <PixelFormat v_format, PixelType v_type, std::size_t v_row_alignment>
-    void generate(const Image<v_dim, v_format, v_type, v_row_alignment>& image,
+    template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
+    void generate(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
                   GLint samples,
                   bool fixed_sample_locations = true,
-                  PixelInternalFormat internal_format = pixel_format_internal_v<v_format>)
+                  PixelInternalFormat internal_format = pixel_format_internal_v<v_pixel_format>)
     {
         assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
         this->bind();

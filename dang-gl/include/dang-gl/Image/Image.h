@@ -13,20 +13,21 @@ namespace dang::gl {
 
 /// @brief Stores pixels data for an n-dimensional image in a template specified type.
 template <std::size_t v_dim,
-          PixelFormat v_format = PixelFormat::RGBA,
-          PixelType v_type = PixelType::UNSIGNED_BYTE,
+          PixelFormat v_pixel_format = PixelFormat::RGBA,
+          PixelType v_pixel_type = PixelType::UNSIGNED_BYTE,
           std::size_t v_row_alignment = 4>
 class Image {
 public:
-    using Pixel = Pixel<v_format, v_type>;
-    using Size = dmath::svec<v_dim>;
-    using Bounds = dmath::sbounds<v_dim>;
-
-    static constexpr auto pixel_format = v_format;
-    static constexpr auto pixel_type = v_type;
+    static constexpr auto dim = v_dim;
+    static constexpr auto pixel_format = v_pixel_format;
+    static constexpr auto pixel_type = v_pixel_type;
     static constexpr auto row_alignment = v_row_alignment;
 
-    static_assert(v_row_alignment > 0);
+    using Pixel = Pixel<pixel_format, pixel_type>;
+    using Size = dmath::svec<dim>;
+    using Bounds = dmath::sbounds<dim>;
+
+    static_assert(row_alignment > 0);
 
     static_assert(std::is_trivially_copy_assignable_v<Pixel>);
     static_assert(std::is_trivially_destructible_v<Pixel>);
@@ -90,12 +91,12 @@ public:
     /// @exception PNGError if the stream does not contain a valid PNG.
     static Image loadFromPNG(std::istream& stream)
     {
-        static_assert(v_type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
+        static_assert(pixel_type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
         PNGLoader png_loader;
         // TODO: Better logging
         png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << '\n'; });
         png_loader.init(stream);
-        auto data = png_loader.read<v_format, v_row_alignment>(true);
+        auto data = png_loader.read<pixel_format, row_alignment>(true);
         return Image(png_loader.size(), std::move(data));
     }
 
@@ -120,10 +121,7 @@ public:
     std::size_t byteWidth() const { return size_[0] * sizeof(Pixel); }
 
     /// @brief The width of the image in bytes, but aligned.
-    std::size_t alignedByteWidth() const
-    {
-        return (byteWidth() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
-    }
+    std::size_t alignedByteWidth() const { return (byteWidth() - 1) / row_alignment * row_alignment + row_alignment; }
 
     /// @brief The size of the image, but with width as the aligned byte width.
     dmath::svec2 alignedByteSize() const
@@ -192,7 +190,7 @@ private:
     /// @brief Converts the given pixel position into an index to the data.
     std::size_t posToIndex(const Size& pos) const
     {
-        return pos[0] * sizeof(Pixel) + posToIndexHelper(pos, std::make_index_sequence<v_dim - 1>());
+        return pos[0] * sizeof(Pixel) + posToIndexHelper(pos, std::make_index_sequence<dim - 1>());
     }
 
     Size size_;

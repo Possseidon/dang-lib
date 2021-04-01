@@ -54,7 +54,7 @@ public:
     /// @brief Converts the data into the specified format and returns it as a byte array.
     /// @remark Actual pixels are created inside of the byte array using placement new.
     /// @param flip Whether to flip the top and bottom of the PNG.
-    template <PixelFormat v_format = PixelFormat::RGBA, std::size_t row_alignment = 4>
+    template <PixelFormat v_pixel_format = PixelFormat::RGBA, std::size_t row_alignment = 4>
     std::unique_ptr<std::byte[]> read(bool flip = false);
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
@@ -65,13 +65,13 @@ private:
     /// channel in the process.
     void handleBitDepth();
     /// @brief Converts between gray and rgb values, depending on the given pixel format.
-    template <PixelFormat v_format>
+    template <PixelFormat v_pixel_format>
     void handleGrayRGB();
     /// @brief Adds or strips the alpha channel, depending on the pixel format.
-    template <PixelFormat v_format>
+    template <PixelFormat v_pixel_format>
     void handleAlpha();
     /// @brief Converts between RGB(A) to BGR(A), depending on the given pixel format.
-    template <PixelFormat v_format>
+    template <PixelFormat v_pixel_format>
     void handleBGR();
 
     /// @brief Called by libpng, when an unrecoverable error occurs.
@@ -91,34 +91,34 @@ private:
     }
 
     /// @brief The width of the image in bytes.
-    template <PixelFormat v_format>
+    template <PixelFormat v_pixel_format>
     std::size_t byteWidth() const
     {
-        return size_[0] * sizeof(Pixel<v_format>);
+        return size_[0] * sizeof(Pixel<v_pixel_format>);
     }
 
     /// @brief The width of the image in bytes, but aligned.
-    template <PixelFormat v_format, std::size_t v_row_alignment>
+    template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
     std::size_t alignedByteWidth() const
     {
         static_assert(v_row_alignment > 0);
-        return (byteWidth<v_format>() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
+        return (byteWidth<v_pixel_format>() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
     }
 
     /// @brief The size of the image, but with width as the aligned byte width.
-    template <PixelFormat v_format, std::size_t v_row_alignment>
+    template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
     dmath::svec2 alignedByteSize() const
     {
         auto result = size_;
-        result[0] = alignedByteWidth<v_format, v_row_alignment>();
+        result[0] = alignedByteWidth<v_pixel_format, v_row_alignment>();
         return result;
     }
 
     /// @brief The size of the image in bytes.
-    template <PixelFormat v_format, std::size_t v_row_alignment>
+    template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
     std::size_t byteCount() const
     {
-        return alignedByteSize<v_format, v_row_alignment>().product();
+        return alignedByteSize<v_pixel_format, v_row_alignment>().product();
     }
 
     /// @brief Cleans up the libpng handles.
@@ -137,7 +137,7 @@ private:
     png_byte bit_depth_ = 0;
 };
 
-template <PixelFormat v_format, std::size_t v_row_alignment>
+template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
 inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
 {
     if (!initialized_)
@@ -152,9 +152,9 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     bit_depth_ = png_get_bit_depth(png_ptr_, info_ptr_);
 
     handleBitDepth();
-    handleGrayRGB<v_format>();
-    handleAlpha<v_format>();
-    handleBGR<v_format>();
+    handleGrayRGB<v_pixel_format>();
+    handleAlpha<v_pixel_format>();
+    handleBGR<v_pixel_format>();
 
     png_read_update_info(png_ptr_, info_ptr_);
 
@@ -164,11 +164,11 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
         throw PNGError("PNG bit_depth mismatch");
 
     png_size_t rowbytes = png_get_rowbytes(png_ptr_, info_ptr_);
-    if (rowbytes != size_.x() * pixel_format_component_count_v<v_format>)
+    if (rowbytes != size_.x() * pixel_format_component_count_v<v_pixel_format>)
         throw PNGError("Cannot convert PNG to correct format.");
 
-    auto aligned_width = alignedByteWidth<v_format, v_row_alignment>();
-    auto image = std::make_unique<std::byte[]>(byteCount<v_format, v_row_alignment>());
+    auto aligned_width = alignedByteWidth<v_pixel_format, v_row_alignment>();
+    auto image = std::make_unique<std::byte[]>(byteCount<v_pixel_format, v_row_alignment>());
 
     // Fill offsets with the row-pointers to the actual image data.
     std::vector<png_bytep> offsets(size_.y());
@@ -181,12 +181,14 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     else
         std::generate(offsets.begin(), offsets.end(), fill);
 
+    using Pixel = Pixel<v_pixel_format>;
+
     for (auto offset : offsets)
         for (std::size_t x = 0; x < size_.x(); x++)
-            new (offset + x * sizeof(Pixel<v_format>)) Pixel<v_format>;
+            new (offset + x * sizeof(Pixel)) Pixel;
 
     // Make sure, the caller doesn't need to call the destructor on each pixel.
-    static_assert(std::is_trivially_destructible_v<Pixel<v_format>>);
+    static_assert(std::is_trivially_destructible_v<Pixel>);
 
     png_read_image(png_ptr_, offsets.data());
     png_read_end(png_ptr_, nullptr);
@@ -194,15 +196,15 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     return image;
 }
 
-template <PixelFormat v_format>
+template <PixelFormat v_pixel_format>
 inline void PNGLoader::handleGrayRGB()
 {
     bool is_gray = color_type_ == PNG_COLOR_TYPE_GRAY || color_type_ == PNG_COLOR_TYPE_GA;
 
-    if constexpr (v_format == PixelFormat::RGB || v_format == PixelFormat::BGR || v_format == PixelFormat::RGBA ||
-                  v_format == PixelFormat::BGRA || v_format == PixelFormat::RGB_INTEGER ||
-                  v_format == PixelFormat::BGR_INTEGER || v_format == PixelFormat::RGBA_INTEGER ||
-                  v_format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_pixel_format == PixelFormat::RGB || v_pixel_format == PixelFormat::RGB_INTEGER ||
+                  v_pixel_format == PixelFormat::BGR || v_pixel_format == PixelFormat::BGR_INTEGER ||
+                  v_pixel_format == PixelFormat::RGBA || v_pixel_format == PixelFormat::RGBA_INTEGER ||
+                  v_pixel_format == PixelFormat::BGRA || v_pixel_format == PixelFormat::BGRA_INTEGER) {
         if (is_gray) {
             png_set_gray_to_rgb(png_ptr_);
             color_type_ |= PNG_COLOR_MASK_COLOR;
@@ -224,14 +226,14 @@ inline void PNGLoader::handleGrayRGB()
     }
 }
 
-template <PixelFormat v_format>
+template <PixelFormat v_pixel_format>
 inline void PNGLoader::handleAlpha()
 {
     bool has_alpha = color_type_ & PNG_COLOR_MASK_ALPHA;
 
-    if constexpr (v_format == PixelFormat::RG || v_format == PixelFormat::RGBA || v_format == PixelFormat::BGRA ||
-                  v_format == PixelFormat::RG_INTEGER || v_format == PixelFormat::RGBA_INTEGER ||
-                  v_format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_pixel_format == PixelFormat::RG || v_pixel_format == PixelFormat::RG_INTEGER ||
+                  v_pixel_format == PixelFormat::RGBA || v_pixel_format == PixelFormat::RGBA_INTEGER ||
+                  v_pixel_format == PixelFormat::BGRA || v_pixel_format == PixelFormat::BGRA_INTEGER) {
         if (!has_alpha) {
             png_set_add_alpha(png_ptr_, 0xFF, PNG_FILLER_AFTER);
             color_type_ |= PNG_COLOR_MASK_ALPHA;
@@ -245,11 +247,11 @@ inline void PNGLoader::handleAlpha()
     }
 }
 
-template <PixelFormat v_format>
+template <PixelFormat v_pixel_format>
 inline void PNGLoader::handleBGR()
 {
-    if constexpr (v_format == PixelFormat::BGR || v_format == PixelFormat::BGRA ||
-                  v_format == PixelFormat::BGR_INTEGER || v_format == PixelFormat::BGRA_INTEGER) {
+    if constexpr (v_pixel_format == PixelFormat::BGR || v_pixel_format == PixelFormat::BGR_INTEGER ||
+                  v_pixel_format == PixelFormat::BGRA || v_pixel_format == PixelFormat::BGRA_INTEGER) {
         assert(color_type_ == PNG_COLOR_TYPE_RGB || color_type_ == PNG_COLOR_TYPE_RGBA);
         png_set_bgr(png_ptr_);
     }
