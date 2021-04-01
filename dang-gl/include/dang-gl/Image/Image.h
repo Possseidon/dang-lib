@@ -32,7 +32,7 @@ public:
     static_assert(std::is_trivially_copy_assignable_v<Pixel>);
     static_assert(std::is_trivially_destructible_v<Pixel>);
 
-    /// @brief Initializes the image with a width and height of zero.
+    /// @brief Initializes the image with a width and height of zero without allocating any storage.
     Image() = default;
 
     Image(const Image& other)
@@ -74,10 +74,13 @@ public:
     /// @remark The array has to contain actual pixels that were created with placement new of Pixel.
     /// @remark Highly consider passing the data as an rvalue using std::move to avoid a copy.
     /// @remark Make sure, that the data is properly aligned.
+    /// @remark For an empty image with either dimension being zero, data must be a nullptr.
     Image(const Size& size, std::unique_ptr<std::byte[]> data)
         : size_(size)
         , data_(std::move(data))
-    {}
+    {
+        assert((count() == 0) == (data_.get() == nullptr));
+    }
 
     /// @brief Creates a new image from a subsection of an existing image.
     Image(const Image& image, const Bounds& bounds)
@@ -194,7 +197,7 @@ private:
     }
 
     Size size_;
-    std::unique_ptr<std::byte[]> data_ = std::make_unique<std::byte[]>(byteCount());
+    std::unique_ptr<std::byte[]> data_ = count() > 0 ? std::make_unique<std::byte[]>(byteCount()) : nullptr;
 };
 
 using Image1D = Image<1>;
