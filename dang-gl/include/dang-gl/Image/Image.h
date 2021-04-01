@@ -32,7 +32,7 @@ public:
     static_assert(std::is_trivially_copy_assignable_v<Pixel>);
     static_assert(std::is_trivially_destructible_v<Pixel>);
 
-    /// @brief Initializes the image with a width and height of zero without allocating any storage.
+    /// @brief Initializes the image with a size of zero without allocating any storage.
     Image() = default;
 
     Image(const Image& other)
@@ -162,10 +162,10 @@ public:
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
     const void* data() const { return data_.get(); }
 
-    /// @brief Frees all image data, but leaves texture width and height intact.
+    /// @brief Frees all image data, but leaves texture size intact.
     void free() { data_ = nullptr; }
 
-    /// @brief Frees all image data and sets the texture width and height to zero.
+    /// @brief Frees all image data and sets the texture size to zero.
     void clear()
     {
         free();
