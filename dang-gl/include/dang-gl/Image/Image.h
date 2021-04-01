@@ -22,12 +22,14 @@ public:
     using Size = dmath::svec<v_dim>;
     using Bounds = dmath::sbounds<v_dim>;
 
-    static_assert(std::is_trivially_copy_assignable_v<Pixel>);
-    static_assert(std::is_trivially_destructible_v<Pixel>);
-
     static constexpr auto pixel_format = v_format;
     static constexpr auto pixel_type = v_type;
     static constexpr auto row_alignment = v_row_alignment;
+
+    static_assert(v_row_alignment > 0);
+
+    static_assert(std::is_trivially_copy_assignable_v<Pixel>);
+    static_assert(std::is_trivially_destructible_v<Pixel>);
 
     /// @brief Initializes the image with a width and height of zero.
     Image() = default;

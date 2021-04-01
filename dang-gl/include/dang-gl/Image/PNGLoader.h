@@ -51,8 +51,8 @@ public:
     /// @brief Returns the total count of pixels.
     std::size_t count() const { return size_.product(); }
 
-    /// @brief Converts the data into the specified format and returns a consecutive vector of pixels.
-    /// @remark Use the size method to query the width and height of the returned data.
+    /// @brief Converts the data into the specified format and returns it as a byte array.
+    /// @remark Actual pixels are created inside of the byte array using placement new.
     /// @param flip Whether to flip the top and bottom of the PNG.
     template <PixelFormat v_format = PixelFormat::RGBA, std::size_t row_alignment = 4>
     std::unique_ptr<std::byte[]> read(bool flip = false);
@@ -101,6 +101,7 @@ private:
     template <PixelFormat v_format, std::size_t v_row_alignment>
     std::size_t alignedByteWidth() const
     {
+        static_assert(v_row_alignment > 0);
         return (byteWidth<v_format>() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
     }
 
@@ -131,8 +132,7 @@ private:
 
     dmath::svec2 size_;
 
-    // png_read_update_info can only be called once after the first call, so we have to keep track of modifications
-    // ourself
+    // Keep track of modifications, as png_read_update_info can only be called once after the first call.
     png_byte color_type_ = 0;
     png_byte bit_depth_ = 0;
 };
@@ -170,7 +170,7 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     auto aligned_width = alignedByteWidth<v_format, v_row_alignment>();
     auto image = std::make_unique<std::byte[]>(byteCount<v_format, v_row_alignment>());
 
-    // fill offsets with the row-pointers to the actual image data
+    // Fill offsets with the row-pointers to the actual image data.
     std::vector<png_bytep> offsets(size_.y());
 
     png_bytep current = reinterpret_cast<png_bytep>(image.get());
@@ -184,6 +184,9 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     for (auto offset : offsets)
         for (std::size_t x = 0; x < size_.x(); x++)
             new (offset + x * sizeof(Pixel<v_format>)) Pixel<v_format>;
+
+    // Make sure, the caller doesn't need to call the destructor on each pixel.
+    static_assert(std::is_trivially_destructible_v<Pixel<v_format>>);
 
     png_read_image(png_ptr_, offsets.data());
     png_read_end(png_ptr_, nullptr);

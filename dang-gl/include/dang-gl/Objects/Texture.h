@@ -453,6 +453,8 @@ protected:
                   GLint mipmap_level = 0)
     {
         assert(image.size().lessThanEqual(std::numeric_limits<GLsizei>::max()).all());
+        static_assert(v_row_alignment == 1 || v_row_alignment == 2 || v_row_alignment == 4 || v_row_alignment == 8,
+                      "OpenGL only supports image data with row alignments of 1, 2, 4 or 8.");
         context()->unpack_alignment = static_cast<GLint>(v_row_alignment);
         glTexSubImage<v_dim>(toGLConstant(v_target),
                              mipmap_level,
