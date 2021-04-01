@@ -1,6 +1,9 @@
 #pragma once
 
 #include "dang-gl/Image/Image.h"
+#include "dang-gl/Image/PixelFormat.h"
+#include "dang-gl/Image/PixelType.h"
+#include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Texturing/TextureAtlasBase.h"
 #include "dang-gl/Texturing/TextureAtlasUtils.h"

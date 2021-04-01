@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
 #include "dang-gl/global.h"
 
