@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}
     src/Texturing/TextureAtlas.cpp
     src/Texturing/TextureAtlasBase.cpp
     src/Texturing/TextureAtlasTiles.cpp
+    src/Texturing/TextureAtlasUtils.cpp
 )
 
 target_precompile_headers(${PROJECT_NAME}

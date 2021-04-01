@@ -29,6 +29,12 @@ The ImageData concept:
 /// @brief On which sides of a texture to copy the opposite side for better tilling.
 enum class TextureAtlasTileBorderGeneration { None, Positive, All };
 
+/// @brief Holds maximum size restrictions of the texture atlas.
+struct TextureAtlasLimits {
+    GLsizei max_texture_size;
+    GLsizei max_layer_count;
+};
+
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
 /// @remark Supports automatic border generation on only positive or all sides.
@@ -371,13 +377,12 @@ public:
 
     /// @brief Creates a new instance of TextureAtlasTiles with the given maximum dimensions.
     /// @exception std::invalid_argument if either maximum is less than zero.
-    TextureAtlasTiles(GLsizei max_texture_size, GLsizei max_layer_count)
-        : max_texture_size_(max_texture_size)
-        , max_layer_count_(max_layer_count)
+    TextureAtlasTiles(const TextureAtlasLimits& limits)
+        : limits_(limits)
     {
-        if (max_texture_size < 0)
+        if (limits.max_texture_size < 0)
             throw std::invalid_argument("Maximum texture size cannot be negative.");
-        if (max_layer_count < 0)
+        if (limits.max_layer_count < 0)
             throw std::invalid_argument("Maximum layer count cannot be negative.");
     }
 
@@ -573,9 +578,9 @@ private:
         auto layer_index = std::distance(begin(layers_), layer_iter);
         if (layer_iter != end(layers_))
             return {&*layer_iter, layer_index};
-        if (layer_index >= max_layer_count_)
+        if (layer_index >= limits_.max_layer_count)
             return {nullptr, 0};
-        return {&layers_.emplace_back(tile_size_log2, max_texture_size_), layer_index};
+        return {&layers_.emplace_back(tile_size_log2, limits_.max_texture_size), layer_index};
     }
 
     /// @brief Creates a new tile and adds it to a (possibly newly created) layer.
@@ -593,14 +598,15 @@ private:
 
         if (!image_data)
             throw std::invalid_argument("Image does not contain data.");
-        if (image_data.size().greaterThan(max_texture_size_).any())
+        if (image_data.size().greaterThan(limits_.max_texture_size).any())
             throw std::invalid_argument("Image is too big for texture atlas. (" + image_data.size().format() + " > " +
-                                        std::to_string(max_texture_size_) + ")");
+                                        std::to_string(limits_.max_texture_size) + ")");
 
         auto actual_border = border ? *border : guessTileBorderGeneration(static_cast<svec2>(image_data.size()));
         auto [layer, index] = layerForTile(sizeWithBorder(static_cast<svec2>(image_data.size()), actual_border));
         if (!layer)
-            throw std::length_error("Too many texture atlas layers. (max " + std::to_string(max_layer_count_) + ")");
+            throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
+                                    ")");
 
         // Explicit copy to have two strings to move from.
         std::string key = name;
@@ -612,8 +618,7 @@ private:
         return &tile;
     }
 
-    GLsizei max_texture_size_;
-    GLsizei max_layer_count_;
+    TextureAtlasLimits limits_;
     std::unordered_map<std::string, TileData> tiles_;
     std::vector<Layer> layers_;
     TextureAtlasTileBorderGeneration default_border_ = TextureAtlasTileBorderGeneration::None;

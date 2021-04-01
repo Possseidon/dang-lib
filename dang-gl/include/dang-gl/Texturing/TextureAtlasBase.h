@@ -29,8 +29,8 @@ public:
     using TileHandle = typename Tiles::TileHandle;
     using Frozen = BasicFrozenTextureAtlas<TTextureBase>;
 
-    TextureAtlasBase(GLsizei max_texture_size, GLsizei max_layer_count)
-        : tiles_(max_texture_size, max_layer_count)
+    TextureAtlasBase(const TextureAtlasLimits& limits)
+        : tiles_(limits)
     {}
 
     TextureAtlasTileBorderGeneration guessTileBorderGeneration(GLsizei size) const

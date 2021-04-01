@@ -1,9 +1,9 @@
 #pragma once
 
-#include "dang-gl/Context/Context.h"
 #include "dang-gl/Image/Image.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Texturing/TextureAtlasBase.h"
+#include "dang-gl/Texturing/TextureAtlasUtils.h"
 #include "dang-gl/global.h"
 
 namespace dang::gl {
@@ -55,12 +55,8 @@ public:
 
     explicit TextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
                           std::optional<GLsizei> max_layer_count = std::nullopt)
-        : Base(max_texture_size.value_or(context()->max_3d_texture_size),
-               max_layer_count.value_or(context()->max_array_texture_layers))
-    {
-        assert(!max_texture_size || max_texture_size >= 1 && max_texture_size <= context()->max_3d_texture_size);
-        assert(!max_layer_count || max_layer_count >= 1 && max_layer_count <= context()->max_array_texture_layers);
-    }
+        : Base(TextureAtlasUtils::checkLimits(max_texture_size, max_layer_count))
+    {}
 };
 
 template <PixelFormat v_pixel_format = Image2D::pixel_format,
