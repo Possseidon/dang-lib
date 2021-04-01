@@ -20,7 +20,7 @@ The ImageData concept:
     -> image size
 - void free()
     -> frees all data, but leaves the size
-- ImageData operator[](dmath::sbounds2) const
+- ImageData operator[](const dmath::sbounds2&) const
     -> returns a subsection of the image
 
 */
