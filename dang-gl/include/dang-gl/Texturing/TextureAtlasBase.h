@@ -6,25 +6,27 @@ namespace dang::gl {
 
 /*
 
-The TextureBase<TImageData> concept:
+The TextureBase concept:
 
 - Move-constructible
+- using ImageData = ...;
 - bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
     -> protected, resizes the texture
-- void modify(const TImageData& image, ivec3 offset, GLint mipmap_level)
+- void modify(const ImageData& image, ivec3 offset, GLint mipmap_level)
     -> protected, modifies the texture at a given spot
 
 */
 
-template <typename TImageData, typename TTextureBase>
+template <typename TTextureBase>
 class BasicFrozenTextureAtlas;
 
-template <typename TImageData, typename TTextureBase>
+template <typename TTextureBase>
 class TextureAtlasBase : public TTextureBase {
 public:
-    using Tiles = TextureAtlasTiles<TImageData>;
+    using ImageData = typename TTextureBase::ImageData;
+    using Tiles = TextureAtlasTiles<ImageData>;
     using TileHandle = typename Tiles::TileHandle;
-    using Frozen = BasicFrozenTextureAtlas<TImageData, TTextureBase>;
+    using Frozen = BasicFrozenTextureAtlas<TTextureBase>;
 
     TextureAtlasBase(GLsizei max_texture_size, GLsizei max_layer_count)
         : tiles_(max_texture_size, max_layer_count)
@@ -47,14 +49,14 @@ public:
     }
 
     void add(std::string name,
-             TImageData image_data,
+             ImageData image_data,
              std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         tiles_.add(std::move(name), std::move(image_data), border);
     }
 
     [[nodiscard]] TileHandle addWithHandle(std::string name,
-                                           TImageData image_data,
+                                           ImageData image_data,
                                            std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
         return tiles_.addWithHandle(std::move(name), std::move(image_data), border);
@@ -88,13 +90,14 @@ private:
     Tiles tiles_;
 };
 
-template <typename TImageData, typename TTextureBase>
+template <typename TTextureBase>
 class BasicFrozenTextureAtlas : public TTextureBase {
 public:
-    using Tiles = FrozenTextureAtlasTiles<TImageData>;
+    using ImageData = typename TTextureBase::ImageData;
+    using Tiles = FrozenTextureAtlasTiles<ImageData>;
     using TileHandle = typename Tiles::TileHandle;
 
-    friend class TextureAtlasBase<TImageData, TTextureBase>;
+    friend class TextureAtlasBase<TTextureBase>;
 
     [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
     [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }

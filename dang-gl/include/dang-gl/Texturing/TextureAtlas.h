@@ -48,11 +48,9 @@ template <PixelFormat v_pixel_format = Image2D::pixel_format,
           PixelType v_pixel_type = Image2D::pixel_type,
           std::size_t v_row_alignment = 4>
 class TextureAtlas
-    : public TextureAtlasBase<Image<2, v_pixel_format, v_pixel_type, v_row_alignment>,
-                              detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>> {
+    : public TextureAtlasBase<detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>> {
 public:
-    using Base = TextureAtlasBase<Image<2, v_pixel_format, v_pixel_type, v_row_alignment>,
-                                  detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>>;
+    using Base = TextureAtlasBase<detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>>;
 
     explicit TextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
                           std::optional<GLsizei> max_layer_count = std::nullopt)
@@ -68,7 +66,6 @@ template <PixelFormat v_pixel_format = Image2D::pixel_format,
           PixelType v_pixel_type = Image2D::pixel_type,
           std::size_t v_row_alignment = 4>
 using FrozenTextureAtlas =
-    BasicFrozenTextureAtlas<Image<2, v_pixel_format, v_pixel_type, v_row_alignment>,
-                            detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>>;
+    BasicFrozenTextureAtlas<detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>>;
 
 } // namespace dang::gl
