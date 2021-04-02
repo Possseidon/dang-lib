@@ -45,9 +45,16 @@ public:
     }
 
     TextureAtlasTileBorderGeneration defaultBorderGeneration() const { return tiles_.defaultBorderGeneration(); }
+
     void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border)
     {
         tiles_.setDefaultBorderGeneration(border);
+    }
+
+    [[nodiscard]] TileHandle add(ImageData image_data,
+                                 std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    {
+        return tiles_.add(std::move(image_data), border);
     }
 
     void add(std::string name,
@@ -64,10 +71,13 @@ public:
         return tiles_.addWithHandle(std::move(name), std::move(image_data), border);
     }
 
+    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
     [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
     [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 
+    bool tryRemove(const TileHandle& tile_handle) { return tiles_.tryRemove(tile_handle); }
     bool tryRemove(const std::string& name) { return tiles_.tryRemove(name); }
+    void remove(const TileHandle& tile_handle) { return tiles_.remove(tile_handle); }
     void remove(const std::string& name) { return tiles_.remove(name); }
 
     void updateTexture() { return updateTextureHelper<false>(); }
@@ -101,6 +111,7 @@ public:
 
     friend class TextureAtlasBase<TTextureBase>;
 
+    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
     [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
     [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 

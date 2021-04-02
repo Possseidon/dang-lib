@@ -471,6 +471,13 @@ public:
     /// @brief Sets the default border generation method.
     void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border) { default_border_ = border; }
 
+    /// @brief Adds a new unnamed tile.
+    [[nodiscard]] TileHandle add(TImageData image_data,
+                                 std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    {
+        return TileHandle(emplaceTile(std::move(image_data), border));
+    }
+
     /// @brief Adds a new tile with a given name and border generation.
     /// @exception std::invalid_argument if the name is empty.
     /// @exception std::invalid_argument if the name already exists.
@@ -481,7 +488,7 @@ public:
              TImageData image_data,
              std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
-        emplaceTile(std::move(name), std::move(image_data), border);
+        emplaceNamedTile(std::move(name), std::move(image_data), border);
     }
 
     /// @brief Adds a new tile with a given name and border generation and returns a handle to it.
@@ -495,7 +502,16 @@ public:
                                            TImageData image_data,
                                            std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
-        return TileHandle(emplaceTile(std::move(name), std::move(image_data), border));
+        return TileHandle(emplaceNamedTile(std::move(name), std::move(image_data), border));
+    }
+
+    /// @brief Checks if a tile with the given name exists.
+    /// @exception std::invalid_argument if the handle is empty.
+    [[nodiscard]] bool exists(const TileHandle& tile_handle) const
+    {
+        if (!tile_handle)
+            throw std::invalid_argument("Tile handle is empty.");
+        return std::find(tiles_.begin(), tiles_.end(), tile_handle.data_) != tiles_.end();
     }
 
     /// @brief Checks if a tile with the given name exists.
@@ -504,8 +520,7 @@ public:
     {
         if (name.empty())
             throw std::invalid_argument("Tile name is empty.");
-        auto iter = tiles_.find(name);
-        return iter != tiles_.end();
+        return named_tiles_.find(name) != tiles_.end();
     }
 
     /// @brief Returns a (possibly empty) handle to the tile with the given name.
@@ -514,32 +529,42 @@ public:
     {
         if (name.empty())
             throw std::invalid_argument("Tile name is empty.");
-        auto iter = tiles_.find(name);
-        if (iter != tiles_.end())
-            return TileHandle(&iter->second);
+        auto iter = named_tiles_.find(name);
+        if (iter != named_tiles_.end())
+            return TileHandle(iter->second);
         return TileHandle();
     }
 
+    /// @brief Removes the given tile, returning false if it does not belong to this atlas.
+    /// @exception std::invalid_argument if the handle is empty.
+    bool tryRemove(const TileHandle& tile_handle)
+    {
+        if (!tile_handle)
+            throw std::invalid_argument("Tile handle is empty.");
+        return removeTile(tile_handle.data_);
+    }
+
     /// @brief Removes the tile with the given name.
-    /// @remark Returns false if there is no tile with the given name.
+    /// @exception std::invalid_argument if the handle is empty.
+    /// @exception std::invalid_argument if the tile does not belong to this atlas.
+    void remove(const TileHandle& tile_handle)
+    {
+        if (!tryRemove(tile_handle))
+            throw std::invalid_argument("Tile does not belong to this atlas.");
+    }
+
+    /// @brief Removes the tile with the given name, returning false if there is no such tile.
     /// @exception std::invalid_argument if the name is empty.
     bool tryRemove(const std::string& name)
     {
         if (name.empty())
             throw std::invalid_argument("Tile name is empty.");
-        auto iter = tiles_.find(name);
-        if (iter == tiles_.end())
+        auto iter = named_tiles_.find(name);
+        if (iter == named_tiles_.end())
             return false;
-        auto layer_index = iter->second.placement.position.z();
-        auto& layer = layers_[layer_index];
-        layer.removeTile(iter->second);
-        tiles_.erase(iter);
-        if (layer.empty()) {
-            layers_.erase(begin(layers_) + layer_index);
-            for (auto layer_iter = begin(layers_) + layer_index; layer_iter != end(layers_); layer_iter++)
-                layer_iter->shiftDown();
-        }
-        *atlas_size_ = maxLayerSize();
+        [[maybe_unused]] bool ok = removeTile(iter->second);
+        assert(ok);
+        named_tiles_.erase(iter);
         return true;
     }
 
@@ -578,8 +603,8 @@ private:
         auto layers = static_cast<GLsizei>(layers_.size());
         if (!resize(required_size, layers, 1))
             return;
-        for (auto& [name, tile] : tiles_)
-            tile.placement.written = false;
+        for (const auto& tile : tiles_)
+            tile->placement.written = false;
     }
 
     /// @brief Finds the maximum layer size.
@@ -612,19 +637,13 @@ private:
         return {&layers_.emplace_back(tile_size_log2, limits_.max_texture_size), layer_index};
     }
 
-    /// @brief Creates a new tile and adds it to a (possibly newly created) layer.
-    /// @exception std::invalid_argument if the name is empty.
-    /// @exception std::invalid_argument if the name already exists.
+    /// @brief Creates a new unnamed tile and adds it to a (possibly newly created) layer.
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    const TileData* emplaceTile(std::string&& name,
-                                TImageData&& image_data,
-                                std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    TileData* emplaceTile(TImageData&& image_data,
+                          std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
     {
-        if (name.empty())
-            throw std::invalid_argument("Tile name is empty.");
-
         if (!image_data)
             throw std::invalid_argument("Image does not contain data.");
         if (image_data.size().greaterThan(limits_.max_texture_size).any())
@@ -637,20 +656,62 @@ private:
             throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
                                     ")");
 
-        auto [iter, ok] = tiles_.try_emplace(std::move(name), std::move(image_data), actual_border, atlas_size_.get());
-        if (!ok)
-            throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
-        const auto& key = iter->first;
-        auto& tile = iter->second;
-        tile.name = &key;
+        auto& tile =
+            *tiles_.emplace_back(std::make_unique<TileData>(std::move(image_data), actual_border, atlas_size_.get()));
         layer->addTile(tile, index);
         *atlas_size_ = maxLayerSize();
         return &tile;
     }
 
+    /// @brief Creates a new named tile and adds it to a (possibly newly created) layer.
+    /// @exception std::invalid_argument if the name is empty.
+    /// @exception std::invalid_argument if the name already exists.
+    /// @exception std::invalid_argument if the image does not contain any data.
+    /// @exception std::invalid_argument if the image is too big.
+    /// @exception std::length_error if a new layer would exceed the maximum layer count.
+    TileData* emplaceNamedTile(std::string&& name,
+                               TImageData&& image_data,
+                               std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    {
+        if (name.empty())
+            throw std::invalid_argument("Tile name is empty.");
+
+        auto [iter, ok] = named_tiles_.try_emplace(std::move(name), nullptr);
+        if (!ok)
+            throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
+        const auto& key = iter->first;
+        auto& tile = iter->second;
+
+        tile = emplaceTile(std::move(image_data), border);
+        tile->name = &key;
+
+        return tile;
+    }
+
+    /// @brief Removes a tile from the atlas and returns true if it existed.
+    /// @remark Does not remove the tile from the named tile map.
+    bool removeTile(const TileData* tile_data)
+    {
+        auto iter = std::find(tiles_.begin(), tiles_.end(), tile_data);
+        if (iter == tiles_.end())
+            return false;
+        auto layer_index = iter->placement.position.z();
+        auto& layer = layers_[layer_index];
+        layer.removeTile(*iter);
+        tiles_.erase(iter);
+        if (layer.empty()) {
+            layers_.erase(begin(layers_) + layer_index);
+            for (auto layer_iter = begin(layers_) + layer_index; layer_iter != end(layers_); layer_iter++)
+                layer_iter->shiftDown();
+        }
+        *atlas_size_ = maxLayerSize();
+        return true;
+    }
+
     TextureAtlasLimits limits_;
     std::unique_ptr<GLsizei> atlas_size_ = std::make_unique<GLsizei>(0);
-    std::unordered_map<std::string, TileData> tiles_;
+    std::vector<std::unique_ptr<TileData>> tiles_;
+    std::unordered_map<std::string, TileData*> named_tiles_;
     std::vector<Layer> layers_;
     TextureAtlasTileBorderGeneration default_border_ = TextureAtlasTileBorderGeneration::None;
 };
@@ -668,6 +729,7 @@ public:
 
     friend class TextureAtlasTiles<TImageData>;
 
+    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
     [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
     [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 
