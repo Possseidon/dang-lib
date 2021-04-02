@@ -179,10 +179,10 @@ private:
             for (auto tile : tiles_) {
                 if (tile == nullptr)
                     continue;
-                if (tile->placement.written)
-                    continue;
-                drawTile(*tile, modify);
-                assert(tile->placement.written);
+                if (!tile->placement.written) {
+                    drawTile(*tile, modify);
+                    assert(tile->placement.written);
+                }
                 if (freeze)
                     tile->image_data.free();
             }
