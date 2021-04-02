@@ -37,11 +37,18 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
             (*this)[i] = columns[i];
     }
 
-    /// @brief Initializes a single-column matrix with the given values.
-    explicit constexpr Matrix(Vector<T, v_rows> col)
-        : Base({col})
+    /// @brief Initializes a single-column matrix with the given vector.
+    static constexpr Matrix fromVector(const Vector<T, v_rows>& col)
     {
         static_assert(v_cols == 1);
+        return {{col}};
+    }
+
+    /// @brief Initializes a two-column matrix from low and high of the given bounds.
+    static constexpr Matrix fromBounds(const Bounds<T, v_rows>& bounds)
+    {
+        static_assert(v_cols == 2);
+        return {{bounds.low, bounds.high}};
     }
 
     /// @brief Returns the identity matrix, optionally multiplied with a scalar.
@@ -54,6 +61,13 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
         return result;
     }
 
+    /// @brief Allows for conversion from single-value matrices to their respective value type.
+    explicit constexpr operator T() const
+    {
+        static_assert(v_cols == 1 && v_rows == 1);
+        return (*this)(0, 0);
+    }
+
     /// @brief Allows for conversion from single-column matrices to vectors.
     explicit constexpr operator Vector<T, v_rows>() const
     {
@@ -61,11 +75,11 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
         return (*this)[0];
     }
 
-    /// @brief Allows for conversion from single-value matrices to their respective value type.
-    explicit constexpr operator T() const
+    /// @brief Allows for conversion from two-column matrices to bounds.
+    explicit constexpr operator Bounds<T, v_rows>() const
     {
-        static_assert(v_cols == 1 && v_rows == 1);
-        return (*this)(0, 0);
+        static_assert(v_cols == 2);
+        return {(*this)[0], (*this)[1]};
     }
 
     /// @brief Returns a sub matrix with the given offset and size.
@@ -614,7 +628,7 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// @brief Performs a matrix-multiplication between the matrix and the given vector, seen as a single-column matrix.
     friend constexpr auto operator*(const Matrix& matrix, const Vector<T, v_cols>& vector)
     {
-        return Vector<T, v_rows>{matrix * Matrix<T, 1, v_cols>{vector}};
+        return Vector<T, v_rows>{matrix * Matrix<T, 1, v_cols>::fromVector(vector)};
     }
 
     /// @brief Performs a matrix-multiplication between the transpose of the matrix and the given vector, seen as a
