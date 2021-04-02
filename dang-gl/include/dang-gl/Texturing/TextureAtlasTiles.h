@@ -76,18 +76,14 @@ private:
         using TileHandles = std::vector<TileHandle*>;
 
         mutable TileHandles handles;
-        std::string name;
+        const std::string* name = nullptr;
         TImageData image_data;
         TextureAtlasTileBorderGeneration border;
         TilePlacement placement;
         const GLsizei* atlas_size;
 
-        TileData(std::string&& name,
-                 TImageData&& image_data,
-                 TextureAtlasTileBorderGeneration border,
-                 const GLsizei* atlas_size)
-            : name(std::move(name))
-            , image_data(std::move(image_data))
+        TileData(TImageData&& image_data, TextureAtlasTileBorderGeneration border, const GLsizei* atlas_size)
+            : image_data(std::move(image_data))
             , border(border)
             , atlas_size(atlas_size)
         {}
@@ -359,7 +355,7 @@ public:
 
         [[nodiscard]] operator bool() const noexcept { return data_ != nullptr; }
 
-        [[nodiscard]] const std::string& name() const noexcept { return data_->name; }
+        [[nodiscard]] const std::string* name() const noexcept { return data_->name; }
 
         friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept;
         friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept;
@@ -641,13 +637,12 @@ private:
             throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
                                     ")");
 
-        // Explicit copy to have two strings to move from.
-        std::string key = name;
-        auto [iter, ok] = tiles_.try_emplace(
-            std::move(key), std::move(name), std::move(image_data), actual_border, atlas_size_.get());
+        auto [iter, ok] = tiles_.try_emplace(std::move(name), std::move(image_data), actual_border, atlas_size_.get());
         if (!ok)
             throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
+        const auto& key = iter->first;
         auto& tile = iter->second;
+        tile.name = &key;
         layer->addTile(tile, index);
         *atlas_size_ = maxLayerSize();
         return &tile;
