@@ -105,7 +105,7 @@ struct LineBase : AxisSystemBase<T, v_dim, 1> {
     {}
     /// @brief Initializes support and direction vectors with the given vectors.
     constexpr LineBase(Vector<T, v_dim> support, Vector<T, v_dim> directions)
-        : AxisSystemBase<T, v_dim, 1>(support, Matrix<T, 1, v_dim>(directions))
+        : AxisSystemBase<T, v_dim, 1>(support, Matrix<T, 1, v_dim>::fromVector(directions))
     {}
 
     /// @brief A simple shortcut, getting the only direction vector of the line.
