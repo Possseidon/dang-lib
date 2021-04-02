@@ -17,7 +17,7 @@ The ImageData concept:
 - Move-constructible (preferably somewhat cheap)
 - explicit operator bool() const
     -> if it contains any data
-- svec2 size() const
+- dmath::svec2 size() const
     -> image size
 - void free()
     -> frees all data, but leaves the size
@@ -80,11 +80,16 @@ private:
         TImageData image_data;
         TextureAtlasTileBorderGeneration border;
         TilePlacement placement;
+        const GLsizei* atlas_size;
 
-        TileData(std::string&& name, TImageData&& image_data, TextureAtlasTileBorderGeneration border)
+        TileData(std::string&& name,
+                 TImageData&& image_data,
+                 TextureAtlasTileBorderGeneration border,
+                 const GLsizei* atlas_size)
             : name(std::move(name))
             , image_data(std::move(image_data))
             , border(border)
+            , atlas_size(atlas_size)
         {}
 
         ~TileData()
@@ -359,6 +364,33 @@ public:
         friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept;
         friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept;
 
+        auto atlasPixelSize() const { return *data_->atlas_size; }
+        auto pixelPos() const { return data_->placement.position.xy(); }
+        auto pixelSize() const { return data_->image_data.size(); }
+
+        auto pos() const { return static_cast<vec2>(pixelPos()) / static_cast<vec2>(atlasPixelSize()); }
+        auto size() const { return static_cast<vec2>(pixelSize()) / static_cast<vec2>(atlasPixelSize()); }
+
+        bounds2 bounds() const
+        {
+            auto low = [&] {
+                switch (data_->border) {
+                case TextureAtlasTileBorderGeneration::None:
+                    return pos();
+                case TextureAtlasTileBorderGeneration::Positive:
+                    return pos() + 0.5f / atlasPixelSize();
+                case TextureAtlasTileBorderGeneration::All:
+                    return pos() + 1.0f / atlasPixelSize();
+                default:
+                    assert(false);
+                    return pos();
+                }
+            }();
+            return {low, low + size()};
+        }
+
+        auto layer() const { return data_->placement.position.z(); }
+
     private:
         typename TileData::TileHandles::iterator find() const
         {
@@ -511,6 +543,7 @@ public:
             for (auto layer_iter = begin(layers_) + layer_index; layer_iter != end(layers_); layer_iter++)
                 layer_iter->shiftDown();
         }
+        *atlas_size_ = maxLayerSize();
         return true;
     }
 
@@ -610,15 +643,18 @@ private:
 
         // Explicit copy to have two strings to move from.
         std::string key = name;
-        auto [iter, ok] = tiles_.try_emplace(std::move(key), std::move(name), std::move(image_data), actual_border);
+        auto [iter, ok] = tiles_.try_emplace(
+            std::move(key), std::move(name), std::move(image_data), actual_border, atlas_size_.get());
         if (!ok)
             throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
         auto& tile = iter->second;
         layer->addTile(tile, index);
+        *atlas_size_ = maxLayerSize();
         return &tile;
     }
 
     TextureAtlasLimits limits_;
+    std::unique_ptr<GLsizei> atlas_size_ = std::make_unique<GLsizei>(0);
     std::unordered_map<std::string, TileData> tiles_;
     std::vector<Layer> layers_;
     TextureAtlasTileBorderGeneration default_border_ = TextureAtlasTileBorderGeneration::None;
