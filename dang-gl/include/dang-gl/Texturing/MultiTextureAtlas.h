@@ -97,6 +97,7 @@ protected:
             textures_[sub_texture].modify(image_data[sub_texture], offset, mipmap_level);
     };
 
+private:
     template <TSubTextureEnum... v_sub_textures>
     dutils::EnumArray<TSubTextureEnum, Texture2DArray> emptyTextures(
         dutils::EnumSequence<TSubTextureEnum, v_sub_textures...>)

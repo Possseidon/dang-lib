@@ -43,6 +43,7 @@ protected:
         texture_.modify(image, offset, mipmap_level);
     };
 
+private:
     Texture2DArray texture_ = empty_object;
 };
 
