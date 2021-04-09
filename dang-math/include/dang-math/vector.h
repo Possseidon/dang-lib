@@ -16,6 +16,8 @@ struct Vector : std::array<T, v_dim> {
     using Type = T;
     static constexpr auto dim = v_dim;
 
+    using Axis = Axis<dim>;
+
     /// @brief Initializes all values with default values.
     constexpr Vector()
         : Base()
@@ -81,8 +83,8 @@ struct Vector : std::array<T, v_dim> {
 
     using Base::operator[];
 
-    constexpr T& operator[](Axis<dim> axis) { return (*this)[static_cast<size_t>(axis)]; }
-    constexpr T operator[](Axis<dim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T& operator[](Axis axis) { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T operator[](Axis axis) const { return (*this)[static_cast<size_t>(axis)]; }
 
     /// @brief Returns the sum of all components.
     constexpr auto sum() const
@@ -213,22 +215,22 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto minAxis() const
     {
         auto min_iter = std::min_element(this->begin(), this->end());
-        return static_cast<Axis<dim>>(std::distance(this->begin(), min_iter));
+        return static_cast<Axis>(std::distance(this->begin(), min_iter));
     }
 
     /// @brief Returns the axis with the highest value.
     constexpr auto maxAxis() const
     {
         auto max_iter = std::max_element(this->begin(), this->end());
-        return static_cast<Axis<dim>>(std::distance(this->begin(), max_iter));
+        return static_cast<Axis>(std::distance(this->begin(), max_iter));
     }
 
     /// @brief Returns a pair of the two axes with the lowest and highest values.
     constexpr auto minMaxAxis() const
     {
         auto [min_iter, max_iter] = std::minmax_element(this->begin(), this->end());
-        return std::pair{static_cast<Axis<dim>>(std::distance(this->begin(), min_iter)),
-                         static_cast<Axis<dim>>(std::distance(this->begin(), max_iter))};
+        return std::pair{static_cast<Axis>(std::distance(this->begin(), min_iter)),
+                         static_cast<Axis>(std::distance(this->begin(), max_iter))};
     }
 
     /// @brief Returns the value of the lowest component.
