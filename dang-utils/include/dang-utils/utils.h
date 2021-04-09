@@ -48,7 +48,7 @@ struct modify_member_pointer_class {};
 
 template <typename TNewClass, typename TRet, typename TClass>
 struct modify_member_pointer_class<TRet TClass::*, TNewClass> {
-    using type = TRet(TNewClass::*);
+    using type = TRet TNewClass::*;
 };
 
 template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
