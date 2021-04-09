@@ -14,6 +14,8 @@ template <typename T>
 struct Quaternion : private Vector<T, 4> {
     using Base = Vector<T, 4>;
 
+    using Type = T;
+
     /// @brief Initializes the quaternion to the zero quaternion, which cannot be normalized or used directly.
     constexpr Quaternion()
         : Base()
@@ -299,6 +301,8 @@ struct Quaternion : private Vector<T, 4> {
 /// @brief A dual-quaternion, which can represent both rotation (real) and translation (dual).
 template <typename T>
 struct DualQuaternion {
+    using Type = T;
+
     /// @brief The real-part (rotation) of the dual-quaternion.
     Quaternion<T> real;
     /// @brief The dual-part (translation) of the dual-quaternion.

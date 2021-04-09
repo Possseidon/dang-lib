@@ -13,6 +13,8 @@ namespace dang::math {
 template <bool v_with_center = false>
 class MarchingCubes {
 public:
+    static constexpr auto with_center = v_with_center;
+
     template <typename T, std::size_t v_max_size>
     struct LimitedVector {
     public:
@@ -129,7 +131,7 @@ public:
         }
     };
 
-    using Planes = LimitedVector<PlaneInfo, v_with_center ? 12 : 5>;
+    using Planes = LimitedVector<PlaneInfo, with_center ? 12 : 5>;
     using Lookup = std::array<Planes, 256>;
 
     constexpr const auto& operator[](Corners3 corners) const { return lookup_[corners.toBits<std::size_t>()]; }
@@ -240,7 +242,7 @@ private:
     {
         Planes result;
         for (const auto& loop : generateLoops(corners)) {
-            if constexpr (v_with_center) {
+            if constexpr (with_center) {
                 vec3 center;
                 for (const auto& point : loop)
                     center += point.position + point.direction / 2;

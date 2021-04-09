@@ -13,6 +13,9 @@ template <typename T, std::size_t v_dim>
 struct Vector : std::array<T, v_dim> {
     using Base = std::array<T, v_dim>;
 
+    using Type = T;
+    static constexpr auto dim = v_dim;
+
     /// @brief Initializes all values with default values.
     constexpr Vector()
         : Base()
@@ -25,7 +28,7 @@ struct Vector : std::array<T, v_dim> {
     constexpr Vector(T value)
         : Base()
     {
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             (*this)[i] = value;
     }
 
@@ -33,21 +36,21 @@ struct Vector : std::array<T, v_dim> {
     constexpr Vector(T x, T y)
         : Base{x, y}
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
     }
 
     /// @brief Initializes x, y and z with the given values.
     constexpr Vector(T x, T y, T z)
         : Base{x, y, z}
     {
-        static_assert(v_dim == 3);
+        static_assert(dim == 3);
     }
 
     /// @brief Initializes x, y, z and w with the given values.
     constexpr Vector(T x, T y, T z, T w)
         : Base{x, y, z, w}
     {
-        static_assert(v_dim == 4);
+        static_assert(dim == 4);
     }
 
     /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
@@ -57,36 +60,36 @@ struct Vector : std::array<T, v_dim> {
     constexpr Vector(Vector<T, 3> vector, T w)
         : Base{vector[0], vector[1], vector[2], w}
     {
-        static_assert(v_dim == 4);
+        static_assert(dim == 4);
     }
 
     /// @brief Allows for explicit conversion between vectors of same size but different types.
     template <typename TFrom>
-    explicit constexpr Vector(const Vector<TFrom, v_dim>& other)
+    explicit constexpr Vector(const Vector<TFrom, dim>& other)
         : Vector()
     {
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             (*this)[i] = static_cast<T>(other[i]);
     }
 
     /// @brief Allows for explicit conversion from single-value vectors to their respective value type.
     explicit constexpr operator T() const
     {
-        static_assert(v_dim == 1);
+        static_assert(dim == 1);
         return (*this)[0];
     }
 
     using Base::operator[];
 
-    constexpr T& operator[](Axis<v_dim> axis) { return (*this)[static_cast<size_t>(axis)]; }
-    constexpr T operator[](Axis<v_dim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T& operator[](Axis<dim> axis) { return (*this)[static_cast<size_t>(axis)]; }
+    constexpr T operator[](Axis<dim> axis) const { return (*this)[static_cast<size_t>(axis)]; }
 
     /// @brief Returns the sum of all components.
     constexpr auto sum() const
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i];
         return result;
     }
@@ -96,7 +99,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{1};
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             result *= (*this)[i];
         return result;
     }
@@ -106,7 +109,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i] * other[i];
         return result;
     }
@@ -116,7 +119,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(!std::is_same_v<T, bool>);
         T result{};
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i] * (*this)[i];
         return result;
     }
@@ -210,22 +213,22 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto minAxis() const
     {
         auto min_iter = std::min_element(this->begin(), this->end());
-        return static_cast<Axis<v_dim>>(std::distance(this->begin(), min_iter));
+        return static_cast<Axis<dim>>(std::distance(this->begin(), min_iter));
     }
 
     /// @brief Returns the axis with the highest value.
     constexpr auto maxAxis() const
     {
         auto max_iter = std::max_element(this->begin(), this->end());
-        return static_cast<Axis<v_dim>>(std::distance(this->begin(), max_iter));
+        return static_cast<Axis<dim>>(std::distance(this->begin(), max_iter));
     }
 
     /// @brief Returns a pair of the two axes with the lowest and highest values.
     constexpr auto minMaxAxis() const
     {
         auto [min_iter, max_iter] = std::minmax_element(this->begin(), this->end());
-        return std::pair{static_cast<Axis<v_dim>>(std::distance(this->begin(), min_iter)),
-                         static_cast<Axis<v_dim>>(std::distance(this->begin(), max_iter))};
+        return std::pair{static_cast<Axis<dim>>(std::distance(this->begin(), min_iter)),
+                         static_cast<Axis<dim>>(std::distance(this->begin(), max_iter))};
     }
 
     /// @brief Returns the value of the lowest component.
@@ -298,7 +301,7 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto all() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             if (!(*this)[i])
                 return false;
         return true;
@@ -308,7 +311,7 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto any() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
                 return true;
         return false;
@@ -318,7 +321,7 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto none() const
     {
         static_assert(std::is_same_v<T, bool>);
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
                 return false;
         return true;
@@ -441,8 +444,8 @@ struct Vector : std::array<T, v_dim> {
     template <typename TOperation, typename... TVectors>
     constexpr auto variadicOp(TOperation operation, const TVectors&... vectors) const
     {
-        Vector<decltype(operation((*this)[0], vectors[0]...)), v_dim> result;
-        for (std::size_t i = 0; i < v_dim; i++)
+        Vector<decltype(operation((*this)[0], vectors[0]...)), dim> result;
+        for (std::size_t i = 0; i < dim; i++)
             result[i] = operation((*this)[i], vectors[i]...);
         return result;
     }
@@ -451,7 +454,7 @@ struct Vector : std::array<T, v_dim> {
     template <typename TOperation>
     constexpr auto& assignmentOp(TOperation operation, const Vector& other)
     {
-        for (std::size_t i = 0; i < v_dim; i++)
+        for (std::size_t i = 0; i < dim; i++)
             (*this)[i] = operation((*this)[i], other[i]);
         return *this;
     }
@@ -467,9 +470,9 @@ struct Vector : std::array<T, v_dim> {
             stream << std::boolalpha;
 
         stream << '[';
-        if constexpr (v_dim > 0) {
+        if constexpr (dim > 0) {
             stream << vector[0];
-            for (std::size_t i = 1; i < v_dim; i++)
+            for (std::size_t i = 1; i < dim; i++)
                 stream << ", " << vector[i];
         }
         if constexpr (std::is_same_v<T, bool>)
@@ -482,14 +485,14 @@ struct Vector : std::array<T, v_dim> {
     /// @brief The x-component of the vector.
     constexpr auto& x()
     {
-        static_assert(v_dim >= 1 && v_dim <= 4);
+        static_assert(dim >= 1 && dim <= 4);
         return (*this)[0];
     }
 
     /// @brief The x-component of the vector.
     constexpr auto x() const
     {
-        static_assert(v_dim >= 1 && v_dim <= 4);
+        static_assert(dim >= 1 && dim <= 4);
         return (*this)[0];
     }
 
@@ -498,14 +501,14 @@ struct Vector : std::array<T, v_dim> {
     /// @brief The y-component of the vector.
     constexpr auto& y()
     {
-        static_assert(v_dim >= 2 && v_dim <= 4);
+        static_assert(dim >= 2 && dim <= 4);
         return (*this)[1];
     }
 
     /// @brief The y-component of the vector.
     constexpr auto y() const
     {
-        static_assert(v_dim >= 1 && v_dim <= 4);
+        static_assert(dim >= 1 && dim <= 4);
         return (*this)[1];
     }
 
@@ -514,7 +517,7 @@ struct Vector : std::array<T, v_dim> {
     /// one.
     static constexpr auto fromSlope(std::optional<T> slope)
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(!std::is_same_v<T, bool>);
         return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
     }
@@ -523,7 +526,7 @@ struct Vector : std::array<T, v_dim> {
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromRadians(T radians)
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(std::is_floating_point_v<T>);
         return Vector<T, 2>{std::cos(radians), std::sin(radians)};
     }
@@ -532,7 +535,7 @@ struct Vector : std::array<T, v_dim> {
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
     static constexpr auto fromDegrees(T degrees)
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(std::is_floating_point_v<T>);
         return fromRadians(dang::math::radians(degrees));
     }
@@ -541,7 +544,7 @@ struct Vector : std::array<T, v_dim> {
     /// x.
     constexpr auto cross() const
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(std::is_signed_v<T>);
         return Vector<T, 2>{-y(), x()};
     }
@@ -550,7 +553,7 @@ struct Vector : std::array<T, v_dim> {
     /// @remark Equivalent to <c>x1 * y2 - y1 * x2</c>
     constexpr auto cross(const Vector<T, 2>& other) const
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(!std::is_same_v<T, bool>);
         return x() * other.y() - y() * other.x();
     }
@@ -558,7 +561,7 @@ struct Vector : std::array<T, v_dim> {
     /// @brief Returns the slope of the vector or std::nullopt if infinite.
     constexpr std::optional<T> slope() const
     {
-        static_assert(v_dim == 2);
+        static_assert(dim == 2);
         static_assert(std::is_floating_point_v<T>);
         if (x() != T())
             return y() / x();
@@ -570,21 +573,21 @@ struct Vector : std::array<T, v_dim> {
     /// @brief The z-component of the vector.
     constexpr auto& z()
     {
-        static_assert(v_dim >= 3 && v_dim <= 4);
+        static_assert(dim >= 3 && dim <= 4);
         return (*this)[2];
     }
 
     /// @brief The z-component of the vector.
     constexpr auto z() const
     {
-        static_assert(v_dim >= 3 && v_dim <= 4);
+        static_assert(dim >= 3 && dim <= 4);
         return (*this)[2];
     }
 
     /// @brief Returns the cross-product with the given vector.
     constexpr auto cross(const Vector<T, 3>& other) const
     {
-        static_assert(v_dim == 3);
+        static_assert(dim == 3);
         static_assert(!std::is_same_v<T, bool>);
         return Vector<T, 3>{(*this)[1] * other[2] - (*this)[2] * other[1],
                             (*this)[2] * other[0] - (*this)[0] * other[2],
@@ -594,7 +597,7 @@ struct Vector : std::array<T, v_dim> {
     /// @brief Rotates the vector around the given axis, which must be normalized.
     constexpr auto rotateRadians(const Vector<T, 3>& axis, T radians) const
     {
-        static_assert(v_dim == 3);
+        static_assert(dim == 3);
         static_assert(!std::is_same_v<T, bool>);
         auto axis_sqr = axis.sqrdot();
         if (axis_sqr == T())
@@ -620,14 +623,14 @@ struct Vector : std::array<T, v_dim> {
     /// @brief The w-component of the vector.
     constexpr auto& w()
     {
-        static_assert(v_dim == 4);
+        static_assert(dim == 4);
         return (*this)[3];
     }
 
     /// @brief The w-component of the vector.
     constexpr auto w() const
     {
-        static_assert(v_dim == 4);
+        static_assert(dim == 4);
         return (*this)[3];
     }
 
