@@ -1392,21 +1392,21 @@ using VarArgs = StackIndexRangeResult;
 
 /// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
 /// @remark Unlike wrap, this does not catch exceptions, which can lead to unexpected results.
-template <auto v_func>
+template <auto v_func, typename TCovariantClass = void>
 int wrapUnsafe(lua_State* state);
 
 /// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
 /// @remark Forwards exceptions of any type as Lua errors.
-template <auto v_func>
+template <auto v_func, typename TCovariantClass = void>
 int wrap(lua_State* state);
 
 /// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
 /// @remark If an exception is thrown the function returns the `fail` value plus the exception message.
-template <auto v_func>
+template <auto v_func, typename TCovariantClass = void>
 int wrapReturnException(lua_State* state);
 
 /// @brief Returns a luaL_Reg with the wrapped template supplied function and given name.
-template <auto v_func>
+template <auto v_func, typename TCovariantClass = void>
 constexpr luaL_Reg reg(const char* name);
 
 struct Error {
@@ -3628,10 +3628,10 @@ private:
 #endif
 };
 
-template <auto v_func>
-inline int wrapUnsafe(lua_State* state)
+template <typename TFunctionType, auto v_func>
+inline int wrapUnsafeHelper(lua_State* state)
 {
-    using Info = detail::SignatureInfo<decltype(v_func)>;
+    using Info = detail::SignatureInfo<TFunctionType>;
 
     if constexpr (Info::any_state_args) {
         State lua(state);
@@ -3684,11 +3684,20 @@ inline int wrapUnsafe(lua_State* state)
     }
 }
 
-template <auto v_func>
+template <auto v_func, typename TCovariantClass>
+inline int wrapUnsafe(lua_State* state)
+{
+    if constexpr (std::is_same_v<TCovariantClass, void>)
+        return wrapUnsafeHelper<decltype(v_func), v_func>(state);
+    else
+        return wrapUnsafeHelper<dutils::covariant_member_pointer_t<decltype(v_func), TCovariantClass>, v_func>(state);
+}
+
+template <auto v_func, typename TCovariantClass>
 inline int wrap(lua_State* state)
 {
     try {
-        return wrapUnsafe<v_func>(state);
+        return wrapUnsafe<v_func, TCovariantClass>(state);
     }
     catch (const std::exception& e) {
         detail::noreturn_luaL_error(state, e.what());
@@ -3698,11 +3707,11 @@ inline int wrap(lua_State* state)
     }
 }
 
-template <auto v_func>
+template <auto v_func, typename TCovariantClass>
 inline int wrapReturnException(lua_State* state)
 {
     try {
-        return wrapUnsafe<v_func>(state);
+        return wrapUnsafe<v_func, TCovariantClass>(state);
     }
     catch (const std::exception& e) {
         luaL_pushfail(state);
@@ -3716,10 +3725,10 @@ inline int wrapReturnException(lua_State* state)
     }
 }
 
-template <auto v_func>
+template <auto v_func, typename TCovariantClass>
 inline constexpr luaL_Reg reg(const char* name)
 {
-    return {name, wrap<v_func>};
+    return {name, wrap<v_func, TCovariantClass>};
 }
 
 /// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
