@@ -521,7 +521,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(dim == 2);
         static_assert(!std::is_same_v<T, bool>);
-        return slope ? Vector<T, 2>(1, *slope) : Vector<T, 2>(0, 1);
+        return slope ? Vector(1, *slope) : Vector(0, 1);
     }
 
     /// @brief Creates a normalized vector of the given angle in radians.
@@ -530,7 +530,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(dim == 2);
         static_assert(std::is_floating_point_v<T>);
-        return Vector<T, 2>{std::cos(radians), std::sin(radians)};
+        return Vector{std::cos(radians), std::sin(radians)};
     }
 
     /// @brief Creates a normalized vector of the given angle in degrees.
@@ -548,7 +548,7 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(dim == 2);
         static_assert(std::is_signed_v<T>);
-        return Vector<T, 2>{-y(), x()};
+        return Vector{-y(), x()};
     }
 
     /// @brief Returns the two-dimensional cross-product with the given vector.
@@ -591,13 +591,13 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(dim == 3);
         static_assert(!std::is_same_v<T, bool>);
-        return Vector<T, 3>{(*this)[1] * other[2] - (*this)[2] * other[1],
-                            (*this)[2] * other[0] - (*this)[0] * other[2],
-                            (*this)[0] * other[1] - (*this)[1] * other[0]};
+        return Vector{(*this)[1] * other[2] - (*this)[2] * other[1],
+                      (*this)[2] * other[0] - (*this)[0] * other[2],
+                      (*this)[0] * other[1] - (*this)[1] * other[0]};
     }
 
     /// @brief Rotates the vector around the given axis, which must be normalized.
-    constexpr auto rotateRadians(const Vector<T, 3>& axis, T radians) const
+    constexpr auto rotateRadians(const Vector& axis, T radians) const
     {
         static_assert(dim == 3);
         static_assert(!std::is_same_v<T, bool>);
@@ -615,7 +615,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Rotates the vector around the given axis, which must be normalized.
-    constexpr auto rotateDegrees(const Vector<T, 3>& axis, T degrees) const
+    constexpr auto rotateDegrees(const Vector& axis, T degrees) const
     {
         return rotateRadians(axis, dang::math::radians(degrees));
     }
