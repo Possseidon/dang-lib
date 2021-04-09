@@ -247,6 +247,9 @@ struct SignatureInfo<TRet (TClass::*)(TArgs...) noexcept> : SignatureInfo<TRet (
 template <typename TClass, typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (TClass::*)(TArgs...) const noexcept> : SignatureInfo<TRet (TClass::*)(TArgs...)> {};
 
+template <typename TClass, typename TRet>
+struct SignatureInfo<TRet TClass::*> : SignatureInfo<TRet (TClass::*)()> {};
+
 // --- Index Iterator ---
 
 /// @brief Provides iteration functionality for the Lua stack and upvalues.
