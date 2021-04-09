@@ -31,33 +31,24 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
 {
     constexpr auto support = +[](const Line& line) { return line.support; };
-    constexpr auto setSupport = +[](Line& line, const Vector& support) { line.support = support; };
+    constexpr auto setSupport = +[](Line& line, const Point& support) { line.support = support; };
     constexpr auto direction = +[](const Line& line) { return line.direction(); };
-    constexpr auto setDirection = +[](Line& line, const Vector& direction) { line.direction() = direction; };
-    constexpr auto head = +[](const Line& line) { return line.head(); };
-    constexpr auto setHead = +[](Line& line, const Vector& head) { line.setHead(head); };
-    constexpr auto tail = +[](const Line& line) { return line.tail(); };
-    constexpr auto setTail = +[](Line& line, const Vector& tail) { line.setTail(tail); };
-    constexpr auto length = +[](const Line& line) { return line.length(); };
-    constexpr auto mirror = +[](const Line& line, const Vector& point) { return line.mirror(point); };
+    constexpr auto setDirection = +[](Line& line, const Direction& direction) { line.direction() = direction; };
 
-    std::vector result{reg<direction>("direction"),
+    std::vector result{reg<support>("support"),
+                       reg<setSupport>("setSupport"),
+                       reg<direction>("direction"),
                        reg<setDirection>("setDirection"),
-                       reg<head>("head"),
-                       reg<setHead>("setHead"),
-                       reg<tail>("tail"),
-                       reg<setTail>("setTail"),
-                       reg<length>("length"),
-                       reg<mirror>("mirror")};
+                       reg<&Line::head, Line>("head"),
+                       reg<&Line::setHead, Line>("setHead"),
+                       reg<&Line::tail, Line>("tail"),
+                       reg<&Line::setTail, Line>("setTail"),
+                       reg<&Line::length, Line>("length"),
+                       reg<&Line::mirror, Line>("mirror")};
 
     if constexpr (v_dim == 2) {
-        constexpr auto closestFactorTo =
-            +[](const Line& line, const Vector& point) { return line.closestFactorTo(point); };
-        constexpr auto closestPointTo =
-            +[](const Line& line, const Vector& point) { return line.closestPointTo(point); };
-
-        result.push_back(reg<closestFactorTo>("closestFactorTo"));
-        result.push_back(reg<closestPointTo>("closestPointTo"));
+        result.push_back(reg<&Line::closestFactorTo, Line>("closestFactorTo"));
+        result.push_back(reg<&Line::closestPointTo, Line>("closestPointTo"));
         result.push_back(reg<&Line::heightTo>("heightTo"));
         result.push_back(reg<&Line::distanceTo>("distanceTo"));
         result.push_back(reg<&Line::sideOf>("sideOf"));
@@ -67,10 +58,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
         result.push_back(reg<&Line::intersectionPoint>("intersectionPoint"));
     }
     else if constexpr (v_dim == 3) {
-        constexpr auto closestFactorTo = +[](const Line& line, std::variant<Vector, Line> target) {
+        constexpr auto closestFactorTo = +[](const Line& line, std::variant<Point, Line> target) {
             return std::visit([&](const auto& target) { return line.closestFactorTo(target); }, target);
         };
-        constexpr auto closestPointTo = +[](const Line& line, std::variant<Vector, Line> target) {
+        constexpr auto closestPointTo = +[](const Line& line, std::variant<Point, Line> target) {
             return std::visit([&](const auto& target) { return line.closestPointTo(target); }, target);
         };
 
@@ -87,7 +78,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metatable()
 {
     constexpr auto index = +[](const Line& line, std::variant<T, const char*> factor) {
         return std::visit(dutils::Overloaded{[&](T factor) { return std::optional(line[factor]); },
-                                             [](...) { return std::optional<Vector>(); }},
+                                             [](...) { return std::optional<Point>(); }},
                           factor);
     };
     constexpr auto eq = +[](const Line& lhs, const Line& rhs) { return lhs == rhs; };
@@ -101,8 +92,8 @@ Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
     constexpr auto create = +[](State& lua, Arg, VarArgs args) {
         if (args.empty())
             return Line();
-        auto support = args[0].check<Vector>();
-        auto direction = args[1].check<Vector>();
+        auto support = args[0].check<Point>();
+        auto direction = args[1].check<Direction>();
         return Line(support, direction);
     };
 
@@ -145,8 +136,8 @@ const char* ClassInfo<dang::math::Plane<T, v_dim>>::className()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
 {
-    constexpr auto at = +[](const Plane& plane, T x, T y) { return plane[{x, y}]; };
-    constexpr auto line = +[](State& lua, const Plane& plane, std::size_t index) -> Line {
+    constexpr auto at = +[](const Plane& plane, Factor x, Factor y) { return plane[{x, y}]; };
+    constexpr auto line = +[](State& lua, const Plane& plane, std::size_t index) {
         if (index < 1 || index > 2)
             lua.argError(2, "index out of range");
         return plane.line(index - 1);
@@ -159,12 +150,19 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
         return plane.plane(index1 - 1, index2 - 1);
     };
     constexpr auto support = +[](const Plane& plane) { return plane.support; };
-    constexpr auto setSupport = +[](Plane& plane, const Vector& support) { plane.support = support; };
-    constexpr auto area = +[](const Plane& plane) { return plane.area(); };
-    constexpr auto closestFactorTo =
-        +[](const Plane& plane, const Vector& point) { return plane.closestFactorTo(point); };
-    constexpr auto closestPointTo =
-        +[](const Plane& plane, const Vector& point) { return plane.closestPointTo(point); };
+    constexpr auto setSupport = +[](Plane& plane, const Point& support) { plane.support = support; };
+    constexpr auto directions = +[](const Plane& plane) { return plane.directions; };
+    constexpr auto setDirections = +[](Plane& plane, const Directions& directions) { plane.directions = directions; };
+    constexpr auto direction = +[](State& lua, const Plane& plane, std::size_t index) {
+        if (index < 1 || index > 2)
+            lua.argError(2, "index out of range");
+        return plane.directions[index - 1];
+    };
+    constexpr auto setDirection = +[](State& lua, Plane& plane, std::size_t index, const Direction& direction) {
+        if (index < 1 || index > 2)
+            lua.argError(2, "index out of range");
+        plane.directions[index - 1] = direction;
+    };
     constexpr auto quadPoint = +[](State& lua, const Plane& plane, std::size_t index) {
         if (index < 1 || index > 4)
             lua.argError(2, "index out of range");
@@ -191,9 +189,13 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
                        reg<plane>("plane"),
                        reg<support>("support"),
                        reg<setSupport>("setSupport"),
-                       reg<area>("area"),
-                       reg<closestFactorTo>("closestFactorTo"),
-                       reg<closestPointTo>("closestPointTo"),
+                       reg<directions>("directions"),
+                       reg<setDirections>("setDirections"),
+                       reg<direction>("direction"),
+                       reg<setDirection>("setDirection"),
+                       reg<&Plane::area, Plane>("area"),
+                       reg<&Plane::closestFactorTo, Plane>("closestFactorTo"),
+                       reg<&Plane::closestPointTo, Plane>("closestPointTo"),
                        reg<quadPoint>("quadPoint"),
                        reg<trianglePoint>("trianglePoint"),
                        reg<innerRadians>("innerRadians"),
@@ -203,10 +205,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
         result.push_back(reg<&Plane::factorAt>("factorAt"));
     }
     else if constexpr (v_dim == 3) {
-        constexpr auto radiansTo = +[](const Plane& plane, std::variant<Vector, Plane> target) {
+        constexpr auto radiansTo = +[](const Plane& plane, std::variant<Point, Plane> target) {
             return std::visit([&](const auto& target) { return plane.radiansTo(target); }, target);
         };
-        constexpr auto degreesTo = +[](const Plane& plane, std::variant<Vector, Plane> target) {
+        constexpr auto degreesTo = +[](const Plane& plane, std::variant<Point, Plane> target) {
             return std::visit([&](const auto& target) { return plane.degreesTo(target); }, target);
         };
 
@@ -238,11 +240,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metatable()
 {
-    constexpr auto index = +[](const Plane& plane, std::variant<dang::math::Vector<T, 2>, const char*> factor) {
-        return std::visit(
-            dutils::Overloaded{[&](dang::math::Vector<T, 2> factor) { return std::optional(plane[factor]); },
-                               [](...) { return std::optional<Vector>(); }},
-            factor);
+    constexpr auto index = +[](const Plane& plane, std::variant<Factors, const char*> factor) {
+        return std::visit(dutils::Overloaded{[&](const Factors& factor) { return std::optional(plane[factor]); },
+                                             [](...) { return std::optional<Point>(); }},
+                          factor);
     };
     constexpr auto eq = +[](const Plane& lhs, const Plane& rhs) { return lhs == rhs; };
 
@@ -255,10 +256,10 @@ Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
     constexpr auto create = +[](State& lua, Arg, VarArgs args) {
         if (args.empty())
             return Plane();
-        auto support = args[0].check<Vector>();
-        auto direction1 = args[1].check<Vector>();
-        auto direction2 = args[2].check<Vector>();
-        return Plane(support, dang::math::Matrix<T, 2, v_dim>({direction1, direction2}));
+        auto support = args[0].check<Point>();
+        auto direction1 = args[1].check<Direction>();
+        auto direction2 = args[2].check<Direction>();
+        return Plane(support, Directions({direction1, direction2}));
     };
 
     auto result = lua.pushTable();
@@ -300,8 +301,8 @@ const char* ClassInfo<dang::math::Spat<T, v_dim>>::className()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
 {
-    constexpr auto at = +[](const Spat& spat, T x, T y, T z) { return spat[{x, y, z}]; };
-    constexpr auto line = +[](State& lua, const Spat& spat, std::size_t index) -> Line {
+    constexpr auto at = +[](const Spat& spat, Factor x, Factor y, Factor z) { return spat[{x, y, z}]; };
+    constexpr auto line = +[](State& lua, const Spat& spat, std::size_t index) {
         if (index < 1 || index > 3)
             lua.argError(2, "index out of range");
         return spat.line(index - 1);
@@ -324,18 +325,33 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
             return spat.spat(index1 - 1, index2 - 1, index3 - 1);
         };
     constexpr auto support = +[](const Spat& spat) { return spat.support; };
-    constexpr auto setSupport = +[](Spat& spat, const Vector& support) { spat.support = support; };
+    constexpr auto setSupport = +[](Spat& spat, const Point& support) { spat.support = support; };
+    constexpr auto directions = +[](const Spat& spat) { return spat.directions; };
+    constexpr auto setDirections = +[](Spat& spat, const Directions& directions) { spat.directions = directions; };
+    constexpr auto direction = +[](State& lua, const Spat& spat, std::size_t index) {
+        if (index < 1 || index > 3)
+            lua.argError(2, "index out of range");
+        return spat.directions[index - 1];
+    };
+    constexpr auto setDirection = +[](State& lua, Spat& spat, std::size_t index, const Direction& direction) {
+        if (index < 1 || index > 3)
+            lua.argError(2, "index out of range");
+        spat.directions[index - 1] = direction;
+    };
 
     std::vector result{reg<at>("at"),
                        reg<line>("line"),
                        reg<plane>("plane"),
                        reg<spat>("spat"),
                        reg<support>("support"),
-                       reg<setSupport>("setSupport")};
+                       reg<setSupport>("setSupport"),
+                       reg<directions>("directions"),
+                       reg<setDirections>("setDirections"),
+                       reg<direction>("direction"),
+                       reg<setDirection>("setDirection")};
 
     if constexpr (v_dim == 3) {
-        constexpr auto factorAt = +[](const Spat& spat, const Vector& point) { return spat.factorAt(point); };
-        result.push_back(reg<factorAt>("factorAt"));
+        result.push_back(reg<&Spat::factorAt, Spat>("factorAt"));
         result.push_back(reg<&Spat::tripleProduct>("tripleProduct"));
     }
 
@@ -348,7 +364,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metatable()
     constexpr auto index = +[](const Spat& spat, std::variant<dang::math::Vector<T, 3>, const char*> factor) {
         return std::visit(
             dutils::Overloaded{[&](dang::math::Vector<T, 3> factor) { return std::optional(spat[factor]); },
-                               [](...) { return std::optional<Vector>(); }},
+                               [](...) { return std::optional<Point>(); }},
             factor);
     };
     constexpr auto eq = +[](const Spat& lhs, const Spat& rhs) { return lhs == rhs; };
@@ -362,11 +378,11 @@ Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
     constexpr auto create = +[](State& lua, Arg, VarArgs args) {
         if (args.empty())
             return Spat();
-        auto support = args[0].check<Vector>();
-        auto direction1 = args[1].check<Vector>();
-        auto direction2 = args[2].check<Vector>();
-        auto direction3 = args[3].check<Vector>();
-        return Spat(support, dang::math::Matrix<T, 3, v_dim>({direction1, direction2, direction3}));
+        auto support = args[0].check<Point>();
+        auto direction1 = args[1].check<Direction>();
+        auto direction2 = args[2].check<Direction>();
+        auto direction3 = args[3].check<Direction>();
+        return Spat(support, Directions({direction1, direction2, direction3}));
     };
 
     auto result = lua.pushTable();

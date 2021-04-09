@@ -14,8 +14,10 @@ inline constexpr const char* enum_values<dang::math::PlaneSide>[4] { "top", "hit
 
 template <typename T, std::size_t v_dim>
 struct ClassInfo<dang::math::Line<T, v_dim>> {
-    using Vector = dang::math::Vector<T, v_dim>;
     using Line = dang::math::Line<T, v_dim>;
+
+    using Point = typename Line::Point;
+    using Direction = typename Line::Direction;
 
     static const std::string base_class_name;
     static const std::string class_name;
@@ -30,9 +32,13 @@ struct ClassInfo<dang::math::Line<T, v_dim>> {
 
 template <typename T, std::size_t v_dim>
 struct ClassInfo<dang::math::Plane<T, v_dim>> {
-    using Vector = dang::math::Vector<T, v_dim>;
-    using Line = dang::math::Line<T, v_dim>;
     using Plane = dang::math::Plane<T, v_dim>;
+
+    using Point = typename Plane::Point;
+    using Direction = typename Plane::Direction;
+    using Directions = typename Plane::Directions;
+    using Factor = typename Plane::Factor;
+    using Factors = typename Plane::Factors;
 
     static const std::string base_class_name;
     static const std::string class_name;
@@ -47,10 +53,12 @@ struct ClassInfo<dang::math::Plane<T, v_dim>> {
 
 template <typename T, std::size_t v_dim>
 struct ClassInfo<dang::math::Spat<T, v_dim>> {
-    using Vector = dang::math::Vector<T, v_dim>;
-    using Line = dang::math::Line<T, v_dim>;
-    using Plane = dang::math::Plane<T, v_dim>;
     using Spat = dang::math::Spat<T, v_dim>;
+
+    using Point = typename Spat::Point;
+    using Direction = typename Spat::Direction;
+    using Directions = typename Spat::Directions;
+    using Factor = typename Spat::Factor;
 
     static const std::string base_class_name;
     static const std::string class_name;
