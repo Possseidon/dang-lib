@@ -48,6 +48,8 @@ struct BoundsIterator {
     using Type = T;
     static constexpr auto dim = v_dim;
 
+    using Bounds = Bounds<T, dim>;
+
     static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
     using iterator_category = std::forward_iterator_tag;
     using value_type = Vector<T, dim>;
@@ -57,7 +59,7 @@ struct BoundsIterator {
 
     constexpr BoundsIterator() = default;
 
-    explicit constexpr BoundsIterator(Bounds<T, dim> bounds, value_type current)
+    explicit constexpr BoundsIterator(Bounds bounds, value_type current)
         : bounds_(bounds)
         , current_(current)
     {}
@@ -90,7 +92,7 @@ struct BoundsIterator {
     constexpr const value_type* operator->() const { return &current_; }
 
 private:
-    Bounds<T, dim> bounds_;
+    Bounds bounds_;
     value_type current_;
 };
 
@@ -101,19 +103,26 @@ struct Bounds {
     using Type = T;
     static constexpr auto dim = v_dim;
 
-    Vector<T, dim> low;
-    Vector<T, dim> high;
+    using iterator = BoundsIterator<T, dim>;
+
+    using Point = Vector<T, dim>;
+    using Size = Vector<T, dim>;
+    using Offset = Vector<T, dim>;
+    using Corner = Corner<dim>;
+
+    Point low;
+    Point high;
 
     /// @brief Initializes the bounds with zero-vectors for low and high.
     constexpr Bounds() = default;
 
     /// @brief Initializes high with the given value and low with zero.
-    explicit constexpr Bounds(const Vector<T, dim>& high)
+    explicit constexpr Bounds(const Point& high)
         : high(high)
     {}
 
     /// @brief Initializes low and high with the given values.
-    constexpr Bounds(const Vector<T, dim>& low, const Vector<T, dim>& high)
+    constexpr Bounds(const Point& low, const Point& high)
         : low(low)
         , high(high)
     {}
@@ -167,10 +176,10 @@ struct Bounds {
     }
 
     /// @brief Returns the size of the bounds, which is equal to <c>high - low</c>.
-    constexpr Vector<T, dim> size() const { return high - low; }
+    constexpr Size size() const { return high - low; }
 
     /// @brief Returns the center of the bounds, rounded down for integral types.
-    constexpr Vector<T, dim> center() const
+    constexpr Point center() const
     {
         if constexpr (std::is_integral_v<T>)
             return (low + high - 1) / T(2);
@@ -186,62 +195,57 @@ struct Bounds {
 
     /// @brief Returns true, if other is enclosed by the calling bounds.
     /// @remark Comparison is inclusive for low and exclusive for high.
-    constexpr bool contains(const Vector<T, dim>& vector) const
-    {
-        return vector.allGreaterEqual(low) && vector.allLess(high);
-    }
+    constexpr bool contains(const Point& point) const { return point.allGreaterEqual(low) && point.allLess(high); }
 
     /// @brief Returns true, if other is enclosed by the calling bounds.
     /// @remark Comparison is inclusive for both low and high.
-    constexpr bool containsInclusive(const Vector<T, dim>& vector) const
+    constexpr bool containsInclusive(const Point& point) const
     {
-        return vector.allGreaterEqual(low) && vector.allLessEqual(high);
+        return point.allGreaterEqual(low) && point.allLessEqual(high);
     }
 
     /// @brief Returns true, if other is enclosed by the calling bounds.
     /// @remark Comparison is exclusive for both low and high.
-    constexpr bool containsExclusive(const Vector<T, dim>& vector) const
-    {
-        return vector.allGreater(low) && vector.allLess(high);
-    }
+    constexpr bool containsExclusive(const Point& point) const { return point.allGreater(low) && point.allLess(high); }
 
     /// @brief Clamps the given bounds, resulting in an intersection of both bounds.
     constexpr Bounds clamp(const Bounds& other) const { return {low.max(other.low), high.min(other.high)}; }
 
     /// @brief Clamps the given point into the calling bounds.
     /// @remark For integral types, high is clamped exclusive.
-    constexpr Vector<T, dim> clamp(const Vector<T, dim>& vector) const
+    constexpr Point clamp(const Point& point) const
     {
         if constexpr (std::is_integral_v<T>)
-            return vector.max(low).min(high - 1);
+            return point.max(low).min(high - 1);
         else
-            return vector.max(low).min(high);
+            return point.max(low).min(high);
     }
 
     /// @brief Returns the result of a symmetrical modulus on the given vector.
-    constexpr Vector<T, dim> mod(Vector<T, dim> vector) const
+    constexpr Point mod(const Point& point) const
     {
+        Point result;
         for (std::size_t i = 0; i < dim; i++)
-            vector[i] = low[i] + detail::floormod(vector[i] - low[i], high[i] - low[i]);
-        return vector;
+            result[i] = low[i] + detail::floormod(point[i] - low[i], high[i] - low[i]);
+        return result;
     }
 
     /// @brief Returns the bounds offset by the given amount.
-    constexpr Bounds offset(Vector<T, dim> amount) const { return {low + amount, high + amount}; }
+    constexpr Bounds offset(const Offset& amount) const { return {low + amount, high + amount}; }
 
     /// @brief Returns the bounds outset by the given amount.
-    constexpr Bounds outset(Vector<T, dim> amount) const { return {low - amount, high + amount}; }
+    constexpr Bounds outset(const Offset& amount) const { return {low - amount, high + amount}; }
 
     /// @brief Returns the bounds inset by the given amount.
-    constexpr Bounds inset(Vector<T, dim> amount) const { return {low + amount, high - amount}; }
+    constexpr Bounds inset(const Offset& amount) const { return {low + amount, high - amount}; }
 
     /// @brief Returns an enum-array, mapping corners to the actual positions of the corners.
-    constexpr dutils::EnumArray<Corner<dim>, Vector<T, dim>> corners() const
+    constexpr dutils::EnumArray<Corner, Point> corners() const
     {
         static_assert(dim >= 1 && dim <= 3);
-        dutils::EnumArray<Corner<dim>, Vector<T, dim>> result;
-        for (auto corner : dutils::enumerate<Corner<dim>>)
-            result[corner] = low + Vector<T, dim>(corner_vector<dim>[corner]) * (high - low);
+        dutils::EnumArray<Corner, Point> result;
+        for (auto corner : dutils::enumerate<Corner>)
+            result[corner] = low + Offset(corner_vector<dim>[corner]) * (high - low);
         return result;
     }
 
@@ -270,10 +274,10 @@ struct Bounds {
     friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs) { return lhs.low.allGreaterEqual(rhs.high); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr BoundsIterator<T, dim> begin() const { return BoundsIterator<T, dim>(*this, low); }
+    constexpr iterator begin() const { return iterator(*this, low); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr BoundsIterator<T, dim> end() const { return ++BoundsIterator<T, dim>(*this, high - 1); }
+    constexpr iterator end() const { return ++iterator(*this, high - 1); }
 };
 
 template <std::size_t v_dim>
