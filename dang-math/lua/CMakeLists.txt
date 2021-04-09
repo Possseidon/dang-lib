@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-math-lua CXX)
 
-add_library(${PROJECT_NAME}-vector-matrix STATIC
+add_library(${PROJECT_NAME}-vector-matrix STATIC EXCLUDE_FROM_ALL
   src/lua-vector-matrix.cpp
 )
 
@@ -32,7 +32,7 @@ target_include_directories(${PROJECT_NAME}-vector-matrix
     include
 )
 
-add_library(${PROJECT_NAME}-geometry STATIC
+add_library(${PROJECT_NAME}-geometry STATIC EXCLUDE_FROM_ALL
   src/lua-geometry.cpp
 )
 
@@ -60,7 +60,7 @@ target_include_directories(${PROJECT_NAME}-geometry
     include
 )
 
-add_library(dmath SHARED
+add_library(dmath SHARED EXCLUDE_FROM_ALL
   src/dmath.cpp
 )
 
