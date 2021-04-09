@@ -32,6 +32,155 @@ struct Overloaded : TFunctions... {
 template <typename... TFunctions>
 Overloaded(TFunctions...) -> Overloaded<TFunctions...>;
 
+template <typename T>
+struct member_pointer_class {};
+
+template <typename T, typename TRet>
+struct member_pointer_class<TRet(T::*)> {
+    using type = T;
+};
+
+template <typename T>
+using member_pointer_class_t = typename member_pointer_class<T>::type;
+
+template <typename TPointer, typename TNewClass>
+struct modify_member_pointer_class {};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...), TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...);
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...)&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) &;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...)&&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) &&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const&&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const&&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...)& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) & noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...)&& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) && noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const& noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs...) const&& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs...) const&& noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...), TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...);
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...)&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) &;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...)&&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) &&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const&&, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const&&;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...)& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) & noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...)&& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) && noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const& noexcept;
+};
+
+template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
+struct modify_member_pointer_class<TRet (TClass::*)(TArgs..., ...) const&& noexcept, TNewClass> {
+    using type = TRet (TNewClass::*)(TArgs..., ...) const&& noexcept;
+};
+
+template <typename TPointer, typename TClass>
+using modify_member_pointer_class_t = typename modify_member_pointer_class<TPointer, TClass>::type;
+
+template <typename TPointer, typename TClass, typename = void>
+struct covariant_member_pointer {};
+
+template <typename TPointer, typename TClass>
+struct covariant_member_pointer<TPointer,
+                                TClass,
+                                std::enable_if_t<std::is_convertible_v<TClass*, member_pointer_class_t<TPointer>*>>>
+    : modify_member_pointer_class<TPointer, TClass> {};
+
+template <typename TPointer, typename TClass>
+using covariant_member_pointer_t = typename covariant_member_pointer<TPointer, TClass>::type;
+
 template <typename TLeft, typename TRight = TLeft, typename = void>
 struct is_equal_to_comparable : std::false_type {};
 
