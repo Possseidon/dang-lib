@@ -46,6 +46,11 @@ using member_pointer_class_t = typename member_pointer_class<T>::type;
 template <typename TPointer, typename TNewClass>
 struct modify_member_pointer_class {};
 
+template <typename TNewClass, typename TRet, typename TClass>
+struct modify_member_pointer_class<TRet TClass::*, TNewClass> {
+    using type = TRet(TNewClass::*);
+};
+
 template <typename TNewClass, typename TRet, typename TClass, typename... TArgs>
 struct modify_member_pointer_class<TRet (TClass::*)(TArgs...), TNewClass> {
     using type = TRet (TNewClass::*)(TArgs...);
