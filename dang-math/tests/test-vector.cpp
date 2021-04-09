@@ -185,6 +185,21 @@ TEST_CASE("Vectors support component-wise compound assignment operations.", "[ve
     CHECK(&a == a_ptr);
 }
 
+TEST_CASE("Vectors support component-wise modulus operator.")
+{
+    STATIC_REQUIRE(dmath::ivec3(7, 8, 9) % dmath::ivec3(3, 5, 6) == dmath::ivec3(1, 3, 3));
+
+    dmath::ivec3* a_ptr = nullptr;
+    dmath::ivec3 a(7, 8, 9);
+    constexpr dmath::ivec3 b(3, 5, 6);
+
+    a_ptr = &(a %= b);
+    CHECK(a == dmath::ivec3{1, 3, 3});
+
+    INFO("Compound assignment returns reference to a.");
+    CHECK(&a == a_ptr);
+}
+
 TEST_CASE("Vectors support reduce operations.", "[vector][operations]")
 {
     constexpr dmath::vec3 a(1, 3, 5);

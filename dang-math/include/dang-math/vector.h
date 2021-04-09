@@ -402,6 +402,20 @@ struct Vector : std::array<T, v_dim> {
         return assignmentOp(std::divides{}, other);
     }
 
+    /// @brief Component-wise modulus of two vectors.
+    friend constexpr auto operator%(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp(std::modulus{}, rhs);
+    }
+
+    /// @brief Component-wise modulus of two vectors.
+    constexpr auto& operator%=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp(std::modulus{}, other);
+    }
+
     /// @brief Returns a swizzle of the given components.
     template <std::size_t... v_indices>
     constexpr auto swizzle() const
