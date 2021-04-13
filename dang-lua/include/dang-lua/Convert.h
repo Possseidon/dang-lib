@@ -17,6 +17,12 @@ struct SubClasses : SubClassList<> {};
 template <typename T>
 constexpr SubClasses<T> SubClassesOf{};
 
+struct Property {
+    const char* name;
+    lua_CFunction get = nullptr;
+    lua_CFunction set = nullptr;
+};
+
 /// @brief Returns an empty index and metatable and does nothing when required.
 /// @remark className() will be used in error messages.
 struct DefaultClassInfo {
@@ -24,6 +30,7 @@ struct DefaultClassInfo {
 
     static constexpr std::array<luaL_Reg, 0> table() { return {}; }
     static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
+    static constexpr std::array<Property, 0> properties() { return {}; }
 
     static void require() {}
 };
@@ -41,6 +48,10 @@ const auto class_table = ClassInfo<T>::table();
 /// @brief Shorthand to access the metatable of a wrapped class.
 template <typename T>
 const auto class_metatable = ClassInfo<T>::metatable();
+
+/// @brief Shorthand to access the properties of a wrapped class.
+template <typename T>
+const auto class_properties = ClassInfo<T>::properties();
 
 /// @brief Can be specialized to provide an array of string names for a given enum to convert from and to Lua.
 /// @remark The array needs to end with a "null" entry.
@@ -78,12 +89,28 @@ namespace detail {
 
 /// @brief Somewhat similar to luaL_setfuncs, except it uses any kind of container.
 template <typename T>
-void setfuncs(lua_State* state, const T& funcs)
+void setFuncs(lua_State* state, const T& funcs)
 {
     for (const auto& func : funcs) {
         lua_pushcfunction(state, func.func);
         lua_setfield(state, -2, func.name);
     }
+}
+
+template <typename T>
+void setPropertyFuncs(lua_State* state, const T& props, lua_CFunction Property::*accessor)
+{
+    for (const auto& prop : props) {
+        lua_pushcfunction(state, prop.*accessor);
+        lua_setfield(state, -2, prop.name);
+    }
+}
+
+template <typename T>
+auto countProperties(const T& properties, lua_CFunction Property::*accessor)
+{
+    using std::begin, std::end;
+    return std::count_if(begin(properties), end(properties), std::mem_fn(accessor));
 }
 
 } // namespace detail
@@ -163,6 +190,9 @@ template <typename T>
 struct UniqueClassInfo {
     static inline const std::string name = "dang" + std::to_string(class_counter++);
     static inline const std::string name_ref = "dang" + std::to_string(class_counter++);
+
+    static inline int index = LUA_NOREF;
+    static inline int newindex = LUA_NOREF;
 };
 
 } // namespace detail
@@ -245,31 +275,6 @@ struct Convert {
         }
     }
 
-    /// @brief __gc, which is used to do cleanup for non-reference values.
-    static int cleanup(lua_State* state)
-    {
-        static_assert(std::is_class_v<T>);
-        T* userdata = static_cast<T*>(lua_touserdata(state, 1));
-        userdata->~T();
-        return 0;
-    }
-
-    /// @brief __index, which first checks the original index table, and then tries to call the customized __index
-    /// method.
-    static int customIndex(lua_State* state)
-    {
-        static_assert(std::is_class_v<T>);
-        lua_pushvalue(state, lua_upvalueindex(1));
-        lua_pushvalue(state, -2);
-        if (lua_gettable(state, -2) != LUA_TNIL)
-            return 1;
-        lua_pop(state, 2);
-        lua_pushvalue(state, lua_upvalueindex(2));
-        lua_insert(state, -3);
-        lua_call(state, 2, 1);
-        return 1;
-    }
-
     /// @brief Pushes the metatable for a value or reference instance onto the stack.
     template <bool v_reference>
     static void pushMetatable(lua_State* state)
@@ -278,29 +283,17 @@ struct Convert {
         if (!luaL_newmetatable(
                 state, (v_reference ? detail::UniqueClassInfo<T>::name_ref : detail::UniqueClassInfo<T>::name).c_str()))
             return;
-        detail::setfuncs(state, class_metatable<T>);
-        if constexpr (!v_reference) {
-            lua_pushcfunction(state, cleanup);
-            lua_setfield(state, -2, "__gc");
-        }
-        pushMetatable<!v_reference>(state);
-        if (!luaL_getmetafield(state, -1, "__index")) {
-            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
-            detail::setfuncs(state, class_table<T>);
-            lua_pushvalue(state, -1);
-            lua_setfield(state, -4, "indextable");
-        }
-        if (lua_getfield(state, -3, "__index") != LUA_TNIL)
-            lua_pushcclosure(state, customIndex, 2);
-        else
-            lua_pop(state, 1);
-        lua_setfield(state, -3, "__index");
-        lua_pushboolean(state, false);
-        lua_setfield(state, -3, "__metatable");
-        // Overwrite automatically generated unique name with a pretty name.
-        lua_pushstring(state, ClassInfo<T>::className());
-        lua_setfield(state, -3, "__name");
-        lua_pop(state, 1);
+
+        detail::setFuncs(state, class_metatable<T>);
+
+        registerIndex(state);
+        registerNewindex(state);
+        registerDisplayName(state);
+
+        if constexpr (!v_reference)
+            registerCleanup(state);
+
+        protectMetatable(state);
     }
 
     /// @brief Returns the name of the class or enum.
@@ -365,6 +358,180 @@ private:
 
     /// @brief Exit condition when the subclass list is depleted.
     static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
+
+    /// @brief Registers the __index metamethod to the metatable on the top of the stack.
+    static void registerIndex(lua_State* state)
+    {
+        auto& index_ref = detail::UniqueClassInfo<T>::index;
+        if (index_ref != LUA_NOREF) {
+            lua_rawgeti(state, index_ref, LUA_REGISTRYINDEX);
+        }
+        else {
+            // TODO: Optimize to not always use customIndex
+
+            // Push table for properties.
+            auto get_count = detail::countProperties(class_properties<T>, &Property::get);
+            if (get_count > 0) {
+                lua_createtable(state, 0, static_cast<int>(get_count));
+                detail::setPropertyFuncs(state, class_properties<T>, &Property::get);
+                lua_pushvalue(state, -1);
+                lua_setfield(state, -3, "get");
+            }
+            else {
+                lua_pushnil(state);
+            }
+
+            // Push class_table<T>
+            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
+            detail::setFuncs(state, class_table<T>);
+            lua_pushvalue(state, -1);
+            lua_setfield(state, -4, "indextable");
+
+            // Push class_metatable<T>::__index
+            lua_getfield(state, -3, "__index");
+
+            lua_pushcclosure(state, customIndex, 3);
+
+            lua_pushvalue(state, -2);
+            index_ref = luaL_ref(state, -1);
+        }
+        lua_setfield(state, -2, "__index");
+    }
+
+    /// @brief Registers the __newindex metamethod to the metatable on the top of the stack.
+    static void registerNewindex(lua_State* state)
+    {
+        auto& newindex_ref = detail::UniqueClassInfo<T>::newindex;
+        if (newindex_ref != LUA_NOREF) {
+            lua_rawgeti(state, newindex_ref, LUA_REGISTRYINDEX);
+        }
+        else {
+            // Push table for properties.
+            auto set_count = detail::countProperties(class_properties<T>, &Property::set);
+            if (set_count > 0) {
+                lua_createtable(state, 0, static_cast<int>(set_count));
+                detail::setPropertyFuncs(state, class_properties<T>, &Property::set);
+                lua_pushvalue(state, -1);
+                lua_setfield(state, -3, "set");
+            }
+            else {
+                lua_pushnil(state);
+            }
+
+            // Push class_metatable<T>::__newindex
+            lua_getfield(state, -2, "__newindex");
+
+            lua_pushcclosure(state, customNewindex, 2);
+
+            lua_pushvalue(state, -2);
+            newindex_ref = luaL_ref(state, -1);
+        }
+        lua_setfield(state, -2, "__newindex");
+    }
+
+    /// @brief Registers the display name provided by `ClassInfo` to the metatable on the top of the stack.
+    static void registerDisplayName(lua_State* state)
+    {
+        lua_pushstring(state, ClassInfo<T>::className());
+        lua_setfield(state, -2, "__name");
+    }
+
+    /// @brief Registers the cleanup function on the metatable on the top of the stack.
+    static void registerCleanup(lua_State* state)
+    {
+        lua_pushcfunction(state, cleanup);
+        lua_setfield(state, -2, "__gc");
+    }
+
+    /// @brief Protects the metatable on the stop of the stack with `false`.
+    static void protectMetatable(lua_State* state)
+    {
+        lua_pushboolean(state, false);
+        lua_setfield(state, -2, "__metatable");
+    }
+
+    // --- Lua functions ---
+
+    /// @brief __gc, which is used to do cleanup for non-reference values.
+    static int cleanup(lua_State* state)
+    {
+        static_assert(std::is_class_v<T>);
+        T* userdata = static_cast<T*>(lua_touserdata(state, 1));
+        userdata->~T();
+        return 0;
+    }
+
+    /// @brief Handles checking properties, the original index table and calling the __index function in this order.
+    static int customIndex(lua_State* state)
+    {
+        static_assert(std::is_class_v<T>);
+
+        // TODO: Optimize by dynamically removing parts that aren't actually checked with if constexpr.
+
+        // Call property getter.
+        if (!lua_isnil(state, lua_upvalueindex(1))) {
+            lua_pushvalue(state, -1);
+            if (lua_gettable(state, lua_upvalueindex(1)) != LUA_TNIL) {
+                lua_pushvalue(state, 1);
+                lua_call(state, 1, 1);
+                return 1;
+            }
+            lua_pop(state, 1);
+        }
+
+        // Check original index.
+        if (!lua_isnil(state, lua_upvalueindex(2))) {
+            lua_pushvalue(state, -1);
+            if (lua_gettable(state, lua_upvalueindex(2)) != LUA_TNIL)
+                return 1;
+            lua_pop(state, 1);
+        }
+
+        // Call __index function.
+        if (!lua_isnil(state, lua_upvalueindex(3))) {
+            lua_pushvalue(state, lua_upvalueindex(3));
+            lua_insert(state, -3);
+            lua_call(state, 2, 1);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /// @brief Handles properties and calling the original __newindex function in this order.
+    static int customNewindex(lua_State* state)
+    {
+        static_assert(std::is_class_v<T>);
+
+        // TODO: Optimize by dynamically removing parts that aren't actually checked with if constexpr.
+
+        // Call property setter.
+        if (!lua_isnil(state, lua_upvalueindex(1))) {
+            lua_pushvalue(state, -2);
+            if (lua_gettable(state, lua_upvalueindex(1)) != LUA_TNIL) {
+                lua_pushvalue(state, 1);
+                lua_pushvalue(state, 3);
+                lua_call(state, 2, 0);
+                return 0;
+            }
+            lua_pop(state, 1);
+        }
+
+        // Call __newindex function.
+        if (!lua_isnil(state, lua_upvalueindex(2))) {
+            lua_pushvalue(state, lua_upvalueindex(2));
+            lua_insert(state, -4);
+            lua_call(state, 3, 0);
+            return 0;
+        }
+
+        std::string name(getPushTypename());
+        if (lua_type(state, 2) == LUA_TSTRING) {
+            auto prop = lua_tostring(state, 2);
+            detail::noreturn_luaL_error(state, ("cannot write property " + name + "." + prop).c_str());
+        }
+        detail::noreturn_luaL_error(state, ("attempt to index a " + name + " value").c_str());
+    }
 };
 
 template <typename T>
