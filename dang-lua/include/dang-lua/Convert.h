@@ -363,38 +363,70 @@ private:
     static void registerIndex(lua_State* state)
     {
         auto& index_ref = detail::UniqueClassInfo<T>::index;
+        if (index_ref == LUA_REFNIL)
+            return;
+
         if (index_ref != LUA_NOREF) {
             lua_rawgeti(state, index_ref, LUA_REGISTRYINDEX);
+            lua_setfield(state, -2, "__index");
+            return;
         }
-        else {
-            // TODO: Optimize to not always use customIndex
 
-            // Push table for properties.
-            auto get_count = detail::countProperties(class_properties<T>, &Property::get);
-            if (get_count > 0) {
-                lua_createtable(state, 0, static_cast<int>(get_count));
-                detail::setPropertyFuncs(state, class_properties<T>, &Property::get);
-                lua_pushvalue(state, -1);
-                lua_setfield(state, -3, "get");
-            }
-            else {
-                lua_pushnil(state);
-            }
+        int pushed = 0;
 
-            // Push class_table<T>
+        // Push table for properties.
+        auto get_count = detail::countProperties(class_properties<T>, &Property::get);
+        auto has_properties = get_count > 0;
+        if (has_properties) {
+            lua_createtable(state, 0, static_cast<int>(get_count));
+            pushed++;
+            detail::setPropertyFuncs(state, class_properties<T>, &Property::get);
+            lua_pushvalue(state, -1);
+            lua_setfield(state, -2 - pushed, "get");
+        }
+
+        // Push class_table<T>
+        auto has_indextable = !class_table<T>.empty();
+        if (has_indextable) {
             lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
+            pushed++;
             detail::setFuncs(state, class_table<T>);
             lua_pushvalue(state, -1);
-            lua_setfield(state, -4, "indextable");
-
-            // Push class_metatable<T>::__index
-            lua_getfield(state, -3, "__index");
-
-            lua_pushcclosure(state, customIndex, 3);
-
-            lua_pushvalue(state, -2);
-            index_ref = luaL_ref(state, -1);
+            lua_setfield(state, -2 - pushed, "indextable");
         }
+
+        // Push class_metatable<T>::__index
+        auto has_indexfunction = lua_getfield(state, -1 - pushed, "__index") != LUA_TNIL;
+        if (has_indexfunction)
+            pushed++;
+        else
+            lua_pop(state, 1);
+
+        if (pushed == 0) {
+            index_ref = LUA_REFNIL;
+            return;
+        }
+
+        if (has_properties) {
+            if (has_indextable) {
+                if (has_indexfunction)
+                    lua_pushcclosure(state, customIndex<1, 2, 3>, 3);
+                else
+                    lua_pushcclosure(state, customIndex<1, 2, 0>, 2);
+            }
+            else {
+                if (has_indexfunction)
+                    lua_pushcclosure(state, customIndex<1, 0, 2>, 2);
+                else
+                    lua_pushcclosure(state, customIndex<1, 0, 0>, 1);
+            }
+        }
+        else if (has_indextable && has_indexfunction)
+            lua_pushcclosure(state, customIndex<0, 1, 2>, 2);
+        // else leave singular index table or function on the stack
+
+        lua_pushvalue(state, -2);
+        index_ref = luaL_ref(state, -1);
         lua_setfield(state, -2, "__index");
     }
 
@@ -462,16 +494,15 @@ private:
     }
 
     /// @brief Handles checking properties, the original index table and calling the __index function in this order.
+    /// @remark Upvalue indices to use for each style are passed as template parameter and can be 0 to skip entirely.
+    template <int v_properties, int v_indextable, int v_indexfunction>
     static int customIndex(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
 
-        // TODO: Optimize by dynamically removing parts that aren't actually checked with if constexpr.
-
-        // Call property getter.
-        if (!lua_isnil(state, lua_upvalueindex(1))) {
+        if constexpr (v_properties != 0) {
             lua_pushvalue(state, -1);
-            if (lua_gettable(state, lua_upvalueindex(1)) != LUA_TNIL) {
+            if (lua_gettable(state, lua_upvalueindex(v_properties)) != LUA_TNIL) {
                 lua_pushvalue(state, 1);
                 lua_call(state, 1, 1);
                 return 1;
@@ -479,17 +510,15 @@ private:
             lua_pop(state, 1);
         }
 
-        // Check original index.
-        if (!lua_isnil(state, lua_upvalueindex(2))) {
+        if constexpr (v_indextable != 0) {
             lua_pushvalue(state, -1);
-            if (lua_gettable(state, lua_upvalueindex(2)) != LUA_TNIL)
+            if (lua_gettable(state, lua_upvalueindex(v_indextable)) != LUA_TNIL)
                 return 1;
             lua_pop(state, 1);
         }
 
-        // Call __index function.
-        if (!lua_isnil(state, lua_upvalueindex(3))) {
-            lua_pushvalue(state, lua_upvalueindex(3));
+        if constexpr (v_indexfunction != 0) {
+            lua_pushvalue(state, lua_upvalueindex(v_indexfunction));
             lua_insert(state, -3);
             lua_call(state, 2, 1);
             return 1;
