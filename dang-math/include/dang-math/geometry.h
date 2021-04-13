@@ -145,7 +145,7 @@ struct LineBase : AxisSystemBase<T, v_dim, 1> {
     /// @brief Changes the tail of the line to the given position without modifying the head position.
     void setTail(const Point& point)
     {
-        direction() += point - this->support;
+        direction() += point.vectorTo(this->support);
         this->support = point;
     }
 
