@@ -156,7 +156,7 @@ enum class StoreType { None, Value, Reference };
 namespace detail {
 
 /// @brief Used to generate unique names for each ClassInfo specialization.
-inline static std::size_t class_counter = 1;
+static inline std::size_t class_counter = 1;
 
 /// @brief Provides a unique name and reference name for any given type.
 template <typename T>
