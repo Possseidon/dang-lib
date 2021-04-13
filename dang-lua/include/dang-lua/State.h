@@ -1409,8 +1409,34 @@ template <auto v_func, typename TCovariantClass = void>
 int wrapReturnException(lua_State* state);
 
 /// @brief Returns a luaL_Reg with the wrapped template supplied function and given name.
+/// @remark Unlike reg, this does not catch exceptions, which can lead to unexpected results.
+template <auto v_func, typename TCovariantClass = void>
+constexpr luaL_Reg regUnsafe(const char* name);
+
+/// @brief Returns a luaL_Reg with the wrapped template supplied function and given name.
+/// @remark Forwards exceptions of any type as Lua errors.
 template <auto v_func, typename TCovariantClass = void>
 constexpr luaL_Reg reg(const char* name);
+
+/// @brief Wraps setting the given field of the type as a Lua function.
+/// @remark Unlike wrapSet, this does not catch exceptions, which can lead to unexpected results.
+template <auto v_field, typename TCovariantClass = void>
+int wrapSetUnsafe(lua_State* state);
+
+/// @brief Wraps setting the given field of the type as a Lua function.
+/// @remark Forwards exceptions of any type as Lua errors.
+template <auto v_field, typename TCovariantClass = void>
+int wrapSet(lua_State* state);
+
+/// @brief Utility for creating properties with wrap and wrapSet for the given field and optional covariant class.
+/// @remark Unlike field, this does not catch exceptions, which can lead to unexpected results.
+template <auto v_field, typename TCovariantClass = void>
+constexpr Property fieldUnsafe(const char* name);
+
+/// @brief Utility for creating properties with wrap and wrapSet for the given field and optional covariant class.
+/// @remark Forwards exceptions of any type as Lua errors.
+template <auto v_field, typename TCovariantClass = void>
+constexpr Property field(const char* name);
 
 struct Error {
     Status status;
@@ -3729,9 +3755,49 @@ inline int wrapReturnException(lua_State* state)
 }
 
 template <auto v_func, typename TCovariantClass>
+inline constexpr luaL_Reg regUnsafe(const char* name)
+{
+    return {name, wrapUnsafe<v_func, TCovariantClass>};
+}
+
+template <auto v_func, typename TCovariantClass>
 inline constexpr luaL_Reg reg(const char* name)
 {
     return {name, wrap<v_func, TCovariantClass>};
+}
+
+template <auto v_field, typename TCovariantClass>
+inline int wrapSetUnsafe(lua_State* state)
+{
+    return wrapUnsafe<wrapSetFunc<v_field, TCovariantClass>()>(state);
+}
+
+template <auto v_field, typename TCovariantClass = void>
+constexpr auto wrapSetFunc()
+{
+    using MemberPointerClass = dutils::member_pointer_class_t<decltype(v_field)>;
+    using Class = std::conditional_t<std::is_same_v<TCovariantClass, void>, MemberPointerClass, TCovariantClass>;
+    static_assert(std::is_convertible_v<Class*, MemberPointerClass*>, "Given class is not covariant.");
+    using Value = dutils::member_pointer_type_t<decltype(v_field)>;
+    return +[](Class& object, const Value& value) { object.*v_field = value; };
+}
+
+template <auto v_field, typename TCovariantClass>
+inline int wrapSet(lua_State* state)
+{
+    return wrap<wrapSetFunc<v_field, TCovariantClass>()>(state);
+}
+
+template <auto v_field, typename TCovariantClass>
+inline constexpr Property fieldUnsafe(const char* name)
+{
+    return {name, wrapUnsafe<v_field, TCovariantClass>, wrapSetUnsafe<v_field, TCovariantClass>};
+}
+
+template <auto v_field, typename TCovariantClass>
+inline constexpr Property field(const char* name)
+{
+    return {name, wrap<v_field, TCovariantClass>, wrapSet<v_field, TCovariantClass>};
 }
 
 /// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
