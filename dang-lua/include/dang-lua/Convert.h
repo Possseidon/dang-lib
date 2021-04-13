@@ -176,19 +176,6 @@ struct Convert {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
-    /// @brief Checks whether the type matches any of the supplied sub classes.
-    template <typename TFirst, typename... TRest>
-    static StoreType type(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
-    {
-        auto result = Convert<TFirst>::type(state, pos);
-        if (result != StoreType::None)
-            return result;
-        return type<TRest...>(state, pos);
-    }
-
-    /// @brief Serves as an exit condition when the list of sub classes is depleted.
-    static StoreType type(lua_State* state, int, SubClassList<>) { return StoreType::None; }
-
     /// @brief Whether a stack position is a value, reference or neither.
     static StoreType type(lua_State* state, int pos)
     {
@@ -222,18 +209,6 @@ struct Convert {
 
     /// @brief Whether the stack position is a valid class value or reference, or an enum.
     static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
-
-    /// @brief Goes through the full list of subclasses to try and convert the value.
-    template <typename TFirst, typename... TRest>
-    static auto at(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
-        -> std::optional<std::reference_wrapper<T>>
-    {
-        auto result = Convert<TFirst>::at(state, pos);
-        return result ? result : at(state, pos, SubClassList<TRest...>{});
-    }
-
-    /// @brief Exit condition when the subclass list is depleted.
-    static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
 
     /// @brief Returns a reference to the value at the given stack position or std::nullopt on failure.
     static auto at(lua_State* state, int pos)
@@ -364,6 +339,32 @@ struct Convert {
         pushMetatable<true>(state);
         lua_setmetatable(state, -2);
     }
+
+private:
+    /// @brief Checks whether the type matches any of the supplied sub classes.
+    template <typename TFirst, typename... TRest>
+    static StoreType type(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
+    {
+        auto result = Convert<TFirst>::type(state, pos);
+        if (result != StoreType::None)
+            return result;
+        return type<TRest...>(state, pos);
+    }
+
+    /// @brief Serves as an exit condition when the list of sub classes is depleted.
+    static StoreType type(lua_State* state, int, SubClassList<>) { return StoreType::None; }
+
+    /// @brief Goes through the full list of subclasses to try and convert the value.
+    template <typename TFirst, typename... TRest>
+    static auto at(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
+        -> std::optional<std::reference_wrapper<T>>
+    {
+        auto result = Convert<TFirst>::at(state, pos);
+        return result ? result : at(state, pos, SubClassList<TRest...>{});
+    }
+
+    /// @brief Exit condition when the subclass list is depleted.
+    static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
 };
 
 template <typename T>
