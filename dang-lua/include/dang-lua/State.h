@@ -1428,6 +1428,16 @@ int wrapSetUnsafe(lua_State* state);
 template <auto v_field, typename TCovariantClass = void>
 int wrapSet(lua_State* state);
 
+/// @brief Returns a luaL_Reg that sets the given field.
+/// @remark Unlike regSet, this does not catch exceptions, which can lead to unexpected results.
+template <auto v_field, typename TCovariantClass = void>
+constexpr luaL_Reg regSetUnsafe(const char* name);
+
+/// @brief Returns a luaL_Reg that sets the given field.
+/// @remark Forwards exceptions of any type as Lua errors.
+template <auto v_field, typename TCovariantClass = void>
+constexpr luaL_Reg regSet(const char* name);
+
 /// @brief Utility for creating properties with wrap and wrapSet for the given field and optional covariant class.
 /// @remark Unlike field, this does not catch exceptions, which can lead to unexpected results.
 template <auto v_field, typename TCovariantClass = void>
@@ -3766,12 +3776,6 @@ inline constexpr luaL_Reg reg(const char* name)
     return {name, wrap<v_func, TCovariantClass>};
 }
 
-template <auto v_field, typename TCovariantClass>
-inline int wrapSetUnsafe(lua_State* state)
-{
-    return wrapUnsafe<wrapSetFunc<v_field, TCovariantClass>()>(state);
-}
-
 template <auto v_field, typename TCovariantClass = void>
 constexpr auto wrapSetFunc()
 {
@@ -3783,9 +3787,27 @@ constexpr auto wrapSetFunc()
 }
 
 template <auto v_field, typename TCovariantClass>
+inline int wrapSetUnsafe(lua_State* state)
+{
+    return wrapUnsafe<wrapSetFunc<v_field, TCovariantClass>()>(state);
+}
+
+template <auto v_field, typename TCovariantClass>
 inline int wrapSet(lua_State* state)
 {
     return wrap<wrapSetFunc<v_field, TCovariantClass>()>(state);
+}
+
+template <auto v_field, typename TCovariantClass>
+inline constexpr luaL_Reg regSetUnsafe(const char* name)
+{
+    return {name, wrapSetUnsafe<v_field, TCovariantClass>};
+}
+
+template <auto v_field, typename TCovariantClass>
+inline constexpr luaL_Reg regSet(const char* name)
+{
+    return {name, wrapSet<v_field, TCovariantClass>};
 }
 
 template <auto v_field, typename TCovariantClass>

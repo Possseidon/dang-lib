@@ -43,6 +43,17 @@ struct member_pointer_class<TRet(T::*)> {
 template <typename T>
 using member_pointer_class_t = typename member_pointer_class<T>::type;
 
+template <typename T>
+struct member_pointer_type {};
+
+template <typename T, typename TRet>
+struct member_pointer_type<TRet(T::*)> {
+    using type = TRet;
+};
+
+template <typename T>
+using member_pointer_type_t = typename member_pointer_type<T>::type;
+
 template <typename TPointer, typename TNewClass>
 struct modify_member_pointer_class {};
 
