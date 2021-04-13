@@ -30,12 +30,11 @@ const char* ClassInfo<dang::math::Line<T, v_dim>>::className()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
 {
-    constexpr auto setSupport = +[](Line& line, const Point& support) { line.support = support; };
     constexpr auto direction = +[](const Line& line) { return line.direction(); };
     constexpr auto setDirection = +[](Line& line, const Direction& direction) { line.direction() = direction; };
 
     std::vector result{reg<&Line::support, Line>("support"),
-                       reg<setSupport>("setSupport"),
+                       regSet<&Line::support, Line>("setSupport"),
                        reg<direction>("direction"),
                        reg<setDirection>("setDirection"),
                        reg<&Line::head, Line>("head"),
@@ -148,8 +147,6 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
             lua.argError(3, "index out of range");
         return plane.plane(index1 - 1, index2 - 1);
     };
-    constexpr auto setSupport = +[](Plane& plane, const Point& support) { plane.support = support; };
-    constexpr auto setDirections = +[](Plane& plane, const Directions& directions) { plane.directions = directions; };
     constexpr auto direction = +[](State& lua, const Plane& plane, std::size_t index) {
         if (index < 1 || index > 2)
             lua.argError(2, "index out of range");
@@ -185,9 +182,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
                        reg<line>("line"),
                        reg<plane>("plane"),
                        reg<&Plane::support, Plane>("support"),
-                       reg<setSupport>("setSupport"),
+                       regSet<&Plane::support, Plane>("setSupport"),
                        reg<&Plane::directions, Plane>("directions"),
-                       reg<setDirections>("setDirections"),
+                       regSet<&Plane::directions, Plane>("setDirections"),
                        reg<direction>("direction"),
                        reg<setDirection>("setDirection"),
                        reg<&Plane::area, Plane>("area"),
@@ -321,8 +318,6 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
                 lua.argError(4, "index out of range");
             return spat.spat(index1 - 1, index2 - 1, index3 - 1);
         };
-    constexpr auto setSupport = +[](Spat& spat, const Point& support) { spat.support = support; };
-    constexpr auto setDirections = +[](Spat& spat, const Directions& directions) { spat.directions = directions; };
     constexpr auto direction = +[](State& lua, const Spat& spat, std::size_t index) {
         if (index < 1 || index > 3)
             lua.argError(2, "index out of range");
@@ -339,9 +334,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
                        reg<plane>("plane"),
                        reg<spat>("spat"),
                        reg<&Spat::support, Spat>("support"),
-                       reg<setSupport>("setSupport"),
+                       regSet<&Spat::support, Spat>("setSupport"),
                        reg<&Spat::directions, Spat>("directions"),
-                       reg<setDirections>("setDirections"),
+                       regSet<&Spat::directions, Spat>("setDirections"),
                        reg<direction>("direction"),
                        reg<setDirection>("setDirection")};
 
