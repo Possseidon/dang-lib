@@ -434,30 +434,51 @@ private:
     static void registerNewindex(lua_State* state)
     {
         auto& newindex_ref = detail::UniqueClassInfo<T>::newindex;
+        if (newindex_ref == LUA_REFNIL)
+            return;
+
         if (newindex_ref != LUA_NOREF) {
             lua_rawgeti(state, newindex_ref, LUA_REGISTRYINDEX);
+            lua_setfield(state, -2, "__newindex");
+            return;
         }
-        else {
-            // Push table for properties.
-            auto set_count = detail::countProperties(class_properties<T>, &Property::set);
-            if (set_count > 0) {
-                lua_createtable(state, 0, static_cast<int>(set_count));
-                detail::setPropertyFuncs(state, class_properties<T>, &Property::set);
-                lua_pushvalue(state, -1);
-                lua_setfield(state, -3, "set");
-            }
-            else {
-                lua_pushnil(state);
-            }
 
-            // Push class_metatable<T>::__newindex
-            lua_getfield(state, -2, "__newindex");
+        int pushed = 0;
 
-            lua_pushcclosure(state, customNewindex, 2);
-
-            lua_pushvalue(state, -2);
-            newindex_ref = luaL_ref(state, -1);
+        // Push table for properties.
+        auto set_count = detail::countProperties(class_properties<T>, &Property::set);
+        auto has_properties = set_count > 0;
+        if (has_properties) {
+            lua_createtable(state, 0, static_cast<int>(set_count));
+            pushed++;
+            detail::setPropertyFuncs(state, class_properties<T>, &Property::set);
+            lua_pushvalue(state, -1);
+            lua_setfield(state, -2 - pushed, "set");
         }
+
+        // Push class_metatable<T>::__newindex
+        auto has_newindex = lua_getfield(state, -1 - pushed, "__newindex") != LUA_TNIL;
+        if (has_newindex)
+            pushed++;
+        else
+            lua_pop(state, 1);
+
+        if (pushed == 0) {
+            newindex_ref = LUA_REFNIL;
+            return;
+        }
+
+        if (has_properties) {
+            if (has_newindex)
+                lua_pushcclosure(state, customNewindex<1, 2>, 2);
+            else
+                lua_pushcclosure(state, customNewindex<1, 0>, 1);
+        }
+        else if (has_newindex)
+            lua_pushcclosure(state, customNewindex<0, 1>, 1);
+
+        lua_pushvalue(state, -2);
+        newindex_ref = luaL_ref(state, -1);
         lua_setfield(state, -2, "__newindex");
     }
 
@@ -528,16 +549,15 @@ private:
     }
 
     /// @brief Handles properties and calling the original __newindex function in this order.
+    /// @remark Upvalue indices to use for each style are passed as template parameter and can be 0 to skip entirely.
+    template <int v_properties, int v_indexfunction>
     static int customNewindex(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
 
-        // TODO: Optimize by dynamically removing parts that aren't actually checked with if constexpr.
-
-        // Call property setter.
-        if (!lua_isnil(state, lua_upvalueindex(1))) {
+        if constexpr (v_properties != 0) {
             lua_pushvalue(state, -2);
-            if (lua_gettable(state, lua_upvalueindex(1)) != LUA_TNIL) {
+            if (lua_gettable(state, lua_upvalueindex(v_properties)) != LUA_TNIL) {
                 lua_pushvalue(state, 1);
                 lua_pushvalue(state, 3);
                 lua_call(state, 2, 0);
@@ -546,9 +566,8 @@ private:
             lua_pop(state, 1);
         }
 
-        // Call __newindex function.
-        if (!lua_isnil(state, lua_upvalueindex(2))) {
-            lua_pushvalue(state, lua_upvalueindex(2));
+        if constexpr (v_indexfunction != 0) {
+            lua_pushvalue(state, lua_upvalueindex(v_indexfunction));
             lua_insert(state, -4);
             lua_call(state, 3, 0);
             return 0;
