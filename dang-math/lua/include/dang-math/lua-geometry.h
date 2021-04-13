@@ -13,7 +13,7 @@ template <>
 inline constexpr const char* enum_values<dang::math::PlaneSide>[4] { "top", "hit", "bottom" };
 
 template <typename T, std::size_t v_dim>
-struct ClassInfo<dang::math::Line<T, v_dim>> {
+struct ClassInfo<dang::math::Line<T, v_dim>> : DefaultClassInfo {
     using Line = dang::math::Line<T, v_dim>;
 
     using Point = typename Line::Point;
@@ -31,7 +31,7 @@ struct ClassInfo<dang::math::Line<T, v_dim>> {
 };
 
 template <typename T, std::size_t v_dim>
-struct ClassInfo<dang::math::Plane<T, v_dim>> {
+struct ClassInfo<dang::math::Plane<T, v_dim>> : DefaultClassInfo {
     using Plane = dang::math::Plane<T, v_dim>;
 
     using Point = typename Plane::Point;
@@ -52,7 +52,7 @@ struct ClassInfo<dang::math::Plane<T, v_dim>> {
 };
 
 template <typename T, std::size_t v_dim>
-struct ClassInfo<dang::math::Spat<T, v_dim>> {
+struct ClassInfo<dang::math::Spat<T, v_dim>> : DefaultClassInfo {
     using Spat = dang::math::Spat<T, v_dim>;
 
     using Point = typename Spat::Point;

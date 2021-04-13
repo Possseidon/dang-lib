@@ -8,7 +8,7 @@
 namespace dang::lua {
 
 template <typename T, std::size_t v_dim>
-struct ClassInfo<dang::math::Vector<T, v_dim>> {
+struct ClassInfo<dang::math::Vector<T, v_dim>> : DefaultClassInfo {
     using Vector = dang::math::Vector<T, v_dim>;
     using VectorOrScalar = std::variant<Vector, T>;
 
@@ -93,7 +93,7 @@ private:
 };
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> {
+struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> : DefaultClassInfo {
     using Matrix = dang::math::Matrix<T, v_cols, v_rows>;
     using MatrixOrScalar = std::variant<Matrix, T>;
     using IndexPosOrString = std::variant<std::size_t, dang::math::svec2, const char*>;
