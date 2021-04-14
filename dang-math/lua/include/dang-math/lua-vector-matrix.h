@@ -81,13 +81,13 @@ private:
     struct NewIndex {
         State& lua;
         Vector& vector;
-        const Swizzled& value;
+        Arg value;
 
         template <std::size_t... v_indices, typename... TSwizzles>
-        void accessHelper(std::index_sequence<v_indices...>, TSwizzles... swizzle) const;
+        void accessHelper(std::index_sequence<v_indices...>, TSwizzles... swizzle);
 
         template <typename... TSwizzles>
-        void access(TSwizzles... swizzle) const;
+        void access(TSwizzles... swizzle);
 
         void operator()(std::string_view key);
         void operator()(std::size_t index);

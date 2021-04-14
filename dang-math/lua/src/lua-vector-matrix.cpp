@@ -129,7 +129,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
     constexpr auto le = +[](const Vector& lhs, const Vector& rhs) { return lhs <= rhs; };
 
     constexpr auto index = +[](State& lua, const Vector& vec, Key key) { return std::visit(Index{lua, vec}, key); };
-    constexpr auto newindex = +[](State& lua, Vector& vec, Key key, const Swizzled& value) {
+    constexpr auto newindex = +[](State& lua, Vector& vec, Key key, Arg value) {
         std::visit(NewIndex{lua, vec, value}, key);
     };
 
@@ -307,20 +307,20 @@ std::optional<typename ClassInfo<dang::math::Vector<T, v_dim>>::Swizzled> ClassI
 template <typename T, std::size_t v_dim>
 template <std::size_t... v_indices, typename... TSwizzles>
 void ClassInfo<dang::math::Vector<T, v_dim>>::NewIndex::accessHelper(std::index_sequence<v_indices...>,
-                                                                     TSwizzles... swizzle) const
+                                                                     TSwizzles... swizzle)
 {
     auto indices = std::array{axisToIndex(swizzle)...};
     if ((!std::get<v_indices>(indices) || ...))
         lua.argError(2, "invalid swizzle");
 
-    if (auto opt_value = std::get_if<T>(&value)) {
+    if (auto opt_value = value.to<T>()) {
         ((vector[*std::get<v_indices>(indices)] = *opt_value), ...);
         return;
     }
 
     if constexpr (sizeof...(TSwizzles) > 1) {
-        if (auto opt_values = std::get_if<dang::math::Vector<T, sizeof...(TSwizzles)>>(&value)) {
-            ((vector[*std::get<v_indices>(indices)] = (*opt_values)[v_indices]), ...);
+        if (auto opt_values = value.to<dang::math::Vector<T, sizeof...(TSwizzles)>>()) {
+            ((vector[*std::get<v_indices>(indices)] = opt_values->get()[v_indices]), ...);
             return;
         }
     }
@@ -330,7 +330,7 @@ void ClassInfo<dang::math::Vector<T, v_dim>>::NewIndex::accessHelper(std::index_
 
 template <typename T, std::size_t v_dim>
 template <typename... TSwizzles>
-void ClassInfo<dang::math::Vector<T, v_dim>>::NewIndex::access(TSwizzles... swizzle) const
+void ClassInfo<dang::math::Vector<T, v_dim>>::NewIndex::access(TSwizzles... swizzle)
 {
     accessHelper(std::index_sequence_for<TSwizzles...>{}, swizzle...);
 }
@@ -360,7 +360,7 @@ void ClassInfo<dang::math::Vector<T, v_dim>>::NewIndex::operator()(std::size_t i
 {
     if (index < 1 || index > v_dim)
         lua.argError(2, "index out of range");
-    if (auto opt_value = std::get_if<T>(&value))
+    if (auto opt_value = value.to<T>())
         vector[index - 1] = *opt_value;
     else
         lua.argError(2, "single value expected, got vector");
