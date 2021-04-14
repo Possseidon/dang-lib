@@ -34,6 +34,7 @@ target_precompile_headers(${PROJECT_NAME}-vector-matrix
 target_link_libraries(${PROJECT_NAME}-vector-matrix
   PRIVATE
     dang-utils
+    ${PROJECT_NAME}-enums
   PUBLIC
     dang-lua
     dang-math

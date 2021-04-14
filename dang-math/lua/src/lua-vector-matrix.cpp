@@ -1,5 +1,7 @@
 #include "dang-math/lua-vector-matrix.h"
 
+#include "dang-math/lua-enums.h"
+
 #include "dang-utils/utils.h"
 
 namespace dang::lua {
@@ -95,6 +97,12 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
         result.push_back(reg<&Vector::vectorTo>("vectorTo"));
         result.push_back(reg<&Vector::min>("min"));
         result.push_back(reg<&Vector::max>("max"));
+        result.push_back(reg<&Vector::minAxis>("minAxis"));
+        result.push_back(reg<&Vector::maxAxis>("maxAxis"));
+        result.push_back(reg<&Vector::minMaxAxis>("minMaxAxis"));
+        result.push_back(reg<&Vector::minValue>("minValue"));
+        result.push_back(reg<&Vector::maxValue>("maxValue"));
+        result.push_back(reg<&Vector::minMaxValue>("minMaxValue"));
         result.push_back(reg<&Vector::clamp>("clamp"));
         result.push_back(reg<&Vector::reflect>("reflect"));
 
