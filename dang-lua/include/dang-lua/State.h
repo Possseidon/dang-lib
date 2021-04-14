@@ -683,6 +683,13 @@ public:
         this->state().setMetatable(index(), std::forward<TMetatable>(metatable));
     }
 
+    /// @brief Sets all functions in the given container of luaL_Reg on the table.
+    template <typename TFuncs>
+    void setFuncs(const TFuncs& funcs)
+    {
+        this->state().setFuncs(*this, funcs);
+    }
+
     // --- Iteration ---
 
     /// @brief Returns the next key-value-pair of the table or nothing, if the table has been exhausted.
@@ -2987,6 +2994,14 @@ public:
         push(std::forward<TMetatable>(metatable));
         lua_setmetatable(state_, index);
         notifyPush(-1);
+    }
+
+    /// @brief Sets all functions in the given container of luaL_Reg on the table.
+    template <typename TTable, typename TFuncs>
+    void setFuncs(TTable& table, const TFuncs& funcs)
+    {
+        for (const auto& func : funcs)
+            setTable(table, func.name, func.func);
     }
 
     // --- Iteration ---
