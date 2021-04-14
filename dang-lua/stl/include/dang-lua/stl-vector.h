@@ -21,19 +21,14 @@ struct ClassInfo<std::vector<T, TAllocator>> : DefaultClassInfo {
     static auto table()
     {
         constexpr auto assign = +[](vector& vec, const vector& other) { vec = other; };
-        constexpr auto front = +[](const vector& vec) { return vec.empty() ? std::optional<T>() : vec.front(); };
-        constexpr auto back = +[](const vector& vec) { return vec.empty() ? std::optional<T>() : vec.back(); };
         constexpr auto insert = +[](State& lua, vector& vec, std::size_t index, const T& value) {
-            if (index < 1 || index > vec.size() + 1)
-                lua.argError(2, "index out of range");
+            checkIndex(lua, 2, index, vec.size() + 1);
             vec.insert(vec.begin() + (index - 1), value);
         };
         constexpr auto erase = +[](State& lua, vector& vec, std::size_t first, std::optional<std::size_t> last_opt) {
-            if (first < 1 || first > vec.size())
-                lua.argError(2, "index out of range");
+            checkIndex(lua, 2, first, vec.size());
             auto last = last_opt.value_or(first);
-            if (last < 1 || last > vec.size())
-                lua.argError(3, "index out of range");
+            checkIndex(lua, 3, last, vec.size());
             vec.erase(vec.begin() + (first - 1), vec.begin() + last);
         };
         constexpr auto push_back = +[](vector& vec, const T& value) { vec.push_back(value); };
@@ -45,13 +40,16 @@ struct ClassInfo<std::vector<T, TAllocator>> : DefaultClassInfo {
 
         return std::vector{reg<assign>("assign"),
                            // Element access
-                           reg<front>("front"),
-                           reg<back>("back"),
+                           reg<front>("getFront"),
+                           reg<setFront>("setFront"),
+                           reg<back>("getBack"),
+                           reg<setBack>("setBack"),
                            // Capacity
-                           reg<&vector::empty>("empty"),
-                           reg<&vector::max_size>("maxSize"),
+                           reg<&vector::empty>("isEmpty"),
+                           reg<&vector::size>("getSize"),
+                           reg<&vector::max_size>("getMaxSize"),
                            reg<&vector::reserve>("reserve"),
-                           reg<&vector::capacity>("capacity"),
+                           reg<&vector::capacity>("getCapacity"),
                            reg<&vector::shrink_to_fit>("shrinkToFit"),
                            // Modifiers
                            reg<&vector::clear>("clear"),
@@ -75,8 +73,7 @@ struct ClassInfo<std::vector<T, TAllocator>> : DefaultClassInfo {
                               index);
         };
         constexpr auto newindex = +[](State& lua, vector& vec, std::size_t index, const T& value) {
-            if (index < 1 || index > vec.size())
-                lua.argError(2, "index out of range");
+            checkIndex(lua, 2, index, vec.size());
             vec[index - 1] = value;
         };
 
@@ -102,6 +99,39 @@ struct ClassInfo<std::vector<T, TAllocator>> : DefaultClassInfo {
         }
 
         return result;
+    }
+
+    static auto properties()
+    {
+        constexpr auto resize = +[](vector& vec, std::size_t size) { return vec.resize(size); };
+
+        return std::array{Property{"front", wrap<front>, wrap<setFront>},
+                          Property{"back", wrap<back>, wrap<setBack>},
+                          Property{"empty", wrap<&vector::empty>},
+                          Property{"size", wrap<&vector::size>, wrap<resize>},
+                          Property{"maxSize", wrap<&vector::max_size>},
+                          Property{"capacity", wrap<&vector::capacity>}};
+    }
+
+private:
+    static constexpr auto front = +[](const vector& vec) { return vec.empty() ? std::optional<T>() : vec.front(); };
+    static constexpr auto setFront = +[](State& lua, vector& vec, const T& value) {
+        if (vec.empty())
+            lua.argError(1, "vector is empty");
+        vec.front() = value;
+    };
+    static constexpr auto back = +[](const vector& vec) { return vec.empty() ? std::optional<T>() : vec.back(); };
+    static constexpr auto setBack = +[](State& lua, vector& vec, const T& value) {
+        if (vec.empty())
+            lua.argError(1, "vector is empty");
+        vec.back() = value;
+    };
+
+    static void checkIndex(State& lua, int arg, int index, int size)
+    {
+        if (index < 1 || index > size)
+            lua.argError(
+                arg, ("index " + std::to_string(index) + " out of range [1, " + std::to_string(size) + "]").c_str());
     }
 };
 
