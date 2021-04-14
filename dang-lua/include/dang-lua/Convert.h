@@ -1089,9 +1089,9 @@ static constexpr int combinedPushCount(const TValues&... values)
     }());
 }
 
-/// @brief Allows for conversion of multiple values using std::tuple.
-template <typename... TValues>
-struct Convert<std::tuple<TValues...>> {
+/// @brief Allows for conversion of multiple values using tuple like types.
+template <typename TTuple, typename... TValues>
+struct ConvertTuple {
     static constexpr std::optional<int> push_count = CombinedPushCount<TValues...>;
     static constexpr bool allow_nesting = (Convert<TValues>::allow_nesting && ...);
 
@@ -1110,31 +1110,31 @@ struct Convert<std::tuple<TValues...>> {
     }
 
     /// @brief Converts all stack positions starting at pos or std::nullopt on any failure of any.
-    static std::optional<std::tuple<TValues...>> at(lua_State* state, int pos)
+    static std::optional<TTuple> at(lua_State* state, int pos)
     {
         return atHelper(state, pos, std::index_sequence_for<TValues...>());
     }
 
     /// @brief Converts all argument stack positions starting at arg and raises an error on failure of any.
-    static std::tuple<TValues...> check(lua_State* state, int arg)
+    static TTuple check(lua_State* state, int arg)
     {
         return checkHelper(state, arg, std::index_sequence_for<TValues...>());
     }
 
     /// @brief Pushes all values in the tuple onto the stack and returns the count.
-    static void push(lua_State* state, std::tuple<TValues...>&& values)
+    static void push(lua_State* state, TTuple&& values)
     {
         pushAll(state, std::index_sequence_for<TValues...>(), std::move(values));
     }
 
     /// @brief Pushes all values in the tuple onto the stack and returns the count.
-    static void push(lua_State* state, const std::tuple<TValues...>& values)
+    static void push(lua_State* state, const TTuple& values)
     {
         pushAll(state, std::index_sequence_for<TValues...>(), values);
     }
 
     /// @brief Returns the total push count of all values in the tuple.
-    static constexpr int getPushCount(const std::tuple<TValues...>& values)
+    static constexpr int getPushCount(const TTuple& values)
     {
         static_assert(!push_count);
         return std::apply(combinedPushCount, values);
@@ -1154,32 +1154,38 @@ private:
     }
 
     template <std::size_t... v_indices>
-    static std::optional<std::tuple<TValues...>> atHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
+    static std::optional<TTuple> atHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
     {
-        std::tuple values{Convert<TValues>::at(state, pos + v_indices)...};
+        TTuple values{Convert<TValues>::at(state, pos + v_indices)...};
         if ((std::get<v_indices>(values) && ...))
-            return std::tuple{*std::get<v_indices>(values)...};
+            return TTuple{*std::get<v_indices>(values)...};
         return std::nullopt;
     }
 
     template <std::size_t... v_indices>
-    static std::tuple<TValues...> checkHelper(lua_State* state, int arg, std::index_sequence<v_indices...>)
+    static TTuple checkHelper(lua_State* state, int arg, std::index_sequence<v_indices...>)
     {
         return {Convert<TValues>::check(state, arg + v_indices)...};
     }
 
     template <std::size_t... v_indices>
-    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, std::tuple<TValues...>&& values)
+    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, TTuple&& values)
     {
         (Convert<TValues>::push(state, std::move(std::get<v_indices>(values))), ...);
     }
 
     template <std::size_t... v_indices>
-    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, const std::tuple<TValues...>& values)
+    static void pushAll(lua_State* state, std::index_sequence<v_indices...>, const TTuple& values)
     {
         (Convert<TValues>::push(state, std::get<v_indices>(values)), ...);
     }
 };
+
+template <typename... TValues>
+struct Convert<std::tuple<TValues...>> : ConvertTuple<std::tuple<TValues...>, TValues...> {};
+
+template <typename TFirst, typename TSecond>
+struct Convert<std::pair<TFirst, TSecond>> : ConvertTuple<std::pair<TFirst, TSecond>, TFirst, TSecond> {};
 
 /// @brief Allows for conversion of different values using std::variant.
 template <typename... TOptions>
