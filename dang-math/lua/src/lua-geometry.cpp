@@ -119,10 +119,7 @@ Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
     };
 
     auto result = lua.pushMap(class_table<Line>);
-
-    auto result_mt = lua.pushTable();
-    result_mt.setTable("__call", wrap<create>);
-
+    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
@@ -288,10 +285,7 @@ Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
     };
 
     auto result = lua.pushMap(class_table<Plane>);
-
-    auto result_mt = lua.pushTable();
-    result_mt.setTable("__call", wrap<create>);
-
+    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
@@ -411,10 +405,7 @@ Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
     };
 
     auto result = lua.pushMap(class_table<Spat>);
-
-    auto result_mt = lua.pushTable();
-    result_mt.setTable("__call", wrap<create>);
-
+    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
