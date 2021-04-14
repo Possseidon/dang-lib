@@ -118,7 +118,7 @@ Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
         return Line(support, direction);
     };
 
-    auto result = lua.pushTable();
+    auto result = lua.pushMap(class_table<Line>);
 
     auto result_mt = lua.pushTable();
     result_mt.setTable("__call", wrap<create>);
@@ -287,7 +287,7 @@ Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
         return Plane(support, Directions({direction1, direction2}));
     };
 
-    auto result = lua.pushTable();
+    auto result = lua.pushMap(class_table<Plane>);
 
     auto result_mt = lua.pushTable();
     result_mt.setTable("__call", wrap<create>);
@@ -410,7 +410,7 @@ Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
         return Spat(support, Directions({direction1, direction2, direction3}));
     };
 
-    auto result = lua.pushTable();
+    auto result = lua.pushMap(class_table<Spat>);
 
     auto result_mt = lua.pushTable();
     result_mt.setTable("__call", wrap<create>);
