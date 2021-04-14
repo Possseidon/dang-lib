@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-math-lua CXX)
 
+add_library(${PROJECT_NAME}-enums INTERFACE)
+
+target_link_libraries(${PROJECT_NAME}-enums 
+  INTERFACE
+    dang-lua
+)
+
+target_include_directories(${PROJECT_NAME}-enums
+  INTERFACE
+    include
+)
+
 add_library(${PROJECT_NAME}-vector-matrix STATIC EXCLUDE_FROM_ALL
   src/lua-vector-matrix.cpp
 )

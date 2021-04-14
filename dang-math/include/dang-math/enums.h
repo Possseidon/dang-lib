@@ -15,6 +15,9 @@ enum class Axis2 { None = -1, X, Y, COUNT };
 /// @brief Represents one of the three axes in a three-dimensional system or an optional None value.
 enum class Axis3 { None = -1, X, Y, Z, COUNT };
 
+/// @brief Represents one of the three axes or W in a four-dimensional system or an optional None value.
+enum class Axis4 { None = -1, X, Y, Z, W, COUNT };
+
 /// @brief Represents one of the two corners in a one-dimensional system or an optional None value.
 enum class Corner1 { None = -1, Left, Right, COUNT };
 
@@ -79,6 +82,9 @@ template <>
 struct enum_count<dang::math::Axis3> : default_enum_count<dang::math::Axis3> {};
 
 template <>
+struct enum_count<dang::math::Axis4> : default_enum_count<dang::math::Axis4> {};
+
+template <>
 struct enum_count<dang::math::Corner1> : default_enum_count<dang::math::Corner1> {};
 
 template <>
@@ -126,6 +132,11 @@ struct axis_selector<2> {
 template <>
 struct axis_selector<3> {
     using type = Axis3;
+};
+
+template <>
+struct axis_selector<4> {
+    using type = Axis4;
 };
 
 template <std::size_t v_dim>
@@ -212,6 +223,7 @@ using Facings = dutils::EnumSet<Facing<v_dim>>;
 using Axes1 = Axes<1>;
 using Axes2 = Axes<2>;
 using Axes3 = Axes<3>;
+using Axes4 = Axes<4>;
 
 using Corners1 = Corners<1>;
 using Corners2 = Corners<2>;
