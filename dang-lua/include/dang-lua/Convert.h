@@ -28,6 +28,8 @@ struct Property {
 struct DefaultClassInfo {
     // static constexpr const char* className();
 
+    static constexpr auto allow_table_initialization = false;
+
     static constexpr std::array<luaL_Reg, 0> table() { return {}; }
     static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
     static constexpr std::array<Property, 0> properties() { return {}; }
@@ -246,6 +248,27 @@ struct Convert {
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
         if constexpr (std::is_class_v<T>) {
+            if constexpr (ClassInfo<T>::allow_table_initialization) {
+                if (lua_istable(state, pos)) {
+                    auto abs_pos = lua_absindex(state, pos);
+                    auto& value = push(state, T());
+
+                    lua_pushnil(state);
+                    while (lua_next(state, abs_pos)) {
+                        // duplicate key and value
+                        lua_pushvalue(state, -2);
+                        lua_pushvalue(state, -2);
+                        // userdata[key] = value
+                        lua_settable(state, -5);
+                        // pop value, leave key
+                        lua_pop(state, 1);
+                    }
+
+                    lua_replace(state, pos);
+                    return value;
+                }
+            }
+
             if (void* value = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name.c_str()))
                 return *static_cast<T*>(value);
             if (void* pointer = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name_ref.c_str()))
@@ -299,9 +322,9 @@ struct Convert {
     /// @brief Returns the name of the class or enum.
     static constexpr std::string_view getPushTypename() { return ClassInfo<T>::className(); }
 
-    /// @brief Pushes the in place constructed value onto the stack.
+    /// @brief Pushes the in place constructed value or enum string onto the stack.
     template <typename... TArgs>
-    static void push(lua_State* state, TArgs&&... values)
+    static std::conditional_t<std::is_class_v<T>, T&, void> push(lua_State* state, TArgs&&... values)
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>);
         static_assert(!std::is_enum_v<T> || sizeof...(TArgs) == 1);
@@ -310,6 +333,7 @@ struct Convert {
             new (userdata) T(std::forward<TArgs>(values)...);
             pushMetatable<false>(state);
             lua_setmetatable(state, -2);
+            return *userdata;
         }
         else if constexpr (std::is_enum_v<T>) {
             lua_pushstring(state, enum_values<T>[static_cast<std::size_t>(values)]...);
