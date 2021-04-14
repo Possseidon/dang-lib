@@ -6,6 +6,17 @@
 
 namespace dang::lua {
 
+namespace detail {
+
+void checkIndex(State& lua, int arg, int index, int size)
+{
+    if (index < 1 || index > size)
+        lua.argError(arg,
+                     ("index " + std::to_string(index) + " out of range [1, " + std::to_string(size) + "]").c_str());
+}
+
+} // namespace detail
+
 template <typename T, std::size_t v_dim>
 const std::string ClassInfo<dang::math::Line<T, v_dim>>::base_class_name = [] {
     using namespace std::literals;
@@ -136,45 +147,36 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
 {
     constexpr auto at = +[](const Plane& plane, Factor x, Factor y) { return plane[{x, y}]; };
     constexpr auto line = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 2)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 2);
         return plane.line(index - 1);
     };
     constexpr auto plane = +[](State& lua, const Plane& plane, std::size_t index1, std::size_t index2) {
-        if (index1 < 1 || index1 > 2)
-            lua.argError(2, "index out of range");
-        if (index2 < 1 || index2 > 2)
-            lua.argError(3, "index out of range");
+        detail::checkIndex(lua, 2, index1, 2);
+        detail::checkIndex(lua, 3, index2, 2);
         return plane.plane(index1 - 1, index2 - 1);
     };
     constexpr auto direction = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 2)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 2);
         return plane.directions[index - 1];
     };
     constexpr auto setDirection = +[](State& lua, Plane& plane, std::size_t index, const Direction& direction) {
-        if (index < 1 || index > 2)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 2);
         plane.directions[index - 1] = direction;
     };
     constexpr auto quadPoint = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 4)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 4);
         return plane.quadPoint(index - 1);
     };
     constexpr auto trianglePoint = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         return plane.trianglePoint(index - 1);
     };
     constexpr auto innerRadians = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         return plane.innerRadians(index - 1);
     };
     constexpr auto innerDegrees = +[](State& lua, const Plane& plane, std::size_t index) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         return plane.innerDegrees(index - 1);
     };
 
@@ -297,35 +299,27 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
 {
     constexpr auto at = +[](const Spat& spat, Factor x, Factor y, Factor z) { return spat[{x, y, z}]; };
     constexpr auto line = +[](State& lua, const Spat& spat, std::size_t index) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         return spat.line(index - 1);
     };
     constexpr auto plane = +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2) {
-        if (index1 < 1 || index1 > 3)
-            lua.argError(2, "index out of range");
-        if (index2 < 1 || index2 > 3)
-            lua.argError(3, "index out of range");
+        detail::checkIndex(lua, 2, index1, 3);
+        detail::checkIndex(lua, 3, index2, 3);
         return spat.plane(index1 - 1, index2 - 1);
     };
     constexpr auto spat =
         +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2, std::size_t index3) {
-            if (index1 < 1 || index1 > 3)
-                lua.argError(2, "index out of range");
-            if (index2 < 1 || index2 > 3)
-                lua.argError(3, "index out of range");
-            if (index3 < 1 || index3 > 3)
-                lua.argError(4, "index out of range");
+            detail::checkIndex(lua, 2, index1, 3);
+            detail::checkIndex(lua, 3, index2, 3);
+            detail::checkIndex(lua, 4, index3, 3);
             return spat.spat(index1 - 1, index2 - 1, index3 - 1);
         };
     constexpr auto direction = +[](State& lua, const Spat& spat, std::size_t index) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         return spat.directions[index - 1];
     };
     constexpr auto setDirection = +[](State& lua, Spat& spat, std::size_t index, const Direction& direction) {
-        if (index < 1 || index > 3)
-            lua.argError(2, "index out of range");
+        detail::checkIndex(lua, 2, index, 3);
         spat.directions[index - 1] = direction;
     };
 
