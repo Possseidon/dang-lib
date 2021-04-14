@@ -44,15 +44,15 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
     constexpr auto direction = +[](const Line& line) { return line.direction(); };
     constexpr auto setDirection = +[](Line& line, const Direction& direction) { line.direction() = direction; };
 
-    std::vector result{reg<&Line::support, Line>("support"),
+    std::vector result{reg<&Line::support, Line>("getSupport"),
                        regSet<&Line::support, Line>("setSupport"),
-                       reg<direction>("direction"),
+                       reg<direction>("getDirection"),
                        reg<setDirection>("setDirection"),
-                       reg<&Line::head, Line>("head"),
+                       reg<&Line::head, Line>("getHead"),
                        reg<&Line::setHead, Line>("setHead"),
-                       reg<&Line::tail, Line>("tail"),
+                       reg<&Line::tail, Line>("getTail"),
                        reg<&Line::setTail, Line>("setTail"),
-                       reg<&Line::length, Line>("length"),
+                       reg<&Line::length, Line>("getLength"),
                        reg<&Line::mirror, Line>("mirror")};
 
     if constexpr (v_dim == 2) {
@@ -93,6 +93,18 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metatable()
     constexpr auto eq = +[](const Line& lhs, const Line& rhs) { return lhs == rhs; };
 
     return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
+}
+
+template <typename T, std::size_t v_dim>
+std::vector<Property> ClassInfo<dang::math::Line<T, v_dim>>::properties()
+{
+    constexpr auto direction = +[](const Line& line) { return line.direction(); };
+    constexpr auto setDirection = +[](Line& line, const Direction& direction) { line.direction() = direction; };
+    return std::vector{field<&Line::support, Line>("support"),
+                       Property{"direction", wrap<direction>, wrap<setDirection>},
+                       Property{"head", wrap<&Line::head, Line>, wrap<&Line::setHead, Line>},
+                       Property{"tail", wrap<&Line::tail, Line>, wrap<&Line::setTail, Line>},
+                       Property{"length", wrap<&Line::length, Line>}};
 }
 
 template <typename T, std::size_t v_dim>
@@ -183,13 +195,13 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
     std::vector result{reg<at>("at"),
                        reg<line>("line"),
                        reg<plane>("plane"),
-                       reg<&Plane::support, Plane>("support"),
+                       reg<&Plane::support, Plane>("getSupport"),
                        regSet<&Plane::support, Plane>("setSupport"),
-                       reg<&Plane::directions, Plane>("directions"),
+                       reg<&Plane::directions, Plane>("getDirections"),
                        regSet<&Plane::directions, Plane>("setDirections"),
                        reg<direction>("direction"),
                        reg<setDirection>("setDirection"),
-                       reg<&Plane::area, Plane>("area"),
+                       reg<&Plane::area, Plane>("getArea"),
                        reg<&Plane::closestFactorTo, Plane>("closestFactorTo"),
                        reg<&Plane::closestPointTo, Plane>("closestPointTo"),
                        reg<quadPoint>("quadPoint"),
@@ -208,10 +220,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
             return std::visit([&](const auto& target) { return plane.degreesTo(target); }, target);
         };
 
-        result.push_back(reg<&Plane::perpendicular>("perpendicular"));
-        result.push_back(reg<&Plane::perpendicularLine>("perpendicularLine"));
-        result.push_back(reg<&Plane::normal>("normal"));
-        result.push_back(reg<&Plane::normalLine>("normalLine"));
+        result.push_back(reg<&Plane::perpendicular>("getPerpendicular"));
+        result.push_back(reg<&Plane::perpendicularLine>("getPerpendicularLine"));
+        result.push_back(reg<&Plane::normal>("getNormal"));
+        result.push_back(reg<&Plane::normalLine>("getNormalLine"));
         result.push_back(reg<&Plane::heightTo>("heightTo"));
         result.push_back(reg<&Plane::distanceTo>("distanceTo"));
         result.push_back(reg<&Plane::sideOf>("sideOf"));
@@ -244,6 +256,23 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metatable()
     constexpr auto eq = +[](const Plane& lhs, const Plane& rhs) { return lhs == rhs; };
 
     return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
+}
+
+template <typename T, std::size_t v_dim>
+std::vector<Property> ClassInfo<dang::math::Plane<T, v_dim>>::properties()
+{
+    std::vector result{field<&Plane::support, Plane>("support"),
+                       field<&Plane::directions, Plane>("directions"),
+                       Property{"area", wrap<&Plane::area, Plane>}};
+
+    if constexpr (v_dim == 3) {
+        result.push_back(Property{"perpendicular", wrap<&Plane::perpendicular>});
+        result.push_back(Property{"perpendicularLine", wrap<&Plane::perpendicularLine>});
+        result.push_back(Property{"normal", wrap<&Plane::normal>});
+        result.push_back(Property{"normalLine", wrap<&Plane::normalLine>});
+    }
+
+    return result;
 }
 
 template <typename T, std::size_t v_dim>
@@ -327,16 +356,16 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
                        reg<line>("line"),
                        reg<plane>("plane"),
                        reg<spat>("spat"),
-                       reg<&Spat::support, Spat>("support"),
+                       reg<&Spat::support, Spat>("getSupport"),
                        regSet<&Spat::support, Spat>("setSupport"),
-                       reg<&Spat::directions, Spat>("directions"),
+                       reg<&Spat::directions, Spat>("getDirections"),
                        regSet<&Spat::directions, Spat>("setDirections"),
                        reg<direction>("direction"),
                        reg<setDirection>("setDirection")};
 
     if constexpr (v_dim == 3) {
         result.push_back(reg<&Spat::factorAt, Spat>("factorAt"));
-        result.push_back(reg<&Spat::tripleProduct>("tripleProduct"));
+        result.push_back(reg<&Spat::tripleProduct>("getTripleProduct"));
     }
 
     return result;
@@ -354,6 +383,18 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metatable()
     constexpr auto eq = +[](const Spat& lhs, const Spat& rhs) { return lhs == rhs; };
 
     return std::vector{reg<index>("__index"), reg<eq>("__eq"), reg<indextable_pairs>("__pairs")};
+}
+
+template <typename T, std::size_t v_dim>
+std::vector<Property> ClassInfo<dang::math::Spat<T, v_dim>>::properties()
+{
+    std::vector result{field<&Spat::support, Spat>("support"), field<&Spat::directions, Spat>("directions")};
+
+    if constexpr (v_dim == 3) {
+        result.push_back(Property{"tripleProduct", wrap<&Spat::tripleProduct>});
+    }
+
+    return result;
 }
 
 template <typename T, std::size_t v_dim>
