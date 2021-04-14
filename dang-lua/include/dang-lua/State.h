@@ -2294,6 +2294,7 @@ public:
     }
 
     /// @brief Pushes a newly created table containing all key-value pairs in the given range.
+    /// @remark Works with collections of luaL_Reg.
     template <typename TIter>
     auto pushMap(TIter first, TIter last)
     {
@@ -2313,6 +2314,7 @@ public:
     }
 
     /// @brief Pushes a newly created table containing all key-value pairs in the given collection.
+    /// @remark Works with collections of luaL_Reg.
     template <typename T>
     auto pushMap(const T& collection)
     {
