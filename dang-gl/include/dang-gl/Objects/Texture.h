@@ -575,7 +575,7 @@ private:
     /// size.
     static GLsizei mipmapCount(GLsizei value)
     {
-        // TODO: Use std::bit_width in C++20
+        // TODO: C++20 use std::bit_width
         GLsizei result = 1;
         while (value >>= 1)
             result++;
