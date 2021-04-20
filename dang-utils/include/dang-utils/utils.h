@@ -4,6 +4,12 @@
 
 #include "dang-utils/global.h"
 
+#ifdef _MSC_VER
+#define DANG_MSVC_FORCE_EBO __declspec(empty_bases)
+#else
+#define DANG_MSVC_FORCE_EBO
+#endif
+
 namespace dang::utils {
 
 namespace detail {
@@ -25,7 +31,7 @@ template <auto v>
 struct constant : std::integral_constant<decltype(v), v> {};
 
 template <typename... TFunctions>
-struct Overloaded : TFunctions... {
+struct DANG_MSVC_FORCE_EBO Overloaded : TFunctions... {
     using TFunctions::operator()...;
 };
 
