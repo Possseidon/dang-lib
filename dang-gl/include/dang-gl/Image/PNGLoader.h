@@ -46,16 +46,18 @@ public:
     void init(std::istream& stream);
 
     /// @brief After initialization, returns the width and height of the image.
-    dmath::svec2 size() const;
+    dmath::svec2 size(dmath::svec2 padding = {}) const;
 
     /// @brief Returns the total count of pixels.
-    std::size_t count() const { return size_.product(); }
+    std::size_t count(dmath::svec2 padding = {}) const { return size(padding).product(); }
 
     /// @brief Converts the data into the specified format and returns it as a byte array.
     /// @remark Actual pixels are created inside of the byte array using placement new.
     /// @param flip Whether to flip the top and bottom of the PNG.
+    /// @param pad_low Padding to add in the top left corner of the image.
+    /// @param pad_low Padding to add in the bottom right corner of the image.
     template <PixelFormat v_pixel_format = PixelFormat::RGBA, std::size_t row_alignment = 4>
-    std::unique_ptr<std::byte[]> read(bool flip = false);
+    std::unique_ptr<std::byte[]> read(bool flip = false, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {});
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
     PNGWarningEvent onWarning;
@@ -92,33 +94,34 @@ private:
 
     /// @brief The width of the image in bytes.
     template <PixelFormat v_pixel_format>
-    std::size_t byteWidth() const
+    std::size_t byteWidth(std::size_t padding) const
     {
-        return size_[0] * sizeof(Pixel<v_pixel_format>);
+        return (size_[0] + padding) * sizeof(Pixel<v_pixel_format>);
     }
 
     /// @brief The width of the image in bytes, but aligned.
     template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
-    std::size_t alignedByteWidth() const
+    std::size_t alignedByteWidth(std::size_t padding) const
     {
         static_assert(v_row_alignment > 0);
-        return (byteWidth<v_pixel_format>() - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
+        return (byteWidth<v_pixel_format>(padding) - 1) / v_row_alignment * v_row_alignment + v_row_alignment;
     }
 
     /// @brief The size of the image, but with width as the aligned byte width.
     template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
-    dmath::svec2 alignedByteSize() const
+    dmath::svec2 alignedByteSize(dmath::svec2 padding) const
     {
         auto result = size_;
-        result[0] = alignedByteWidth<v_pixel_format, v_row_alignment>();
+        result[0] = alignedByteWidth<v_pixel_format, v_row_alignment>(padding.x());
+        result[1] += padding.y();
         return result;
     }
 
     /// @brief The size of the image in bytes.
     template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
-    std::size_t byteCount() const
+    std::size_t byteCount(dmath::svec2 padding) const
     {
-        return alignedByteSize<v_pixel_format, v_row_alignment>().product();
+        return alignedByteSize<v_pixel_format, v_row_alignment>(padding).product();
     }
 
     /// @brief Cleans up the libpng handles.
@@ -138,7 +141,7 @@ private:
 };
 
 template <PixelFormat v_pixel_format, std::size_t v_row_alignment>
-inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
+inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip, dmath::svec2 pad_low, dmath::svec2 pad_high)
 {
     if (!initialized_)
         throw PNGError("PNG not initialized.");
@@ -167,25 +170,27 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip)
     if (rowbytes != size_.x() * pixel_format_component_count_v<v_pixel_format>)
         throw PNGError("Cannot convert PNG to correct format.");
 
-    auto aligned_width = alignedByteWidth<v_pixel_format, v_row_alignment>();
-    auto image = std::make_unique<std::byte[]>(byteCount<v_pixel_format, v_row_alignment>());
+    auto padding = pad_low + pad_high;
+    auto padded_size = size(padding);
+
+    auto aligned_width = alignedByteWidth<v_pixel_format, v_row_alignment>(padding.x());
+    auto image = std::make_unique<std::byte[]>(byteCount<v_pixel_format, v_row_alignment>(padding));
+    auto base_ptr = reinterpret_cast<png_bytep>(image.get());
 
     // Fill offsets with the row-pointers to the actual image data.
-    std::vector<png_bytep> offsets(size_.y());
+    std::vector<png_bytep> offsets(padded_size.y());
 
-    png_bytep current = reinterpret_cast<png_bytep>(image.get());
-    auto fill = [&] { return std::exchange(current, current + aligned_width); };
+    auto fill = [&, ptr = base_ptr]() mutable { return std::exchange(ptr, ptr + aligned_width); };
 
     if (flip)
-        std::generate(offsets.rbegin(), offsets.rend(), fill);
+        std::generate(offsets.rbegin() + pad_high.y(), offsets.rend() - pad_low.y(), fill);
     else
-        std::generate(offsets.begin(), offsets.end(), fill);
+        std::generate(offsets.begin() + pad_low.y(), offsets.end() - pad_high.y(), fill);
 
     using Pixel = Pixel<v_pixel_format>;
 
-    for (auto offset : offsets)
-        for (std::size_t x = 0; x < size_.x(); x++)
-            new (offset + x * sizeof(Pixel)) Pixel;
+    for (std::size_t y = 0; y < padded_size.y(); y++)
+        std::uninitialized_default_construct_n(base_ptr + y * aligned_width, padded_size.x());
 
     // Make sure, the caller doesn't need to call the destructor on each pixel.
     static_assert(std::is_trivially_destructible_v<Pixel>);

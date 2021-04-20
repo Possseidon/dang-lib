@@ -38,7 +38,7 @@ void PNGLoader::init(std::istream& stream)
     png_set_interlace_handling(png_ptr_);
 }
 
-dmath::svec2 PNGLoader::size() const { return size_; }
+dmath::svec2 PNGLoader::size(dmath::svec2 padding) const { return size_ + padding; }
 
 void PNGLoader::handleBitDepth()
 {

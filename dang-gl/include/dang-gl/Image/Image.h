@@ -92,26 +92,26 @@ public:
 
     /// @brief Loads a PNG image from the given stream and returns it.
     /// @exception PNGError if the stream does not contain a valid PNG.
-    static Image loadFromPNG(std::istream& stream)
+    static Image loadFromPNG(std::istream& stream, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {})
     {
         static_assert(pixel_type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
         PNGLoader png_loader;
         // TODO: Better logging
         png_loader.onWarning.append([](const PNGWarningInfo& info) { std::cerr << info.message << '\n'; });
         png_loader.init(stream);
-        auto data = png_loader.read<pixel_format, row_alignment>(true);
-        return Image(png_loader.size(), std::move(data));
+        auto data = png_loader.read<pixel_format, row_alignment>(true, pad_low, pad_high);
+        return Image(png_loader.size(pad_low + pad_high), std::move(data));
     }
 
     /// @brief Loads a PNG image from the given file and returns it.
     /// @exception PNGError if the file cannot be opened.
     /// @exception PNGError if the file does not represent a valid PNG.
-    static Image loadFromPNG(const fs::path& path)
+    static Image loadFromPNG(const fs::path& path, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {})
     {
         std::ifstream stream(path, std::ios::binary);
         if (!stream)
             throw PNGError("Cannot open PNG file: " + path.string());
-        return loadFromPNG(stream);
+        return loadFromPNG(stream, pad_low, pad_high);
     }
 
     /// @brief Returns the size of the image along each axis.
