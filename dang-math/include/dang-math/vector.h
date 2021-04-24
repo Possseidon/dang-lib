@@ -693,7 +693,7 @@ struct Vector : std::array<T, v_dim> {
         static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
         return swizzle<__VA_ARGS__>();                                                                                 \
     }                                                                                                                  \
-    void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                                        \
+    constexpr void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                              \
     {                                                                                                                  \
         static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
         setSwizzle<__VA_ARGS__>(vector);                                                                               \
