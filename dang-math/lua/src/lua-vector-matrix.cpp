@@ -165,6 +165,18 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
             constexpr auto unm = +[](const Vector& vec) { return -vec; };
             result.push_back(reg<unm>("__unm"));
         }
+
+        if constexpr (std::is_integral_v<T>) {
+            constexpr auto bnot = +[](const Vector& vec) { return ~vec; };
+            constexpr auto band = +[](const Vector& lhs, const Vector& rhs) { return lhs & rhs; };
+            constexpr auto bor = +[](const Vector& lhs, const Vector& rhs) { return lhs | rhs; };
+            constexpr auto bxor = +[](const Vector& lhs, const Vector& rhs) { return lhs ^ rhs; };
+
+            result.push_back(reg<bnot>("__bnot"));
+            result.push_back(reg<band>("__band"));
+            result.push_back(reg<bor>("__bor"));
+            result.push_back(reg<bxor>("__bxor"));
+        }
     }
 
     return result;
