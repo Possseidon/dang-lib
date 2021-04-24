@@ -21,16 +21,16 @@ struct Quaternion : private Vector<T, 4> {
         : Base()
     {}
     /// @brief Initializes the quaternion from a four-dimensional vector.
-    constexpr Quaternion(const Base& vector)
+    constexpr explicit Quaternion(const Base& vector)
         : Base(vector)
     {}
     /// @brief Initializes the quaternion from scalar and vector without normalization.
     constexpr Quaternion(T scalar, const Vector<T, 3>& vector)
-        : Quaternion(Base(vector, scalar))
+        : Base(vector, scalar)
     {}
     /// @brief Initializes the quaternion from w-scalar and xyz-vector without normalization.
     constexpr Quaternion(T w, T x, T y, T z)
-        : Quaternion(Base(x, y, z, w))
+        : Base(x, y, z, w)
     {}
 
     /// @brief Returns the zero-quaternion, which cannot be normalized or used directly.
@@ -109,7 +109,7 @@ struct Quaternion : private Vector<T, 4> {
     using Base::sqrdot;
 
     /// @brief Returns the normalized quaternion, which can safely be applied using multiplication.
-    constexpr Quaternion normalize() const { return Base::normalize(); }
+    constexpr Quaternion normalize() const { return Quaternion(Base::normalize()); }
 
     /// @brief Returns the magnitude of the quaternion, which is simply the length of the xyzw-vector.
     constexpr T magnitude() const { return Base::length(); }
@@ -147,12 +147,12 @@ struct Quaternion : private Vector<T, 4> {
     constexpr Quaternion operator+() const { return *this; }
 
     /// @brief Returns the quaternion with both scalar and vector negated.
-    constexpr Quaternion operator-() const { return Base::operator-(); }
+    constexpr Quaternion operator-() const { return Quaternion(Base::operator-()); }
 
     /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return Base(lhs) + Base(rhs);
+        return Quaternion(Base(lhs) + Base(rhs));
     }
 
     /// @brief Adds both quaternions component-wise.
@@ -161,7 +161,7 @@ struct Quaternion : private Vector<T, 4> {
     /// @brief Adds both quaternions component-wise.
     friend constexpr Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return Base(lhs) - Base(rhs);
+        return Quaternion(Base(lhs) - Base(rhs));
     }
 
     /// @brief Adds both quaternions component-wise.
@@ -209,10 +209,16 @@ struct Quaternion : private Vector<T, 4> {
     }
 
     /// @brief Scales the whole quaternion with the given factor.
-    friend constexpr Quaternion operator*(const Quaternion& quaternion, T factor) { return Base(quaternion) * factor; }
+    friend constexpr Quaternion operator*(const Quaternion& quaternion, T factor)
+    {
+        return Quaternion(Base(quaternion) * factor);
+    }
 
     /// @brief Scales the whole quaternion with the given factor.
-    friend constexpr Quaternion operator*(T factor, const Quaternion& quaternion) { return Base(quaternion) * factor; }
+    friend constexpr Quaternion operator*(T factor, const Quaternion& quaternion)
+    {
+        return Quaternion(Base(quaternion) * factor);
+    }
 
     /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion& operator*=(Quaternion& quaternion, T factor)
@@ -221,10 +227,16 @@ struct Quaternion : private Vector<T, 4> {
     }
 
     /// @brief Scales the whole quaternion with the given factor.
-    friend constexpr Quaternion operator/(const Quaternion& quaternion, T factor) { return Base(quaternion) / factor; }
+    friend constexpr Quaternion operator/(const Quaternion& quaternion, T factor)
+    {
+        return Quaternion(Base(quaternion) / factor);
+    }
 
     /// @brief Scales the whole quaternion with the given factor.
-    friend constexpr Quaternion operator/(T factor, const Quaternion& quaternion) { return factor / Base(quaternion); }
+    friend constexpr Quaternion operator/(T factor, const Quaternion& quaternion)
+    {
+        return Quaternion(factor / Base(quaternion));
+    }
 
     /// @brief Scales the whole quaternion with the given factor.
     friend constexpr Quaternion& operator/=(Quaternion& quaternion, T factor)
@@ -384,7 +396,7 @@ struct DualQuaternion {
     /// @brief Returns a dual-quaternion from the given translation vector.
     static constexpr DualQuaternion fromTranslation(const Vector<T, 3>& offset)
     {
-        return DualQuaternion(Quaternion<T>::identity(), Vector<T, 4>(offset / T(2), 0));
+        return DualQuaternion(Quaternion<T>::identity(), Quaternion<T>(0, offset / T(2)));
     }
 
     /// @brief Returns the quaternion conjugate by calculating the conjugate for both real and dual part.
