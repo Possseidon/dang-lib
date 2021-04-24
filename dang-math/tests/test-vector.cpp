@@ -145,6 +145,7 @@ TEST_CASE("Vectors support component-wise operations.", "[vector][operators]")
 
     CAPTURE(a, b);
 
+    STATIC_REQUIRE(-a == dmath::vec3(-6, -4, -6));
     STATIC_REQUIRE(a + b == dmath::vec3(7, 6, 9));
     STATIC_REQUIRE(a - b == dmath::vec3(5, 2, 3));
     STATIC_REQUIRE(a * b == dmath::vec3(6, 8, 18));
@@ -163,29 +164,29 @@ TEST_CASE("Vectors support component-wise compound assignment operations.", "[ve
     SECTION("a += b")
     {
         a_ptr = &(a += b);
-        CHECK(a == dmath::vec3{7, 6, 9});
+        CHECK(a == dmath::vec3(7, 6, 9));
     }
     SECTION("a -= b")
     {
         a_ptr = &(a -= b);
-        CHECK(a == dmath::vec3{5, 2, 3});
+        CHECK(a == dmath::vec3(5, 2, 3));
     }
     SECTION("a *= b")
     {
         a_ptr = &(a *= b);
-        CHECK(a == dmath::vec3{6, 8, 18});
+        CHECK(a == dmath::vec3(6, 8, 18));
     }
     SECTION("a /= b")
     {
         a_ptr = &(a /= b);
-        CHECK(a == dmath::vec3{6, 2, 2});
+        CHECK(a == dmath::vec3(6, 2, 2));
     }
 
     INFO("Compound assignment returns reference to a.");
     CHECK(&a == a_ptr);
 }
 
-TEST_CASE("Vectors support component-wise modulus operator.")
+TEST_CASE("Vectors support component-wise modulus operator.", "[vector][operators]")
 {
     STATIC_REQUIRE(dmath::ivec3(7, 8, 9) % dmath::ivec3(3, 5, 6) == dmath::ivec3(1, 3, 3));
 
@@ -194,7 +195,7 @@ TEST_CASE("Vectors support component-wise modulus operator.")
     constexpr dmath::ivec3 b(3, 5, 6);
 
     a_ptr = &(a %= b);
-    CHECK(a == dmath::ivec3{1, 3, 3});
+    CHECK(a == dmath::ivec3(1, 3, 3));
 
     INFO("Compound assignment returns reference to a.");
     CHECK(&a == a_ptr);
