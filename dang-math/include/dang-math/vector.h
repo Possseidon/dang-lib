@@ -294,10 +294,10 @@ struct Vector : std::array<T, v_dim> {
     constexpr auto notEqual(const Vector& other) const { return variadicOp(std::not_equal_to{}, other); }
 
     /// @brief Provided as constexpr, as std::array does not.
-    constexpr auto operator==(const Vector& other) const { return equal(other).all(); }
+    friend constexpr auto operator==(const Vector& lhs, const Vector& rhs) { return lhs.equal(rhs).all(); }
 
     /// @brief Provided as constexpr, as std::array does not.
-    constexpr auto operator!=(const Vector& other) const { return notEqual(other).any(); }
+    friend constexpr auto operator!=(const Vector& lhs, const Vector& rhs) { return lhs.notEqual(rhs).any(); }
 
     /// @brief Whether all components are true.
     constexpr auto all() const
