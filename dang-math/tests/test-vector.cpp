@@ -186,6 +186,48 @@ TEST_CASE("Vectors support component-wise compound assignment operations.", "[ve
     CHECK(&a == a_ptr);
 }
 
+TEST_CASE("Vectors support component-wise bit operations.", "[vector][operators]")
+{
+    constexpr dmath::ivec3 a(1, 3, 4);
+    constexpr dmath::ivec3 b(5, 6, 8);
+
+    CAPTURE(a, b);
+
+    STATIC_REQUIRE(~a == dmath::ivec3(-2, -4, -5));
+    STATIC_REQUIRE((a & b) == dmath::ivec3(1, 2, 0));
+    STATIC_REQUIRE((a | b) == dmath::ivec3(5, 7, 12));
+    STATIC_REQUIRE((a ^ b) == dmath::ivec3(4, 5, 12));
+}
+
+TEST_CASE("Vectors support component-wise compound assignment bit operations.", "[vector][operators]")
+{
+    dmath::ivec3 a(1, 3, 4);
+    constexpr dmath::ivec3 b(5, 6, 8);
+
+    CAPTURE(a, b);
+
+    dmath::ivec3* a_ptr = nullptr;
+
+    SECTION("a &= b")
+    {
+        a_ptr = &(a &= b);
+        CHECK(a == dmath::ivec3(1, 2, 0));
+    }
+    SECTION("a |= b")
+    {
+        a_ptr = &(a |= b);
+        CHECK(a == dmath::ivec3(5, 7, 12));
+    }
+    SECTION("a ^= b")
+    {
+        a_ptr = &(a ^= b);
+        CHECK(a == dmath::ivec3(4, 5, 12));
+    }
+
+    INFO("Compound assignment returns reference to a.");
+    CHECK(&a == a_ptr);
+}
+
 TEST_CASE("Vectors support component-wise modulus operator.", "[vector][operators]")
 {
     STATIC_REQUIRE(dmath::ivec3(7, 8, 9) % dmath::ivec3(3, 5, 6) == dmath::ivec3(1, 3, 3));

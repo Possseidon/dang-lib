@@ -351,6 +351,13 @@ struct Vector : std::array<T, v_dim> {
         return variadicOp(std::negate{});
     }
 
+    /// @brief Returns the vector with each component bit negated.
+    constexpr auto operator~() const
+    {
+        static_assert(std::is_integral_v<T>);
+        return variadicOp(std::bit_not{});
+    }
+
     /// @brief Component-wise addition of two vectors.
     friend constexpr auto operator+(const Vector& lhs, const Vector& rhs)
     {
@@ -419,6 +426,48 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(std::is_integral_v<T>);
         return assignmentOp(std::modulus{}, other);
+    }
+
+    /// @brief Component-wise bit and of two vectors.
+    friend constexpr auto operator&(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp(std::bit_and{}, rhs);
+    }
+
+    /// @brief Component-wise bit and of two vectors.
+    constexpr auto& operator&=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp(std::bit_and{}, other);
+    }
+
+    /// @brief Component-wise bit or of two vectors.
+    friend constexpr auto operator|(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp(std::bit_or{}, rhs);
+    }
+
+    /// @brief Component-wise bit or of two vectors.
+    constexpr auto& operator|=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp(std::bit_or{}, other);
+    }
+
+    /// @brief Component-wise bit xor of two vectors.
+    friend constexpr auto operator^(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp(std::bit_xor{}, rhs);
+    }
+
+    /// @brief Component-wise bit xor of two vectors.
+    constexpr auto& operator^=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp(std::bit_xor{}, other);
     }
 
     /// @brief Returns a swizzle of the given components.
