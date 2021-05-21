@@ -2,6 +2,8 @@
 
 #include "dang-gl/Objects/FBO.h"
 
+#include "dang-utils/encoding.h"
+
 #include "GLFW.h"
 
 namespace dang::glfw {
@@ -58,14 +60,14 @@ GLFWwindow* WindowInfo::createWindow() const
 
     // Cocoa
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, cocoa.retina_framebuffer);
-    glfwWindowHintString(GLFW_COCOA_FRAME_NAME, cocoa.frame_name.c_str());
+    glfwWindowHintString(GLFW_COCOA_FRAME_NAME, dutils::charPtrFrom(cocoa.frame_name));
     glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, cocoa.graphics_switching);
 
     // X11
     glfwWindowHintString(GLFW_X11_CLASS_NAME, x11.class_name.c_str());
     glfwWindowHintString(GLFW_X11_INSTANCE_NAME, x11.instance_name.c_str());
 
-    return glfwCreateWindow(size.x(), size.y(), title.c_str(), monitor, share ? share->handle() : nullptr);
+    return glfwCreateWindow(size.x(), size.y(), dutils::charPtrFrom(title), monitor, share ? share->handle() : nullptr);
 }
 
 Window::Window(const WindowInfo& info)
@@ -87,13 +89,13 @@ const dgl::Context& Window::context() const { return context_; }
 
 dgl::Context& Window::context() { return context_; }
 
-const std::string& Window::title() const { return title_; }
+const std::u8string& Window::title() const { return title_; }
 
-void Window::setTitle(const std::string& title)
+void Window::setTitle(const std::u8string& title)
 {
     if (title == title_)
         return;
-    glfwSetWindowTitle(handle_, title.c_str());
+    glfwSetWindowTitle(handle_, dutils::charPtrFrom(title));
     title_ = title;
 }
 
@@ -335,7 +337,7 @@ void Window::setAutoAdjustViewport(bool auto_adjust_viewport)
         adjustViewport();
 }
 
-const std::string& Window::textInput() const { return text_input_; }
+const std::u8string& Window::textInput() const { return text_input_; }
 
 bool Window::isKeyDown(Key key) const { return glfwGetKey(handle_, static_cast<int>(key)); }
 
@@ -487,8 +489,7 @@ void Window::registerCallbacks()
 void Window::charCallback(GLFWwindow* window_handle, unsigned int codepoint)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    window.text_input_ += converter.to_bytes(codepoint);
+    window.text_input_ += dutils::u8stringFrom(static_cast<char32_t>(codepoint));
 }
 
 void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
@@ -512,7 +513,9 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
     if (!window.onDropPaths)
         return;
     std::vector<fs::path> paths(path_count);
-    std::transform(path_array, path_array + path_count, paths.begin(), fs::u8path<const char*, 0>);
+    std::transform(path_array, path_array + path_count, paths.begin(), [](const char* path) {
+        return fs::path(dutils::u8stringFrom(path));
+    });
     window.onDropPaths({window, paths});
 }
 
