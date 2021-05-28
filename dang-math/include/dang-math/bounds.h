@@ -11,20 +11,21 @@ namespace dang::math {
 namespace detail {
 
 /// @brief Performs a floor division on the given arguments.
-template <typename T>
+template <std::floating_point T>
 constexpr T floordiv(T numerator, T denominator)
 {
-    if constexpr (std::is_floating_point_v<T>) {
-        T value = numerator / denominator;
-        T trunc = static_cast<T>(static_cast<long long>(value));
-        T frac = value - trunc;
-        return frac < 0 ? trunc - 1 : trunc;
-    }
-    else if constexpr (std::is_integral_v<T>) {
-        if ((numerator > 0) == (denominator > 0))
-            return numerator / denominator;
-        return (numerator - denominator + 1) / denominator;
-    }
+    T value = numerator / denominator;
+    T trunc = static_cast<T>(static_cast<long long>(value));
+    T frac = value - trunc;
+    return frac < 0 ? trunc - 1 : trunc;
+}
+
+template <std::integral T>
+constexpr T floordiv(T numerator, T denominator)
+{
+    if ((numerator > 0) == (denominator > 0))
+        return numerator / denominator;
+    return (numerator - denominator + 1) / denominator;
 }
 
 /// @brief Uses floordiv to implement a floor modulus.
@@ -42,7 +43,7 @@ struct Bounds;
 /// @brief An iterator, allowing iteration of any-dimensional integral bounds.
 /// @remark By default the last vector component iterates first, followed by the second to last, etc...
 /// @remark This results in better caching for the common use-case of iterating an array[x][y][z]
-template <typename T, std::size_t v_dim, bool v_x_first = false>
+template <std::integral T, std::size_t v_dim, bool v_x_first = false>
 struct BoundsIterator {
     using Type = T;
     static constexpr auto dim = v_dim;
@@ -50,7 +51,6 @@ struct BoundsIterator {
 
     using Bounds = dang::math::Bounds<T, dim>;
 
-    static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
     using iterator_category = std::forward_iterator_tag;
     using value_type = Vector<T, dim>;
     using difference_type = std::ptrdiff_t;
@@ -122,8 +122,6 @@ struct Bounds {
     using Type = T;
     static constexpr auto dim = v_dim;
 
-    using iterator = BoundsIterator<T, dim>;
-
     using Point = Vector<T, dim>;
     using Size = Vector<T, dim>;
     using Offset = Vector<T, dim>;
@@ -149,32 +147,16 @@ struct Bounds {
     {}
 
     /// @brief Provides simplified access for one-dimensional bounds.
-    T& lowValue()
-    {
-        static_assert(dim == 1);
-        return low.x();
-    }
+    T& lowValue() requires(dim == 1) { return low.x(); }
 
     /// @brief Provides simplified access for one-dimensional bounds.
-    constexpr T lowValue() const
-    {
-        static_assert(dim == 1);
-        return low.x();
-    }
+    constexpr T lowValue() const requires(dim == 1) { return low.x(); }
 
     /// @brief Provides simplified access for one-dimensional bounds.
-    T& highValue()
-    {
-        static_assert(dim == 1);
-        return high.x();
-    }
+    T& highValue() requires(dim == 1) { return high.x(); }
 
     /// @brief Provides simplified access for one-dimensional bounds.
-    constexpr T highValue() const
-    {
-        static_assert(dim == 1);
-        return high.x();
-    }
+    constexpr T highValue() const requires(dim == 1) { return high.x(); }
 
     /// @brief Returns true, when high is bigger than or equal to low.
     constexpr bool isNormalized() const { return low.allLessEqual(high); }
@@ -261,9 +243,8 @@ struct Bounds {
     constexpr Bounds inset(const Offset& amount) const { return {low + amount, high - amount}; }
 
     /// @brief Returns an enum-array, mapping corners to the actual positions of the corners.
-    constexpr dutils::EnumArray<Corner, Point> corners() const
+    constexpr dutils::EnumArray<Corner, Point> corners() const requires(dim >= 1 && dim <= 3)
     {
-        static_assert(dim >= 1 && dim <= 3);
         dutils::EnumArray<Corner, Point> result;
         for (auto corner : dutils::enumerate<Corner>)
             result[corner] = low + Offset(corner_vector<dim>[corner]) * (high - low);
@@ -295,10 +276,10 @@ struct Bounds {
     friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs) { return lhs.low.allGreaterEqual(rhs.high); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr iterator begin() const { return iterator(*this, low); }
+    constexpr auto begin() const requires(std::integral<T>) { return BoundsIterator<T, dim>(*this, low); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr iterator end() const { return ++iterator(*this, high - 1); }
+    constexpr auto end() const requires(std::integral<T>) { return ++BoundsIterator<T, dim>(*this, high - 1); }
 
     struct XFirst {
         using iterator = BoundsIterator<T, dim, true>;
