@@ -6,8 +6,6 @@
 
 namespace dang::math {
 
-// TODO: C++20 Replace SFINAE/static_assert with requires
-
 /// @brief A vector of the templated type and dimension, using std::array as base.
 template <typename T, std::size_t v_dim>
 struct Vector : std::array<T, v_dim> {
@@ -35,35 +33,27 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Initializes x and y with the given values.
-    constexpr Vector(T x, T y)
+    constexpr Vector(T x, T y) requires(dim == 2)
         : Base{x, y}
-    {
-        static_assert(dim == 2);
-    }
+    {}
 
     /// @brief Initializes x, y and z with the given values.
-    constexpr Vector(T x, T y, T z)
+    constexpr Vector(T x, T y, T z) requires(dim == 3)
         : Base{x, y, z}
-    {
-        static_assert(dim == 3);
-    }
+    {}
 
     /// @brief Initializes x, y, z and w with the given values.
-    constexpr Vector(T x, T y, T z, T w)
+    constexpr Vector(T x, T y, T z, T w) requires(dim == 4)
         : Base{x, y, z, w}
-    {
-        static_assert(dim == 4);
-    }
+    {}
 
     /// @brief Converts a three-dimensional into a four-dimensional vector with the given value for w.
     /// @remark GLSL allows this kind of concatenation for any number and size of vectors, however, this is tedious to
     /// implement in C++.
     /// @remark Therefore, only this probably most common overload for turning vec3 into vec4 is provided.
-    constexpr Vector(Vector<T, 3> vector, T w)
+    constexpr Vector(Vector<T, 3> vector, T w) requires(dim == 4)
         : Base{vector[0], vector[1], vector[2], w}
-    {
-        static_assert(dim == 4);
-    }
+    {}
 
     /// @brief Allows for explicit conversion between vectors of same size but different types.
     template <typename TFrom>
@@ -75,11 +65,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Allows for explicit conversion from single-value vectors to their respective value type.
-    explicit constexpr operator T() const
-    {
-        static_assert(dim == 1);
-        return (*this)[0];
-    }
+    explicit constexpr operator T() const requires(dim == 1) { return (*this)[0]; }
 
     using Base::operator[];
 
@@ -87,9 +73,8 @@ struct Vector : std::array<T, v_dim> {
     constexpr T operator[](Axis axis) const { return (*this)[static_cast<size_t>(axis)]; }
 
     /// @brief Returns the sum of all components.
-    constexpr auto sum() const
+    constexpr auto sum() const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         T result{};
         for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i];
@@ -97,9 +82,8 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns the product of all components.
-    constexpr auto product() const
+    constexpr auto product() const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         T result{1};
         for (std::size_t i = 0; i < dim; i++)
             result *= (*this)[i];
@@ -107,9 +91,8 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns the dot-product with the given vector.
-    constexpr auto dot(const Vector& other) const
+    constexpr auto dot(const Vector& other) const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         T result{};
         for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i] * other[i];
@@ -117,9 +100,8 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns the dot-product with the vector itself.
-    constexpr auto sqrdot() const
+    constexpr auto sqrdot() const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         T result{};
         for (std::size_t i = 0; i < dim; i++)
             result += (*this)[i] * (*this)[i];
@@ -128,11 +110,7 @@ struct Vector : std::array<T, v_dim> {
 
     /// @brief Returns the length of the vector.
     /// @remark In GLSL vec3(0).length() returns the component count.
-    constexpr auto length() const
-    {
-        static_assert(std::is_floating_point_v<T>);
-        return std::sqrt(sqrdot());
-    }
+    constexpr auto length() const requires(std::floating_point<T>) { return std::sqrt(sqrdot()); }
 
     // @brief Sets the length of the vector, keeping its direction.
     constexpr void setLength(T new_length)
@@ -142,79 +120,56 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns a normalized version of the vector.
-    constexpr auto normalize() const
-    {
-        static_assert(std::is_floating_point_v<T>);
-        return (*this) / length();
-    }
+    constexpr auto normalize() const requires(std::floating_point<T>) { return (*this) / length(); }
 
     /// @brief Returns a new vector, which points from the vector to the given vector.
-    constexpr auto vectorTo(const Vector& other) const
-    {
-        static_assert(!std::is_same_v<T, bool>);
-        return other - *this;
-    }
+    constexpr auto vectorTo(const Vector& other) const requires(!std::same_as<T, bool>) { return other - *this; }
 
     /// @brief Returns the distance to the given vector.
-    constexpr auto distanceTo(const Vector& other) const
+    constexpr auto distanceTo(const Vector& other) const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return (other - *this).length();
     }
 
     /// @brief Returns the cosine of the angle to the given vector.
-    constexpr auto cosAngleTo(const Vector& other) const
+    constexpr auto cosAngleTo(const Vector& other) const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return std::clamp(dot(other) / (length() * other.length()), T{-1}, T{1});
     }
 
     /// @brief Returns the angle to the given vector in radians.
-    constexpr auto radiansTo(const Vector& other) const
+    constexpr auto radiansTo(const Vector& other) const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return std::acos(cosAngleTo(other));
     }
 
     /// @brief Returns the angle to the given vector in degrees.
-    constexpr auto degreesTo(const Vector& other) const
+    constexpr auto degreesTo(const Vector& other) const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return dang::math::degrees(radiansTo(other));
     }
 
     /// @brief Converts every component from degrees into radians.
-    constexpr auto radians() const
-    {
-        static_assert(std::is_floating_point_v<T>);
-        return variadicOp(dang::math::radians<T>);
-    }
+    constexpr auto radians() const requires(std::floating_point<T>) { return variadicOp(dang::math::radians<T>); }
 
     /// @brief Converts every component from radians into degrees.
-    constexpr auto degrees() const
-    {
-        static_assert(std::is_floating_point_v<T>);
-        return variadicOp(dang::math::degrees<T>);
-    }
+    constexpr auto degrees() const requires(std::floating_point<T>) { return variadicOp(dang::math::degrees<T>); }
 
     /// @brief Returns the vector with each component being positive.
-    constexpr auto abs() const
+    constexpr auto abs() const requires(std::is_signed_v<T>)
     {
-        static_assert(std::is_signed_v<T>);
         return variadicOp([](T a) { return a < T{0} ? -a : a; });
     }
 
     /// @brief Returns the vector with each component rounded down.
-    constexpr auto floor() const
+    constexpr auto floor() const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return variadicOp([](T a) { return std::floor(a); });
     }
 
     /// @brief Returns the vector with each component rounded up.
-    constexpr auto ceil() const
+    constexpr auto ceil() const requires(std::floating_point<T>)
     {
-        static_assert(std::is_floating_point_v<T>);
         return variadicOp([](T a) { return std::ceil(a); });
     }
 
@@ -254,23 +209,20 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns a vector, only taking the smaller components of both vectors.
-    constexpr auto min(const Vector& other) const
+    constexpr auto min(const Vector& other) const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b) { return std::min(a, b); }, other);
     }
 
     /// @brief Returns a vector, only taking the larger components of both vectors.
-    constexpr auto max(const Vector& other) const
+    constexpr auto max(const Vector& other) const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b) { return std::max(a, b); }, other);
     }
 
     /// @brief Returns a vector, for which each component is clamped between low and high.
-    constexpr auto clamp(const Vector& low, const Vector& high) const
+    constexpr auto clamp(const Vector& low, const Vector& high) const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return variadicOp([](T a, T b, T c) { return std::clamp(a, b, c); }, low, high);
     }
 
@@ -298,9 +250,8 @@ struct Vector : std::array<T, v_dim> {
 
     /// @brief Reflects the vector on the given plane normal.
     /// @remark The normal is assumed to be normalized.
-    constexpr auto reflect(const Vector& normal) const
+    constexpr auto reflect(const Vector& normal) const requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return *this - 2 * dot(normal) * normal;
     }
 
@@ -329,9 +280,8 @@ struct Vector : std::array<T, v_dim> {
     friend constexpr auto operator!=(const Vector& lhs, const Vector& rhs) { return lhs.notEqual(rhs).any(); }
 
     /// @brief Whether all components are true.
-    constexpr auto all() const
+    constexpr auto all() const requires(std::same_as<T, bool>)
     {
-        static_assert(std::is_same_v<T, bool>);
         for (std::size_t i = 0; i < dim; i++)
             if (!(*this)[i])
                 return false;
@@ -339,9 +289,8 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Whether any component is true.
-    constexpr auto any() const
+    constexpr auto any() const requires(std::same_as<T, bool>)
     {
-        static_assert(std::is_same_v<T, bool>);
         for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
                 return true;
@@ -349,9 +298,8 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Whether no component is true.
-    constexpr auto none() const
+    constexpr auto none() const requires(std::same_as<T, bool>)
     {
-        static_assert(std::is_same_v<T, bool>);
         for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
                 return false;
@@ -360,142 +308,110 @@ struct Vector : std::array<T, v_dim> {
 
     /// @brief Inverts each component.
     /// @remark Known as "not" in GLSL, which cannot be used in C++.
-    constexpr auto invert() const
-    {
-        static_assert(std::is_same_v<T, bool>);
-        return variadicOp(std::logical_not{});
-    }
+    constexpr auto invert() const requires(std::same_as<T, bool>) { return variadicOp(std::logical_not{}); }
 
     /// @brief Simply returns the vector.
-    constexpr auto operator+() const
-    {
-        static_assert(!std::is_same_v<T, bool>);
-        return *this;
-    }
+    constexpr auto operator+() const requires(!std::same_as<T, bool>) { return *this; }
 
     /// @brief Returns the vector with each component negated.
-    constexpr auto operator-() const
-    {
-        static_assert(std::is_signed_v<T>);
-        return variadicOp(std::negate{});
-    }
+    constexpr auto operator-() const requires(std::is_signed_v<T>) { return variadicOp(std::negate{}); }
 
     /// @brief Returns the vector with each component bit negated.
-    constexpr auto operator~() const
-    {
-        static_assert(std::is_integral_v<T>);
-        return variadicOp(std::bit_not{});
-    }
+    constexpr auto operator~() const requires(std::integral<T>) { return variadicOp(std::bit_not{}); }
 
     /// @brief Component-wise addition of two vectors.
-    friend constexpr auto operator+(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator+(const Vector& lhs, const Vector& rhs) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::plus{}, rhs);
     }
 
     /// @brief Component-wise addition of two vectors.
-    constexpr auto& operator+=(const Vector& other)
+    constexpr auto& operator+=(const Vector& other) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::plus{}, other);
     }
 
     /// @brief Component-wise subtraction of two vectors.
-    friend constexpr auto operator-(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator-(const Vector& lhs, const Vector& rhs) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::minus{}, rhs);
     }
 
     /// @brief Component-wise subtraction of two vectors.
-    constexpr auto& operator-=(const Vector& other)
+    constexpr auto& operator-=(const Vector& other) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::minus{}, other);
     }
 
     /// @brief Component-wise multiplication of two vectors.
-    friend constexpr auto operator*(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator*(const Vector& lhs, const Vector& rhs) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::multiplies{}, rhs);
     }
 
     /// @brief Component-wise multiplication of two vectors.
-    constexpr auto& operator*=(const Vector& other)
+    constexpr auto& operator*=(const Vector& other) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::multiplies{}, other);
     }
 
     /// @brief Component-wise division of two vectors.
-    friend constexpr auto operator/(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator/(const Vector& lhs, const Vector& rhs) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return lhs.variadicOp(std::divides{}, rhs);
     }
 
     /// @brief Component-wise division of two vectors.
-    constexpr auto& operator/=(const Vector& other)
+    constexpr auto& operator/=(const Vector& other) requires(!std::same_as<T, bool>)
     {
-        static_assert(!std::is_same_v<T, bool>);
         return assignmentOp(std::divides{}, other);
     }
 
     /// @brief Component-wise modulus of two vectors.
-    friend constexpr auto operator%(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator%(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return lhs.variadicOp(std::modulus{}, rhs);
     }
 
     /// @brief Component-wise modulus of two vectors.
-    constexpr auto& operator%=(const Vector& other)
+    constexpr auto& operator%=(const Vector& other) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return assignmentOp(std::modulus{}, other);
     }
 
     /// @brief Component-wise bit and of two vectors.
-    friend constexpr auto operator&(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator&(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return lhs.variadicOp(std::bit_and{}, rhs);
     }
 
     /// @brief Component-wise bit and of two vectors.
-    constexpr auto& operator&=(const Vector& other)
+    constexpr auto& operator&=(const Vector& other) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return assignmentOp(std::bit_and{}, other);
     }
 
     /// @brief Component-wise bit or of two vectors.
-    friend constexpr auto operator|(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator|(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return lhs.variadicOp(std::bit_or{}, rhs);
     }
 
     /// @brief Component-wise bit or of two vectors.
-    constexpr auto& operator|=(const Vector& other)
+    constexpr auto& operator|=(const Vector& other) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return assignmentOp(std::bit_or{}, other);
     }
 
     /// @brief Component-wise bit xor of two vectors.
-    friend constexpr auto operator^(const Vector& lhs, const Vector& rhs)
+    friend constexpr auto operator^(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return lhs.variadicOp(std::bit_xor{}, rhs);
     }
 
     /// @brief Component-wise bit xor of two vectors.
-    constexpr auto& operator^=(const Vector& other)
+    constexpr auto& operator^=(const Vector& other) requires(std::integral<T>)
     {
-        static_assert(std::is_integral_v<T>);
         return assignmentOp(std::bit_xor{}, other);
     }
 
@@ -592,86 +508,55 @@ struct Vector : std::array<T, v_dim> {
     // --- Vector<T, 1> ---
 
     /// @brief The x-component of the vector.
-    constexpr auto& x()
-    {
-        static_assert(dim >= 1 && dim <= 4);
-        return (*this)[0];
-    }
+    constexpr auto& x() requires(dim >= 1 && dim <= 4) { return (*this)[0]; }
 
     /// @brief The x-component of the vector.
-    constexpr auto x() const
-    {
-        static_assert(dim >= 1 && dim <= 4);
-        return (*this)[0];
-    }
+    constexpr auto x() const requires(dim >= 1 && dim <= 4) { return (*this)[0]; }
 
     // --- Vector<T, 2> ---
 
     /// @brief The y-component of the vector.
-    constexpr auto& y()
-    {
-        static_assert(dim >= 2 && dim <= 4);
-        return (*this)[1];
-    }
+    constexpr auto& y() requires(dim >= 2 && dim <= 4) { return (*this)[1]; }
 
     /// @brief The y-component of the vector.
-    constexpr auto y() const
-    {
-        static_assert(dim >= 1 && dim <= 4);
-        return (*this)[1];
-    }
+    constexpr auto y() const requires(dim >= 1 && dim <= 4) { return (*this)[1]; }
 
     /// @brief Creates a vector from the given slope, which is NOT normalized.
     /// @remark The x-component is always one except if std::nullopt is given, which returns a vertical vector of length
     /// one.
-    static constexpr auto fromSlope(std::optional<T> slope)
+    static constexpr auto fromSlope(std::optional<T> slope) requires(dim == 2 && !std::same_as<T, bool>)
     {
-        static_assert(dim == 2);
-        static_assert(!std::is_same_v<T, bool>);
         return slope ? Vector(1, *slope) : Vector(0, 1);
     }
 
     /// @brief Creates a normalized vector of the given angle in radians.
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
-    static constexpr auto fromRadians(T radians)
+    static constexpr auto fromRadians(T radians) requires(dim == 2 && std::floating_point<T>)
     {
-        static_assert(dim == 2);
-        static_assert(std::is_floating_point_v<T>);
         return Vector{std::cos(radians), std::sin(radians)};
     }
 
     /// @brief Creates a normalized vector of the given angle in degrees.
     /// @remark Zero points to positive x, while an increase rotates counter-clockwise.
-    static constexpr auto fromDegrees(T degrees)
+    static constexpr auto fromDegrees(T degrees) requires(dim == 2 && std::floating_point<T>)
     {
-        static_assert(dim == 2);
-        static_assert(std::is_floating_point_v<T>);
         return fromRadians(dang::math::radians(degrees));
     }
 
     /// @brief Rotates the vector counter-clockwise by 90 degrees by simply swapping its components and negating the new
     /// x.
-    constexpr auto cross() const
-    {
-        static_assert(dim == 2);
-        static_assert(std::is_signed_v<T>);
-        return Vector{-y(), x()};
-    }
+    constexpr auto cross() const requires(dim == 2 && std::is_signed_v<T>) { return Vector{-y(), x()}; }
 
     /// @brief Returns the two-dimensional cross-product with the given vector.
     /// @remark Equivalent to <c>x1 * y2 - y1 * x2</c>
-    constexpr auto cross(const Vector<T, 2>& other) const
+    constexpr auto cross(const Vector<T, 2>& other) const requires(dim == 2 && !std::same_as<T, bool>)
     {
-        static_assert(dim == 2);
-        static_assert(!std::is_same_v<T, bool>);
         return x() * other.y() - y() * other.x();
     }
 
     /// @brief Returns the slope of the vector or std::nullopt if infinite.
-    constexpr std::optional<T> slope() const
+    constexpr std::optional<T> slope() const requires(dim == 2 && std::floating_point<T>)
     {
-        static_assert(dim == 2);
-        static_assert(std::is_floating_point_v<T>);
         if (x() != T())
             return y() / x();
         return std::nullopt;
@@ -680,34 +565,22 @@ struct Vector : std::array<T, v_dim> {
     // --- Vector<T, 3> ---
 
     /// @brief The z-component of the vector.
-    constexpr auto& z()
-    {
-        static_assert(dim >= 3 && dim <= 4);
-        return (*this)[2];
-    }
+    constexpr auto& z() requires(dim >= 3 && dim <= 4) { return (*this)[2]; }
 
     /// @brief The z-component of the vector.
-    constexpr auto z() const
-    {
-        static_assert(dim >= 3 && dim <= 4);
-        return (*this)[2];
-    }
+    constexpr auto z() const requires(dim >= 3 && dim <= 4) { return (*this)[2]; }
 
     /// @brief Returns the cross-product with the given vector.
-    constexpr auto cross(const Vector<T, 3>& other) const
+    constexpr auto cross(const Vector<T, 3>& other) const requires(dim == 3 && !std::same_as<T, bool>)
     {
-        static_assert(dim == 3);
-        static_assert(!std::is_same_v<T, bool>);
         return Vector{(*this)[1] * other[2] - (*this)[2] * other[1],
                       (*this)[2] * other[0] - (*this)[0] * other[2],
                       (*this)[0] * other[1] - (*this)[1] * other[0]};
     }
 
     /// @brief Rotates the vector around the given axis, which must be normalized.
-    constexpr auto rotateRadians(const Vector& axis, T radians) const
+    constexpr auto rotateRadians(const Vector& axis, T radians) const requires(dim == 3 && !std::same_as<T, bool>)
     {
-        static_assert(dim == 3);
-        static_assert(!std::is_same_v<T, bool>);
         auto axis_sqr = axis.sqrdot();
         if (axis_sqr == T())
             return *this;
@@ -730,30 +603,17 @@ struct Vector : std::array<T, v_dim> {
     // --- Vector<T, 4> ---
 
     /// @brief The w-component of the vector.
-    constexpr auto& w()
-    {
-        static_assert(dim == 4);
-        return (*this)[3];
-    }
+    constexpr auto& w() requires(dim == 4) { return (*this)[3]; }
 
     /// @brief The w-component of the vector.
-    constexpr auto w() const
-    {
-        static_assert(dim == 4);
-        return (*this)[3];
-    }
+    constexpr auto w() const requires(dim == 4) { return (*this)[3]; }
 
     // --- Swizzles ---
 
 #define DMATH_DEFINE_SWIZZLE(name, ...)                                                                                \
-    constexpr auto name() const                                                                                        \
+    constexpr auto name() const requires(v_dim >= sizeof(#name) - 1) { return swizzle<__VA_ARGS__>(); }                \
+    constexpr void set_##name(const Vector<T, sizeof(#name) - 1>& vector) requires(v_dim >= sizeof(#name) - 1)         \
     {                                                                                                                  \
-        static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
-        return swizzle<__VA_ARGS__>();                                                                                 \
-    }                                                                                                                  \
-    constexpr void set_##name(const Vector<T, sizeof(#name) - 1>& vector)                                              \
-    {                                                                                                                  \
-        static_assert(v_dim >= sizeof(#name) - 1);                                                                     \
         setSwizzle<__VA_ARGS__>(vector);                                                                               \
     }
 

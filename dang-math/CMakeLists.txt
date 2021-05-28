@@ -13,6 +13,7 @@ target_precompile_headers(
   <algorithm>
   <array>
   <cmath>
+  <concepts>
   <functional>
   <iostream>
   <numeric>
