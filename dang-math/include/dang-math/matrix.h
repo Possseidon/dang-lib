@@ -42,16 +42,11 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     }
 
     /// @brief Initializes a single-column matrix with the given vector.
-    static constexpr Matrix fromVector(const Vector<T, rows>& col)
-    {
-        static_assert(cols == 1);
-        return {{col}};
-    }
+    static constexpr Matrix fromVector(const Vector<T, rows>& col) requires(cols == 1) { return {{col}}; }
 
     /// @brief Initializes a two-column matrix from low and high of the given bounds.
-    static constexpr Matrix fromBounds(const Bounds<T, rows>& bounds)
+    static constexpr Matrix fromBounds(const Bounds<T, rows>& bounds) requires(cols == 2)
     {
-        static_assert(cols == 2);
         return {{bounds.low, bounds.high}};
     }
 
@@ -66,25 +61,13 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     }
 
     /// @brief Allows for conversion from single-value matrices to their respective value type.
-    explicit constexpr operator T() const
-    {
-        static_assert(cols == 1 && rows == 1);
-        return (*this)(0, 0);
-    }
+    explicit constexpr operator T() const requires(cols == 1 && rows == 1) { return (*this)(0, 0); }
 
     /// @brief Allows for conversion from single-column matrices to vectors.
-    explicit constexpr operator Vector<T, rows>() const
-    {
-        static_assert(cols == 1);
-        return (*this)[0];
-    }
+    explicit constexpr operator Vector<T, rows>() const requires(cols == 1) { return (*this)[0]; }
 
     /// @brief Allows for conversion from two-column matrices to bounds.
-    explicit constexpr operator Bounds<T, rows>() const
-    {
-        static_assert(cols == 2);
-        return {(*this)[0], (*this)[1]};
-    }
+    explicit constexpr operator Bounds<T, rows>() const requires(cols == 2) { return {(*this)[0], (*this)[1]}; }
 
     /// @brief Returns a sub matrix with the given offset and size.
     template <std::size_t v_start_col, std::size_t v_start_row, std::size_t v_col_count, std::size_t v_row_count>
@@ -133,18 +116,16 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// @brief Returns the minor at the given column/row.
     /// @remark A minor is exactly one column and one row smaller than the original, as the specified column and row are
     /// removed from the matrix.
-    constexpr auto minor(std::size_t col, std::size_t row) const
+    constexpr auto minor(std::size_t col, std::size_t row) const requires(cols > 0 && rows > 0)
     {
-        static_assert(cols > 0 && rows > 0);
         return minor({col, row});
     }
 
     /// @brief Returns the minor at the given position. (x = col, y = row)
     /// @remark The minor is exactly one column and one row smaller than the original, as the specified column and row
     /// are removed from the matrix.
-    constexpr auto minor(const svec2& pos) const
+    constexpr auto minor(const svec2& pos) const requires(cols > 0 && rows > 0)
     {
-        static_assert(cols > 0 && rows > 0);
         Matrix<T, cols - 1, rows - 1> result;
         std::size_t rcol = 0;
         for (std::size_t col = 0; col < cols; col++) {
@@ -165,17 +146,15 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// @brief Returns the cofactor at the given column/row.
     /// @remark The cofactor is the determinant of the minor at the specified column/row and negated, if column + row is
     /// odd.
-    constexpr auto cofactor(std::size_t col, std::size_t row) const
+    constexpr auto cofactor(std::size_t col, std::size_t row) const requires(cols > 0 && rows > 0)
     {
-        static_assert(cols > 0 && rows > 0);
         return cofactor({col, row});
     }
 
     /// @brief Returns the cofactor at the given position. (x = col, y = row)
     /// @remark The cofactor is the determinant of the minor at the specified position and negated, if x + y is odd.
-    constexpr auto cofactor(const svec2& pos) const
+    constexpr auto cofactor(const svec2& pos) const requires(cols > 0 && rows > 0)
     {
-        static_assert(cols > 0 && rows > 0);
         const T factor = T{1} - ((pos.x() + pos.y()) & 1) * 2;
         return minor(pos).determinant() * factor;
     }
@@ -206,10 +185,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Dim &lt;= 4: Cramer's rule
     /// - Dim > 4: Blockwise inversion (recursive)
-    constexpr std::optional<Matrix> inverse() const
+    constexpr std::optional<Matrix> inverse() const requires(cols == rows)
     {
-        static_assert(cols == rows);
-
         constexpr std::size_t Dim = cols;
 
         if constexpr (Dim <= 4) {
@@ -284,10 +261,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
     /// - Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)
-    constexpr std::optional<T> solveCol(std::size_t col)
+    constexpr std::optional<T> solveCol(std::size_t col) requires(cols == rows + 1)
     {
-        static_assert(cols == rows + 1);
-
         if constexpr (rows >= 6) {
             if (auto inv = subMatrix<0, 0, rows, rows>().inverse())
                 return (*inv * (*this)[rows])[col];
@@ -316,10 +291,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
     /// - Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)
-    constexpr std::optional<T> solveCol(std::size_t col) const
+    constexpr std::optional<T> solveCol(std::size_t col) const requires(cols == rows + 1)
     {
-        static_assert(cols == rows + 1);
-
         if constexpr (rows >= 6) {
             if (auto inv = subMatrix<0, 0, rows, rows>().inverse())
                 return (*inv * (*this)[rows])[col];
@@ -342,10 +315,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
     /// - Unknowns &lt; 6: Column-swap and determinant. (Swaps performed in-place)
-    constexpr std::optional<T> solveCol(std::size_t col, Vector<T, cols> vector)
+    constexpr std::optional<T> solveCol(std::size_t col, Vector<T, cols> vector) requires(cols == rows)
     {
-        static_assert(cols == rows);
-
         if constexpr (rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
@@ -375,10 +346,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 6: Inverse
     /// - Unknowns &lt; 6: Column-swap and determinant. (Swaps not performed in-place)
-    constexpr std::optional<T> solveCol(std::size_t col, Vector<T, cols> vector) const
+    constexpr std::optional<T> solveCol(std::size_t col, Vector<T, cols> vector) const requires(cols == rows)
     {
-        static_assert(cols == rows);
-
         if constexpr (rows >= 6) {
             if (auto inv = inverse())
                 return (*inv * vector)[col];
@@ -400,10 +369,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 5: Inverse
     /// - Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)
-    constexpr std::optional<Vector<T, rows>> solve()
+    constexpr std::optional<Vector<T, rows>> solve() requires(cols == rows + 1)
     {
-        static_assert(cols == rows + 1);
-
         if constexpr (rows >= 5) {
             if (auto inv = subMatrix<0, 0, rows, rows>().inverse())
                 return *inv * (*this)[rows];
@@ -436,10 +403,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// Unknowns >= 5: Inverse
     /// Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)
-    constexpr std::optional<Vector<T, rows>> solve() const
+    constexpr std::optional<Vector<T, rows>> solve() const requires(cols == rows + 1)
     {
-        static_assert(cols == rows + 1);
-
         if constexpr (rows >= 5) {
             if (auto inv = subMatrix<0, 0, rows, rows>().inverse())
                 return *inv * (*this)[rows];
@@ -473,10 +438,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 5: Inverse
     /// - Unknowns &lt; 5: Column-swap and determinant. (Swaps performed in-place)
-    constexpr std::optional<Vector<T, cols>> solve(Vector<T, cols> vector)
+    constexpr std::optional<Vector<T, cols>> solve(Vector<T, cols> vector) requires(cols == rows)
     {
-        static_assert(cols == rows);
-
         if constexpr (rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
@@ -509,10 +472,8 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     /// Algorithms used:
     /// - Unknowns >= 5: Inverse
     /// - Unknowns &lt; 5: Column-swap and determinant. (Swaps not performed in-place)
-    constexpr std::optional<Vector<T, cols>> solve(Vector<T, cols> vector) const
+    constexpr std::optional<Vector<T, cols>> solve(Vector<T, cols> vector) const requires(cols == rows)
     {
-        static_assert(cols == rows);
-
         if constexpr (rows >= 5) {
             if (auto inv = inverse())
                 return *inv * vector;
@@ -545,11 +506,7 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     constexpr auto operator+() const { return *this; }
 
     /// @brief Returns a component-wise negation of the matrix.
-    constexpr auto operator-() const
-    {
-        static_assert(std::is_signed_v<T>);
-        return variadicOp(std::negate{});
-    }
+    constexpr auto operator-() const requires(std::is_signed_v<T>) { return variadicOp(std::negate{}); }
 
     /// @brief Performs a component-wise addition.
     friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus{}, rhs); }
@@ -645,9 +602,9 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
 
     /// @brief Performs a matrix-multiplication between the inverse of the matrix and the given vector, seen as a
     /// single-column matrix.
-    friend constexpr std::optional<Vector<T, rows>> operator/(const Vector<T, rows>& vector, const Matrix& matrix)
+    friend constexpr std::optional<Vector<T, rows>> operator/(const Vector<T, rows>& vector,
+                                                              const Matrix& matrix) requires(cols == rows)
     {
-        static_assert(cols == rows);
         if (auto inv = matrix.inverse())
             return vector * *inv;
         return std::nullopt;
