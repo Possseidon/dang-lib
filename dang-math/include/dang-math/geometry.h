@@ -87,9 +87,8 @@ struct AxisSystemBase {
     constexpr Point operator[](const Factors& factors) const { return support + directions * factors; }
 
     /// @brief Returns the required factor to reach the specified point.
-    constexpr std::optional<Factors> factorAt(const Point& point) const
+    constexpr std::optional<Factors> factorAt(const Point& point) const requires(dim == axis_count)
     {
-        static_assert(dim == axis_count, "factorAt requires dimension and axis-count to be equal");
         return directions.solve(point - support);
     }
 
