@@ -121,6 +121,7 @@ struct Bounds {
     using Size = Vector<T, dim>;
     using Offset = Vector<T, dim>;
     using Corner = Corner<dim>;
+    using Facing = Facing<dim>;
 
     Point low;
     Point high;
@@ -301,6 +302,29 @@ struct Bounds {
     };
 
     constexpr XFirst xFirst() const { return {*this}; }
+
+    constexpr Bounds facing(std::size_t facing, T width = 1) const
+    {
+        return facingHelper(facing, width, std::make_index_sequence<dim>());
+    }
+
+    constexpr Bounds facing(Facing facing, T width = 1) const
+    {
+        return this->facing(static_cast<std::size_t>(facing), width);
+    }
+
+    constexpr Bounds operator[](Facing facing) const { return this->facing(facing); }
+
+private:
+    template <std::size_t... v_axes>
+    constexpr Bounds facingHelper(std::size_t facing, T width, std::index_sequence<v_axes...>) const
+    {
+        auto positive = (facing & 1) != 0;
+        auto axis = facing >> 1;
+        assert(axis < dim);
+        return {Size{(v_axes == axis ? (positive ? high[v_axes] - width : low[v_axes]) : low[v_axes])...},
+                Size{(v_axes == axis ? (positive ? high[v_axes] : low[v_axes] + width) : high[v_axes])...}};
+    }
 };
 
 template <typename T, std::size_t v_dim>
