@@ -63,10 +63,10 @@ enum class Edge3 {
 enum class Facing1 { None = -1, Left, Right, COUNT };
 
 /// @brief Represents one of the four facings in a two-dimensional system or an optional None value.
-enum class Facing2 { None = -1, Left, Right, Up, Down, COUNT };
+enum class Facing2 { None = -1, Left, Right, Down, Up, COUNT };
 
 /// @brief Represents one of the six facings in a three-dimensional system or an optional None value.
-enum class Facing3 { None = -1, Left, Right, Up, Down, Back, Front, COUNT };
+enum class Facing3 { None = -1, Left, Right, Down, Up, Back, Front, COUNT };
 
 } // namespace dang::math
 
