@@ -255,10 +255,10 @@ struct Bounds {
     friend constexpr bool operator>=(const Bounds& lhs, const Bounds& rhs) { return lhs.low.allGreaterEqual(rhs.high); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr auto begin() const requires(std::integral<T>) { return BoundsIterator<T, dim>(*this, low); }
+    constexpr auto begin() const requires std::integral<T> { return BoundsIterator<T, dim>(*this, low); }
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
-    constexpr auto end() const requires(std::integral<T>) { return ++BoundsIterator<T, dim>(*this, high - 1); }
+    constexpr auto end() const requires std::integral<T> { return ++BoundsIterator<T, dim>(*this, high - 1); }
 };
 
 template <std::size_t v_dim>
