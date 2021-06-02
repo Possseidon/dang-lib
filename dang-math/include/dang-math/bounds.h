@@ -41,12 +41,13 @@ template <typename T, std::size_t v_dim>
 struct Bounds;
 
 /// @brief An iterator, allowing iteration of any-dimensional integral bounds.
-/// @remark The last vector component iterates first, followed by the second to last, etc...
+/// @remark By default the last vector component iterates first, followed by the second to last, etc...
 /// @remark This results in better caching for the common use-case of iterating an array[x][y][z]
-template <typename T, std::size_t v_dim>
+template <typename T, std::size_t v_dim, bool v_x_first = false>
 struct BoundsIterator {
     using Type = T;
     static constexpr auto dim = v_dim;
+    static constexpr auto x_first = v_x_first;
 
     using Bounds = Bounds<T, dim>;
 
@@ -66,12 +67,23 @@ struct BoundsIterator {
 
     constexpr BoundsIterator& operator++()
     {
-        current_[dim - 1]++;
-        for (std::size_t d = dim - 1; d != 0; d--) {
-            if (current_[d] < bounds_.high[d])
-                break;
-            current_[d] = bounds_.low[d];
-            current_[d - 1]++;
+        if constexpr (v_x_first) {
+            current_[0]++;
+            for (std::size_t d = 0; d != dim - 1; d++) {
+                if (current_[d] < bounds_.high[d])
+                    break;
+                current_[d] = bounds_.low[d];
+                current_[d + 1]++;
+            }
+        }
+        else {
+            current_[dim - 1]++;
+            for (std::size_t d = dim - 1; d != 0; d--) {
+                if (current_[d] < bounds_.high[d])
+                    break;
+                current_[d] = bounds_.low[d];
+                current_[d - 1]++;
+            }
         }
         return *this;
     }
@@ -278,6 +290,17 @@ struct Bounds {
 
     /// @brief Returns a bounds-iterator, allowing for range-based iteration.
     constexpr iterator end() const { return ++iterator(*this, high - 1); }
+
+    struct XFirst {
+        using iterator = BoundsIterator<T, dim, true>;
+
+        Bounds bounds;
+
+        constexpr iterator begin() const { return iterator(bounds, bounds.low); }
+        constexpr iterator end() const { return ++iterator(bounds, bounds.high - 1); }
+    };
+
+    constexpr XFirst xFirst() const { return {*this}; }
 };
 
 template <typename T, std::size_t v_dim>
