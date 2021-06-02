@@ -280,6 +280,12 @@ struct Bounds {
     constexpr iterator end() const { return ++iterator(*this, high - 1); }
 };
 
+template <typename T, std::size_t v_dim>
+Bounds(Vector<T, v_dim>) -> Bounds<T, v_dim>;
+
+template <typename T, std::size_t v_dim>
+Bounds(Vector<T, v_dim>, Vector<T, v_dim>) -> Bounds<T, v_dim>;
+
 template <std::size_t v_dim>
 using bounds = Bounds<float, v_dim>;
 
