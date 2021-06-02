@@ -110,7 +110,7 @@ struct Vector : std::array<T, v_dim> {
 
     /// @brief Returns the length of the vector.
     /// @remark In GLSL vec3(0).length() returns the component count.
-    constexpr auto length() const requires(std::floating_point<T>) { return std::sqrt(sqrdot()); }
+    constexpr auto length() const requires std::floating_point<T> { return std::sqrt(sqrdot()); }
 
     // @brief Sets the length of the vector, keeping its direction.
     constexpr void setLength(T new_length)
@@ -120,55 +120,55 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns a normalized version of the vector.
-    constexpr auto normalize() const requires(std::floating_point<T>) { return (*this) / length(); }
+    constexpr auto normalize() const requires std::floating_point<T> { return (*this) / length(); }
 
     /// @brief Returns a new vector, which points from the vector to the given vector.
     constexpr auto vectorTo(const Vector& other) const requires(!std::same_as<T, bool>) { return other - *this; }
 
     /// @brief Returns the distance to the given vector.
-    constexpr auto distanceTo(const Vector& other) const requires(std::floating_point<T>)
+    constexpr auto distanceTo(const Vector& other) const requires std::floating_point<T>
     {
         return (other - *this).length();
     }
 
     /// @brief Returns the cosine of the angle to the given vector.
-    constexpr auto cosAngleTo(const Vector& other) const requires(std::floating_point<T>)
+    constexpr auto cosAngleTo(const Vector& other) const requires std::floating_point<T>
     {
         return std::clamp(dot(other) / (length() * other.length()), T{-1}, T{1});
     }
 
     /// @brief Returns the angle to the given vector in radians.
-    constexpr auto radiansTo(const Vector& other) const requires(std::floating_point<T>)
+    constexpr auto radiansTo(const Vector& other) const requires std::floating_point<T>
     {
         return std::acos(cosAngleTo(other));
     }
 
     /// @brief Returns the angle to the given vector in degrees.
-    constexpr auto degreesTo(const Vector& other) const requires(std::floating_point<T>)
+    constexpr auto degreesTo(const Vector& other) const requires std::floating_point<T>
     {
         return dang::math::degrees(radiansTo(other));
     }
 
     /// @brief Converts every component from degrees into radians.
-    constexpr auto radians() const requires(std::floating_point<T>) { return variadicOp(dang::math::radians<T>); }
+    constexpr auto radians() const requires std::floating_point<T> { return variadicOp(dang::math::radians<T>); }
 
     /// @brief Converts every component from radians into degrees.
-    constexpr auto degrees() const requires(std::floating_point<T>) { return variadicOp(dang::math::degrees<T>); }
+    constexpr auto degrees() const requires std::floating_point<T> { return variadicOp(dang::math::degrees<T>); }
 
     /// @brief Returns the vector with each component being positive.
-    constexpr auto abs() const requires(std::is_signed_v<T>)
+    constexpr auto abs() const requires std::is_signed_v<T>
     {
         return variadicOp([](T a) { return a < T{0} ? -a : a; });
     }
 
     /// @brief Returns the vector with each component rounded down.
-    constexpr auto floor() const requires(std::floating_point<T>)
+    constexpr auto floor() const requires std::floating_point<T>
     {
         return variadicOp([](T a) { return std::floor(a); });
     }
 
     /// @brief Returns the vector with each component rounded up.
-    constexpr auto ceil() const requires(std::floating_point<T>)
+    constexpr auto ceil() const requires std::floating_point<T>
     {
         return variadicOp([](T a) { return std::ceil(a); });
     }
@@ -280,7 +280,7 @@ struct Vector : std::array<T, v_dim> {
     friend constexpr auto operator!=(const Vector& lhs, const Vector& rhs) { return lhs.notEqual(rhs).any(); }
 
     /// @brief Whether all components are true.
-    constexpr auto all() const requires(std::same_as<T, bool>)
+    constexpr auto all() const requires std::same_as<T, bool>
     {
         for (std::size_t i = 0; i < dim; i++)
             if (!(*this)[i])
@@ -289,7 +289,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Whether any component is true.
-    constexpr auto any() const requires(std::same_as<T, bool>)
+    constexpr auto any() const requires std::same_as<T, bool>
     {
         for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
@@ -298,7 +298,7 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Whether no component is true.
-    constexpr auto none() const requires(std::same_as<T, bool>)
+    constexpr auto none() const requires std::same_as<T, bool>
     {
         for (std::size_t i = 0; i < dim; i++)
             if ((*this)[i])
@@ -308,16 +308,16 @@ struct Vector : std::array<T, v_dim> {
 
     /// @brief Inverts each component.
     /// @remark Known as "not" in GLSL, which cannot be used in C++.
-    constexpr auto invert() const requires(std::same_as<T, bool>) { return variadicOp(std::logical_not{}); }
+    constexpr auto invert() const requires std::same_as<T, bool> { return variadicOp(std::logical_not{}); }
 
     /// @brief Simply returns the vector.
     constexpr auto operator+() const requires(!std::same_as<T, bool>) { return *this; }
 
     /// @brief Returns the vector with each component negated.
-    constexpr auto operator-() const requires(std::is_signed_v<T>) { return variadicOp(std::negate{}); }
+    constexpr auto operator-() const requires std::is_signed_v<T> { return variadicOp(std::negate{}); }
 
     /// @brief Returns the vector with each component bit negated.
-    constexpr auto operator~() const requires(std::integral<T>) { return variadicOp(std::bit_not{}); }
+    constexpr auto operator~() const requires std::integral<T> { return variadicOp(std::bit_not{}); }
 
     /// @brief Component-wise addition of two vectors.
     friend constexpr auto operator+(const Vector& lhs, const Vector& rhs) requires(!std::same_as<T, bool>)
@@ -368,49 +368,49 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Component-wise modulus of two vectors.
-    friend constexpr auto operator%(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
+    friend constexpr auto operator%(const Vector& lhs, const Vector& rhs) requires std::integral<T>
     {
         return lhs.variadicOp(std::modulus{}, rhs);
     }
 
     /// @brief Component-wise modulus of two vectors.
-    constexpr auto& operator%=(const Vector& other) requires(std::integral<T>)
+    constexpr auto& operator%=(const Vector& other) requires std::integral<T>
     {
         return assignmentOp(std::modulus{}, other);
     }
 
     /// @brief Component-wise bit and of two vectors.
-    friend constexpr auto operator&(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
+    friend constexpr auto operator&(const Vector& lhs, const Vector& rhs) requires std::integral<T>
     {
         return lhs.variadicOp(std::bit_and{}, rhs);
     }
 
     /// @brief Component-wise bit and of two vectors.
-    constexpr auto& operator&=(const Vector& other) requires(std::integral<T>)
+    constexpr auto& operator&=(const Vector& other) requires std::integral<T>
     {
         return assignmentOp(std::bit_and{}, other);
     }
 
     /// @brief Component-wise bit or of two vectors.
-    friend constexpr auto operator|(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
+    friend constexpr auto operator|(const Vector& lhs, const Vector& rhs) requires std::integral<T>
     {
         return lhs.variadicOp(std::bit_or{}, rhs);
     }
 
     /// @brief Component-wise bit or of two vectors.
-    constexpr auto& operator|=(const Vector& other) requires(std::integral<T>)
+    constexpr auto& operator|=(const Vector& other) requires std::integral<T>
     {
         return assignmentOp(std::bit_or{}, other);
     }
 
     /// @brief Component-wise bit xor of two vectors.
-    friend constexpr auto operator^(const Vector& lhs, const Vector& rhs) requires(std::integral<T>)
+    friend constexpr auto operator^(const Vector& lhs, const Vector& rhs) requires std::integral<T>
     {
         return lhs.variadicOp(std::bit_xor{}, rhs);
     }
 
     /// @brief Component-wise bit xor of two vectors.
-    constexpr auto& operator^=(const Vector& other) requires(std::integral<T>)
+    constexpr auto& operator^=(const Vector& other) requires std::integral<T>
     {
         return assignmentOp(std::bit_xor{}, other);
     }

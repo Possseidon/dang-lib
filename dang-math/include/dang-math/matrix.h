@@ -506,7 +506,7 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     constexpr auto operator+() const { return *this; }
 
     /// @brief Returns a component-wise negation of the matrix.
-    constexpr auto operator-() const requires(std::is_signed_v<T>) { return variadicOp(std::negate{}); }
+    constexpr auto operator-() const requires std::is_signed_v<T> { return variadicOp(std::negate{}); }
 
     /// @brief Performs a component-wise addition.
     friend constexpr auto operator+(const Matrix& lhs, const Matrix& rhs) { return lhs.variadicOp(std::plus{}, rhs); }
