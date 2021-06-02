@@ -58,7 +58,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
                        reg<&Vector::greaterThanEqual>("greaterThanEqual"),
                        reg<&Vector::equal>("equal"),
                        reg<&Vector::notEqual>("notEqual"),
-                       reg<&Vector::format>("format")};
+                       reg<&Vector::format>("format"),
+                       reg<&Vector::mirroredSwizzle>("mirroredSwizzle")};
 
     if constexpr (std::is_floating_point_v<T>) {
         result.push_back(reg<&Vector::length>("length"));

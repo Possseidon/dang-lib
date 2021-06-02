@@ -478,18 +478,14 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Sets a swizzle for the given components.
-    template <std::size_t... v_indices, std::size_t... v_other_indices>
-    constexpr void setSwizzleHelper(Vector<T, sizeof...(v_indices)> vector, std::index_sequence<v_other_indices...>)
-    {
-        ((std::get<v_indices>(*this) = std::get<v_other_indices>(vector)), ...);
-    }
-
-    /// @brief Sets a swizzle for the given components.
     template <std::size_t... v_indices>
     constexpr void setSwizzle(Vector<T, sizeof...(v_indices)> vector)
     {
         setSwizzleHelper<v_indices...>(vector, std::make_index_sequence<sizeof...(v_indices)>());
     }
+
+    /// @brief Mirrors all components, e.g. zyx for vec3 or wzyx for vec4.
+    constexpr auto mirroredSwizzle() const { return mirroredSwizzleHelper(std::make_index_sequence<dim>()); }
 
     /// @brief Performs an operation on each component using an arbitrary number of other vectors.
     template <typename TOperation, typename... TVectors>
@@ -757,6 +753,19 @@ struct Vector : std::array<T, v_dim> {
     DMATH_DEFINE_SWIZZLE(wxzy, 3, 0, 2, 1);
 
 #undef DMATH_DEFINE_SWIZZLE
+
+private:
+    template <std::size_t... v_indices, std::size_t... v_other_indices>
+    constexpr void setSwizzleHelper(Vector<T, sizeof...(v_indices)> vector, std::index_sequence<v_other_indices...>)
+    {
+        ((std::get<v_indices>(*this) = std::get<v_other_indices>(vector)), ...);
+    }
+
+    template <std::size_t... v_indices>
+    constexpr auto mirroredSwizzleHelper(std::index_sequence<v_indices...>) const
+    {
+        return swizzle<(dim - v_indices - 1)...>();
+    }
 };
 
 template <std::size_t v_dim>

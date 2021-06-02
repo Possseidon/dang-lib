@@ -108,6 +108,12 @@ TEST_CASE("Vectors can be read using swizzles.", "[vector][access][swizzle]")
         STATIC_REQUIRE(a.zxy() == dmath::vec3(3, 1, 2));
         STATIC_REQUIRE(a.wyzx() == dmath::vec4(4, 2, 3, 1));
     }
+    SECTION("Using mirrored swizzle.")
+    {
+        STATIC_REQUIRE(a.xy().mirroredSwizzle() == dmath::vec2(2, 1));
+        STATIC_REQUIRE(a.xyz().mirroredSwizzle() == dmath::vec3(3, 2, 1));
+        STATIC_REQUIRE(a.mirroredSwizzle() == dmath::vec4(4, 3, 2, 1));
+    }
 }
 
 TEST_CASE("Vectors can be assigned using swizzles.", "[vector][access][swizzle]")
