@@ -108,6 +108,14 @@ private:
     value_type current_;
 };
 
+/// @brief Additional information for Bounds::facing to avoid overlaps when combining multiple bounds.
+struct BoundsClipInfo {
+    /// @brief Whether the x-side should be the one without any clipping.
+    bool x_main = false;
+    /// @brief Whether clipping should occur on both positive and negative sides.
+    bool both = false;
+};
+
 /// @brief Generic bounds with low and high values for any dimensional vectors.
 /// @remark Integral bounds are high exclusive: [low, high)
 template <typename T, std::size_t v_dim>
@@ -122,6 +130,7 @@ struct Bounds {
     using Offset = Vector<T, dim>;
     using Corner = Corner<dim>;
     using Facing = Facing<dim>;
+    using ClipInfo = BoundsClipInfo;
 
     Point low;
     Point high;
@@ -303,27 +312,39 @@ struct Bounds {
 
     constexpr XFirst xFirst() const { return {*this}; }
 
-    constexpr Bounds facing(std::size_t facing, T width = 1) const
+    /// @brief Returns bounds representing a single side of the square/cube/...
+    /// @param facing The side of the square/cube/... starting at 0 and going -x, +x, -y, +y, ...
+    /// @param clip Allows for clipping to avoid overlaps when combining multiple bounds.
+    /// @param width Optional width of the bounds, defaults to 1.
+    constexpr Bounds facing(std::size_t facing, std::optional<ClipInfo> clip = {}, T width = 1) const
     {
-        return facingHelper(facing, width, std::make_index_sequence<dim>());
+        return facingHelper(facing, width, clip, std::make_index_sequence<dim>());
     }
 
-    constexpr Bounds facing(Facing facing, T width = 1) const
+    /// @brief Allows using an enum value for facing.
+    constexpr Bounds facing(Facing facing, std::optional<ClipInfo> clip = {}, T width = 1) const
     {
-        return this->facing(static_cast<std::size_t>(facing), width);
+        return this->facing(static_cast<std::size_t>(facing), clip, width);
     }
-
-    constexpr Bounds operator[](Facing facing) const { return this->facing(facing); }
 
 private:
     template <std::size_t... v_axes>
-    constexpr Bounds facingHelper(std::size_t facing, T width, std::index_sequence<v_axes...>) const
+    constexpr Bounds facingHelper(std::size_t facing,
+                                  T width,
+                                  std::optional<ClipInfo> clip,
+                                  std::index_sequence<v_axes...>) const
     {
         auto positive = (facing & 1) != 0;
         auto axis = facing >> 1;
         assert(axis < dim);
-        return {Size{(v_axes == axis ? (positive ? high[v_axes] - width : low[v_axes]) : low[v_axes])...},
-                Size{(v_axes == axis ? (positive ? high[v_axes] : low[v_axes] + width) : high[v_axes])...}};
+        return {{(v_axes == axis
+                      ? (positive ? high[v_axes] - width : low[v_axes])
+                      : low[v_axes] +
+                            (clip && ((clip->both || !positive) && clip->x_main == (axis < v_axes)) ? width : 0))...},
+                {(v_axes == axis
+                      ? (positive ? high[v_axes] : low[v_axes] + width)
+                      : high[v_axes] -
+                            (clip && ((clip->both || positive) && clip->x_main == (axis < v_axes)) ? width : 0))...}};
     }
 };
 
