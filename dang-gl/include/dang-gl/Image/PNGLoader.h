@@ -173,24 +173,25 @@ inline std::unique_ptr<std::byte[]> PNGLoader::read(bool flip, dmath::svec2 pad_
     auto padding = pad_low + pad_high;
     auto padded_size = size(padding);
 
+    using Pixel = Pixel<v_pixel_format>;
+
     auto aligned_width = alignedByteWidth<v_pixel_format, v_row_alignment>(padding.x());
+    auto data_offset = pad_low.y() * aligned_width + pad_low.x() * sizeof(Pixel);
     auto image = std::make_unique<std::byte[]>(byteCount<v_pixel_format, v_row_alignment>(padding));
     auto base_ptr = reinterpret_cast<png_bytep>(image.get());
 
     // Fill offsets with the row-pointers to the actual image data.
-    std::vector<png_bytep> offsets(padded_size.y());
+    std::vector<png_bytep> offsets(size().y());
 
-    auto fill = [&, ptr = base_ptr]() mutable { return std::exchange(ptr, ptr + aligned_width); };
+    auto fill = [&, ptr = base_ptr + data_offset]() mutable { return std::exchange(ptr, ptr + aligned_width); };
 
     if (flip)
-        std::generate(offsets.rbegin() + pad_high.y(), offsets.rend() - pad_low.y(), fill);
+        std::generate(offsets.rbegin(), offsets.rend(), fill);
     else
-        std::generate(offsets.begin() + pad_low.y(), offsets.end() - pad_high.y(), fill);
-
-    using Pixel = Pixel<v_pixel_format>;
+        std::generate(offsets.begin(), offsets.end(), fill);
 
     for (std::size_t y = 0; y < padded_size.y(); y++)
-        std::uninitialized_default_construct_n(base_ptr + y * aligned_width, padded_size.x());
+        std::uninitialized_default_construct_n(reinterpret_cast<Pixel*>(base_ptr + y * aligned_width), padded_size.x());
 
     // Make sure, the caller doesn't need to call the destructor on each pixel.
     static_assert(std::is_trivially_destructible_v<Pixel>);
