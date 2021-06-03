@@ -57,7 +57,7 @@ public:
     Image(const Size& size, const Pixel& value = {})
         : size_(size)
     {
-        for (const auto& pos : Bounds(size_))
+        for (const auto& pos : Bounds(size_).xFirst())
             new (&(*this)[pos]) Pixel(value);
     }
 
@@ -66,7 +66,7 @@ public:
     Image(const Size& size, TIter first)
         : size_(size)
     {
-        for (const auto& pos : Bounds(size_))
+        for (const auto& pos : Bounds(size_).xFirst())
             new (&(*this)[pos]) Pixel(first++);
     }
 
@@ -86,7 +86,7 @@ public:
     Image(const Image& image, const Bounds& bounds)
         : size_(bounds.size())
     {
-        for (const auto& pos : bounds)
+        for (const auto& pos : bounds.xFirst())
             new (&(*this)[pos - bounds.low]) Pixel(image[pos]);
     }
 
@@ -149,7 +149,7 @@ public:
     /// @brief Copies pixels from a subsection of an existing image with a given offset.
     void setSubImage(const Size& offset, const Image& image, const Bounds& bounds)
     {
-        for (const auto& pos : bounds)
+        for (const auto& pos : bounds.xFirst())
             (*this)[pos + offset] = image[pos];
     }
 
