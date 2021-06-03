@@ -72,7 +72,6 @@ public:
 
     /// @brief Initializes the image using the given size and preexisting chunk of data, which should match the size.
     /// @remark The array has to contain actual pixels that were created with placement new of Pixel.
-    /// @remark Highly consider passing the data as an rvalue using std::move to avoid a copy.
     /// @remark Make sure, that the data is properly aligned.
     /// @remark For an empty image with either dimension being zero, data must be a nullptr.
     Image(const Size& size, std::unique_ptr<std::byte[]> data)
@@ -92,7 +91,7 @@ public:
 
     /// @brief Loads a PNG image from the given stream and returns it.
     /// @exception PNGError if the stream does not contain a valid PNG.
-    static Image loadFromPNG(std::istream& stream, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {})
+    static Image loadFromPNG(std::istream& stream, Size pad_low = {}, Size pad_high = {})
     {
         static_assert(pixel_type == PixelType::UNSIGNED_BYTE, "Loading PNG images only supports unsigned bytes.");
         PNGLoader png_loader;
@@ -106,7 +105,7 @@ public:
     /// @brief Loads a PNG image from the given file and returns it.
     /// @exception PNGError if the file cannot be opened.
     /// @exception PNGError if the file does not represent a valid PNG.
-    static Image loadFromPNG(const fs::path& path, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {})
+    static Image loadFromPNG(const fs::path& path, Size pad_low = {}, Size pad_high = {})
     {
         std::ifstream stream(path, std::ios::binary);
         if (!stream)
@@ -127,7 +126,7 @@ public:
     std::size_t alignedByteWidth() const { return (byteWidth() - 1) / row_alignment * row_alignment + row_alignment; }
 
     /// @brief The size of the image, but with width as the aligned byte width.
-    dmath::svec2 alignedByteSize() const
+    Size alignedByteSize() const
     {
         auto result = size();
         result[0] = alignedByteWidth();
