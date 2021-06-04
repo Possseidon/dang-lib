@@ -11,6 +11,7 @@ add_library(${PROJECT_NAME}
     src/General/GLConstants.cpp
     src/Image/BorderedImage.cpp
     src/Image/Image.cpp
+    src/Image/ImageBorder.cpp
     src/Image/Pixel.cpp
     src/Image/PixelFormat.cpp
     src/Image/PixelInternalFormat.cpp
