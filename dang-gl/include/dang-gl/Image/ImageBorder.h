@@ -5,6 +5,8 @@
 #include "dang-gl/Image/PixelType.h"
 #include "dang-gl/global.h"
 
+#include "dang-math/vector.h"
+
 namespace dang::gl {
 
 /// @brief Describes an image border that does nothing.
@@ -28,5 +30,22 @@ using ImageBorder = std::variant<ImageBorderNone,
                                  ImageBorderSolid<v_pixel_format, v_pixel_type>,
                                  ImageBorderWrapBoth,
                                  ImageBorderWrapPositive>;
+
+struct ImageBorderPadding {
+    constexpr auto operator()(ImageBorderNone) const { return dmath::svec2(); }
+
+    template <PixelFormat v_pixel_format, PixelType v_pixel_type>
+    constexpr auto operator()(const ImageBorderSolid<v_pixel_format, v_pixel_type>&) const
+    {
+        return dmath::svec2(2);
+    }
+
+    constexpr auto operator()(ImageBorderWrapBoth) const { return dmath::svec2(2); }
+
+    constexpr auto operator()(ImageBorderWrapPositive) const { return dmath::svec2(1); }
+};
+
+/// @brief Returns the sum of all padding for the given border type.
+static constexpr ImageBorderPadding imageBorderPadding;
 
 } // namespace dang::gl
