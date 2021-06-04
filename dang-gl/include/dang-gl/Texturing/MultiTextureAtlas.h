@@ -1,9 +1,8 @@
 #pragma once
 
-#include "dang-gl/Image/Image.h"
+#include "dang-gl/Image/BorderedImage.h"
 #include "dang-gl/Image/PixelFormat.h"
 #include "dang-gl/Image/PixelType.h"
-#include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Texturing/TextureAtlasBase.h"
 #include "dang-gl/Texturing/TextureAtlasUtils.h"
@@ -18,56 +17,49 @@ namespace detail {
 template <typename TSubTextureEnum, PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
 class TextureAtlasMultiTexture {
 public:
-    using Image = Image<2, v_pixel_format, v_pixel_type, v_row_alignment>;
+    using BorderedImage = BorderedImage<2, v_pixel_format, v_pixel_type, v_row_alignment>;
 
-    class ImageData {
+    class BorderedImageData {
     public:
-        ImageData(dutils::EnumArray<TSubTextureEnum, Image> images)
-            : images_((ensureSameSize(images), std::move(images)))
+        BorderedImageData(dutils::EnumArray<TSubTextureEnum, BorderedImage> bordered_images)
+            : bordered_images_((ensureCompatible(bordered_images), std::move(bordered_images)))
         {}
 
-        Image& operator[](TSubTextureEnum sub_texture) { return images_[sub_texture]; }
+        BorderedImage& operator[](TSubTextureEnum sub_texture) { return bordered_images_[sub_texture]; }
 
-        const Image& operator[](TSubTextureEnum sub_texture) const { return images_[sub_texture]; }
+        const BorderedImage& operator[](TSubTextureEnum sub_texture) const { return bordered_images_[sub_texture]; }
 
-        // --- ImageData concept:
+        // --- BorderedImageData concept:
 
-        explicit operator bool() const { return bool{images_.front()}; }
+        const auto& border() const { return bordered_images_.front().border(); }
 
-        auto size() const { return images_.front().size(); }
+        explicit operator bool() const { return bool{bordered_images_.front()}; }
+
+        const auto& size() const { return bordered_images_.front().size(); }
 
         void free()
         {
-            for (auto& image : images_)
+            for (auto& image : bordered_images_)
                 image.free();
         }
 
-        ImageData operator[](const dmath::sbounds2& bounds) const
-        {
-            return subsectionHelper(bounds, dutils::makeEnumSequence<TSubTextureEnum>());
-        }
-
     private:
-        template <TSubTextureEnum... v_sub_textures>
-        ImageData subsectionHelper(const dmath::sbounds2& bounds,
-                                   dutils::EnumSequence<TSubTextureEnum, v_sub_textures...>) const
+        void ensureCompatible(const dutils::EnumArray<TSubTextureEnum, BorderedImage>& bordered_images)
         {
-            return {{images_[v_sub_textures][bounds]...}};
-        }
-
-        void ensureSameSize(const dutils::EnumArray<TSubTextureEnum, Image>& images)
-        {
-            auto size = images.front().size();
-            for (auto& image : images) {
-                if (!image)
+            auto size = bordered_images.front().size();
+            auto border = bordered_images.font().border();
+            for (auto& bordered_image : bordered_images) {
+                if (!bordered_image)
                     throw std::invalid_argument("SubTexture image is empty.");
-                if (image.size() != size)
-                    throw std::invalid_argument("SubTexture images have varying sizes. (" + image.size().format() +
-                                                " != " + size.format() + ")");
+                if (bordered_image.size() != size)
+                    throw std::invalid_argument("SubTexture images have varying sizes. (" +
+                                                bordered_image.size().format() + " != " + size.format() + ")");
+                if (imageBorderPadding(bordered_image.border()) != imageBorderPadding(border))
+                    throw std::invalid_argument("SubTexture images have borders with varying padding.");
             }
         }
 
-        dutils::EnumArray<TSubTextureEnum, Image> images_;
+        dutils::EnumArray<TSubTextureEnum, BorderedImage> bordered_images_;
     };
 
     // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
@@ -91,10 +83,10 @@ protected:
         return true;
     };
 
-    void modify(const ImageData& image_data, ivec3 offset, GLint mipmap_level)
+    void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
     {
         for (auto sub_texture : dutils::enumerate<TSubTextureEnum>)
-            textures_[sub_texture].modify(image_data[sub_texture], offset, mipmap_level);
+            textures_[sub_texture].modify(bordered_image_data[sub_texture], offset, mipmap_level);
     };
 
 private:

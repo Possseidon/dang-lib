@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
 #include "dang-gl/global.h"
 
@@ -11,10 +10,10 @@ namespace dang::gl {
 The TextureBase concept:
 
 - Move-constructible
-- using ImageData = ...;
+- using BorderedImageData = ...;
 - bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
     -> protected, resizes the texture
-- void modify(const ImageData& image, ivec3 offset, GLint mipmap_level)
+- void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
     -> protected, modifies the texture at a given spot
 
 */
@@ -25,8 +24,8 @@ class BasicFrozenTextureAtlas;
 template <typename TTextureBase>
 class TextureAtlasBase : public TTextureBase {
 public:
-    using ImageData = typename TTextureBase::ImageData;
-    using Tiles = TextureAtlasTiles<ImageData>;
+    using BorderedImageData = typename TTextureBase::BorderedImageData;
+    using Tiles = TextureAtlasTiles<BorderedImageData>;
     using TileHandle = typename Tiles::TileHandle;
     using Frozen = BasicFrozenTextureAtlas<TTextureBase>;
 
@@ -34,41 +33,19 @@ public:
         : tiles_(limits)
     {}
 
-    TextureAtlasTileBorderGeneration guessTileBorderGeneration(GLsizei size) const
+    [[nodiscard]] TileHandle add(BorderedImageData bordered_image_data)
     {
-        return tiles_.guessTileBorderGeneration(size);
+        return tiles_.add(std::move(bordered_image_data));
     }
 
-    TextureAtlasTileBorderGeneration guessTileBorderGeneration(svec2 size) const
+    void add(std::string name, BorderedImageData bordered_image_data)
     {
-        return tiles_.guessTileBorderGeneration(size);
+        tiles_.add(std::move(name), std::move(bordered_image_data));
     }
 
-    TextureAtlasTileBorderGeneration defaultBorderGeneration() const { return tiles_.defaultBorderGeneration(); }
-
-    void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border)
+    [[nodiscard]] TileHandle addWithHandle(std::string name, BorderedImageData bordered_image_data)
     {
-        tiles_.setDefaultBorderGeneration(border);
-    }
-
-    [[nodiscard]] TileHandle add(ImageData image_data,
-                                 std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
-    {
-        return tiles_.add(std::move(image_data), border);
-    }
-
-    void add(std::string name,
-             ImageData image_data,
-             std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
-    {
-        tiles_.add(std::move(name), std::move(image_data), border);
-    }
-
-    [[nodiscard]] TileHandle addWithHandle(std::string name,
-                                           ImageData image_data,
-                                           std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
-    {
-        return tiles_.addWithHandle(std::move(name), std::move(image_data), border);
+        return tiles_.addWithHandle(std::move(name), std::move(bordered_image_data));
     }
 
     [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
@@ -105,8 +82,8 @@ private:
 template <typename TTextureBase>
 class BasicFrozenTextureAtlas : public TTextureBase {
 public:
-    using ImageData = typename TTextureBase::ImageData;
-    using Tiles = FrozenTextureAtlasTiles<ImageData>;
+    using BorderedImageData = typename TTextureBase::BorderedImageData;
+    using Tiles = FrozenTextureAtlasTiles<BorderedImageData>;
     using TileHandle = typename Tiles::TileHandle;
 
     friend class TextureAtlasBase<TTextureBase>;

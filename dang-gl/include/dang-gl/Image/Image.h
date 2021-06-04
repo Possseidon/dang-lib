@@ -161,10 +161,10 @@ public:
     /// @brief Provides access to the raw underlying data, which can be used to provide OpenGL the data.
     const void* data() const { return data_.get(); }
 
-    /// @brief Frees all image data, but leaves texture size intact.
+    /// @brief Frees all image data, but leaves the size intact.
     void free() { data_ = nullptr; }
 
-    /// @brief Frees all image data and sets the texture size to zero.
+    /// @brief Frees all image data and sets the size to zero.
     void clear()
     {
         free();

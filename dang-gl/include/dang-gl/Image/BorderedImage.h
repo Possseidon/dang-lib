@@ -53,13 +53,21 @@ public:
         return {border, std::visit(ReplaceBorder{std::move(image)}, border)};
     }
 
-    /// @brief The border that the image now has.
-    const Border& border() const { return border_; }
+    /// @brief The image with the now applied border.
+    const auto& image() const& { return image_; }
+    /// @brief The image with the now applied border.
+    auto image() && { return std::move(image_); }
 
-    /// @brief The image with the now applied border.
-    const Image& image() const& { return image_; }
-    /// @brief The image with the now applied border.
-    Image image() && { return std::move(image_); }
+    // --- BorderedImageData concept:
+
+    /// @brief The border that the image now has.
+    const auto& border() const { return border_; }
+
+    /// @brief Whether the image contains any actual data.
+    explicit operator bool() const { return bool{image_}; }
+
+    /// @brief Returns the size of the image.
+    const auto& size() const { return image_.size(); }
 
     /// @brief Frees all image data, but leaves the size intact.
     void free() { image_.free(); }

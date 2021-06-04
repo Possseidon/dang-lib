@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-gl/Image/ImageBorder.h"
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
 
@@ -7,27 +8,23 @@
 
 namespace dang::gl {
 
-template <typename TImageData>
+template <typename TBorderedImageData>
 class FrozenTextureAtlasTiles;
 
 /*
 
-The ImageData concept:
+The BorderedImageData concept:
 
-- Move-constructible (preferably somewhat cheap)
+- Move-constructible
+- ImageBorder border()
 - explicit operator bool() const
     -> if it contains any data
 - dmath::svec2 size() const
     -> image size
 - void free()
     -> frees all data, but leaves the size
-- ImageData operator[](const dmath::sbounds2&) const
-    -> returns a subsection of the image
 
 */
-
-/// @brief On which sides of a texture to copy the opposite side for better tilling.
-enum class TextureAtlasTileBorderGeneration { None, Positive, All };
 
 /// @brief Holds maximum size restrictions of the texture atlas.
 struct TextureAtlasLimits {
@@ -37,8 +34,7 @@ struct TextureAtlasLimits {
 
 /// @brief Can store a large number of named textures in multiple layers of grids.
 /// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
-/// @remark Supports automatic border generation on only positive or all sides.
-template <typename TImageData>
+template <typename TBorderedImageData>
 class TextureAtlasTiles {
 public:
     /// @brief A function that is called with required size (width and height), layers and mipmap levels.
@@ -46,7 +42,7 @@ public:
     using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
 
     /// @brief A function that uploads the image to a specific position and mipmap level of a texture.
-    using TextureModifyFunction = std::function<void(const TImageData&, ivec3, GLint)>;
+    using TextureModifyFunction = std::function<void(const TBorderedImageData&, ivec3, GLint)>;
 
     class TileHandle;
 
@@ -77,14 +73,12 @@ private:
 
         mutable TileHandles handles;
         const std::string* name = nullptr;
-        TImageData image_data;
-        TextureAtlasTileBorderGeneration border;
+        TBorderedImageData bordered_image_data;
         TilePlacement placement;
         const GLsizei* atlas_size;
 
-        TileData(TImageData&& image_data, TextureAtlasTileBorderGeneration border, const GLsizei* atlas_size)
-            : image_data(std::move(image_data))
-            , border(border)
+        TileData(TBorderedImageData&& bordered_image_data, const GLsizei* atlas_size)
+            : bordered_image_data(std::move(bordered_image_data))
             , atlas_size(atlas_size)
         {}
 
@@ -180,7 +174,7 @@ private:
                     assert(tile->placement.written);
                 }
                 if (freeze)
-                    tile->image_data.free();
+                    tile->bordered_image_data.free();
             }
         }
 
@@ -193,67 +187,11 @@ private:
         }
 
     private:
-        /// @brief Draws a single tile onto the texture, also taking the tiles border generation into account.
+        /// @brief Draws a single tile onto the texture.
         void drawTile(TileData& tile, const TextureModifyFunction& modify) const
         {
-            const auto& image_data = tile.image_data;
-            assert(image_data);
-
-            const auto& position = tile.placement.position;
-
-            auto width = image_data.size().x();
-            auto height = image_data.size().y();
-
-            auto s_width = static_cast<GLsizei>(width);
-            auto s_height = static_cast<GLsizei>(height);
-
-            switch (tile.border) {
-            case TextureAtlasTileBorderGeneration::Positive: {
-                // left top -> right bottom
-                modify(image_data[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width, s_height, 0}, 0);
-                // left -> right
-                modify(image_data[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width, 0, 0}, 0);
-                // top -> bottom
-                modify(image_data[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{0, s_height, 0}, 0);
-
-                [[fallthrough]];
-            }
-            case TextureAtlasTileBorderGeneration::None: {
-                // full image
-                modify(image_data, position, 0);
-                break;
-            }
-            case TextureAtlasTileBorderGeneration::All: {
-                // full image (offset by 1)
-                modify(image_data, position + svec3{1, 1, 0}, 0);
-
-                // left top -> right bottom
-                modify(image_data[dmath::sbounds2({0, 0}, {1, 1})], position + svec3{s_width + 1, s_height + 1, 0}, 0);
-                // right top -> left bottom
-                modify(
-                    image_data[dmath::sbounds2({width - 1, 0}, {width, 1})], position + svec3{0, s_height + 1, 0}, 0);
-                // left bottom -> right top
-                modify(
-                    image_data[dmath::sbounds2({0, height - 1}, {1, height})], position + svec3{s_width + 1, 0, 0}, 0);
-                // right bottom -> left top
-                modify(image_data[dmath::sbounds2({width - 1, height - 1}, {width, height})],
-                       position + svec3{0, 0, 0},
-                       0);
-
-                // left -> right
-                modify(image_data[dmath::sbounds2({0, 0}, {1, height})], position + svec3{s_width + 1, 1, 0}, 0);
-                // right -> left
-                modify(image_data[dmath::sbounds2({width - 1, 0}, {width, height})], position + svec3{0, 1, 0}, 0);
-                // top -> bottom
-                modify(image_data[dmath::sbounds2({0, 0}, {width, 1})], position + svec3{1, s_height + 1, 0}, 0);
-                // bottom -> top
-                modify(image_data[dmath::sbounds2({0, height - 1}, {width, height})], position + svec3{1, 0, 0}, 0);
-
-                break;
-            }
-            default:
-                assert(false);
-            }
+            assert(tile.bordered_image_data);
+            modify(tile.bordered_image_data, tile.placement.position, 0); // TODO: Mipmapping
             tile.placement.written = true;
         }
 
@@ -362,27 +300,16 @@ public:
 
         auto atlasPixelSize() const { return *data_->atlas_size; }
         auto pixelPos() const { return data_->placement.position.xy(); }
-        auto pixelSize() const { return data_->image_data.size(); }
+        auto pixelSize() const { return data_->bordered_image_data.size(); }
 
         auto pos() const { return static_cast<vec2>(pixelPos()) / static_cast<vec2>(atlasPixelSize()); }
         auto size() const { return static_cast<vec2>(pixelSize()) / static_cast<vec2>(atlasPixelSize()); }
 
         bounds2 bounds() const
         {
-            auto low = [&] {
-                switch (data_->border) {
-                case TextureAtlasTileBorderGeneration::None:
-                    return pos();
-                case TextureAtlasTileBorderGeneration::Positive:
-                    return pos() + 0.5f / atlasPixelSize();
-                case TextureAtlasTileBorderGeneration::All:
-                    return pos() + 1.0f / atlasPixelSize();
-                default:
-                    assert(false);
-                    return pos();
-                }
-            }();
-            return {low, low + size()};
+            auto padding = std::visit(imageBorderPadding, data_->bordered_image_data.border());
+            auto inset = static_cast<vec2>(padding) / (2.0f * atlasPixelSize());
+            return {pos() + inset, pos() + size() - inset};
         }
 
         auto layer() const { return data_->placement.position.z(); }
@@ -419,90 +346,33 @@ public:
     TextureAtlasTiles& operator=(const TextureAtlasTiles&) = delete;
     TextureAtlasTiles& operator=(TextureAtlasTiles&&) = default;
 
-    /// @brief Guesses a generation method for a given image size.
-    /// @remark Gives the method that will result in a final power of two size.
-    /// @exception std::invalid_argument if the size is negative.
-    TextureAtlasTileBorderGeneration guessTileBorderGeneration(GLsizei size) const
-    {
-        if (size < 0)
-            throw std::invalid_argument("Size cannot be negative.");
-        auto usize = static_cast<std::make_unsigned_t<GLsizei>>(size);
-        if (dutils::popcount(usize) == 1)
-            return TextureAtlasTileBorderGeneration::None;
-        if (dutils::popcount(usize + 1) == 1)
-            return TextureAtlasTileBorderGeneration::Positive;
-        if (dutils::popcount(usize + 2) == 1)
-            return TextureAtlasTileBorderGeneration::All;
-        return default_border_;
-    }
-
-    /// @brief Guesses a generation method for a given image size.
-    /// @remark Gives the method that will result in a final power of two size.
-    /// @exception std::invalid_argument if either value of size is negative.
-    TextureAtlasTileBorderGeneration guessTileBorderGeneration(svec2 size) const
-    {
-        return guessTileBorderGeneration(size.maxValue());
-    }
-
-    /// @brief Adds the given border generation to the size.
-    static GLsizei sizeWithBorder(GLsizei size, TextureAtlasTileBorderGeneration border)
-    {
-        switch (border) {
-        case TextureAtlasTileBorderGeneration::None:
-            return size;
-        case TextureAtlasTileBorderGeneration::Positive:
-            return size + 1;
-        case TextureAtlasTileBorderGeneration::All:
-            return size + 2;
-        default:
-            assert(false);
-            return 0;
-        }
-    }
-
-    /// @brief Adds the given border generation to both components of the size.
-    static svec2 sizeWithBorder(svec2 size, TextureAtlasTileBorderGeneration border)
-    {
-        return {sizeWithBorder(size.x(), border), sizeWithBorder(size.y(), border)};
-    }
-
-    /// @brief The current default border generation method.
-    TextureAtlasTileBorderGeneration defaultBorderGeneration() const { return default_border_; }
-    /// @brief Sets the default border generation method.
-    void setDefaultBorderGeneration(TextureAtlasTileBorderGeneration border) { default_border_ = border; }
-
     /// @brief Adds a new unnamed tile.
-    [[nodiscard]] TileHandle add(TImageData image_data,
-                                 std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    [[nodiscard]] TileHandle add(TBorderedImageData bordered_image_data)
     {
-        return TileHandle(emplaceTile(std::move(image_data), border));
+        return TileHandle(emplaceTile(std::move(bordered_image_data)));
     }
 
-    /// @brief Adds a new tile with a given name and border generation.
+    /// @brief Adds a new tile with a given name.
     /// @exception std::invalid_argument if the name is empty.
     /// @exception std::invalid_argument if the name already exists.
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    void add(std::string name,
-             TImageData image_data,
-             std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    void add(std::string name, TBorderedImageData bordered_image_data)
     {
-        emplaceNamedTile(std::move(name), std::move(image_data), border);
+        emplaceNamedTile(std::move(name), std::move(bordered_image_data));
     }
 
-    /// @brief Adds a new tile with a given name and border generation and returns a handle to it.
+    /// @brief Adds a new tile with a given name and returns a handle to it.
     /// @remark Returns an empty handle if the given name is already in use.
     /// @exception std::invalid_argument if the name is empty.
     /// @exception std::invalid_argument if the name already exists.
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    [[nodiscard]] TileHandle addWithHandle(std::string name,
-                                           TImageData image_data,
-                                           std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    [[nodiscard]] TileHandle addWithHandle(std::string name, TBorderedImageData bordered_image_data)
     {
-        return TileHandle(emplaceNamedTile(std::move(name), std::move(image_data), border));
+        return TileHandle(emplaceNamedTile(std::move(name), std::move(bordered_image_data)));
     }
 
     /// @brief Checks if a tile with the given name exists.
@@ -586,13 +456,13 @@ public:
     }
 
     /// @brief Similar to updateTexture, but also frees image data and returns a frozen atlas.
-    [[nodiscard]] FrozenTextureAtlasTiles<TImageData> freeze(const TextureResizeFunction& resize,
-                                                             const TextureModifyFunction& modify) &&
+    [[nodiscard]] FrozenTextureAtlasTiles<TBorderedImageData> freeze(const TextureResizeFunction& resize,
+                                                                     const TextureModifyFunction& modify) &&
     {
         ensureTextureSize(resize);
         for (auto& layer : layers_)
             layer.drawTiles(modify, true);
-        return FrozenTextureAtlasTiles<TImageData>(std::move(*this));
+        return FrozenTextureAtlasTiles<TBorderedImageData>(std::move(*this));
     }
 
 private:
@@ -616,7 +486,7 @@ private:
         return result;
     }
 
-    using LayerResult = std::pair<TextureAtlasTiles<TImageData>::Layer*, std::size_t>;
+    using LayerResult = std::pair<TextureAtlasTiles<TBorderedImageData>::Layer*, std::size_t>;
 
     /// @brief Returns a pointer to a (possibly newly created) layer for the given tile size and its index.
     /// @remark The pointer can be null, in which case a new layer would have exceeded the maximum layer count.
@@ -641,23 +511,24 @@ private:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    TileData* emplaceTile(TImageData&& image_data,
-                          std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    TileData* emplaceTile(TBorderedImageData&& bordered_image_data)
     {
-        if (!image_data)
+        if (!bordered_image_data)
             throw std::invalid_argument("Image does not contain data.");
-        if (image_data.size().greaterThan(limits_.max_texture_size).any())
-            throw std::invalid_argument("Image is too big for texture atlas. (" + image_data.size().format() + " > " +
+
+        auto size = bordered_image_data.size();
+
+        if (size.greaterThan(limits_.max_texture_size).any())
+            throw std::invalid_argument("Image is too big for texture atlas. (" + size.format() + " > " +
                                         std::to_string(limits_.max_texture_size) + ")");
 
-        auto actual_border = border ? *border : guessTileBorderGeneration(static_cast<svec2>(image_data.size()));
-        auto [layer, index] = layerForTile(sizeWithBorder(static_cast<svec2>(image_data.size()), actual_border));
+        auto [layer, index] = layerForTile(static_cast<svec2>(size));
         if (!layer)
             throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
                                     ")");
 
         auto& tile =
-            *tiles_.emplace_back(std::make_unique<TileData>(std::move(image_data), actual_border, atlas_size_.get()));
+            *tiles_.emplace_back(std::make_unique<TileData>(std::move(bordered_image_data), atlas_size_.get()));
         layer->addTile(tile, index);
         *atlas_size_ = maxLayerSize();
         return &tile;
@@ -669,9 +540,7 @@ private:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    TileData* emplaceNamedTile(std::string&& name,
-                               TImageData&& image_data,
-                               std::optional<TextureAtlasTileBorderGeneration> border = std::nullopt)
+    TileData* emplaceNamedTile(std::string&& name, TBorderedImageData&& bordered_image_data)
     {
         if (name.empty())
             throw std::invalid_argument("Tile name is empty.");
@@ -682,7 +551,7 @@ private:
         const auto& key = iter->first;
         auto& tile = iter->second;
 
-        tile = emplaceTile(std::move(image_data), border);
+        tile = emplaceTile(std::move(bordered_image_data));
         tile->name = &key;
 
         return tile;
@@ -713,44 +582,43 @@ private:
     std::vector<std::unique_ptr<TileData>> tiles_;
     std::unordered_map<std::string, TileData*> named_tiles_;
     std::vector<Layer> layers_;
-    TextureAtlasTileBorderGeneration default_border_ = TextureAtlasTileBorderGeneration::None;
 };
 
 /// @brief A facade over a texture atlas, whose image data has been freed, preventing further modifications.
-template <typename TImageData>
+template <typename TBorderedImageData>
 class FrozenTextureAtlasTiles {
 public:
-    using TileHandle = typename TextureAtlasTiles<TImageData>::TileHandle;
+    using TileHandle = typename TextureAtlasTiles<TBorderedImageData>::TileHandle;
 
     FrozenTextureAtlasTiles(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles(FrozenTextureAtlasTiles&&) = default;
     FrozenTextureAtlasTiles& operator=(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles& operator=(FrozenTextureAtlasTiles&&) = default;
 
-    friend class TextureAtlasTiles<TImageData>;
+    friend class TextureAtlasTiles<TBorderedImageData>;
 
     [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
     [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
     [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 
 private:
-    FrozenTextureAtlasTiles(TextureAtlasTiles<TImageData>&& tiles)
+    FrozenTextureAtlasTiles(TextureAtlasTiles<TBorderedImageData>&& tiles)
         : tiles_(std::move(tiles))
     {}
 
-    TextureAtlasTiles<TImageData> tiles_;
+    TextureAtlasTiles<TBorderedImageData> tiles_;
 };
 
-template <typename TImageData>
-[[nodiscard]] bool operator==(const typename TextureAtlasTiles<TImageData>::TileHandle& lhs,
-                              const typename TextureAtlasTiles<TImageData>::TileHandle& rhs) noexcept
+template <typename TBorderedImageData>
+[[nodiscard]] bool operator==(const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& lhs,
+                              const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& rhs) noexcept
 {
     return lhs.data_ == rhs.data_;
 }
 
-template <typename TImageData>
-[[nodiscard]] bool operator!=(const typename TextureAtlasTiles<TImageData>::TileHandle& lhs,
-                              const typename TextureAtlasTiles<TImageData>::TileHandle& rhs) noexcept
+template <typename TBorderedImageData>
+[[nodiscard]] bool operator!=(const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& lhs,
+                              const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& rhs) noexcept
 {
     return !(lhs == rhs);
 }

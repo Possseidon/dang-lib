@@ -1,9 +1,8 @@
 #pragma once
 
-#include "dang-gl/Image/Image.h"
+#include "dang-gl/Image/BorderedImage.h"
 #include "dang-gl/Image/PixelFormat.h"
 #include "dang-gl/Image/PixelType.h"
-#include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/Objects/Texture.h"
 #include "dang-gl/Texturing/TextureAtlasBase.h"
 #include "dang-gl/Texturing/TextureAtlasUtils.h"
@@ -16,7 +15,7 @@ namespace detail {
 template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
 class TextureAtlasSingleTexture {
 public:
-    using ImageData = Image<2, v_pixel_format, v_pixel_type, v_row_alignment>;
+    using BorderedImageData = BorderedImage<2, v_pixel_format, v_pixel_type, v_row_alignment>;
 
     // TODO: Some Texture2DArray related delegates for e.g. min/mag filter.
     //      -> Only a select few are probably important.
@@ -38,9 +37,9 @@ protected:
         return true;
     };
 
-    void modify(const ImageData& image, ivec3 offset, GLint mipmap_level)
+    void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
     {
-        texture_.modify(image, offset, mipmap_level);
+        texture_.modify(bordered_image_data.image(), offset, mipmap_level);
     };
 
 private:
