@@ -61,6 +61,9 @@ public:
     /// @brief The image with the now applied border.
     Image image() && { return std::move(image_); }
 
+    /// @brief Frees all image data, but leaves the size intact.
+    void free() { image_.free(); }
+
 private:
     /// @brief Assumes the given image already has the specified border style.
     BorderedImage(const Border& border, Image image)
@@ -110,7 +113,7 @@ private:
         {
             Bounds bounds(image.size());
             for (std::size_t facing = 0; facing < dim * 2; facing++)
-                for (const auto& pos : bounds.facing(facing, typename Bounds::ClipInfo{true, true}).xFirst())
+                for (const auto& pos : bounds.facing(facing, typename Bounds::ClipInfo{false, true}).xFirst())
                     image[pos] = border.color;
             return std::move(image);
         }
@@ -127,11 +130,11 @@ private:
 
         Image operator()(BorderWrapPositive) &&
         {
-            auto size = image.size();
-            Bounds bounds(size);
+            Bounds bounds(image.size());
+            auto inner_size = image.size() - 1;
             for (std::size_t facing = 1; facing < dim * 2; facing += 2)
                 for (const auto& pos : bounds.facing(facing, typename Bounds::ClipInfo{false, false}).xFirst())
-                    image[pos] = image[(pos + size - 2) % (size - 1)];
+                    image[pos] = image[(pos + inner_size) % inner_size];
             return std::move(image);
         }
     };
