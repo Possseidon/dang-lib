@@ -8,13 +8,38 @@ add_library(${PROJECT_NAME}
     src/Context/Context.cpp
     src/Context/State.cpp
     src/Context/StateTypes.cpp
+    src/General/GLConstants.cpp
+    src/Image/BorderedImage.cpp
+    src/Image/Image.cpp
+    src/Image/Pixel.cpp
+    src/Image/PixelFormat.cpp
+    src/Image/PixelInternalFormat.cpp
+    src/Image/PixelType.cpp
     src/Image/PNGLoader.cpp
+    src/Math/MathConstants.cpp
+    src/Math/MathTypes.cpp
     src/Math/Transform.cpp
+    src/Objects/Buffer.cpp
+    src/Objects/BufferContext.cpp
+    src/Objects/BufferMask.cpp
+    src/Objects/DataTypes.cpp
     src/Objects/FBO.cpp
+    src/Objects/FramebufferContext.cpp
+    src/Objects/Object.cpp
     src/Objects/ObjectContext.cpp
+    src/Objects/ObjectHandle.cpp
+    src/Objects/ObjectType.cpp
+    src/Objects/ObjectWrapper.cpp
     src/Objects/Program.cpp
+    src/Objects/ProgramContext.cpp
     src/Objects/RBO.cpp
+    src/Objects/RenderbufferContext.cpp
+    src/Objects/Texture.cpp
+    src/Objects/TextureContext.cpp
+    src/Objects/UniformWrapper.cpp
     src/Objects/VAO.cpp
+    src/Objects/VBO.cpp
+    src/Objects/VertexArrayContext.cpp
     src/Rendering/Camera.cpp
     src/Rendering/Renderable.cpp
     src/Texturing/MultiTextureAtlas.cpp
@@ -53,6 +78,7 @@ target_precompile_headers(${PROJECT_NAME}
     <tuple>
     <type_traits>
     <utility>
+    <variant>
     <vector>
 )
 
