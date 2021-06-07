@@ -184,17 +184,14 @@ enum class StoreType { None, Value, Reference };
 
 namespace detail {
 
-/// @brief Used to generate unique names for each ClassInfo specialization.
-static inline std::size_t class_counter = 1;
-
-/// @brief Provides a unique name and reference name for any given type.
+/// @brief Provides a unique pointers for any given type.
 template <typename T>
 struct UniqueClassInfo {
-    static inline const std::string name = "dang" + std::to_string(class_counter++);
-    static inline const std::string name_ref = "dang" + std::to_string(class_counter++);
-
-    static inline int index = LUA_NOREF;
-    static inline int newindex = LUA_NOREF;
+    template <bool v_reference>
+    static void* id()
+    {
+        return static_cast<void*>(&id<v_reference>);
+    }
 };
 
 } // namespace detail
@@ -269,9 +266,9 @@ struct Convert {
                 }
             }
 
-            if (void* value = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name.c_str()))
+            if (void* value = testudata<false>(state, pos))
                 return *static_cast<T*>(value);
-            if (void* pointer = luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name_ref.c_str()))
+            if (void* pointer = testudata<true>(state, pos))
                 return **static_cast<T**>(pointer);
             return at(state, pos, SubClassesOf<T>);
         }
@@ -303,17 +300,16 @@ struct Convert {
     static void pushMetatable(lua_State* state)
     {
         static_assert(std::is_class_v<T>);
-        if (!luaL_newmetatable(
-                state, (v_reference ? detail::UniqueClassInfo<T>::name_ref : detail::UniqueClassInfo<T>::name).c_str()))
+        if (!newmetatable<v_reference>(state))
             return;
 
         detail::setFuncs(state, class_metatable<T>);
 
-        registerIndex(state);
-        registerNewindex(state);
+        registerIndex<v_reference>(state);
+        registerNewindex<v_reference>(state);
         registerDisplayName(state);
 
-        if constexpr (!v_reference)
+        if constexpr (!v_reference && !std::is_trivially_destructible_v<T>)
             registerCleanup(state);
 
         protectMetatable(state);
@@ -358,6 +354,40 @@ struct Convert {
     }
 
 private:
+    /// @brief Pushes this types metatable or nil on the stack.
+    template <bool v_reference>
+    static int getmetatable(lua_State* state)
+    {
+        return lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+    }
+
+    /// @brief Creates a new metatable for this type unless it already exists and pushes it on the stack in either case.
+    template <bool v_reference>
+    static bool newmetatable(lua_State* state)
+    {
+        if (getmetatable<v_reference>(state))
+            return false;
+        lua_pop(state, 1);
+        lua_newtable(state);
+        lua_pushvalue(state, -1);
+        lua_rawsetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+        return true;
+    }
+
+    /// @brief Checks if the given argument has the correct metatable and returns the userdata pointer.
+    template <bool v_reference>
+    static void* testudata(lua_State* state, int arg)
+    {
+        void* value = lua_touserdata(state, arg);
+        if (!value || !lua_getmetatable(state, arg))
+            return nullptr;
+        lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+        if (!lua_rawequal(state, -1, -2))
+            value = nullptr;
+        lua_pop(state, 2);
+        return value;
+    }
+
     /// @brief Checks whether the type matches any of the supplied sub classes.
     template <typename TFirst, typename... TRest>
     static StoreType type(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
@@ -384,17 +414,16 @@ private:
     static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
 
     /// @brief Registers the __index metamethod to the metatable on the top of the stack.
+    template <bool v_reference>
     static void registerIndex(lua_State* state)
     {
-        auto& index_ref = detail::UniqueClassInfo<T>::index;
-        if (index_ref == LUA_REFNIL)
-            return;
-
-        if (index_ref != LUA_NOREF) {
-            lua_rawgeti(state, index_ref, LUA_REGISTRYINDEX);
-            lua_setfield(state, -2, "__index");
+        if (getmetatable<!v_reference>(state) != LUA_TNIL) {
+            lua_getfield(state, -1, "__index");
+            lua_setfield(state, -3, "__index");
+            lua_pop(state, 1);
             return;
         }
+        lua_pop(state, 1);
 
         int pushed = 0;
 
@@ -426,10 +455,8 @@ private:
         else
             lua_pop(state, 1);
 
-        if (pushed == 0) {
-            index_ref = LUA_REFNIL;
+        if (pushed == 0)
             return;
-        }
 
         if (has_properties) {
             if (has_indextable) {
@@ -449,23 +476,20 @@ private:
             lua_pushcclosure(state, customIndex<0, 1, 2>, 2);
         // else leave singular index table or function on the stack
 
-        lua_pushvalue(state, -2);
-        index_ref = luaL_ref(state, -1);
         lua_setfield(state, -2, "__index");
     }
 
     /// @brief Registers the __newindex metamethod to the metatable on the top of the stack.
+    template <bool v_reference>
     static void registerNewindex(lua_State* state)
     {
-        auto& newindex_ref = detail::UniqueClassInfo<T>::newindex;
-        if (newindex_ref == LUA_REFNIL)
-            return;
-
-        if (newindex_ref != LUA_NOREF) {
-            lua_rawgeti(state, newindex_ref, LUA_REGISTRYINDEX);
-            lua_setfield(state, -2, "__newindex");
+        if (getmetatable<!v_reference>(state) != LUA_TNIL) {
+            lua_getfield(state, -1, "__newindex");
+            lua_setfield(state, -3, "__newindex");
+            lua_pop(state, 1);
             return;
         }
+        lua_pop(state, 1);
 
         int pushed = 0;
 
@@ -487,10 +511,8 @@ private:
         else
             lua_pop(state, 1);
 
-        if (pushed == 0) {
-            newindex_ref = LUA_REFNIL;
+        if (pushed == 0)
             return;
-        }
 
         if (has_properties) {
             if (has_newindex)
@@ -501,8 +523,6 @@ private:
         else if (has_newindex)
             lua_pushcclosure(state, customNewindex<0, 1>, 1);
 
-        lua_pushvalue(state, -2);
-        newindex_ref = luaL_ref(state, -1);
         lua_setfield(state, -2, "__newindex");
     }
 
