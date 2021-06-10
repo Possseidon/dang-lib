@@ -185,13 +185,9 @@ enum class StoreType { None, Value, Reference };
 namespace detail {
 
 /// @brief Provides a unique pointers for any given type.
-template <typename T>
+template <typename T, bool v_reference>
 struct UniqueClassInfo {
-    template <bool v_reference>
-    static void* id()
-    {
-        return static_cast<void*>(&id<v_reference>);
-    }
+    static void* id() { return reinterpret_cast<void*>(&id); }
 };
 
 } // namespace detail
@@ -209,9 +205,9 @@ struct Convert {
     static StoreType type(lua_State* state, int pos)
     {
         static_assert(std::is_class_v<T>);
-        if (luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name.c_str()))
+        if (testudata<true>(state, pos))
             return StoreType::Value;
-        if (luaL_testudata(state, pos, detail::UniqueClassInfo<T>::name_ref.c_str()))
+        if (testudata<false>(state, pos))
             return StoreType::Reference;
         return type(state, pos, SubClassesOf<T>);
     }
@@ -358,7 +354,7 @@ private:
     template <bool v_reference>
     static int getmetatable(lua_State* state)
     {
-        return lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+        return lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
     }
 
     /// @brief Creates a new metatable for this type unless it already exists and pushes it on the stack in either case.
@@ -370,7 +366,7 @@ private:
         lua_pop(state, 1);
         lua_newtable(state);
         lua_pushvalue(state, -1);
-        lua_rawsetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+        lua_rawsetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
         return true;
     }
 
@@ -381,7 +377,7 @@ private:
         void* value = lua_touserdata(state, arg);
         if (!value || !lua_getmetatable(state, arg))
             return nullptr;
-        lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T>::id<v_reference>());
+        lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
         if (!lua_rawequal(state, -1, -2))
             value = nullptr;
         lua_pop(state, 2);
