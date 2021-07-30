@@ -199,11 +199,6 @@ private:
 template <typename TRenderableIter>
 inline void Camera::render(TRenderableIter first, TRenderableIter last) const
 {
-    auto force_all = [](const auto& uniforms, const auto& value) {
-        for (auto& uniform : uniforms)
-            uniform->force(value);
-    };
-
     const auto& view_transform = transform_->fullTransform().inverseFast();
 
     for (const auto& uniforms : uniforms_) {

@@ -23,7 +23,7 @@ public:
     static constexpr auto pixel_type = v_pixel_type;
     static constexpr auto row_alignment = v_row_alignment;
 
-    using Pixel = Pixel<pixel_format, pixel_type>;
+    using Pixel = dang::gl::Pixel<pixel_format, pixel_type>;
     using Size = dmath::svec<dim>;
     using Bounds = dmath::sbounds<dim>;
 

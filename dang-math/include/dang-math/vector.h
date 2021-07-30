@@ -16,7 +16,7 @@ struct Vector : std::array<T, v_dim> {
     using Type = T;
     static constexpr auto dim = v_dim;
 
-    using Axis = Axis<dim>;
+    using Axis = dang::math::Axis<dim>;
 
     /// @brief Initializes all values with default values.
     constexpr Vector()
@@ -507,12 +507,17 @@ struct Vector : std::array<T, v_dim> {
     }
 
     /// @brief Returns a string representing the vector in the form [x, y, z].
-    auto format() const { return (std::stringstream() << *this).str(); }
+    auto format() const
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
     /// @brief Appends a string representation of the vector in the form [x, y, z] to the stream.
     friend auto& operator<<(std::ostream& stream, const Vector& vector)
     {
-        auto old_flags = stream.flags();
+        [[maybe_unused]] auto old_flags = stream.flags();
         if constexpr (std::is_same_v<T, bool>)
             stream << std::boolalpha;
 

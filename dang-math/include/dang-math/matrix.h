@@ -211,8 +211,6 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
         static_assert(cols == rows);
 
         constexpr std::size_t Dim = cols;
-        constexpr std::size_t DimHalf1 = Dim / 2 + Dim % 2;
-        constexpr std::size_t DimHalf2 = Dim / 2;
 
         if constexpr (Dim <= 4) {
             T det = determinant();
@@ -221,6 +219,9 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
             return adjugate() / det;
         }
         else {
+            constexpr std::size_t DimHalf1 = Dim / 2 + Dim % 2;
+            constexpr std::size_t DimHalf2 = Dim / 2;
+
             auto a = subMatrix<0, 0, DimHalf1, DimHalf1>();
             auto b = subMatrix<DimHalf1, 0, DimHalf2, DimHalf1>();
             auto c = subMatrix<0, DimHalf1, DimHalf1, DimHalf2>();
@@ -672,7 +673,12 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
     }
 
     /// @brief Returns a multiline string representing the matrix.
-    auto format() const { return (std::stringstream() << *this).str(); }
+    auto format() const
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 
     /// @brief Appends a string representation of the vector in the form [x, y, z] to the stream.
     friend auto& operator<<(std::ostream& stream, const Matrix& matrix)

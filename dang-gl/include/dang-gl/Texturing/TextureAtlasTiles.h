@@ -198,7 +198,7 @@ private:
         /// @brief Returns the maximum number of tiles, that can fit in a square texture of the given size.
         std::size_t calculateMaxTiles(std::size_t max_texture_size) const
         {
-            assert(tileSize().maxValue() <= max_texture_size);
+            assert(static_cast<std::size_t>(tileSize().maxValue()) <= max_texture_size);
             auto x_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.x());
             auto y_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.y());
             return x_tiles * y_tiles;
@@ -291,19 +291,25 @@ public:
             data_ = nullptr;
         }
 
-        [[nodiscard]] operator bool() const noexcept { return data_ != nullptr; }
+        [[nodiscard]] explicit operator bool() const noexcept { return data_ != nullptr; }
 
         [[nodiscard]] const std::string* name() const noexcept { return data_->name; }
 
-        friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept;
-        friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept;
+        [[nodiscard]] friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept
+        {
+            return lhs.data_ == rhs.data_;
+        }
+        [[nodiscard]] friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
 
         auto atlasPixelSize() const { return *data_->atlas_size; }
         auto pixelPos() const { return data_->placement.position.xy(); }
         auto pixelSize() const { return data_->bordered_image_data.size(); }
 
-        auto pos() const { return static_cast<vec2>(pixelPos()) / static_cast<vec2>(atlasPixelSize()); }
-        auto size() const { return static_cast<vec2>(pixelSize()) / static_cast<vec2>(atlasPixelSize()); }
+        auto pos() const { return static_cast<vec2>(pixelPos()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
+        auto size() const { return static_cast<vec2>(pixelSize()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
 
         bounds2 bounds() const
         {
@@ -529,7 +535,7 @@ private:
 
         auto& tile =
             *tiles_.emplace_back(std::make_unique<TileData>(std::move(bordered_image_data), atlas_size_.get()));
-        layer->addTile(tile, index);
+        layer->addTile(tile, static_cast<GLsizei>(index));
         *atlas_size_ = maxLayerSize();
         return &tile;
     }
@@ -608,19 +614,5 @@ private:
 
     TextureAtlasTiles<TBorderedImageData> tiles_;
 };
-
-template <typename TBorderedImageData>
-[[nodiscard]] bool operator==(const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& lhs,
-                              const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& rhs) noexcept
-{
-    return lhs.data_ == rhs.data_;
-}
-
-template <typename TBorderedImageData>
-[[nodiscard]] bool operator!=(const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& lhs,
-                              const typename TextureAtlasTiles<TBorderedImageData>::TileHandle& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
 
 } // namespace dang::gl

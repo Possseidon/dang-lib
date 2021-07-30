@@ -248,12 +248,12 @@ private:
                     center += point.position + point.direction / 2;
                 center /= loop.size();
 
-                for (int i = 0; i < loop.size() - 1; i++)
+                for (std::size_t i = 0; i < loop.size() - 1; i++)
                     result.push_back(PlaneInfo{center, loop[i], loop[i + 1]});
                 result.push_back(PlaneInfo{center, loop.back(), loop.front()});
             }
             else {
-                for (int i = 1; i < loop.size() - 1; i++)
+                for (std::size_t i = 1; i < loop.size() - 1; i++)
                     result.push_back(PlaneInfo{loop[0], loop[i], loop[i + 1]});
             }
         }

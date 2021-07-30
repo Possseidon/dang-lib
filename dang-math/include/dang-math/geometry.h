@@ -51,9 +51,9 @@ struct AxisSystemBase {
     using Factor = T;
     using Factors = Vector<T, axis_count>;
 
-    using Line = Line<T, dim>;
-    using Plane = Plane<T, dim>;
-    using Spat = Spat<T, dim>;
+    using Line = dang::math::Line<T, dim>;
+    using Plane = dang::math::Plane<T, dim>;
+    using Spat = dang::math::Spat<T, dim>;
 
     Point support;
     Directions directions;

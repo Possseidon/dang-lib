@@ -67,22 +67,37 @@ namespace detail {
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
 #endif
 
-[[noreturn]] inline void noreturn_lua_error(lua_State* state) { lua_error(state); }
+[[noreturn]] inline void noreturn_lua_error(lua_State* state)
+{
+    lua_error(state);
+#ifdef __GNUC__
+    std::abort();
+#endif
+}
 
 [[noreturn]] inline void noreturn_luaL_error(lua_State* state, const char* message)
 {
     lua_pushstring(state, message);
     lua_error(state);
+#ifdef __GNUC__
+    std::abort();
+#endif
 }
 
 [[noreturn]] inline void noreturn_luaL_typeerror(lua_State* state, int arg, const char* type_name)
 {
     luaL_typeerror(state, arg, type_name);
+#ifdef __GNUC__
+    std::abort();
+#endif
 }
 
 [[noreturn]] inline void noreturn_luaL_argerror(lua_State* state, int arg, const char* extra_message)
 {
     luaL_argerror(state, arg, extra_message);
+#ifdef __GNUC__
+    std::abort();
+#endif
 }
 
 #ifdef __clang__
@@ -584,8 +599,9 @@ private:
             lua_call(state, 2, 1);
             return 1;
         }
-
-        return 0;
+        else {
+            return 0;
+        }
     }
 
     /// @brief Handles properties and calling the original __newindex function in this order.
@@ -612,13 +628,14 @@ private:
             lua_call(state, 3, 0);
             return 0;
         }
-
-        std::string name(getPushTypename());
-        if (lua_type(state, 2) == LUA_TSTRING) {
-            auto prop = lua_tostring(state, 2);
-            detail::noreturn_luaL_error(state, ("cannot write property " + name + "." + prop).c_str());
+        else {
+            std::string name(getPushTypename());
+            if (lua_type(state, 2) == LUA_TSTRING) {
+                auto prop = lua_tostring(state, 2);
+                detail::noreturn_luaL_error(state, ("cannot write property " + name + "." + prop).c_str());
+            }
+            detail::noreturn_luaL_error(state, ("attempt to index a " + name + " value").c_str());
         }
-        detail::noreturn_luaL_error(state, ("attempt to index a " + name + " value").c_str());
     }
 };
 

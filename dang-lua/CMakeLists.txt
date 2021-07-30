@@ -11,11 +11,13 @@ target_precompile_headers(${PROJECT_NAME}
     <array>
     <cassert>
     <cstdint>
+    <cstdlib>
     <cstring>
     <exception>
     <functional>
     <iostream>
     <limits>
+    <memory>
     <numeric>
     <optional>
     <string>

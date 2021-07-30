@@ -27,7 +27,7 @@ public:
 
     using Border = ImageBorder<v_pixel_format, v_pixel_type>;
 
-    using Image = Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>;
+    using Image = dang::gl::Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>;
 
     using Pixel = typename Image::Pixel;
     using Size = typename Image::Size;

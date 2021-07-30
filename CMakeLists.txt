@@ -5,7 +5,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+  add_compile_options(/W4 /bigobj)
+  if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    add_compile_options(
+      "SHELL:-Xclang -Wno-missing-braces"
+      "SHELL:-Xclang -Wno-logical-op-parentheses"
+    )
+  endif()
+  add_compile_definitions("DANG_DLLEXPORT=__declspec(dllexport)")
+else()
+  add_compile_options(-Wall -Wextra -pedantic)
+  add_compile_definitions("DANG_DLLEXPORT=__attribute__((visibility(\"default\")))")
 endif()
 
 include(CTest)

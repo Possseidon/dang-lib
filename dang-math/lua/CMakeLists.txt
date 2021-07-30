@@ -3,9 +3,10 @@ project(dang-math-lua CXX)
 
 add_library(${PROJECT_NAME}-enums INTERFACE)
 
-target_link_libraries(${PROJECT_NAME}-enums 
+target_link_libraries(${PROJECT_NAME}-enums
   INTERFACE
     dang-lua
+    dang-math
 )
 
 target_include_directories(${PROJECT_NAME}-enums
@@ -45,6 +46,8 @@ target_include_directories(${PROJECT_NAME}-vector-matrix
     include
 )
 
+set_property(TARGET ${PROJECT_NAME}-vector-matrix PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 add_library(${PROJECT_NAME}-geometry STATIC EXCLUDE_FROM_ALL
   src/lua-geometry.cpp
 )
@@ -73,6 +76,8 @@ target_include_directories(${PROJECT_NAME}-geometry
     include
 )
 
+set_property(TARGET ${PROJECT_NAME}-geometry PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 add_library(dmath SHARED EXCLUDE_FROM_ALL
   src/dmath.cpp
 )
@@ -82,4 +87,13 @@ target_link_libraries(dmath
     dang-lua
     ${PROJECT_NAME}-vector-matrix
     ${PROJECT_NAME}-geometry
+)
+
+set_target_properties(
+  ${PROJECT_NAME}-vector-matrix
+  ${PROJECT_NAME}-geometry
+  dmath
+  PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    PREFIX ""
 )

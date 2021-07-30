@@ -49,7 +49,7 @@ struct BoundsIterator {
     static constexpr auto dim = v_dim;
     static constexpr auto x_first = v_x_first;
 
-    using Bounds = Bounds<T, dim>;
+    using Bounds = dang::math::Bounds<T, dim>;
 
     static_assert(std::is_integral_v<T>, "BoundsIterator can only be used with integral types");
     using iterator_category = std::forward_iterator_tag;
@@ -128,8 +128,8 @@ struct Bounds {
     using Point = Vector<T, dim>;
     using Size = Vector<T, dim>;
     using Offset = Vector<T, dim>;
-    using Corner = Corner<dim>;
-    using Facing = Facing<dim>;
+    using Corner = dang::math::Corner<dim>;
+    using Facing = dang::math::Facing<dim>;
     using ClipInfo = BoundsClipInfo;
 
     Point low;

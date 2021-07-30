@@ -63,7 +63,7 @@ std::optional<std::string> GLFW::clipboard() const
     try {
         return clipboardOrThrow();
     }
-    catch (GLFWError) {
+    catch (const GLFWError&) {
         return std::nullopt;
     }
 }

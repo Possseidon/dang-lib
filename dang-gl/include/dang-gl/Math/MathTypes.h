@@ -121,4 +121,4 @@ using dmat4 = dmat<4, 4>;
 using quat = dang::math::Quaternion<GLfloat>;
 using dquat = dang::math::DualQuaternion<GLfloat>;
 
-}; // namespace dang::gl
+} // namespace dang::gl

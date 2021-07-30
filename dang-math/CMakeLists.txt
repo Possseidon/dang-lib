@@ -12,6 +12,7 @@ target_precompile_headers(${PROJECT_NAME}
   INTERFACE
     <algorithm>
     <array>
+    <cmath>
     <functional>
     <iostream>
     <numeric>

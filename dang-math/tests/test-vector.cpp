@@ -299,8 +299,8 @@ TEST_CASE("Vectors support angle operations.", "[vector][operations]")
 TEST_CASE("Vectors support unary component-wise operations.", "[vector][operations]")
 {
     STATIC_REQUIRE(dmath::vec3(-1, -2, -3).abs() == dmath::vec3(1, 2, 3));
-    CHECK(dmath::vec3(1.1, 2.5, 3.9).floor() == dmath::vec3(1, 2, 3));
-    CHECK(dmath::vec3(1.1, 2.5, 3.9).ceil() == dmath::vec3(2, 3, 4));
+    CHECK(dmath::vec3(1.1f, 2.5f, 3.9f).floor() == dmath::vec3(1, 2, 3));
+    CHECK(dmath::vec3(1.1f, 2.5f, 3.9f).ceil() == dmath::vec3(2, 3, 4));
 
     CHECK(dmath::vec3(2, 1, 3).minAxis() == dmath::Axis3::Y);
     CHECK(dmath::vec3(2, 1, 3).maxAxis() == dmath::Axis3::Z);

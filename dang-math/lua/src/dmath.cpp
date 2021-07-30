@@ -2,14 +2,14 @@
 #include "dang-math/lua-vector-matrix.h"
 
 template <typename T>
-void add(dang::lua::State& lua, dang::lua::Arg table)
+static void add(dang::lua::State& lua, dang::lua::Arg table)
 {
     auto name = lua(dang::lua::ClassInfo<T>::className());
     auto lib = table.state().pushRequire<T>(false);
     table.rawSetTable(std::move(name), std::move(lib));
 }
 
-extern "C" __declspec(dllexport) int luaopen_dmath(lua_State* L)
+extern "C" DANG_DLLEXPORT int luaopen_dmath(lua_State* L)
 {
     dang::lua::State lua(L);
     lua.checkVersion();

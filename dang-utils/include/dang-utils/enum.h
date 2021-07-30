@@ -2,7 +2,9 @@
 
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstdint>
+#include <cstring>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -363,7 +365,7 @@ public:
 
     friend constexpr EnumSet operator|(EnumSet lhs, const EnumSet& rhs) { return lhs |= rhs; }
     friend constexpr EnumSet operator|(EnumSet lhs, T rhs) { return lhs |= rhs; }
-    friend constexpr EnumSet operator|(T lhs, EnumSet rhs) { return rhs |= rhs; }
+    friend constexpr EnumSet operator|(T lhs, EnumSet rhs) { return rhs |= lhs; }
 
     constexpr EnumSet& operator|=(const EnumSet& other)
     {

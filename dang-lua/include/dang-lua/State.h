@@ -2407,7 +2407,7 @@ public:
         if constexpr (is_index<std::decay_t<TValue>>::value) {
             assertPushable();
             lua_copy(state_, value.index(), index.index());
-            if constexpr (is_any_moved_stack_index_result<TValue&&>)
+            if constexpr (is_any_moved_stack_index_result<TValue&&>::value)
                 if (value.isTop())
                     pop();
         }
@@ -3517,7 +3517,10 @@ private:
 
     /// @brief Counts how many elements can be skipped because they are rvalue stack indices at the correct position.
     template <typename TFirst, typename... TRest>
-    void countSkipped(int& skipped, int& top_offset, [[maybe_unused]] TFirst&& first, [[maybe_unused]] TRest&&... rest)
+    void countSkipped([[maybe_unused]] int& skipped,
+                      [[maybe_unused]] int& top_offset,
+                      [[maybe_unused]] TFirst&& first,
+                      [[maybe_unused]] TRest&&... rest)
     {
         if constexpr (is_any_moved_stack_index_result<TFirst&&>::value) {
             skipped++;
@@ -4740,14 +4743,14 @@ struct ValueTo {
 };
 
 /// @brief Can be used to provide __pairs for custom ClassInfo specializations.
-inline auto indextable_pairs(State& lua, Arg value)
+inline auto indextable_pairs(Arg value)
 {
     constexpr auto next = +[](State& lua, Arg table, Arg key) {
         auto result = table.next(std::move(key));
         return result ? VarArgs(*result) : VarArgs(lua.pushNil());
     };
-    return std::tuple{wrap<next>, value.getMetafield("indextable")};
-};
+    return std::tuple{&wrap<next>, value.getMetafield("indextable")};
+}
 
 namespace detail {
 

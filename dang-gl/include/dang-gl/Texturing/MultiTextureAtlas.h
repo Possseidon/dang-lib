@@ -17,7 +17,7 @@ namespace detail {
 template <typename TSubTextureEnum, PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
 class TextureAtlasMultiTexture {
 public:
-    using BorderedImage = BorderedImage<2, v_pixel_format, v_pixel_type, v_row_alignment>;
+    using BorderedImage = dang::gl::BorderedImage<2, v_pixel_format, v_pixel_type, v_row_alignment>;
 
     class BorderedImageData {
     public:

@@ -110,7 +110,7 @@ std::vector<Property> ClassInfo<dang::math::Line<T, v_dim>>::properties()
 template <typename T, std::size_t v_dim>
 Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
 {
-    constexpr auto create = +[](State& lua, Arg, VarArgs args) {
+    constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
             return Line();
         auto support = args[0].check<Point>();
@@ -275,7 +275,7 @@ std::vector<Property> ClassInfo<dang::math::Plane<T, v_dim>>::properties()
 template <typename T, std::size_t v_dim>
 Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
 {
-    constexpr auto create = +[](State& lua, Arg, VarArgs args) {
+    constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
             return Plane();
         auto support = args[0].check<Point>();
@@ -394,7 +394,7 @@ std::vector<Property> ClassInfo<dang::math::Spat<T, v_dim>>::properties()
 template <typename T, std::size_t v_dim>
 Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
 {
-    constexpr auto create = +[](State& lua, Arg, VarArgs args) {
+    constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
             return Spat();
         auto support = args[0].check<Point>();
