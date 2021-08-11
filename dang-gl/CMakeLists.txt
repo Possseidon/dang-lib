@@ -78,6 +78,7 @@ target_precompile_headers(${PROJECT_NAME}
     <string>
     <tuple>
     <type_traits>
+    <unordered_map>
     <utility>
     <variant>
     <vector>
