@@ -68,7 +68,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies and generate project files
-        run: cmake -S "${{github.workspace}}" -B "${{env.CMAKE_BUILD_DIR}}" -GNinja -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake"
+        run: cmake -S "${{github.workspace}}" -B "${{env.CMAKE_BUILD_DIR}}" -GNinja -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake" -DDANG_WERROR:BOOL=ON
 
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"

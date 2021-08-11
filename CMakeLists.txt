@@ -4,8 +4,10 @@ project(dang-lib VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+option(DANG_WERROR "Whether to treat warnings as errors.")
+
 if(MSVC)
-  add_compile_options(/W4 /bigobj)
+  add_compile_options(/W4 /bigobj "$<$<BOOL:${DANG_WERROR}>:/WX>")
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     add_compile_options(
       "SHELL:-Xclang -Wno-missing-braces"
@@ -14,7 +16,7 @@ if(MSVC)
   endif()
   add_compile_definitions("DANG_DLLEXPORT=__declspec(dllexport)")
 else()
-  add_compile_options(-Wall -Wextra -pedantic)
+  add_compile_options(-Wall -Wextra -pedantic "$<$<BOOL:${DANG_WERROR}>:-Werror>")
   add_compile_definitions("DANG_DLLEXPORT=__attribute__((visibility(\"default\")))")
 endif()
 
