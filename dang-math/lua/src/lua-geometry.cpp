@@ -8,7 +8,7 @@ namespace dang::lua {
 
 namespace detail {
 
-void checkIndex(State& lua, int arg, int index, int size)
+void checkIndex(State& lua, int arg, std::size_t index, std::size_t size)
 {
     if (index < 1 || index > size)
         lua.argError(arg,
