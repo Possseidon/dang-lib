@@ -3588,7 +3588,7 @@ private:
             lua_settop(state, lua.size());
         }
 
-        if constexpr (std::is_void_v<Info::Return>) {
+        if constexpr (std::is_void_v<typename Info::Return>) {
             std::apply(func, std::move(args));
             return 0;
         }
