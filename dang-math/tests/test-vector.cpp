@@ -481,3 +481,17 @@ TEST_CASE("Vectors support 3-dimensional operations.", "[vector][operations]")
     CHECK(rotated_deg.y() == Approx(2));
     CHECK(rotated_deg.z() == Approx(1));
 }
+
+TEST_CASE("Vectors can be formatted as a string and printed to a stream.", "[vector][formatting]")
+{
+    dmath::vec3 a(1, 3.5, 10);
+    std::string_view a_as_string = "[1, 3.5, 10]";
+
+    CAPTURE(a, a_as_string);
+
+    CHECK(a.format() == a_as_string);
+
+    std::stringstream ss;
+    ss << a;
+    CHECK(ss.str() == a_as_string);
+}
