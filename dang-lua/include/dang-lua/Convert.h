@@ -412,7 +412,7 @@ private:
     }
 
     /// @brief Serves as an exit condition when the list of sub classes is depleted.
-    static StoreType type(lua_State* state, int, SubClassList<>) { return StoreType::None; }
+    static StoreType type(lua_State*, int, SubClassList<>) { return StoreType::None; }
 
     /// @brief Goes through the full list of subclasses to try and convert the value.
     template <typename TFirst, typename... TRest>
