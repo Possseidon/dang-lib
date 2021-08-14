@@ -654,7 +654,7 @@ struct Convert<std::reference_wrapper<T>> : Convert<T> {};
 template <>
 struct Convert<void> {
     static constexpr std::optional<int> push_count = 0;
-    static constexpr bool allow_nesting = true;
+    static constexpr bool allow_nesting = false;
 };
 
 /// @brief Converts nil values.
