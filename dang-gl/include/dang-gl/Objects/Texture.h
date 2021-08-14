@@ -621,7 +621,7 @@ public:
                            PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
         : TextureBaseMultisample()
     {
-        generate(size, samples, internal_format);
+        generate(size, samples, fixed_sample_locations, internal_format);
     }
 
     /// @brief Initializes a new multisampled texture with the given image data and sample count.
