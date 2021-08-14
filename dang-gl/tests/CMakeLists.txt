@@ -24,12 +24,12 @@ target_link_libraries(${PROJECT_NAME}
 
 catch_discover_tests(${PROJECT_NAME})
 
-if(NOT EXISTS PngSuite.zip)
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
   message("-- Downloading PngSuite")
-  file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip PngSuite.zip)
+  file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip ${CMAKE_BINARY_DIR}/PngSuite.zip)
 endif()
 
 file(ARCHIVE_EXTRACT
-  INPUT PngSuite.zip
-  DESTINATION PngSuite
+  INPUT ${CMAKE_BINARY_DIR}/PngSuite.zip
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/PngSuite
 )
