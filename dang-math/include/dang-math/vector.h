@@ -267,6 +267,28 @@ struct Vector : std::array<T, v_dim> {
         return variadicOp([](T a, T b, T c) { return std::clamp(a, b, c); }, low, high);
     }
 
+    /// @brief Returns a vector, for which each component is either 0 if the vectors component is greater than the one
+    /// of the given vector and 1 otherwise.
+    constexpr auto step(const Vector& other) const
+    {
+        static_assert(!std::is_same_v<T, bool>);
+        return variadicOp([](T edge, T x) { return edge > x ? T{0} : T{1}; }, other);
+    }
+
+    /// @brief Returns a vector, for which each component is applied a floored modulus operation on.
+    constexpr auto mod(const Vector& other) const
+    {
+        static_assert(std::is_floating_point_v<T>);
+        return variadicOp([](T a, T b) { return a - b * std::floor(a / b); }, other);
+    }
+
+    /// @brief Returns a vector with only the fractional part of each component.
+    constexpr auto fract() const
+    {
+        static_assert(std::is_floating_point_v<T>);
+        return variadicOp([](T a) { return a - std::floor(a); });
+    }
+
     /// @brief Reflects the vector on the given plane normal.
     /// @remark The normal is assumed to be normalized.
     constexpr auto reflect(const Vector& normal) const
@@ -468,6 +490,34 @@ struct Vector : std::array<T, v_dim> {
     {
         static_assert(std::is_integral_v<T>);
         return assignmentOp(std::bit_xor{}, other);
+    }
+
+    /// @brief Component-wise bit left shift of two vectors.
+    friend constexpr auto operator<<(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp([](const auto& a, const auto& b) { return a << b; }, rhs);
+    }
+
+    /// @brief Component-wise bit left shift of two vectors.
+    constexpr auto& operator<<=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp([](const auto& a, const auto& b) { return a << b; }, other);
+    }
+
+    /// @brief Component-wise bit right shift of two vectors.
+    friend constexpr auto operator>>(const Vector& lhs, const Vector& rhs)
+    {
+        static_assert(std::is_integral_v<T>);
+        return lhs.variadicOp([](const auto& a, const auto& b) { return a >> b; }, rhs);
+    }
+
+    /// @brief Component-wise bit right shift of two vectors.
+    constexpr auto& operator>>=(const Vector& other)
+    {
+        static_assert(std::is_integral_v<T>);
+        return assignmentOp([](const auto& a, const auto& b) { return a >> b; }, other);
     }
 
     /// @brief Returns a swizzle of the given components.
