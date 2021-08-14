@@ -4552,6 +4552,12 @@ struct ConvertIndexBase {
     static constexpr bool isExact(lua_State*, int) { return true; }
 
     static constexpr bool isValid(lua_State*, int) { return true; }
+
+    static constexpr std::string_view getPushTypename()
+    {
+        using namespace std::literals;
+        return "any"sv;
+    }
 };
 
 struct ConvertIndex : ConvertIndexBase {
