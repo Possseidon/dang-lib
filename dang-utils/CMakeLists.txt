@@ -8,6 +8,8 @@ target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${CMAKE_C
 
 add_subdirectory(catch2)
 
+add_subdirectory(lua)
+
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
