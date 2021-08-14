@@ -247,7 +247,7 @@ public:
         subImage(std::make_index_sequence<v_dim>(), image, offset, mipmap_level);
     }
 
-    /// @brief Regenerates all mipmaps from the top level.
+    /// @brief Generates all mipmaps from the top level using OpenGL's built-in glGenerateMipmap.
     void generateMipmap()
     {
         this->bind();
@@ -504,7 +504,7 @@ public:
     {}
 
     /// @brief Initializes a new texture with the given size.
-    /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remark mipmap_levels defaults to generating storage for a full mipmap down to 1x1.
     explicit TextureBaseRegular(svec<v_dim> size,
                                 std::optional<GLsizei> mipmap_levels = std::nullopt,
                                 PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -514,7 +514,7 @@ public:
     }
 
     /// @brief Initializes a new texture with the given image data.
-    /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remark mipmap_levels defaults to generating storage for a full mipmap down to 1x1.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
     explicit TextureBaseRegular(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
@@ -531,7 +531,7 @@ public:
     TextureBaseRegular& operator=(const TextureBaseRegular&) = delete;
 
     /// @brief Generates storage for the specified size.
-    /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remark mipmap_levels defaults to generating storage for a full mipmap down to 1x1.
     void generate(svec<v_dim> size,
                   std::optional<GLsizei> mipmap_levels = std::nullopt,
                   PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
@@ -541,7 +541,7 @@ public:
     }
 
     /// @brief Generates texture storage and fills it with the provided image.
-    /// @remark mipmap_levels defaults to generating a full mipmap down to 1x1.
+    /// @remark mipmap_levels defaults to generating storage for a full mipmap down to 1x1.
     /// @remark internal_format defaults to being chosen, based on the format of the provided image.
     template <PixelFormat v_pixel_format, PixelType v_pixel_type, std::size_t v_row_alignment>
     void generate(const Image<v_dim, v_pixel_format, v_pixel_type, v_row_alignment>& image,
@@ -553,7 +553,6 @@ public:
         storage(
             std::make_index_sequence<v_dim>(), static_cast<svec<v_dim>>(image.size()), mipmap_levels, internal_format);
         this->subImage(std::make_index_sequence<v_dim>(), image);
-        glGenerateMipmap(toGLConstant(v_target));
     }
 
 protected:
@@ -561,30 +560,10 @@ protected:
     TextureBaseRegular& operator=(TextureBaseRegular&&) = default;
 
 private:
-    /// @brief Returns the biggest component of a given vector.
-    template <std::size_t... v_indices>
-    static GLsizei maxSize(svec<v_dim> size, std::index_sequence<v_indices...>)
+    /// @brief Calculates the required mipmap count for a given size.
+    static constexpr GLsizei mipmapCount(GLsizei value)
     {
-        GLsizei result = 0;
-        ((result = std::max(result, size[v_indices])), ...);
-        return result;
-    }
-
-    /// @brief Calculates the integer log2 plus one of the given value, which is the required mipmap count for a given
-    /// size.
-    static GLsizei mipmapCount(GLsizei value)
-    {
-        // TODO: C++20 use std::bit_width
-        GLsizei result = 1;
-        while (value >>= 1)
-            result++;
-        return result;
-    }
-
-    /// @brief Returns the required count to generate a full mipmap down to 1x1 for the given size.
-    GLsizei maxMipmapLevelsFor(svec<v_dim> size)
-    {
-        return mipmapCount(maxSize(size, std::make_index_sequence<v_dim>()));
+        return dutils::ilog2(static_cast<std::make_unsigned_t<GLsizei>>(value)) + 1;
     }
 
     /// @brief Calls glTexStorage with the provided parameters and index sequence of the textures dimension.
@@ -594,10 +573,18 @@ private:
                  std::optional<GLsizei> mipmap_levels = std::nullopt,
                  PixelInternalFormat internal_format = PixelInternalFormat::RGBA8)
     {
-        glTexStorage<v_dim>(toGLConstant(v_target),
-                            mipmap_levels.value_or(maxMipmapLevelsFor(size)),
-                            toGLConstant(internal_format),
-                            size[v_indices]...);
+        if (!mipmap_levels) {
+            if constexpr (v_target == TextureTarget::Texture1DArray)
+                mipmap_levels = mipmapCount(size.x().maxValue());
+            else if constexpr (v_target == TextureTarget::Texture2DArray ||
+                               v_target == TextureTarget::Texture2DMultisampleArray ||
+                               v_target == TextureTarget::TextureCubeMapArray)
+                mipmap_levels = mipmapCount(size.xy().maxValue());
+            else
+                mipmap_levels = mipmapCount(size.maxValue());
+        }
+
+        glTexStorage<v_dim>(toGLConstant(v_target), *mipmap_levels, toGLConstant(internal_format), size[v_indices]...);
         this->setSize(size);
     }
 };

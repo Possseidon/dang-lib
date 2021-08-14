@@ -53,6 +53,7 @@ enum class TextureTarget {
     Texture2DMultisampleArray,
     Texture3D,
     TextureCubeMap,
+    TextureCubeMapArray,
     TextureRectangle,
 
     COUNT
@@ -148,8 +149,8 @@ inline constexpr dutils::EnumArray<TextureTarget, GLenum> gl_constants<TextureTa
     GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
     GL_TEXTURE_3D,
     GL_TEXTURE_CUBE_MAP,
-    GL_TEXTURE_RECTANGLE,
-};
+    GL_TEXTURE_CUBE_MAP_ARRAY,
+    GL_TEXTURE_RECTANGLE};
 
 /// @brief Maps from framebuffer targets to their respective constants, which need to be supplied to the
 /// glBindFramebuffer function.
