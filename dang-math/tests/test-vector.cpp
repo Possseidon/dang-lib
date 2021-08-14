@@ -194,21 +194,23 @@ TEST_CASE("Vectors support component-wise compound assignment operations.", "[ve
 
 TEST_CASE("Vectors support component-wise bit operations.", "[vector][operators]")
 {
-    constexpr dmath::ivec3 a(1, 3, 4);
-    constexpr dmath::ivec3 b(5, 6, 8);
+    constexpr dmath::ivec3 a(5, 7, 9);
+    constexpr dmath::ivec3 b(2, 1, 3);
 
     CAPTURE(a, b);
 
-    STATIC_REQUIRE(~a == dmath::ivec3(-2, -4, -5));
-    STATIC_REQUIRE((a & b) == dmath::ivec3(1, 2, 0));
-    STATIC_REQUIRE((a | b) == dmath::ivec3(5, 7, 12));
-    STATIC_REQUIRE((a ^ b) == dmath::ivec3(4, 5, 12));
+    STATIC_REQUIRE(~a == dmath::ivec3(-6, -8, -10));
+    STATIC_REQUIRE((a & b) == dmath::ivec3(0, 1, 1));
+    STATIC_REQUIRE((a | b) == dmath::ivec3(7, 7, 11));
+    STATIC_REQUIRE((a ^ b) == dmath::ivec3(7, 6, 10));
+    STATIC_REQUIRE((a << b) == dmath::ivec3(20, 14, 72));
+    STATIC_REQUIRE((a >> b) == dmath::ivec3(1, 3, 1));
 }
 
 TEST_CASE("Vectors support component-wise compound assignment bit operations.", "[vector][operators]")
 {
-    dmath::ivec3 a(1, 3, 4);
-    constexpr dmath::ivec3 b(5, 6, 8);
+    dmath::ivec3 a(5, 7, 9);
+    constexpr dmath::ivec3 b(2, 1, 3);
 
     CAPTURE(a, b);
 
@@ -217,17 +219,27 @@ TEST_CASE("Vectors support component-wise compound assignment bit operations.", 
     SECTION("a &= b")
     {
         a_ptr = &(a &= b);
-        CHECK(a == dmath::ivec3(1, 2, 0));
+        CHECK(a == dmath::ivec3(0, 1, 1));
     }
     SECTION("a |= b")
     {
         a_ptr = &(a |= b);
-        CHECK(a == dmath::ivec3(5, 7, 12));
+        CHECK(a == dmath::ivec3(7, 7, 11));
     }
     SECTION("a ^= b")
     {
         a_ptr = &(a ^= b);
-        CHECK(a == dmath::ivec3(4, 5, 12));
+        CHECK(a == dmath::ivec3(7, 6, 10));
+    }
+    SECTION("a <<= b")
+    {
+        a_ptr = &(a <<= b);
+        CHECK(a == dmath::ivec3(20, 14, 72));
+    }
+    SECTION("a >>= b")
+    {
+        a_ptr = &(a >>= b);
+        CHECK(a == dmath::ivec3(1, 3, 1));
     }
 
     INFO("Compound assignment returns reference to a.");
@@ -263,6 +275,7 @@ TEST_CASE("Vectors support geometric operations.", "[vector][operations]")
 {
     constexpr dmath::vec3 a(1, 3, 5);
     constexpr dmath::vec3 b(2, 5, 8);
+    constexpr dmath::vec3 c(1, 4, 2);
 
     CAPTURE(a, b);
 
@@ -280,6 +293,11 @@ TEST_CASE("Vectors support geometric operations.", "[vector][operations]")
     CHECK(a_normalized.z() == Approx(a.z() / a.length()));
 
     CHECK(a.distanceTo(b) == Approx(a.vectorTo(b).length()));
+
+    STATIC_REQUIRE(a.step(c) == dmath::vec3(1, 1, 0));
+
+    CHECK(a.mod(c) == dmath::vec3(0, 3, 1));
+    CHECK(dmath::vec3(1.5, 4.25, 2.0).fract() == dmath::vec3(0.5, 0.25, 0.0));
 }
 
 TEST_CASE("Vectors support angle operations.", "[vector][operations]")
