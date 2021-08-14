@@ -17,6 +17,10 @@ if(MSVC)
   add_compile_definitions("DANG_DLLEXPORT=__declspec(dllexport)")
 else()
   add_compile_options(-Wall -Wextra -pedantic "$<$<BOOL:${DANG_WERROR}>:-Werror>")
+  add_compile_options(
+    -Wno-missing-braces
+    -Wno-logical-op-parentheses
+  )
   add_compile_definitions("DANG_DLLEXPORT=__attribute__((visibility(\"default\")))")
 endif()
 
