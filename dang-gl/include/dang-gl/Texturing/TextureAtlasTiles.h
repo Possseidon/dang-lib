@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-gl/Image/MipmapLevels.h"
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
 #include "dang-utils/utils.h"
@@ -36,12 +37,15 @@ struct TextureAtlasLimits {
 template <typename TBorderedImageData>
 class TextureAtlasTiles {
 public:
+    using BorderedImageData = TBorderedImageData;
+    using MipmapLevels = dang::gl::MipmapLevels<BorderedImageData>;
+
     /// @brief A function that is called with required size (width and height), layers and mipmap levels.
-    /// @remarks Returns whether actual resizing occurred.
+    /// @remark Returns whether actual resizing occurred.
     using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
 
     /// @brief A function that uploads the image to a specific position and mipmap level of a texture.
-    using TextureModifyFunction = std::function<void(const TBorderedImageData&, ivec3, GLint)>;
+    using TextureModifyFunction = std::function<void(const BorderedImageData&, ivec3, GLint)>;
 
     class TileHandle;
 
@@ -69,16 +73,26 @@ private:
             : index(index)
             , position(position.x(), position.y(), layer)
         {}
+
+        /// @brief The position on the given mipmap layer.
+        auto pixelPos(GLsizei mipmap_layer = 0) const { return position.xy() >> mipmap_layer; }
+
+        /// @brief The position and atlas layer on the given mipmap layer.
+        auto pixelPosAndLayer(GLsizei mipmap_layer = 0) const
+        {
+            auto [x, y] = pixelPos(mipmap_layer);
+            return svec3{x, y, position.z()};
+        }
     };
 
     /// @brief Contains data about a single texture tile on a layer.
     struct TileData {
-        TBorderedImageData bordered_image_data;
+        MipmapLevels mipmap_levels;
         TilePlacement placement;
         std::shared_ptr<const AtlasInfo> atlas_info;
 
-        TileData(TBorderedImageData&& bordered_image_data, std::shared_ptr<const AtlasInfo> atlas_info)
-            : bordered_image_data(std::move(bordered_image_data))
+        TileData(MipmapLevels&& mipmap_levels, std::shared_ptr<const AtlasInfo> atlas_info)
+            : mipmap_levels(std::move(mipmap_levels))
             , atlas_info(std::move(atlas_info))
         {}
 
@@ -165,8 +179,10 @@ private:
                     drawTile(*tile, modify);
                     assert(tile->placement.written);
                 }
-                if (freeze)
-                    tile->bordered_image_data.free();
+                if (freeze) {
+                    for (auto& mipmap_level : tile->mipmap_levels)
+                        mipmap_level.free();
+                }
             }
         }
 
@@ -182,8 +198,12 @@ private:
         /// @brief Draws a single tile onto the texture.
         void drawTile(TileData& tile, const TextureModifyFunction& modify) const
         {
-            assert(tile.bordered_image_data);
-            modify(tile.bordered_image_data, tile.placement.position, 0); // TODO: Mipmapping
+            for (GLint mipmap_level = 0; mipmap_level < static_cast<GLint>(tile.mipmap_levels.count());
+                 mipmap_level++) {
+                const auto& bordered_image = tile.mipmap_levels[mipmap_level];
+                assert(bordered_image);
+                modify(bordered_image, tile.placement.pixelPosAndLayer(mipmap_level), mipmap_level);
+            }
             tile.placement.written = true;
         }
 
@@ -244,26 +264,44 @@ public:
         {
             return lhs.data_ == rhs.data_;
         }
+
         [[nodiscard]] friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept
         {
             return !(lhs == rhs);
         }
 
-        auto atlasPixelSize() const { return dataOrThrow().atlas_info->atlas_size; }
-        auto pixelPos() const { return dataOrThrow().placement.position.xy(); }
-        auto pixelSize() const { return dataOrThrow().bordered_image_data.size(); }
+        auto atlasPixelSize(GLsizei mipmap_layer = 0) const
+        {
+            return dataOrThrow().atlas_info->atlas_size >> mipmap_layer;
+        }
+
+        auto pixelPos(GLsizei mipmap_layer = 0) const { return dataOrThrow().placement.pixelPos(mipmap_layer); }
+
+        auto pixelSize(GLsizei mipmap_layer = 0) const
+        {
+            return dataOrThrow().mipmap_levels[static_cast<std::size_t>(mipmap_layer)].size();
+        }
+
+        auto pixelPosAndLayer(GLsizei mipmap_layer = 0) const
+        {
+            return dataOrThrow().placement.pixelPosAndLayer(mipmap_layer);
+        }
 
         auto pos() const { return static_cast<vec2>(pixelPos()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
         auto size() const { return static_cast<vec2>(pixelSize()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
 
         bounds2 bounds() const
         {
-            auto padding = dataOrThrow().bordered_image_data.padding();
+            auto padding = dataOrThrow().mipmap_levels.front().padding();
             auto inset = static_cast<vec2>(padding) / (2.0f * atlasPixelSize());
-            return {pos() + inset, pos() + size() - inset};
+            auto top_left = pos();
+            auto bottom_right = top_left + size();
+            return bounds2(top_left, bottom_right).inset(inset);
         }
 
         auto layer() const { return dataOrThrow().placement.position.z(); }
+
+        auto mipmapLevels() const { return data_->mipmap_levels.size(); }
 
     private:
         TileHandle(const std::shared_ptr<const TileData>& data)
@@ -300,9 +338,9 @@ public:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    [[nodiscard]] TileHandle add(TBorderedImageData bordered_image_data)
+    [[nodiscard]] TileHandle add(MipmapLevels mipmap_levels)
     {
-        return TileHandle(emplaceTile(std::move(bordered_image_data)));
+        return TileHandle(emplaceTile(std::move(mipmap_levels)));
     }
 
     /// @brief Checks if a tile with the given name exists.
@@ -341,13 +379,13 @@ public:
     }
 
     /// @brief Similar to updateTexture, but also frees image data and returns a frozen atlas.
-    [[nodiscard]] FrozenTextureAtlasTiles<TBorderedImageData> freeze(const TextureResizeFunction& resize,
-                                                                     const TextureModifyFunction& modify) &&
+    [[nodiscard]] FrozenTextureAtlasTiles<BorderedImageData> freeze(const TextureResizeFunction& resize,
+                                                                    const TextureModifyFunction& modify) &&
     {
         ensureTextureSize(resize);
         for (auto& layer : layers_)
             layer.drawTiles(modify, true);
-        return FrozenTextureAtlasTiles<TBorderedImageData>(std::move(*this));
+        return FrozenTextureAtlasTiles<BorderedImageData>(std::move(*this));
     }
 
     // Not really useful outside of debugging and unit-test:
@@ -364,7 +402,8 @@ private:
     {
         auto required_size = maxLayerSize();
         auto layers = static_cast<GLsizei>(layers_.size());
-        if (!resize(required_size, layers, 1))
+        auto mipmap_levels = static_cast<GLsizei>(maxMipmapLevels(static_cast<std::size_t>(required_size)));
+        if (!resize(required_size, layers, mipmap_levels))
             return;
         for (const auto& tile : tiles_)
             tile->placement.written = false;
@@ -379,7 +418,7 @@ private:
         return result;
     }
 
-    using LayerResult = std::pair<TextureAtlasTiles<TBorderedImageData>::Layer*, std::size_t>;
+    using LayerResult = std::pair<TextureAtlasTiles<BorderedImageData>::Layer*, std::size_t>;
 
     /// @brief Returns a pointer to a (possibly newly created) layer for the given tile size and its index.
     /// @remark The pointer can be null, in which case a new layer would have exceeded the maximum layer count.
@@ -404,12 +443,12 @@ private:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    const std::shared_ptr<TileData>& emplaceTile(TBorderedImageData&& bordered_image_data)
+    const std::shared_ptr<TileData>& emplaceTile(MipmapLevels&& mipmap_levels)
     {
-        if (!bordered_image_data)
+        if (!mipmap_levels.fullImage())
             throw std::invalid_argument("Image does not contain data.");
 
-        auto size = bordered_image_data.size();
+        auto size = mipmap_levels.fullImage().size();
 
         if (size.greaterThan(limits_.max_texture_size).any())
             throw std::invalid_argument("Image is too big for texture atlas. (" + size.format() + " > " +
@@ -456,23 +495,24 @@ private:
 template <typename TBorderedImageData>
 class FrozenTextureAtlasTiles {
 public:
-    using TileHandle = typename TextureAtlasTiles<TBorderedImageData>::TileHandle;
+    using BorderedImageData = TBorderedImageData;
+    using TileHandle = typename TextureAtlasTiles<BorderedImageData>::TileHandle;
 
     FrozenTextureAtlasTiles(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles(FrozenTextureAtlasTiles&&) = default;
     FrozenTextureAtlasTiles& operator=(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles& operator=(FrozenTextureAtlasTiles&&) = default;
 
-    friend class TextureAtlasTiles<TBorderedImageData>;
+    friend class TextureAtlasTiles<BorderedImageData>;
 
     [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
 private:
-    FrozenTextureAtlasTiles(TextureAtlasTiles<TBorderedImageData>&& tiles)
+    FrozenTextureAtlasTiles(TextureAtlasTiles<BorderedImageData>&& tiles)
         : tiles_(std::move(tiles))
     {}
 
-    TextureAtlasTiles<TBorderedImageData> tiles_;
+    TextureAtlasTiles<BorderedImageData> tiles_;
 };
 
 } // namespace dang::gl

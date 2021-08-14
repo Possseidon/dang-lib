@@ -13,8 +13,11 @@ add_library(
   src/Context/StateTypes.cpp
   src/General/GLConstants.cpp
   src/Image/BorderedImage.cpp
+  src/Image/BorderedImageMipmapper.cpp
   src/Image/Image.cpp
   src/Image/ImageBorder.cpp
+  src/Image/ImageMipmapper.cpp
+  src/Image/MipmapLevels.cpp
   src/Image/Pixel.cpp
   src/Image/PixelFormat.cpp
   src/Image/PixelInternalFormat.cpp
