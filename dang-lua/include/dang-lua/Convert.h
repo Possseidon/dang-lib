@@ -1114,6 +1114,12 @@ struct Convert<std::optional<T>> {
         return Base::check(state, arg);
     }
 
+    static std::string getPushTypename()
+    {
+        using namespace std::literals;
+        return std::string(Convert<T>::getPushTypename()) + "?"s;
+    }
+
     /// @brief Pushes the given value or nil onto the stack.
     static int push(lua_State* state, std::optional<T> value)
     {
