@@ -331,7 +331,9 @@ struct Convert {
 
     /// @brief Pushes the in place constructed value or enum string onto the stack.
     template <typename... TArgs>
-    static std::conditional_t<std::is_class_v<T>, T&, void> push(lua_State* state, TArgs&&... values)
+    static auto push(lua_State* state, TArgs&&... values)
+        -> std::enable_if_t<std::is_constructible_v<T, std::decay_t<TArgs>...>,
+                            std::conditional_t<std::is_class_v<T>, T&, void>>
     {
         static_assert(std::is_class_v<T> || std::is_enum_v<T>);
         static_assert(!std::is_enum_v<T> || sizeof...(TArgs) == 1);
