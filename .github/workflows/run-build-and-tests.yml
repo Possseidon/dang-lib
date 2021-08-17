@@ -62,7 +62,9 @@ jobs:
 
       - name: (Linux) Install required tools for glfw
         if: runner.os == 'Linux'
-        run: sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
 
       - name: (Windows) Ensure the Developer Command Prompt is setup correctly
         if: runner.os == 'Windows'
