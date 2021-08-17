@@ -8,6 +8,7 @@ include(Catch)
 add_executable(${PROJECT_NAME}
   main.cpp
   test-event.cpp
+  test-stub.cpp
 )
 
 target_precompile_headers(${PROJECT_NAME}
@@ -18,6 +19,7 @@ target_precompile_headers(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
     dang-utils
+    dang-utils-catch2
     Catch2::Catch2
 )
 
