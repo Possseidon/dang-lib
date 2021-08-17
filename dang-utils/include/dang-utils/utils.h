@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cstddef>
+#include <limits>
 #include <type_traits>
+#include <utility>
 
 #include "dang-utils/global.h"
 
@@ -11,6 +14,8 @@
 #endif
 
 namespace dang::utils {
+
+inline constexpr auto char_bit = std::numeric_limits<unsigned char>::digits;
 
 namespace detail {
 
@@ -270,8 +275,8 @@ template <typename T>
 [[nodiscard]] constexpr int popcount(T value)
 {
     static_assert(std::is_unsigned_v<T>);
-    static_assert(CHAR_BIT == 8);
-    constexpr std::size_t bits = sizeof(T) * CHAR_BIT;
+    static_assert(char_bit == 8);
+    constexpr std::size_t bits = sizeof(T) * char_bit;
     // Modified version of an algorithm taken from:
     // https://en.wikipedia.org/wiki/Hamming_weight
     constexpr auto m1 = static_cast<T>(0x5555555555555555);
@@ -301,7 +306,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr int countl_zero(T value)
 {
-    return sizeof(T) * CHAR_BIT - bit_width(value);
+    return sizeof(T) * char_bit - bit_width(value);
 }
 
 // TODO: C++20 replace with std::countr_zero
@@ -314,7 +319,7 @@ template <typename T>
         value = static_cast<T>(value << 1);
         count++;
     }
-    return sizeof(T) * CHAR_BIT - count;
+    return sizeof(T) * char_bit - count;
 }
 
 template <typename T>
@@ -338,7 +343,7 @@ template <typename T>
 {
     static_assert(std::is_unsigned_v<T>);
 
-    constexpr auto bits = sizeof(T) * CHAR_BIT;
+    constexpr auto bits = sizeof(T) * char_bit;
     static_assert(bits <= 64);
 
     if constexpr (bits >= 2)
@@ -365,7 +370,7 @@ template <typename T>
 {
     static_assert(std::is_unsigned_v<T>);
 
-    constexpr auto bits = sizeof(T) * CHAR_BIT;
+    constexpr auto bits = sizeof(T) * char_bit;
     static_assert(bits <= 64);
 
     if constexpr (bits >= 64)
