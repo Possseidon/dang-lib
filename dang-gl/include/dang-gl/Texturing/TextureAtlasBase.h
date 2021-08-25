@@ -38,24 +38,10 @@ public:
         return tiles_.add(std::move(bordered_image_data));
     }
 
-    void add(std::string name, BorderedImageData bordered_image_data)
-    {
-        tiles_.add(std::move(name), std::move(bordered_image_data));
-    }
-
-    [[nodiscard]] TileHandle addWithHandle(std::string name, BorderedImageData bordered_image_data)
-    {
-        return tiles_.addWithHandle(std::move(name), std::move(bordered_image_data));
-    }
-
-    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
-    [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
-    [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
+    [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
     bool tryRemove(const TileHandle& tile_handle) { return tiles_.tryRemove(tile_handle); }
-    bool tryRemove(const std::string& name) { return tiles_.tryRemove(name); }
     void remove(const TileHandle& tile_handle) { return tiles_.remove(tile_handle); }
-    void remove(const std::string& name) { return tiles_.remove(name); }
 
     void updateTexture() { return updateTextureHelper<false>(); }
     Frozen freeze() && { return updateTextureHelper<true>(); }
@@ -89,8 +75,6 @@ public:
     friend class TextureAtlasBase<TTextureBase>;
 
     [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
-    [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
-    [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 
 private:
     BasicFrozenTextureAtlas(Tiles&& tiles, TTextureBase&& texture)

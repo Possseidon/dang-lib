@@ -32,7 +32,7 @@ struct TextureAtlasLimits {
     GLsizei max_layer_count;
 };
 
-/// @brief Can store a large number of named textures in multiple layers of grids.
+/// @brief Can store a large number of texture tiles in multiple layers of grids.
 /// @remark Meant for use with a 2D array texture, but has no hard dependency on it.
 template <typename TBorderedImageData>
 class TextureAtlasTiles {
@@ -72,7 +72,6 @@ private:
         using TileHandles = std::vector<TileHandle*>;
 
         mutable TileHandles handles;
-        const std::string* name = nullptr;
         TBorderedImageData bordered_image_data;
         TilePlacement placement;
         const GLsizei* atlas_size;
@@ -293,8 +292,6 @@ public:
 
         [[nodiscard]] explicit operator bool() const noexcept { return data_ != nullptr; }
 
-        [[nodiscard]] const std::string* name() const noexcept { return data_->name; }
-
         [[nodiscard]] friend bool operator==(const TileHandle& lhs, const TileHandle& rhs) noexcept
         {
             return lhs.data_ == rhs.data_;
@@ -352,63 +349,19 @@ public:
     TextureAtlasTiles& operator=(const TextureAtlasTiles&) = delete;
     TextureAtlasTiles& operator=(TextureAtlasTiles&&) = default;
 
-    /// @brief Adds a new unnamed tile.
+    /// @brief Adds a new tile.
     [[nodiscard]] TileHandle add(TBorderedImageData bordered_image_data)
     {
         return TileHandle(emplaceTile(std::move(bordered_image_data)));
     }
 
-    /// @brief Adds a new tile with a given name.
-    /// @exception std::invalid_argument if the name is empty.
-    /// @exception std::invalid_argument if the name already exists.
-    /// @exception std::invalid_argument if the image does not contain any data.
-    /// @exception std::invalid_argument if the image is too big.
-    /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    void add(std::string name, TBorderedImageData bordered_image_data)
-    {
-        emplaceNamedTile(std::move(name), std::move(bordered_image_data));
-    }
-
-    /// @brief Adds a new tile with a given name and returns a handle to it.
-    /// @remark Returns an empty handle if the given name is already in use.
-    /// @exception std::invalid_argument if the name is empty.
-    /// @exception std::invalid_argument if the name already exists.
-    /// @exception std::invalid_argument if the image does not contain any data.
-    /// @exception std::invalid_argument if the image is too big.
-    /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    [[nodiscard]] TileHandle addWithHandle(std::string name, TBorderedImageData bordered_image_data)
-    {
-        return TileHandle(emplaceNamedTile(std::move(name), std::move(bordered_image_data)));
-    }
-
     /// @brief Checks if a tile with the given name exists.
     /// @exception std::invalid_argument if the handle is empty.
-    [[nodiscard]] bool exists(const TileHandle& tile_handle) const
+    [[nodiscard]] bool contains(const TileHandle& tile_handle) const
     {
         if (!tile_handle)
             throw std::invalid_argument("Tile handle is empty.");
         return std::find(tiles_.begin(), tiles_.end(), tile_handle.data_) != tiles_.end();
-    }
-
-    /// @brief Checks if a tile with the given name exists.
-    /// @exception std::invalid_argument if the name is empty.
-    [[nodiscard]] bool exists(const std::string& name) const
-    {
-        if (name.empty())
-            throw std::invalid_argument("Tile name is empty.");
-        return named_tiles_.find(name) != tiles_.end();
-    }
-
-    /// @brief Returns a (possibly empty) handle to the tile with the given name.
-    /// @exception std::invalid_argument if the name is empty.
-    [[nodiscard]] TileHandle operator[](const std::string& name) const
-    {
-        if (name.empty())
-            throw std::invalid_argument("Tile name is empty.");
-        auto iter = named_tiles_.find(name);
-        if (iter != named_tiles_.end())
-            return TileHandle(iter->second);
-        return TileHandle();
     }
 
     /// @brief Removes the given tile, returning false if it does not belong to this atlas.
@@ -420,37 +373,13 @@ public:
         return removeTile(tile_handle.data_);
     }
 
-    /// @brief Removes the tile with the given name.
+    /// @brief Removes the tile with the given handle.
     /// @exception std::invalid_argument if the handle is empty.
     /// @exception std::invalid_argument if the tile does not belong to this atlas.
     void remove(const TileHandle& tile_handle)
     {
         if (!tryRemove(tile_handle))
             throw std::invalid_argument("Tile does not belong to this atlas.");
-    }
-
-    /// @brief Removes the tile with the given name, returning false if there is no such tile.
-    /// @exception std::invalid_argument if the name is empty.
-    bool tryRemove(const std::string& name)
-    {
-        if (name.empty())
-            throw std::invalid_argument("Tile name is empty.");
-        auto iter = named_tiles_.find(name);
-        if (iter == named_tiles_.end())
-            return false;
-        [[maybe_unused]] bool ok = removeTile(iter->second);
-        assert(ok);
-        named_tiles_.erase(iter);
-        return true;
-    }
-
-    /// @brief Removes the tile with the given name.
-    /// @exception std::invalid_argument if the name is empty.
-    /// @exception std::invalid_argument if the name doesn't exist.
-    void remove(const std::string& name)
-    {
-        if (!tryRemove(name))
-            throw std::invalid_argument("Tile with name \"" + name + "\" doesn't exist.");
     }
 
     /// @brief Calls "resize" with the current size and uses "modify" to upload the texture data.
@@ -513,7 +442,7 @@ private:
         return {&layers_.emplace_back(tile_size_log2, limits_.max_texture_size), layer_index};
     }
 
-    /// @brief Creates a new unnamed tile and adds it to a (possibly newly created) layer.
+    /// @brief Creates a new tile and adds it to a (possibly newly created) layer.
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
@@ -540,31 +469,7 @@ private:
         return &tile;
     }
 
-    /// @brief Creates a new named tile and adds it to a (possibly newly created) layer.
-    /// @exception std::invalid_argument if the name is empty.
-    /// @exception std::invalid_argument if the name already exists.
-    /// @exception std::invalid_argument if the image does not contain any data.
-    /// @exception std::invalid_argument if the image is too big.
-    /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    TileData* emplaceNamedTile(std::string&& name, TBorderedImageData&& bordered_image_data)
-    {
-        if (name.empty())
-            throw std::invalid_argument("Tile name is empty.");
-
-        auto [iter, ok] = named_tiles_.try_emplace(std::move(name), nullptr);
-        if (!ok)
-            throw std::invalid_argument("Tile with name \"" + iter->first + "\" already exists.");
-        const auto& key = iter->first;
-        auto& tile = iter->second;
-
-        tile = emplaceTile(std::move(bordered_image_data));
-        tile->name = &key;
-
-        return tile;
-    }
-
     /// @brief Removes a tile from the atlas and returns true if it existed.
-    /// @remark Does not remove the tile from the named tile map.
     bool removeTile(const TileData* tile_data)
     {
         auto iter = std::find(tiles_.begin(), tiles_.end(), tile_data);
@@ -586,7 +491,6 @@ private:
     TextureAtlasLimits limits_;
     std::unique_ptr<GLsizei> atlas_size_ = std::make_unique<GLsizei>(0);
     std::vector<std::unique_ptr<TileData>> tiles_;
-    std::unordered_map<std::string, TileData*> named_tiles_;
     std::vector<Layer> layers_;
 };
 
@@ -604,8 +508,6 @@ public:
     friend class TextureAtlasTiles<TBorderedImageData>;
 
     [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
-    [[nodiscard]] bool exists(const std::string& name) const { return tiles_.exists(name); }
-    [[nodiscard]] TileHandle operator[](const std::string& name) const { return tiles_[name]; }
 
 private:
     FrozenTextureAtlasTiles(TextureAtlasTiles<TBorderedImageData>&& tiles)
