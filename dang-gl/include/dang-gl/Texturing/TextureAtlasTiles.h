@@ -47,6 +47,11 @@ public:
     class TileHandle;
 
 private:
+    /// @brief Atlas information which is stored in a unique_ptr, so that it can be shared with all TileData instances.
+    struct AtlasInfo {
+        GLsizei atlas_size;
+    };
+
     /// @brief Information about the placement of a tile, including whether it has been written to the texture yet.
     struct TilePlacement {
         /// @brief The index of this tile in the layer.
@@ -69,25 +74,14 @@ private:
 
     /// @brief Contains data about a single texture tile on a layer.
     struct TileData {
-        using TileHandles = std::vector<TileHandle*>;
-
-        mutable TileHandles handles;
         TBorderedImageData bordered_image_data;
         TilePlacement placement;
-        const GLsizei* atlas_size;
+        std::shared_ptr<const AtlasInfo> atlas_info;
 
-        TileData(TBorderedImageData&& bordered_image_data, const GLsizei* atlas_size)
+        TileData(TBorderedImageData&& bordered_image_data, std::shared_ptr<const AtlasInfo> atlas_info)
             : bordered_image_data(std::move(bordered_image_data))
-            , atlas_size(atlas_size)
+            , atlas_info(std::move(atlas_info))
         {}
-
-        ~TileData()
-        {
-            for (auto& handle : handles)
-                handle->data_ = nullptr;
-            // handle->reset() also removes the entry from "handles"
-            // just set data_ to nullptr instead manually
-        }
 
         // Delete copy AND move, as pointers to TileData need to remain valid (TileHandle relies on this).
         TileData(const TileData&) = delete;
@@ -242,53 +236,8 @@ public:
         friend TileData;
 
         TileHandle() = default;
-        ~TileHandle() noexcept { reset(); }
 
-        TileHandle(const TileHandle& tile_handle)
-            : TileHandle(tile_handle.data_)
-        {}
-
-        TileHandle(TileHandle&& tile_handle) noexcept
-            : data_(tile_handle.data_)
-        {
-            if (!tile_handle)
-                return;
-            // Just replace the existing entry.
-            *tile_handle.find() = this;
-            tile_handle.data_ = nullptr;
-        }
-
-        TileHandle& operator=(const TileHandle& tile_handle)
-        {
-            reset();
-            if (!tile_handle)
-                return *this;
-            data_ = tile_handle.data_;
-            data_->handles.push_back(this);
-            return *this;
-        }
-
-        TileHandle& operator=(TileHandle&& tile_handle) noexcept
-        {
-            reset();
-            if (!tile_handle)
-                return *this;
-            data_ = tile_handle.data_;
-            // Just replace the existing entry.
-            *tile_handle.find() = this;
-            tile_handle.data_ = nullptr;
-            return *this;
-        }
-
-        void reset() noexcept
-        {
-            if (!*this)
-                return;
-            auto iter = find();
-            assert(iter != end(data_->handles));
-            data_->handles.erase(iter);
-            data_ = nullptr;
-        }
+        void reset() noexcept { data_.reset(); }
 
         [[nodiscard]] explicit operator bool() const noexcept { return data_ != nullptr; }
 
@@ -301,36 +250,35 @@ public:
             return !(lhs == rhs);
         }
 
-        auto atlasPixelSize() const { return *data_->atlas_size; }
-        auto pixelPos() const { return data_->placement.position.xy(); }
-        auto pixelSize() const { return data_->bordered_image_data.size(); }
+        auto atlasPixelSize() const { return dataOrThrow().atlas_info.atlas_size; }
+        auto pixelPos() const { return dataOrThrow().placement.position.xy(); }
+        auto pixelSize() const { return dataOrThrow().bordered_image_data.size(); }
 
         auto pos() const { return static_cast<vec2>(pixelPos()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
         auto size() const { return static_cast<vec2>(pixelSize()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
 
         bounds2 bounds() const
         {
-            auto padding = std::visit(imageBorderPadding, data_->bordered_image_data.border());
+            auto padding = std::visit(imageBorderPadding, dataOrThrow().bordered_image_data.border());
             auto inset = static_cast<vec2>(padding) / (2.0f * atlasPixelSize());
             return {pos() + inset, pos() + size() - inset};
         }
 
-        auto layer() const { return data_->placement.position.z(); }
+        auto layer() const { return dataOrThrow().placement.position.z(); }
 
     private:
-        typename TileData::TileHandles::iterator find() const
-        {
-            return std::find(begin(data_->handles), end(data_->handles), this);
-        }
-
-        TileHandle(const TileData* data)
+        TileHandle(const std::shared_ptr<const TileData>& data)
             : data_(data)
+        {}
+
+        const TileData& dataOrThrow() const
         {
-            if (data)
-                data->handles.push_back(this);
+            if (!*this)
+                throw std::invalid_argument("Tile handle is empty.");
+            return *data_;
         }
 
-        const TileData* data_ = nullptr;
+        std::shared_ptr<const TileData> data_;
     };
 
     /// @brief Creates a new instance of TextureAtlasTiles with the given maximum dimensions.
@@ -446,7 +394,7 @@ private:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    TileData* emplaceTile(TBorderedImageData&& bordered_image_data)
+    const std::shared_ptr<TileData>& emplaceTile(TBorderedImageData&& bordered_image_data)
     {
         if (!bordered_image_data)
             throw std::invalid_argument("Image does not contain data.");
@@ -462,35 +410,35 @@ private:
             throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
                                     ")");
 
-        auto& tile =
-            *tiles_.emplace_back(std::make_unique<TileData>(std::move(bordered_image_data), atlas_size_.get()));
-        layer->addTile(tile, static_cast<GLsizei>(index));
-        *atlas_size_ = maxLayerSize();
-        return &tile;
+        const auto& tile = tiles_.emplace_back(std::make_shared<TileData>(std::move(bordered_image_data), atlas_info_));
+        layer->addTile(*tile, static_cast<GLsizei>(index));
+        atlas_info_->atlas_size = maxLayerSize();
+        return tile;
     }
 
     /// @brief Removes a tile from the atlas and returns true if it existed.
-    bool removeTile(const TileData* tile_data)
+    bool removeTile(const std::shared_ptr<const TileData>& tile_data)
     {
         auto iter = std::find(tiles_.begin(), tiles_.end(), tile_data);
         if (iter == tiles_.end())
             return false;
-        auto layer_index = iter->placement.position.z();
+        auto tile_ptr = *iter;
+        auto layer_index = tile_ptr->placement.position.z();
         auto& layer = layers_[layer_index];
-        layer.removeTile(*iter);
+        layer.removeTile(*tile_ptr);
         tiles_.erase(iter);
         if (layer.empty()) {
             layers_.erase(begin(layers_) + layer_index);
             for (auto layer_iter = begin(layers_) + layer_index; layer_iter != end(layers_); layer_iter++)
                 layer_iter->shiftDown();
         }
-        *atlas_size_ = maxLayerSize();
+        atlas_info_->atlas_size = maxLayerSize();
         return true;
     }
 
     TextureAtlasLimits limits_;
-    std::unique_ptr<GLsizei> atlas_size_ = std::make_unique<GLsizei>(0);
-    std::vector<std::unique_ptr<TileData>> tiles_;
+    std::shared_ptr<AtlasInfo> atlas_info_ = std::make_shared<AtlasInfo>();
+    std::vector<std::shared_ptr<TileData>> tiles_;
     std::vector<Layer> layers_;
 };
 
