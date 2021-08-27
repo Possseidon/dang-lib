@@ -2,7 +2,9 @@
 
 namespace dang::gl {
 
-UniqueTransform Transform::create() { return std::make_unique<Transform>(); }
+Transform::Transform(const dquat& own_transform)
+    : own_transform_(own_transform)
+{}
 
 const dquat& Transform::ownTransform() const { return own_transform_; }
 
@@ -13,18 +15,14 @@ void Transform::setOwnTransform(const dquat& transform)
     on_change(*this);
 }
 
-const dquat& Transform::fullTransform()
+const dquat& Transform::fullTransform() const
 {
-    if (!full_transform_) {
-        if (parent_)
-            full_transform_ = own_transform_ * parent_->fullTransform();
-        else
-            full_transform_ = own_transform_;
-    }
+    if (!full_transform_)
+        full_transform_ = parent_ ? own_transform_ * parent_->fullTransform() : own_transform_;
     return *full_transform_;
 }
 
-SharedTransform Transform::parent() const { return parent_; }
+const SharedTransform& Transform::parent() const { return parent_; }
 
 bool Transform::parentChainContains(const Transform& transform) const
 {
@@ -39,15 +37,15 @@ bool Transform::parentChainContains(const Transform& transform) const
     return false;
 }
 
-void Transform::forceParent(const SharedTransform& parent)
+void Transform::forceParent(SharedTransform parent)
 {
-    parent_ = parent;
-    if (parent) {
+    parent_ = std::move(parent);
+    if (parent_) {
         auto parent_change = [&] {
             full_transform_.reset();
             on_change(*this);
         };
-        parent_change_ = parent->on_change.subscribe(parent_change);
+        parent_change_ = parent_->on_change.subscribe(parent_change);
     }
     else {
         parent_change_.remove();
@@ -57,7 +55,7 @@ void Transform::forceParent(const SharedTransform& parent)
     on_change(*this);
 }
 
-bool Transform::trySetParent(const SharedTransform& parent)
+bool Transform::trySetParent(SharedTransform parent)
 {
     if (parent == parent_)
         return true;
@@ -65,14 +63,14 @@ bool Transform::trySetParent(const SharedTransform& parent)
     if (parent && parent->parentChainContains(*this))
         return false;
 
-    forceParent(parent);
+    forceParent(std::move(parent));
 
     return true;
 }
 
-void Transform::setParent(const SharedTransform& parent)
+void Transform::setParent(SharedTransform parent)
 {
-    if (!trySetParent(parent))
+    if (!trySetParent(std::move(parent)))
         throw TransformCycleError("Cannot set transform parent, as it would introduce a cycle.");
 }
 
