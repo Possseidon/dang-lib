@@ -250,7 +250,7 @@ public:
             return !(lhs == rhs);
         }
 
-        auto atlasPixelSize() const { return dataOrThrow().atlas_info.atlas_size; }
+        auto atlasPixelSize() const { return dataOrThrow().atlas_info->atlas_size; }
         auto pixelPos() const { return dataOrThrow().placement.position.xy(); }
         auto pixelSize() const { return dataOrThrow().bordered_image_data.size(); }
 
@@ -298,6 +298,9 @@ public:
     TextureAtlasTiles& operator=(TextureAtlasTiles&&) = default;
 
     /// @brief Adds a new tile.
+    /// @exception std::invalid_argument if the image does not contain any data.
+    /// @exception std::invalid_argument if the image is too big.
+    /// @exception std::length_error if a new layer would exceed the maximum layer count.
     [[nodiscard]] TileHandle add(TBorderedImageData bordered_image_data)
     {
         return TileHandle(emplaceTile(std::move(bordered_image_data)));
@@ -347,6 +350,14 @@ public:
             layer.drawTiles(modify, true);
         return FrozenTextureAtlasTiles<TBorderedImageData>(std::move(*this));
     }
+
+    // Not really useful outside of debugging and unit-test:
+
+    /// @brief The total number of tiles on the atlas.
+    std::size_t size() const { return tiles_.size(); }
+
+    /// @brief Whether there are no tiles on the atlas.
+    bool empty() const { return tiles_.empty(); }
 
 private:
     /// @brief Calls "resize" to resize the texture and invalidates all tiles if a resize occurred.
@@ -455,7 +466,7 @@ public:
 
     friend class TextureAtlasTiles<TBorderedImageData>;
 
-    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
+    [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
 private:
     FrozenTextureAtlasTiles(TextureAtlasTiles<TBorderedImageData>&& tiles)

@@ -74,7 +74,7 @@ public:
 
     friend class TextureAtlasBase<TTextureBase>;
 
-    [[nodiscard]] bool exists(const TileHandle& tile_handle) const { return tiles_.exists(tile_handle); }
+    [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
 private:
     BasicFrozenTextureAtlas(Tiles&& tiles, TTextureBase&& texture)
