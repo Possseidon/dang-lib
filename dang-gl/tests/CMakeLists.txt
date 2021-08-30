@@ -7,22 +7,59 @@ include(Catch)
 
 add_executable(${PROJECT_NAME}
   main.cpp
-  test-PNGLoader.cpp
+  Image/test-PNGLoader.cpp
+  Texturing/test-TextureAtlasBase.cpp
+  Texturing/test-TextureAtlasTiles.cpp
 )
 
 target_precompile_headers(${PROJECT_NAME}
   PRIVATE
     <filesystem>
     <fstream>
+    <set>
+    <stdexcept>
+    <string>
+    <tuple>
+    <type_traits>
+    <utility>
 )
 
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
     dang-gl
+    dang-utils
+    dang-utils-catch2
     Catch2::Catch2
 )
 
-catch_discover_tests(${PROJECT_NAME})
+catch_discover_tests(${PROJECT_NAME}
+  PROPERTIES
+    LABELS dang-gl
+)
+
+add_executable(${PROJECT_NAME}-opengl
+  main.cpp
+  Texturing/test-MultiTextureAtlas.cpp
+  Texturing/test-TextureAtlas.cpp
+  Texturing/test-TextureAtlasUtils.cpp
+)
+
+target_precompile_headers(${PROJECT_NAME}-opengl
+  PRIVATE
+    <stdexcept>
+)
+
+target_link_libraries(${PROJECT_NAME}-opengl
+  PRIVATE
+    dang-gl
+    dang-glfw
+    Catch2::Catch2
+)
+
+catch_discover_tests(${PROJECT_NAME}-opengl
+  PROPERTIES
+    LABELS opengl dang-gl
+)
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
   message("-- Downloading PngSuite")

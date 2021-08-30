@@ -82,4 +82,4 @@ jobs:
       - name: Run tests
         run: |
           cd "${{env.CMAKE_BUILD_DIR}}"
-          ctest
+          ctest --parallel 2 --label-exclude "^opengl$"
