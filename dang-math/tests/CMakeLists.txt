@@ -22,4 +22,7 @@ target_link_libraries(${PROJECT_NAME}
     Catch2::Catch2
 )
 
-catch_discover_tests(${PROJECT_NAME})
+catch_discover_tests(${PROJECT_NAME}
+  PROPERTIES
+    LABELS dang-math
+)
