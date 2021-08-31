@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dang-gl/Image/ImageBorder.h"
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
 
@@ -16,7 +15,8 @@ class FrozenTextureAtlasTiles;
 The BorderedImageData concept:
 
 - Move-constructible
-- ImageBorder border()
+- dmath::svec2 padding()
+    -> how much of the size is padding
 - explicit operator bool() const
     -> if it contains any data
 - dmath::svec2 size() const
@@ -259,7 +259,7 @@ public:
 
         bounds2 bounds() const
         {
-            auto padding = std::visit(imageBorderPadding, dataOrThrow().bordered_image_data.border());
+            auto padding = dataOrThrow().bordered_image_data.padding();
             auto inset = static_cast<vec2>(padding) / (2.0f * atlasPixelSize());
             return {pos() + inset, pos() + size() - inset};
         }

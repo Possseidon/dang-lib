@@ -63,6 +63,9 @@ public:
     /// @brief The border that the image now has.
     const auto& border() const { return border_; }
 
+    /// @brief How much of the size is padding for the border.
+    auto padding() const { return std::visit(imageBorderPadding, border_); }
+
     /// @brief Whether the image contains any actual data.
     explicit operator bool() const { return bool{image_}; }
 
