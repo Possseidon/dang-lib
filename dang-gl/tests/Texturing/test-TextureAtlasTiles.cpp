@@ -1,4 +1,3 @@
-#include "dang-gl/Image/ImageBorder.h"
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
 
 #include "dang-math/vector.h"
@@ -22,12 +21,12 @@ using dutils::Matchers::CalledWith;
 class TileData {
 public:
     using Size = dgl::svec2;
-    using Border = dgl::ImageBorder<>;
+    using Padding = dmath::svec2;
 
     TileData() = default;
-    explicit TileData(const Size& size, const Border& border = {})
+    explicit TileData(const Size& size, const Padding& padding = {})
         : size_(size)
-        , border_(border)
+        , padding_(padding)
         , data_(true)
     {}
 
@@ -44,11 +43,11 @@ public:
 
     bool operator!=(const TileData& other) const { return !(*this == other); }
 
-    const auto& border() const { return border_; }
+    auto padding() const { return padding_; }
 
 private:
     Size size_;
-    Border border_;
+    Padding padding_;
     bool data_ = false;
 };
 
@@ -76,12 +75,14 @@ struct StringMaker<TextureAtlasTiles::TileHandle> {
 
 // Utility
 
+auto tileData(TileData::Padding padding = {}) { return TileData(dgl::svec2(4), padding); }
+
 auto atlasTiles() { return TextureAtlasTiles({16, 4}); }
 
-auto atlasTilesWithTileHandle(const TileData::Border& border = {})
+auto atlasTilesWithTileHandle(const TileData::Padding& padding = {})
 {
-    auto atlas_tiles = TextureAtlasTiles({16, 4});
-    auto tile_handle = atlas_tiles.add(TileData({4, 4}, border));
+    auto atlas_tiles = atlasTiles();
+    auto tile_handle = atlas_tiles.add(tileData(padding));
     return std::pair{std::move(atlas_tiles), std::move(tile_handle)};
 }
 
@@ -145,12 +146,12 @@ TEST_CASE("TextureAtlasTiles can be constructed and moved.", "[texturing][textur
 
         SECTION("Once a tile has been added, it will not be considered empty anymore.")
         {
-            (void)atlas_tiles.add(TileData({4, 4}));
+            (void)atlas_tiles.add(tileData());
 
             CHECK_FALSE(atlas_tiles.empty());
             CHECK(atlas_tiles.size() == 1);
 
-            (void)atlas_tiles.add(TileData({4, 4}));
+            (void)atlas_tiles.add(tileData());
 
             CHECK_FALSE(atlas_tiles.empty());
             CHECK(atlas_tiles.size() == 2);
@@ -161,9 +162,9 @@ TEST_CASE("TextureAtlasTiles can be constructed and moved.", "[texturing][textur
 TEST_CASE("TextureAtlasTiles can be filled with tiles.", "[texturing][texture-atlas-tiles]")
 {
     auto atlas_tiles = TextureAtlasTiles({4, 2});
-    auto tile = TileData({4, 4});
-    auto wide_tile = TileData({5, 1});
-    auto high_tile = TileData({1, 5});
+    auto tile = TileData(TileData::Size(4));
+    auto wide_tile = TileData(TileData::Size(5, 1));
+    auto high_tile = TileData(TileData::Size(1, 5));
     auto empty_tile = TileData();
 
     SECTION("Tiles can be added, returning a handle.")
@@ -218,7 +219,7 @@ TEST_CASE("TextureAtlasTiles can check whether a tile handle belongs to it.", "[
     }
     SECTION("Testing an empty tile throws an invalid_argument exception, as it cannot belong to any atlas.")
     {
-        auto atlas_tiles = TextureAtlasTiles({16, 4});
+        auto atlas_tiles = atlasTiles();
 
         CHECK_THROWS_MATCHES(atlas_tiles.contains({}), std::invalid_argument, Message("Tile handle is empty."));
     }
@@ -347,7 +348,7 @@ TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
 
     auto atlas_tiles = TextureAtlasTiles({size, layers});
     for (auto i = 0; i < tile_count; i++)
-        (void)atlas_tiles.add(TileData({tile_size, tile_size}));
+        (void)atlas_tiles.add(TileData(TileData::Size(tile_size)));
 
     SECTION("Using the updateTexture method, which allows further modifications.")
     {
@@ -431,31 +432,24 @@ TEST_CASE("TextureAtlasTiles::TileHandle provides information about a created ti
     }
     SECTION("A valid tile handle provides information about its tile data.")
     {
-        struct BorderInfo {
-            dgl::ImageBorder<> border;
-            dgl::bounds2 expected_bounds;
-        };
+        auto padding = GENERATE(dmath::svec2(0), dmath::svec2(1), dmath::svec2(2));
+        auto expected_bounds = dgl::bounds2(1).inset((static_cast<dgl::vec2>(padding) * 0.5f) / 4.0f);
 
-        auto border_info = GENERATE(BorderInfo{dgl::ImageBorderNone{}, dgl::bounds2(0, 1)},
-                                    BorderInfo{dgl::ImageBorderSolid<>{}, dgl::bounds2(0.25f, 0.75f)},
-                                    BorderInfo{dgl::ImageBorderWrapBoth{}, dgl::bounds2(0.25f, 0.75f)},
-                                    BorderInfo{dgl::ImageBorderWrapPositive{}, dgl::bounds2(0.125f, 0.875f)});
-
-        auto [atlas_tiles, tile_handle] = atlasTilesWithTileHandle(border_info.border);
+        auto [atlas_tiles, tile_handle] = atlasTilesWithTileHandle(padding);
 
         CHECK(tile_handle.atlasPixelSize() == 4);
         CHECK(tile_handle.pixelPos() == dgl::svec2());
         CHECK(tile_handle.pixelSize() == dmath::svec2(4));
         CHECK(tile_handle.pos() == dgl::vec2());
         CHECK(tile_handle.size() == dgl::vec2(1));
-        CHECK(tile_handle.bounds() == border_info.expected_bounds);
+        CHECK(tile_handle.bounds() == expected_bounds);
         CHECK(tile_handle.layer() == 0);
     }
     SECTION("Tile handles can be compared for equality.")
     {
         auto atlas_tiles = atlasTiles();
-        auto tile_handle1 = atlas_tiles.add(TileData({4, 4}));
-        auto tile_handle2 = atlas_tiles.add(TileData({4, 4}));
+        auto tile_handle1 = atlas_tiles.add(tileData());
+        auto tile_handle2 = atlas_tiles.add(tileData());
 
         CHECK(tile_handle1 == tile_handle1);
         CHECK(tile_handle2 == tile_handle2);

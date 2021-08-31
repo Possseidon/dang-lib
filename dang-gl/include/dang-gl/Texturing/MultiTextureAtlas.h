@@ -33,6 +33,8 @@ public:
 
         const auto& border() const { return bordered_images_.front().border(); }
 
+        auto padding() const { return std::visit(imageBorderPadding, border()); }
+
         explicit operator bool() const { return bool{bordered_images_.front()}; }
 
         const auto& size() const { return bordered_images_.front().size(); }
@@ -47,14 +49,14 @@ public:
         void ensureCompatible(const dutils::EnumArray<TSubTextureEnum, BorderedImage>& bordered_images)
         {
             auto size = bordered_images.front().size();
-            auto border = bordered_images.font().border();
+            auto padding = bordered_images.front().padding();
             for (auto& bordered_image : bordered_images) {
                 if (!bordered_image)
                     throw std::invalid_argument("SubTexture image is empty.");
                 if (bordered_image.size() != size)
                     throw std::invalid_argument("SubTexture images have varying sizes. (" +
                                                 bordered_image.size().format() + " != " + size.format() + ")");
-                if (imageBorderPadding(bordered_image.border()) != imageBorderPadding(border))
+                if (bordered_image.padding() != padding)
                     throw std::invalid_argument("SubTexture images have borders with varying padding.");
             }
         }
