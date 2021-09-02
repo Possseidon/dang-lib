@@ -2,11 +2,10 @@
 
 #include "dang-math/enums.h"
 #include "dang-math/geometry.h"
+#include "dang-math/global.h"
 #include "dang-math/vector.h"
 
 #include "dang-utils/enum.h"
-
-#include "global.h"
 
 namespace dang::math {
 
