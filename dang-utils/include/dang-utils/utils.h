@@ -264,10 +264,9 @@ template <typename TLeft, typename TRight = TLeft>
 inline constexpr auto is_greater_equal_comparable_v = is_greater_equal_comparable<TLeft, TRight>::value;
 
 // TODO: C++20 replace with std::popcount
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int popcount(T value)
 {
-    static_assert(std::is_unsigned_v<T>);
     static_assert(char_bit == 8);
     constexpr std::size_t bits = sizeof(T) * char_bit;
     // Modified version of an algorithm taken from:
@@ -283,10 +282,9 @@ template <typename T>
 }
 
 // TODO: C++20 replace with std::bit_width
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int bit_width(T value)
 {
-    static_assert(std::is_unsigned_v<T>);
     int count = 0;
     while (value) {
         value = static_cast<T>(value >> 1);
@@ -296,17 +294,16 @@ template <typename T>
 }
 
 // TODO: C++20 replace with std::countl_zero
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int countl_zero(T value)
 {
     return sizeof(T) * char_bit - bit_width(value);
 }
 
 // TODO: C++20 replace with std::countr_zero
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int countr_zero(T value)
 {
-    static_assert(std::is_unsigned_v<T>);
     int count = 0;
     while (value) {
         value = static_cast<T>(value << 1);
@@ -315,14 +312,14 @@ template <typename T>
     return sizeof(T) * char_bit - count;
 }
 
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int ilog2(T value)
 {
     assert(value > 0);
     return bit_width(value) - 1;
 }
 
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int ilog2ceil(T value)
 {
     assert(value > 0);
@@ -331,11 +328,9 @@ template <typename T>
 
 /// @brief Removes every odd bit, shifting over every even bit into the less significant half of the value.
 /// @remark Inverse operation to interleaveBits.
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr T removeOddBits(T value)
 {
-    static_assert(std::is_unsigned_v<T>);
-
     constexpr auto bits = sizeof(T) * char_bit;
     static_assert(bits <= 64);
 
