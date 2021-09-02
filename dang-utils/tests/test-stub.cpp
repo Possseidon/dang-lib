@@ -8,7 +8,7 @@
 
 namespace dutils = dang::utils;
 
-TEST_CASE("Stubs can track their invocations.")
+TEST_CASE("Stubs can track their invocations.", "[stub]")
 {
     auto stub = dutils::Stub<void(int, int)>();
 
@@ -28,7 +28,7 @@ TEST_CASE("Stubs can track their invocations.")
     }
 }
 
-TEST_CASE("Stubs can wrap arbitrary implementations.")
+TEST_CASE("Stubs can wrap arbitrary implementations.", "[stub]")
 {
     int x = 0;
     auto set_x = [&](int new_x) { x = new_x; };
@@ -40,7 +40,7 @@ TEST_CASE("Stubs can wrap arbitrary implementations.")
     CHECK(x == 42);
 }
 
-TEST_CASE("Stubs can return values from their implementation.")
+TEST_CASE("Stubs can return values from their implementation.", "[stub]")
 {
     SECTION("The stub returns whatever its implementation returns.")
     {
@@ -59,7 +59,7 @@ TEST_CASE("Stubs can return values from their implementation.")
     }
 }
 
-TEST_CASE("Stubs and their parameters have names.")
+TEST_CASE("Stubs and their parameters have names.", "[stub]")
 {
     auto stub = dutils::Stub<void(int, int)>();
 
@@ -84,7 +84,7 @@ using dutils::Matchers::CalledWith;
 using dutils::Matchers::ignored;
 using dutils::Matchers::invocation;
 
-TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.")
+TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 {
     SECTION("The \"Called\" matcher can be used to count the invocations.")
     {
