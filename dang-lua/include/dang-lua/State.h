@@ -886,10 +886,10 @@ public:
     }
 
     /// @brief Returns an iterator to the first element.
-    auto begin() { return IndexIterator<TIndex>((*this)[0]); }
+    auto begin() const { return IndexIterator<TIndex>((*this)[0]); }
 
     /// @brief Returns an iterator to one after the last element.
-    auto end() { return IndexIterator<TIndex>((*this)[this->size()]); }
+    auto end() const { return IndexIterator<TIndex>((*this)[this->size()]); }
 
     // --- Index Properties ---
 
@@ -2260,9 +2260,7 @@ public:
     template <typename T>
     auto pushArray(const T& collection)
     {
-        using std::begin;
-        using std::end;
-        return pushArray(begin(collection), end(collection));
+        return pushArray(std::begin(collection), std::end(collection));
     }
 
     /// @brief Pushes a newly created table containing keys for all elements in the given range.
@@ -2288,9 +2286,7 @@ public:
     template <typename T, typename TValue = bool>
     auto pushSet(const T& collection, const TValue& value = true)
     {
-        using std::begin;
-        using std::end;
-        return pushSet(begin(collection), end(collection), value);
+        return pushSet(std::begin(collection), std::end(collection), value);
     }
 
     /// @brief Pushes a newly created table containing all key-value pairs in the given range.
@@ -2318,9 +2314,7 @@ public:
     template <typename T>
     auto pushMap(const T& collection)
     {
-        using std::begin;
-        using std::end;
-        return pushMap(begin(collection), end(collection));
+        return pushMap(std::begin(collection), std::end(collection));
     }
 
     /// @brief Pushes a newly created thread on the stack.

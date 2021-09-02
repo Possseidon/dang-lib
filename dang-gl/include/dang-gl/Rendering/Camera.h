@@ -239,9 +239,7 @@ inline void Camera::render(TRenderableIter first, TRenderableIter last) const
 template <typename TRenderables>
 void Camera::render(const TRenderables& renderables) const
 {
-    using std::begin;
-    using std::end;
-    render(begin(renderables), end(renderables));
+    render(std::begin(renderables), std::end(renderables));
 }
 
 } // namespace dang::gl
