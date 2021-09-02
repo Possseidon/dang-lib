@@ -462,25 +462,27 @@ public:
 
     friend constexpr bool operator==(const EnumSet& lhs, const EnumSet& rhs)
     {
+        // TODO: C++20 replace with std::array comparison, which is finally constexpr.
         for (std::size_t i = 0; i < word_count; i++)
             if (lhs.words_[i] != rhs.words_[i])
                 return false;
         return true;
     }
 
-    friend constexpr bool operator!=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs.words_ == rhs.words_); }
+    friend constexpr bool operator!=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs == rhs); }
 
     friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs)
     {
+        // TODO: C++20 replace with std::array comparison, which is finally constexpr.
         for (std::size_t i = 0; i < word_count; i++)
             if (lhs.words_[i] >= rhs.words_[i])
                 return false;
         return true;
     }
 
-    friend constexpr bool operator<=(const EnumSet& lhs, const EnumSet& rhs) { return !(rhs.words_ < lhs.words_); }
-    friend constexpr bool operator>(const EnumSet& lhs, const EnumSet& rhs) { return rhs.words_ < lhs.words_; }
-    friend constexpr bool operator>=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs.words_ < rhs.words_); }
+    friend constexpr bool operator<=(const EnumSet& lhs, const EnumSet& rhs) { return !(rhs < lhs); }
+    friend constexpr bool operator>(const EnumSet& lhs, const EnumSet& rhs) { return rhs < lhs; }
+    friend constexpr bool operator>=(const EnumSet& lhs, const EnumSet& rhs) { return !(lhs < rhs); }
 
     // --- custom operations
 
