@@ -102,3 +102,25 @@ TEMPLATE_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]", st
         }
     }
 }
+
+TEST_CASE("Convert supports pushing fail values.", "[lua][convert]")
+{
+    using Convert = dlua::Convert<dlua::Fail>;
+
+    SECTION("It has a push count of 1, allows nesting and is named 'nil'.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        STATIC_REQUIRE(Convert::getPushTypename() == "fail");
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::push pushes a falsy value on the stack.")
+        {
+            Convert::push(*lua, dlua::fail);
+            CHECK_FALSE(lua_toboolean(*lua, -1));
+        }
+    }
+}
