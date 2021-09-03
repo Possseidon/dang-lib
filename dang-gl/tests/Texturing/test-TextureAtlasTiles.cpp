@@ -81,12 +81,6 @@ struct StringMaker<TextureAtlasTiles::TileHandle> {
 
 auto tileData(TileData::Padding padding = {}) { return TileData(TileData::Size(4), padding); }
 
-auto mipmappedTileData(TileData::Padding padding = {})
-{
-    auto mipmapper = [](const TileData& tile_data) { return TileData(dgl::nextMipmapSize(tile_data.size())); };
-    return MipmapLevels(tileData(padding), mipmapper);
-}
-
 auto atlasTiles() { return TextureAtlasTiles({16, 4}); }
 
 auto atlasTilesWithTileHandle(const TileData::Padding& padding = {})
@@ -109,6 +103,12 @@ auto frozenTilesWithTileHandle()
 {
     auto [atlas_tiles, tile_handle] = atlasTilesWithTileHandle();
     return std::pair{freeze(std::move(atlas_tiles)), tile_handle};
+}
+
+auto applyMipmap(const TileData& tile_data)
+{
+    auto mipmapper = [](const TileData& tile_data) { return TileData(dgl::nextMipmapSize(tile_data.size())); };
+    return MipmapLevels(tile_data, mipmapper);
 }
 
 TEST_CASE("TextureAtlasTiles can be constructed and moved.", "[texturing][texture-atlas-tiles]")
@@ -281,6 +281,7 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
     auto tile_height = GENERATE(range<std::size_t>(1, 5));
 
     auto tile_size = TileData::Size(tile_width, tile_height);
+    auto tile_data = GENERATE_COPY(MipmapLevels(TileData(tile_size)), applyMipmap(TileData(tile_size)));
 
     // Tiles are aligned on powers of two:
     auto tile_width_log2 = dutils::ilog2ceil(tile_width);
@@ -299,7 +300,7 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
         DYNAMIC_SECTION("Atlas of size " << max_texture_size << " cannot fit any tile of size " << tile_size
                                          << ".\nAdding a single tile should throw an invalid_argument exception.")
         {
-            CHECK_THROWS_AS(atlas_tiles.add(TileData(tile_size)), std::invalid_argument);
+            CHECK_THROWS_AS(atlas_tiles.add(tile_data), std::invalid_argument);
         }
     }
     else {
@@ -311,7 +312,7 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
             for (std::size_t layer = 0; layer < max_layer_count; layer++) {
                 std::set<dmath::svec2> tile_positions;
                 for (std::size_t i = 0; i < tiles_per_layer; i++) {
-                    auto tile = atlas_tiles.add(TileData(tile_size));
+                    auto tile = atlas_tiles.add(tile_data);
                     auto tile_pos = tile.pixelPos();
                     auto [_, position_is_unique] = tile_positions.insert(tile_pos);
 
@@ -329,7 +330,7 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
 
             SECTION("Adding one more tile should throw a length_error exception.")
             {
-                CHECK_THROWS_AS(atlas_tiles.add(TileData(tile_size)), std::length_error);
+                CHECK_THROWS_AS(atlas_tiles.add(tile_data), std::length_error);
             }
         }
     }
@@ -347,12 +348,13 @@ TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
     auto mipmap_levels = dgl::maxMipmapLevels(size);
     auto tile_size = GENERATE(as<std::size_t>{}, 1, 2, 4);
     auto layers = GENERATE(as<std::size_t>{}, 1, 2, 4);
+    auto tile_data = GENERATE_COPY(MipmapLevels(TileData(tile_size)), applyMipmap(TileData(tile_size)));
 
     auto tile_count = dutils::sqr(size) / dutils::sqr(tile_size) * layers;
 
     auto atlas_tiles = TextureAtlasTiles({size, layers});
     for (std::size_t i = 0; i < tile_count; i++)
-        (void)atlas_tiles.add(TileData(TileData::Size(tile_size)));
+        (void)atlas_tiles.add(tile_data);
 
     SECTION("Using the updateTexture method, which allows further modifications.")
     {
@@ -364,7 +366,7 @@ TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
     }
 
     CHECK_THAT(resize, CalledWith(size, layers, mipmap_levels));
-    CHECK_THAT(modify, Called(tile_count));
+    CHECK_THAT(modify, Called(tile_count * tile_data.count()));
 
     std::set<std::pair<dmath::svec3, std::size_t>> positions_and_mipmap_levels;
     for (const auto& [tile_data, offset, mipmap_level] : modify.invocations()) {
