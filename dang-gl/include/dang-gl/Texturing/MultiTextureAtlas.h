@@ -24,9 +24,9 @@ public:
             : bordered_images_((ensureCompatible(bordered_images), std::move(bordered_images)))
         {}
 
-        BorderedImage& operator[](TSubTextureEnum sub_texture) { return bordered_images_[sub_texture]; }
+        auto& operator[](TSubTextureEnum sub_texture) { return bordered_images_[sub_texture]; }
 
-        const BorderedImage& operator[](TSubTextureEnum sub_texture) const { return bordered_images_[sub_texture]; }
+        const auto& operator[](TSubTextureEnum sub_texture) const { return bordered_images_[sub_texture]; }
 
         // --- BorderedImageData concept:
 
