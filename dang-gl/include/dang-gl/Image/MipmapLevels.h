@@ -20,22 +20,10 @@ template <typename TBorderedImageData>
 class MipmapLevels {
 public:
     using BorderedImageData = TBorderedImageData;
-    using Image = typename BorderedImageData::Image;
-
-    /// @brief Only stores the given image without generating any additional mipmaps.
-    MipmapLevels(Image full_image)
-        : mipmap_levels_{std::move(full_image)}
-    {}
 
     /// @brief Only stores the given image without generating any additional mipmaps.
     MipmapLevels(BorderedImageData full_image)
         : mipmap_levels_{std::move(full_image)}
-    {}
-
-    /// @brief Stores the given image and all mipmap levels using the provided mipmapper.
-    template <typename TMipmapper>
-    MipmapLevels(Image full_image, TMipmapper mipmapper)
-        : mipmap_levels_(generateMipmapLevels(std::move(full_image), mipmapper))
     {}
 
     /// @brief Stores the given bordered image and all mipmap levels using the provided mipmapper.
