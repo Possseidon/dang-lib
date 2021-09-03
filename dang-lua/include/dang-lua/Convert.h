@@ -710,6 +710,12 @@ struct Convert<Fail> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
+    static constexpr std::string_view getPushTypename()
+    {
+        using namespace std::literals;
+        return "fail"sv;
+    }
+
     /// @brief Pushes the `fail` value on the stack.
     static void push(lua_State* state, Fail = {}) { luaL_pushfail(state); }
 };
