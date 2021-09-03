@@ -697,8 +697,6 @@ struct ConvertNil {
 template <>
 struct Convert<std::nullptr_t> : ConvertNil<std::nullptr_t> {};
 template <>
-struct Convert<std::nullopt_t> : ConvertNil<std::nullopt_t> {};
-template <>
 struct Convert<std::monostate> : ConvertNil<std::monostate> {};
 
 /// @brief Tag struct for Lua's `fail` value.
