@@ -208,7 +208,7 @@ struct UniqueClassInfo {
 } // namespace detail
 
 /// @brief Converts instances of classes and enums to and from Lua as either value or reference.
-template <typename T>
+template <typename T, typename = void>
 struct Convert {
     static_assert(enum_values<T>[std::size(enum_values<T>) - 1] == nullptr, "enum_values is not null-terminated");
     static_assert(!std::is_enum_v<T> || std::size(enum_values<T>) > 1, "enum_values is empty");
@@ -657,9 +657,21 @@ struct Convert<void> {
     static constexpr bool allow_nesting = false;
 };
 
+template <typename T>
+struct is_nil : std::false_type {};
+
+template <typename T>
+inline constexpr auto is_nil_v = is_nil<T>::value;
+
+template <>
+struct is_nil<std::nullptr_t> : std::true_type {};
+
+template <>
+struct is_nil<std::monostate> : std::true_type {};
+
 /// @brief Converts nil values.
 template <typename TNil>
-struct ConvertNil {
+struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -694,13 +706,6 @@ struct ConvertNil {
     /// @brief Pushes a nil value on the stack.
     static void push(lua_State* state, TNil = {}) { lua_pushnil(state); }
 };
-
-template <>
-struct Convert<std::nullptr_t> : ConvertNil<std::nullptr_t> {};
-template <>
-struct Convert<std::nullopt_t> : ConvertNil<std::nullopt_t> {};
-template <>
-struct Convert<std::monostate> : ConvertNil<std::monostate> {};
 
 /// @brief Tag struct for Lua's `fail` value.
 struct Fail {};
@@ -747,9 +752,7 @@ struct Convert<bool> {
 
 /// @brief Allows for conversion between Lua numbers and C++ floating point types.
 template <typename T>
-struct ConvertFloatingPoint {
-    static_assert(std::is_floating_point_v<T>, "T must be floating point");
-
+struct Convert<T, std::enable_if_t<std::is_floating_point_v<T>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -782,20 +785,13 @@ struct ConvertFloatingPoint {
     static void push(lua_State* state, T value) { lua_pushnumber(state, static_cast<lua_Number>(value)); }
 };
 
-template <>
-struct Convert<float> : ConvertFloatingPoint<float> {};
-template <>
-struct Convert<double> : ConvertFloatingPoint<double> {};
-template <>
-struct Convert<long double> : ConvertFloatingPoint<long double> {};
-
 /// @brief Allows for conversion between Lua integers and C++ integral types.
 template <typename T>
-struct ConvertIntegral {
-    static_assert(std::is_integral_v<T>, "T must be integral");
-
+struct Convert<T, std::enable_if_t<std::is_integral_v<T>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
+
+    // TODO: Some special case to allow for conversion between uint64 -> lua_Integer
 
     // TODO: C++20 replace with std::in_range <3
     /// @brief Checks, whether the given Lua integer fits into the range of the C++ integral type.
@@ -871,23 +867,6 @@ struct ConvertIntegral {
     /// @brief Pushes the given integer on the stack.
     static void push(lua_State* state, T value) { lua_pushinteger(state, static_cast<lua_Integer>(value)); }
 };
-
-template <>
-struct Convert<std::int8_t> : ConvertIntegral<std::int8_t> {};
-template <>
-struct Convert<std::uint8_t> : ConvertIntegral<std::uint8_t> {};
-template <>
-struct Convert<std::int16_t> : ConvertIntegral<std::int16_t> {};
-template <>
-struct Convert<std::uint16_t> : ConvertIntegral<std::uint16_t> {};
-template <>
-struct Convert<std::int32_t> : ConvertIntegral<std::int32_t> {};
-template <>
-struct Convert<std::uint32_t> : ConvertIntegral<std::uint32_t> {};
-template <>
-struct Convert<std::int64_t> : ConvertIntegral<std::int64_t> {};
-template <>
-struct Convert<std::uint64_t> : ConvertIntegral<std::uint64_t> {};
 
 /// @brief Allows for conversion between Lua strings and std::string.
 template <>
