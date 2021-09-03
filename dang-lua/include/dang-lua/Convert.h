@@ -680,7 +680,7 @@ struct ConvertNil {
     static TNil check(lua_State* state, int arg)
     {
         if (lua_isnoneornil(state, arg))
-            return nullptr;
+            return TNil();
         detail::noreturn_luaL_argerror(state, arg, "expected a nil value");
     }
 
