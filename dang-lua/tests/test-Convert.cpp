@@ -98,7 +98,7 @@ TEMPLATE_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]", st
         SECTION("Convert::push pushes nil on the stack.")
         {
             Convert::push(*lua, TestType());
-            CHECK(lua_type(*lua, 1) == LUA_TNIL);
+            CHECK(lua_type(*lua, -1) == LUA_TNIL);
         }
     }
 }
