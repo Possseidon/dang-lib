@@ -497,7 +497,7 @@ TEST_CASE("TextureAtlasTiles::TileHandle provides information about a created ti
         tile_handle.reset();
         CHECK_FALSE(tile_handle);
 
-        SECTION("Reseting an empty tile handle does nothing.")
+        SECTION("Resetting an empty tile handle does nothing.")
         {
             tile_handle.reset();
             CHECK_FALSE(tile_handle);
