@@ -19,10 +19,11 @@ using Catch::Matchers::Message;
 using dutils::Stub;
 using dutils::Matchers::Called;
 using dutils::Matchers::CalledWith;
+using dutils::Matchers::ignored;
 
 class TileData {
 public:
-    using Size = dgl::svec2;
+    using Size = dmath::svec2;
     using Padding = dmath::svec2;
 
     TileData() = default;
@@ -34,7 +35,7 @@ public:
 
     explicit operator bool() const { return data_; }
 
-    auto size() const { return static_cast<dmath::svec2>(size_); }
+    auto size() const { return size_; }
 
     void free() { data_ = false; }
 
@@ -53,6 +54,7 @@ private:
     bool data_ = false;
 };
 
+using MipmapLevels = dgl::MipmapLevels<TileData>;
 using TextureAtlasTiles = dgl::TextureAtlasTiles<TileData>;
 using FrozenTextureAtlasTiles = dgl::FrozenTextureAtlasTiles<TileData>;
 
@@ -77,7 +79,13 @@ struct StringMaker<TextureAtlasTiles::TileHandle> {
 
 // Utility
 
-auto tileData(TileData::Padding padding = {}) { return TileData(dgl::svec2(4), padding); }
+auto tileData(TileData::Padding padding = {}) { return TileData(TileData::Size(4), padding); }
+
+auto mipmappedTileData(TileData::Padding padding = {})
+{
+    auto mipmapper = [](const TileData& tile_data) { return TileData(dgl::nextMipmapSize(tile_data.size())); };
+    return MipmapLevels(tileData(padding), mipmapper);
+}
 
 auto atlasTiles() { return TextureAtlasTiles({16, 4}); }
 
@@ -90,8 +98,8 @@ auto atlasTilesWithTileHandle(const TileData::Padding& padding = {})
 
 auto freeze(TextureAtlasTiles atlas_tiles)
 {
-    auto resize = [](GLsizei, GLsizei, GLsizei) { return true; };
-    auto modify = [](const TileData&, dgl::ivec3, GLint) {};
+    auto resize = [](std::size_t, std::size_t, std::size_t) { return true; };
+    auto modify = [](const TileData&, dmath::svec3, std::size_t) {};
     return std::move(atlas_tiles).freeze(resize, modify);
 }
 
@@ -111,13 +119,6 @@ TEST_CASE("TextureAtlasTiles can be constructed and moved.", "[texturing][textur
         CHECK_NOTHROW(TextureAtlasTiles({0, 4}));
         CHECK_NOTHROW(TextureAtlasTiles({16, 0}));
         CHECK_NOTHROW(TextureAtlasTiles({0, 0}));
-    }
-    SECTION("Constructing TextureAtlasTiles with invalid limits throws an invalid_argument exception.")
-    {
-        CHECK_THROWS_MATCHES(
-            TextureAtlasTiles({-1, 4}), std::invalid_argument, Message("Maximum texture size cannot be negative."));
-        CHECK_THROWS_MATCHES(
-            TextureAtlasTiles({16, -1}), std::invalid_argument, Message("Maximum layer count cannot be negative."));
     }
     SECTION("TextureAtlasTiles cannot be copied, but can be moved.")
     {
@@ -274,17 +275,17 @@ TEST_CASE("TextureAtlasTiles allows arbitrary removal of tiles that were added p
 TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning multiple layers.",
           "[texturing][texture-atlas-tiles]")
 {
-    auto max_texture_size = GENERATE(0, 1, 2, 4);
-    auto max_layer_count = GENERATE(range(0, 5));
-    auto tile_width = GENERATE(range(1, 5));
-    auto tile_height = GENERATE(range(1, 5));
+    auto max_texture_size = GENERATE(as<std::size_t>{}, 0, 1, 2, 4);
+    auto max_layer_count = GENERATE(range<std::size_t>(0, 5));
+    auto tile_width = GENERATE(range<std::size_t>(1, 5));
+    auto tile_height = GENERATE(range<std::size_t>(1, 5));
 
-    auto tile_size = dgl::svec2(tile_width, tile_height);
+    auto tile_size = TileData::Size(tile_width, tile_height);
 
     // Tiles are aligned on powers of two:
-    auto tile_width_log2 = dutils::ilog2ceil(static_cast<unsigned>(tile_width));
-    auto tile_height_log2 = dutils::ilog2ceil(static_cast<unsigned>(tile_height));
-    auto tile_size_log2 = dgl::svec2(tile_width_log2, tile_height_log2);
+    auto tile_width_log2 = dutils::ilog2ceil(tile_width);
+    auto tile_height_log2 = dutils::ilog2ceil(tile_height);
+    auto tile_size_log2 = TileData::Size(tile_width_log2, tile_height_log2);
     auto tile_size_pow2 = 1 << tile_size_log2;
     auto tile_area_pow2 = tile_size_pow2.product();
 
@@ -307,9 +308,9 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
                                          << "Atlas has " << max_layer_count << " layers and should therefore fit "
                                          << total_tiles << " tiles.")
         {
-            for (GLsizei layer = 0; layer < max_layer_count; layer++) {
-                std::set<dgl::svec2> tile_positions;
-                for (GLsizei i = 0; i < tiles_per_layer; i++) {
+            for (std::size_t layer = 0; layer < max_layer_count; layer++) {
+                std::set<dmath::svec2> tile_positions;
+                for (std::size_t i = 0; i < tiles_per_layer; i++) {
                     auto tile = atlas_tiles.add(TileData(tile_size));
                     auto tile_pos = tile.pixelPos();
                     auto [_, position_is_unique] = tile_positions.insert(tile_pos);
@@ -336,20 +337,21 @@ TEST_CASE("TextureAtlasTiles can be filled with tiles of the same size, spanning
 
 TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
 {
-    auto resize = dutils::Stub<bool(GLsizei, GLsizei, GLsizei)>();
+    auto resize = dutils::Stub<bool(std::size_t, std::size_t, std::size_t)>();
     resize.setInfo({"resize", {"required_size", "layer_count", "mipmap_levels"}});
 
-    dutils::Stub<void(const TileData&, dgl::ivec3, GLint)> modify;
+    dutils::Stub<void(const TileData&, dmath::svec3, std::size_t)> modify;
     modify.setInfo({"modify", {"tile_data", "offset", "mipmap_level"}});
 
-    auto size = GENERATE(4, 8, 16);
-    auto tile_size = GENERATE(1, 2, 4);
-    auto layers = GENERATE(1, 2, 4);
+    auto size = GENERATE(as<std::size_t>{}, 4, 8, 16);
+    auto mipmap_levels = dgl::maxMipmapLevels(size);
+    auto tile_size = GENERATE(as<std::size_t>{}, 1, 2, 4);
+    auto layers = GENERATE(as<std::size_t>{}, 1, 2, 4);
 
     auto tile_count = dutils::sqr(size) / dutils::sqr(tile_size) * layers;
 
     auto atlas_tiles = TextureAtlasTiles({size, layers});
-    for (auto i = 0; i < tile_count; i++)
+    for (std::size_t i = 0; i < tile_count; i++)
         (void)atlas_tiles.add(TileData(TileData::Size(tile_size)));
 
     SECTION("Using the updateTexture method, which allows further modifications.")
@@ -361,10 +363,10 @@ TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
         auto frozen_atlas = std::move(atlas_tiles).freeze(resize, modify);
     }
 
-    CHECK_THAT(resize, CalledWith(size, layers, 1));
+    CHECK_THAT(resize, CalledWith(size, layers, mipmap_levels));
     CHECK_THAT(modify, Called(tile_count));
 
-    std::set<std::pair<dgl::ivec3, GLint>> positions_and_mipmap_levels;
+    std::set<std::pair<dmath::svec3, std::size_t>> positions_and_mipmap_levels;
     for (const auto& [tile_data, offset, mipmap_level] : modify.invocations()) {
         auto [_, position_and_mipmap_level_is_unique] = positions_and_mipmap_levels.insert({offset, mipmap_level});
         CHECK(position_and_mipmap_level_is_unique);
@@ -435,15 +437,15 @@ TEST_CASE("TextureAtlasTiles::TileHandle provides information about a created ti
     SECTION("A valid tile handle provides information about its tile data.")
     {
         auto padding = GENERATE(dmath::svec2(0), dmath::svec2(1), dmath::svec2(2));
-        auto expected_bounds = dgl::bounds2(1).inset((static_cast<dgl::vec2>(padding) * 0.5f) / 4.0f);
+        auto expected_bounds = dmath::bounds2(1).inset((static_cast<dmath::vec2>(padding) * 0.5f) / 4.0f);
 
         auto [atlas_tiles, tile_handle] = atlasTilesWithTileHandle(padding);
 
         CHECK(tile_handle.atlasPixelSize() == 4);
-        CHECK(tile_handle.pixelPos() == dgl::svec2());
-        CHECK(tile_handle.pixelSize() == dmath::svec2(4));
-        CHECK(tile_handle.pos() == dgl::vec2());
-        CHECK(tile_handle.size() == dgl::vec2(1));
+        CHECK(tile_handle.pixelPos() == 0);
+        CHECK(tile_handle.pixelSize() == 4);
+        CHECK(tile_handle.pos() == 0.0f);
+        CHECK(tile_handle.size() == 1.0f);
         CHECK(tile_handle.bounds() == expected_bounds);
         CHECK(tile_handle.layer() == 0);
     }

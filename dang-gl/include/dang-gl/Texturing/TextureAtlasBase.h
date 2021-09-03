@@ -11,9 +11,9 @@ The TextureBase concept:
 
 - Move-constructible
 - using BorderedImageData = ...;
-- bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
+- bool resize(std::size_t required_size, std::size_t layers, std::size_t mipmap_levels)
     -> protected, resizes the texture
-- void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
+- void modify(const BorderedImageData& bordered_image_data, dmath::svec3 offset, std::size_t mipmap_level)
     -> protected, modifies the texture at a given spot
 
 */

@@ -18,8 +18,9 @@ TEST_CASE("TextureAtlasUtils can be used to query limits for texture atlases.",
 
     SECTION("For maximum texture size, if no value is given, GL_MAX_3D_TEXTURE_SIZE is returned.")
     {
+        auto expected_size = static_cast<std::size_t>(dgl::context()->max_3d_texture_size);
         auto max_texture_size = dgl::TextureAtlasUtils::checkMaxTextureSize(std::nullopt);
-        CHECK(max_texture_size == dgl::context()->max_3d_texture_size);
+        CHECK(max_texture_size == expected_size);
 
         SECTION("If the given value is in range, it is returned.")
         {
@@ -38,8 +39,9 @@ TEST_CASE("TextureAtlasUtils can be used to query limits for texture atlases.",
 
     SECTION("For maximum layer count, if no value is given, GL_MAX_ARRAY_TEXTURE_LAYERS is returned.")
     {
+        auto expected_size = static_cast<std::size_t>(dgl::context()->max_3d_texture_size);
         auto max_layer_count = dgl::TextureAtlasUtils::checkMaxLayerCount(std::nullopt);
-        CHECK(max_layer_count == dgl::context()->max_array_texture_layers);
+        CHECK(max_layer_count == expected_size);
 
         SECTION("If the given value is in range, it is returned.")
         {
