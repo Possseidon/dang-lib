@@ -7,6 +7,6 @@ include(Catch)
 
 add_executable(${PROJECT_NAME} main.cpp test-Convert.cpp #[[test-State.cpp]])
 
-target_link_libraries(${PROJECT_NAME} PRIVATE dang-lua)
+target_link_libraries(${PROJECT_NAME} PRIVATE dang-lua dang-utils)
 
 catch_discover_tests(${PROJECT_NAME} PROPERTIES LABELS dang-lua)

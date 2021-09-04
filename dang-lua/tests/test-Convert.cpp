@@ -4,9 +4,12 @@
 
 #include "dang-lua/Convert.h"
 
+#include "dang-utils/utils.h"
+
 #include "catch2/catch.hpp"
 
 namespace dlua = dang::lua;
+namespace dutils = dang::utils;
 
 class LuaState {
 public:
@@ -39,16 +42,146 @@ private:
     lua_State* state_;
 };
 
-TEST_CASE("Convert does nothing for void type.", "[lua][convert]")
+template <typename... T>
+using maybe_cref = std::tuple<T..., const T..., T&..., const T&..., T&&..., const T&&...>;
+
+// --- Convert<userdata>
+
+struct TestClass {};
+
+// --- Convert<enum>
+
+enum class TestEnum { First, Second, Third };
+
+namespace dang::lua {
+
+template <>
+inline constexpr const char* enum_values<TestEnum>[4] = {"first", "second", "third"};
+
+template <>
+inline constexpr std::string_view enum_name<TestEnum> = "TestEnum";
+
+} // namespace dang::lua
+
+TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to and from strings.",
+                        "[lua][convert][enum]",
+                        maybe_cref<TestEnum>)
+{
+    using Convert = dlua::Convert<TestType>;
+
+    SECTION("It has a push count of 1, allows nesting and has the specialized name.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        STATIC_REQUIRE(Convert::getPushTypename() == "TestEnum");
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::isExact and Convert::isValid return true for strings that are valid for this enum.")
+        {
+            auto isExactAndValid = GENERATE(&Convert::isExact, &Convert::isValid);
+
+            CHECK_FALSE(isExactAndValid(*lua, 1));
+
+            lua_pushstring(*lua, "first");
+            CHECK(isExactAndValid(*lua, -1));
+            lua_pushstring(*lua, "second");
+            CHECK(isExactAndValid(*lua, -1));
+            lua_pushstring(*lua, "third");
+            CHECK(isExactAndValid(*lua, -1));
+
+            lua_pushstring(*lua, "first_");
+            CHECK_FALSE(isExactAndValid(*lua, -1));
+            lua_pushstring(*lua, "_first");
+            CHECK_FALSE(isExactAndValid(*lua, -1));
+
+            lua_pushinteger(*lua, 42);
+            CHECK_FALSE(isExactAndValid(*lua, -1));
+        }
+        SECTION("Convert::at returns the enum value for valid strings and std::nullopt otherwise.")
+        {
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+
+            lua_pushstring(*lua, "first");
+            CHECK(Convert::at(*lua, -1) == TestEnum::First);
+            lua_pushstring(*lua, "second");
+            CHECK(Convert::at(*lua, -1) == TestEnum::Second);
+            lua_pushstring(*lua, "third");
+            CHECK(Convert::at(*lua, -1) == TestEnum::Third);
+
+            lua_pushstring(*lua, "first_");
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+            lua_pushstring(*lua, "_first");
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+        }
+        SECTION("Convert::check returns the enum value for valid strings and throws a Lua error otherwise.")
+        {
+            CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }));
+
+            lua_pushstring(*lua, "first");
+            CHECK(Convert::at(*lua, -1) == TestEnum::First);
+            lua_pushstring(*lua, "second");
+            CHECK(Convert::at(*lua, -1) == TestEnum::Second);
+            lua_pushstring(*lua, "third");
+            CHECK(Convert::at(*lua, -1) == TestEnum::Third);
+
+            CHECK(lua.shouldThrow([&] {
+                lua_pushstring(*lua, "first_");
+                Convert::check(*lua, -1);
+            }));
+
+            CHECK(lua.shouldThrow([&] {
+                lua_pushstring(*lua, "_first");
+                Convert::check(*lua, -1);
+            }));
+
+            CHECK(lua.shouldThrow([&] {
+                lua_pushinteger(*lua, 42);
+                Convert::check(*lua, -1);
+            }));
+        }
+        SECTION("Convert::push pushes the string representation of the enum value on the stack.")
+        {
+            Convert::push(*lua, TestEnum::First);
+            CHECK(lua_type(*lua, -1) == LUA_TSTRING);
+            CHECK(std::string(lua_tostring(*lua, -1)) == "first");
+
+            Convert::push(*lua, TestEnum::Second);
+            CHECK(lua_type(*lua, -1) == LUA_TSTRING);
+            CHECK(std::string(lua_tostring(*lua, -1)) == "second");
+
+            Convert::push(*lua, TestEnum::Third);
+            CHECK(lua_type(*lua, -1) == LUA_TSTRING);
+            CHECK(std::string(lua_tostring(*lua, -1)) == "third");
+        }
+    }
+}
+
+// --- Convert<void>
+
+// TODO: What was this actually used for? Maybe try and get rid of this...
+TEST_CASE("Convert does nothing for void type.", "[lua][convert][void]")
 {
     using Convert = dlua::Convert<void>;
 
-    STATIC_REQUIRE(Convert::push_count == 0);
-    STATIC_REQUIRE_FALSE(Convert::allow_nesting);
+    SECTION("It has a push count of 0 and disallows nesting.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 0);
+        STATIC_REQUIRE_FALSE(Convert::allow_nesting);
+    }
 }
 
-TEMPLATE_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]", std::nullptr_t, std::monostate)
+// --- Convert<nil>
+
+using nil_types = maybe_cref<std::nullptr_t, std::monostate>;
+TEMPLATE_LIST_TEST_CASE("Convert can work with nil-like types.", "[lua][convert][nil]", nil_types)
 {
+    using Nil = dutils::remove_cvref_t<TestType>;
     using Convert = dlua::Convert<TestType>;
 
     SECTION("It has a push count of 1, allows nesting and is named 'nil'.")
@@ -79,17 +212,17 @@ TEMPLATE_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]", st
         }
         SECTION("Convert::at returns an instance for nil/none and std::nullopt otherwise.")
         {
-            CHECK(Convert::at(*lua, 1) == TestType());
+            CHECK(Convert::at(*lua, 1) == Nil());
             lua_pushnil(*lua);
-            CHECK(Convert::at(*lua, -1) == TestType());
+            CHECK(Convert::at(*lua, -1) == Nil());
             lua_pushinteger(*lua, 42);
             CHECK(Convert::at(*lua, -1) == std::nullopt);
         }
         SECTION("Convert::check return an instance for nil/none and throws a Lua error otherwise.")
         {
-            CHECK(Convert::check(*lua, 1) == TestType());
+            CHECK(Convert::check(*lua, 1) == Nil());
             lua_pushnil(*lua);
-            CHECK(Convert::check(*lua, -1) == TestType());
+            CHECK(Convert::check(*lua, -1) == Nil());
             CHECK(lua.shouldThrow([&] {
                 lua_pushinteger(*lua, 42);
                 Convert::check(*lua, -1);
@@ -97,13 +230,15 @@ TEMPLATE_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]", st
         }
         SECTION("Convert::push pushes nil on the stack.")
         {
-            Convert::push(*lua, TestType());
+            Convert::push(*lua, Nil());
             CHECK(lua_type(*lua, -1) == LUA_TNIL);
         }
     }
 }
 
-TEST_CASE("Convert supports pushing fail values.", "[lua][convert]")
+// --- Convert<fail>
+
+TEST_CASE("Convert supports pushing fail values.", "[lua][convert][fail]")
 {
     using Convert = dlua::Convert<dlua::Fail>;
 
@@ -125,9 +260,11 @@ TEST_CASE("Convert supports pushing fail values.", "[lua][convert]")
     }
 }
 
-TEST_CASE("Convert can work with booleans.", "[lua][convert]")
+// --- Convert<boolean>
+
+TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boolean]", maybe_cref<bool>)
 {
-    using Convert = dlua::Convert<bool>;
+    using Convert = dlua::Convert<TestType>;
 
     SECTION("It has a push count of 1, allows nesting and is named 'boolean'.")
     {
@@ -192,3 +329,19 @@ TEST_CASE("Convert can work with booleans.", "[lua][convert]")
         }
     }
 }
+
+// --- Convert<number>
+
+// --- Convert<integer>
+
+// --- Convert<string>
+
+// --- Convert<function>
+
+// --- Convert<optional>
+
+// --- Convert<pair>
+
+// --- Convert<tuple>
+
+// --- Convert<variant>
