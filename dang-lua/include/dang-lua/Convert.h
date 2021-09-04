@@ -703,7 +703,7 @@ struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     }
 
     /// @brief Pushes a nil value on the stack.
-    static void push(lua_State* state, TNil = {}) { lua_pushnil(state); }
+    static void push(lua_State* state, TNil) { lua_pushnil(state); }
 };
 
 /// @brief Tag struct for Lua's `fail` value.
@@ -724,7 +724,7 @@ struct Convert<Fail> {
     }
 
     /// @brief Pushes the `fail` value on the stack.
-    static void push(lua_State* state, Fail = {}) { luaL_pushfail(state); }
+    static void push(lua_State* state, Fail) { luaL_pushfail(state); }
 };
 
 /// @brief Allows for conversion between Lua boolean and C++ bool.
