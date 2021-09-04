@@ -113,6 +113,7 @@ template <typename T>
 void setFuncs(lua_State* state, const T& funcs)
 {
     for (const auto& func : funcs) {
+        assert(func.func != nullptr);
         lua_pushcfunction(state, func.func);
         lua_setfield(state, -2, func.name);
     }
@@ -122,6 +123,8 @@ template <typename T>
 void setPropertyFuncs(lua_State* state, const T& props, lua_CFunction Property::*accessor)
 {
     for (const auto& prop : props) {
+        if (prop.*accessor == nullptr)
+            continue;
         lua_pushcfunction(state, prop.*accessor);
         lua_setfield(state, -2, prop.name);
     }
