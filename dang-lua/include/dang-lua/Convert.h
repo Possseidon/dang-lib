@@ -59,6 +59,9 @@ const auto class_properties = ClassInfo<T>::properties();
 template <typename T>
 inline constexpr const char* enum_values[1]{};
 
+template <typename T>
+inline constexpr std::string_view enum_name = "enum";
+
 namespace detail {
 
 #ifdef __clang__
@@ -206,11 +209,10 @@ struct UniqueClassInfo {
 
 } // namespace detail
 
-/// @brief Converts instances of classes and enums to and from Lua as either value or reference.
+/// @brief Converts instances of classes to and from Lua as either value or reference.
 template <typename T, typename = void>
 struct Convert {
-    static_assert(enum_values<T>[std::size(enum_values<T>) - 1] == nullptr, "enum_values is not null-terminated");
-    static_assert(!std::is_enum_v<T> || std::size(enum_values<T>) > 1, "enum_values is empty");
+    static_assert(std::is_class_v<T>);
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
@@ -218,7 +220,6 @@ struct Convert {
     /// @brief Whether a stack position is a value, reference or neither.
     static StoreType type(lua_State* state, int pos)
     {
-        static_assert(std::is_class_v<T>);
         if (testudata<true>(state, pos))
             return StoreType::Value;
         if (testudata<false>(state, pos))
@@ -226,90 +227,56 @@ struct Convert {
         return type(state, pos, SubClassesOf<T>);
     }
 
-    /// @brief Finds the given string enum value or std::nullopt if not found.
-    static std::optional<T> findEnumValue(const char* value)
-    {
-        static_assert(std::is_enum_v<T>);
-        for (std::size_t i = 0; enum_values<T>[i]; i++)
-            if (std::strcmp(enum_values<T>[i], value) == 0)
-                return static_cast<T>(i);
-        return std::nullopt;
-    }
-
     /// @brief Whether the stack position is a valid class value or reference, or an enum.
-    static bool isExact(lua_State* state, int pos)
-    {
-        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
-        if constexpr (std::is_class_v<T>)
-            return type(state, pos) != StoreType::None;
-        else if constexpr (std::is_enum_v<T>)
-            return at(state, pos);
-    }
+    static bool isExact(lua_State* state, int pos) { return type(state, pos) != StoreType::None; }
 
     /// @brief Whether the stack position is a valid class value or reference, or an enum.
     static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
 
     /// @brief Returns a reference to the value at the given stack position or std::nullopt on failure.
-    static auto at(lua_State* state, int pos)
-        -> std::optional<std::conditional_t<std::is_class_v<T>, std::reference_wrapper<T>, T>>
+    static auto at(lua_State* state, int pos) -> std::optional<std::reference_wrapper<T>>
     {
-        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
-        if constexpr (std::is_class_v<T>) {
-            if constexpr (ClassInfo<T>::allow_table_initialization) {
-                if (lua_istable(state, pos)) {
-                    auto abs_pos = lua_absindex(state, pos);
-                    auto& value = push(state, T());
+        if constexpr (ClassInfo<T>::allow_table_initialization) {
+            if (lua_istable(state, pos)) {
+                auto abs_pos = lua_absindex(state, pos);
+                auto& value = push(state, T());
 
-                    lua_pushnil(state);
-                    while (lua_next(state, abs_pos)) {
-                        // duplicate key and value
-                        lua_pushvalue(state, -2);
-                        lua_pushvalue(state, -2);
-                        // userdata[key] = value
-                        lua_settable(state, -5);
-                        // pop value, leave key
-                        lua_pop(state, 1);
-                    }
-
-                    lua_replace(state, pos);
-                    return value;
+                lua_pushnil(state);
+                while (lua_next(state, abs_pos)) {
+                    // duplicate key and value
+                    lua_pushvalue(state, -2);
+                    lua_pushvalue(state, -2);
+                    // userdata[key] = value
+                    lua_settable(state, -5);
+                    // pop value, leave key
+                    lua_pop(state, 1);
                 }
-            }
 
-            if (void* value = testudata<false>(state, pos))
-                return *static_cast<T*>(value);
-            if (void* pointer = testudata<true>(state, pos))
-                return **static_cast<T**>(pointer);
-            return at(state, pos, SubClassesOf<T>);
+                lua_replace(state, pos);
+                return value;
+            }
         }
-        else if constexpr (std::is_enum_v<T>) {
-            lua_pushvalue(state, pos);
-            auto result = findEnumValue(lua_tostring(state, -1));
-            lua_pop(state, 1);
-            return result;
-        }
+
+        if (void* value = testudata<false>(state, pos))
+            return *static_cast<T*>(value);
+        if (void* pointer = testudata<true>(state, pos))
+            return **static_cast<T**>(pointer);
+        return at(state, pos, SubClassesOf<T>);
     }
 
     /// @brief Returns a reference to the value at the given argument stack position and raises an argument error on
     /// failure.
-    static auto check(lua_State* state, int arg) -> std::conditional_t<std::is_class_v<T>, T&, T>
+    static T& check(lua_State* state, int arg)
     {
-        static_assert(std::is_class_v<T> || std::is_enum_v<T>, "class or enum expected");
-        if constexpr (std::is_class_v<T>) {
-            if (auto result = at(state, arg))
-                return *result;
-            detail::noreturn_luaL_typeerror(state, arg, ClassInfo<T>::className());
-        }
-        else if constexpr (std::is_enum_v<T>) {
-            return static_cast<T>(luaL_checkoption(state, arg, nullptr, enum_values<T>));
-        }
+        if (auto result = at(state, arg))
+            return *result;
+        detail::noreturn_luaL_typeerror(state, arg, ClassInfo<T>::className());
     }
 
     /// @brief Pushes the metatable for a value or reference instance onto the stack.
     template <bool v_reference>
     static void pushMetatable(lua_State* state)
     {
-        static_assert(std::is_class_v<T>);
         if (!newmetatable<v_reference>(state))
             return;
 
@@ -331,34 +298,21 @@ struct Convert {
     /// @brief Pushes the in place constructed value or enum string onto the stack.
     template <typename... TArgs>
     static auto push(lua_State* state, TArgs&&... values)
-        -> std::enable_if_t<std::is_constructible_v<T, std::decay_t<TArgs>...>,
-                            std::conditional_t<std::is_class_v<T>, T&, void>>
+        -> std::enable_if_t<std::is_constructible_v<T, std::decay_t<TArgs>...>, T&>
     {
-        static_assert(std::is_class_v<T> || std::is_enum_v<T>);
-        static_assert(!std::is_enum_v<T> || sizeof...(TArgs) == 1);
-        if constexpr (std::is_class_v<T>) {
-            T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
-            new (userdata) T(std::forward<TArgs>(values)...);
-            pushMetatable<false>(state);
-            lua_setmetatable(state, -2);
-            return *userdata;
-        }
-        else if constexpr (std::is_enum_v<T>) {
-            lua_pushstring(state, enum_values<T>[static_cast<std::size_t>(values)]...);
-        }
+        T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
+        new (userdata) T(std::forward<TArgs>(values)...);
+        pushMetatable<false>(state);
+        lua_setmetatable(state, -2);
+        return *userdata;
     }
 
     /// @brief Pushes a reference to the value on the stack.
-    static void push(lua_State* state, std::reference_wrapper<T> value)
-    {
-        static_assert(std::is_class_v<T>);
-        pushRef(state, value.get());
-    }
+    static void push(lua_State* state, std::reference_wrapper<T> value) { pushRef(state, value.get()); }
 
     /// @brief Pushes a reference to the value on the stack.
     static void pushRef(lua_State* state, T& value)
     {
-        static_assert(std::is_class_v<T>);
         T** userdata = static_cast<T**>(lua_newuserdata(state, sizeof(T*)));
         *userdata = &value;
         pushMetatable<true>(state);
@@ -564,7 +518,6 @@ private:
     /// @brief __gc, which is used to do cleanup for non-reference values.
     static int cleanup(lua_State* state)
     {
-        static_assert(std::is_class_v<T>);
         T* userdata = static_cast<T*>(lua_touserdata(state, 1));
         userdata->~T();
         return 0;
@@ -575,8 +528,6 @@ private:
     template <int v_properties, int v_indextable, int v_indexfunction>
     static int customIndex(lua_State* state)
     {
-        static_assert(std::is_class_v<T>);
-
         if constexpr (v_properties != 0) {
             lua_pushvalue(state, -1);
             if (lua_gettable(state, lua_upvalueindex(v_properties)) != LUA_TNIL) {
@@ -610,8 +561,6 @@ private:
     template <int v_properties, int v_indexfunction>
     static int customNewindex(lua_State* state)
     {
-        static_assert(std::is_class_v<T>);
-
         if constexpr (v_properties != 0) {
             lua_pushvalue(state, -2);
             if (lua_gettable(state, lua_upvalueindex(v_properties)) != LUA_TNIL) {
@@ -640,14 +589,56 @@ private:
     }
 };
 
-template <typename T>
-struct Convert<T&> : Convert<T> {};
-template <typename T>
-struct Convert<T&&> : Convert<T> {};
-template <typename T>
-struct Convert<const T> : Convert<T> {};
-template <typename T>
-struct Convert<std::reference_wrapper<T>> : Convert<T> {};
+/// @brief Converts enums to and from Lua as strings.
+template <typename TEnum>
+struct Convert<TEnum, std::enable_if_t<std::is_enum_v<dutils::remove_cvref_t<TEnum>>>> {
+    using Enum = dutils::remove_cvref_t<TEnum>;
+
+    static_assert(enum_values<Enum>[std::size(enum_values<Enum>) - 1] == nullptr, "enum_values is not null-terminated");
+    static_assert(std::size(enum_values<Enum>) > 1, "enum_values is empty");
+
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
+
+    /// @brief Whether the stack position is a valid enum string.
+    static bool isExact(lua_State* state, int pos) { return at(state, pos).has_value(); }
+
+    /// @brief Whether the stack position is a valid enum string.
+    static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
+
+    /// @brief Returns the enum value at the given stack position or std::nullopt on failure.
+    static std::optional<Enum> at(lua_State* state, int pos)
+    {
+        if (lua_type(state, pos) != LUA_TSTRING)
+            return std::nullopt;
+        return findEnumValue(lua_tostring(state, pos));
+    }
+
+    /// @brief Returns the enum value at the given argument stack position and raises an argument error on failure.
+    static Enum check(lua_State* state, int arg)
+    {
+        return static_cast<Enum>(luaL_checkoption(state, arg, nullptr, enum_values<Enum>));
+    }
+
+    /// @brief Returns the name of the enum.
+    static constexpr std::string_view getPushTypename() { return enum_name<Enum>; }
+
+    /// @brief Pushes the string name of the enum value onto the stack.
+    static auto push(lua_State* state, Enum value)
+    {
+        lua_pushstring(state, enum_values<Enum>[static_cast<std::size_t>(value)]);
+    }
+
+private:
+    /// @brief Finds the given string's enum value or std::nullopt if not found.
+    static std::optional<Enum> findEnumValue(const char* value)
+    {
+        for (std::size_t i = 0; enum_values<Enum>[i]; i++)
+            if (std::strcmp(enum_values<Enum>[i], value) == 0)
+                return static_cast<Enum>(i);
+        return std::nullopt;
+    }
+};
 
 /// @brief Converts nothing.
 template <>
@@ -656,21 +647,24 @@ struct Convert<void> {
     static constexpr bool allow_nesting = false;
 };
 
-template <typename T>
+/// @brief True for types that should be treated as "nil" in Lua.
+template <typename T, typename = void>
 struct is_nil : std::false_type {};
 
 template <typename T>
 inline constexpr auto is_nil_v = is_nil<T>::value;
 
-template <>
-struct is_nil<std::nullptr_t> : std::true_type {};
+template <typename T>
+struct is_nil<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::nullptr_t>>> : std::true_type {};
 
-template <>
-struct is_nil<std::monostate> : std::true_type {};
+template <typename T>
+struct is_nil<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::monostate>>> : std::true_type {};
 
 /// @brief Converts nil values.
 template <typename TNil>
 struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
+    using Nil = dutils::remove_cvref_t<TNil>;
+
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -681,18 +675,18 @@ struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     static bool isValid(lua_State* state, int pos) { return lua_isnoneornil(state, pos); }
 
     /// @brief Returns an instance of TNil for nil and none values, and std::nullopt otherwise.
-    static std::optional<TNil> at(lua_State* state, int pos)
+    static std::optional<Nil> at(lua_State* state, int pos)
     {
         if (lua_isnoneornil(state, pos))
-            return TNil();
+            return Nil();
         return std::nullopt;
     }
 
     /// @brief Returns an instance of TNil and raises an error if the value is neither nil nor none.
-    static TNil check(lua_State* state, int arg)
+    static Nil check(lua_State* state, int arg)
     {
         if (lua_isnoneornil(state, arg))
-            return TNil();
+            return Nil();
         detail::noreturn_luaL_argerror(state, arg, "expected a nil value");
     }
 
@@ -703,7 +697,7 @@ struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     }
 
     /// @brief Pushes a nil value on the stack.
-    static void push(lua_State* state, TNil) { lua_pushnil(state); }
+    static void push(lua_State* state, Nil) { lua_pushnil(state); }
 };
 
 /// @brief Tag struct for Lua's `fail` value.
@@ -728,8 +722,8 @@ struct Convert<Fail> {
 };
 
 /// @brief Allows for conversion between Lua boolean and C++ bool.
-template <>
-struct Convert<bool> {
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -792,7 +786,7 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<T>>> {
 
 /// @brief Allows for conversion between Lua integers and C++ integral types.
 template <typename T>
-struct Convert<T, std::enable_if_t<std::is_integral_v<T>>> {
+struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
