@@ -263,6 +263,15 @@ struct is_greater_equal_comparable<TLeft,
 template <typename TLeft, typename TRight = TLeft>
 inline constexpr auto is_greater_equal_comparable_v = is_greater_equal_comparable<TLeft, TRight>::value;
 
+// TODO: C++20 replace with std::remove_cvref_t
+template <typename T>
+struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
+
+template <class T>
+using remove_cvref_t = typename remove_cvref<T>::type;
+
 // TODO: C++20 replace with std::popcount
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr int popcount(T value)
