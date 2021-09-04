@@ -29,6 +29,8 @@ struct DefaultClassInfo {
 
     static constexpr auto allow_table_initialization = false;
 
+    // TODO: rename table() to methods()
+
     static constexpr std::array<luaL_Reg, 0> table() { return {}; }
     static constexpr std::array<luaL_Reg, 0> metatable() { return {}; }
     static constexpr std::array<Property, 0> properties() { return {}; }
