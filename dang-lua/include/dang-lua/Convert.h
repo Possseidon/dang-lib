@@ -217,20 +217,12 @@ struct UniqueClassInfo {
 /// @brief Converts instances of classes to and from Lua as either value or reference.
 template <typename T, typename = void>
 struct Convert {
-    static_assert(std::is_class_v<T>);
+    using Class = dutils::remove_cvref_t<T>;
+
+    static_assert(std::is_class_v<Class>);
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
-
-    /// @brief Whether a stack position is a value, reference or neither.
-    static StoreType type(lua_State* state, int pos)
-    {
-        if (testudata<true>(state, pos))
-            return StoreType::Value;
-        if (testudata<false>(state, pos))
-            return StoreType::Reference;
-        return type(state, pos, SubClassesOf<T>);
-    }
 
     /// @brief Whether the stack position is a valid class value or reference, or an enum.
     static bool isExact(lua_State* state, int pos) { return type(state, pos) != StoreType::None; }
@@ -239,12 +231,12 @@ struct Convert {
     static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
 
     /// @brief Returns a reference to the value at the given stack position or std::nullopt on failure.
-    static auto at(lua_State* state, int pos) -> std::optional<std::reference_wrapper<T>>
+    static auto at(lua_State* state, int pos) -> std::optional<std::reference_wrapper<Class>>
     {
-        if constexpr (ClassInfo<T>::allow_table_initialization) {
+        if constexpr (ClassInfo<Class>::allow_table_initialization) {
             if (lua_istable(state, pos)) {
                 auto abs_pos = lua_absindex(state, pos);
-                auto& value = push(state, T());
+                auto& value = push(state, Class());
 
                 lua_pushnil(state);
                 while (lua_next(state, abs_pos)) {
@@ -263,19 +255,54 @@ struct Convert {
         }
 
         if (void* value = testudata<false>(state, pos))
-            return *static_cast<T*>(value);
+            return *static_cast<Class*>(value);
         if (void* pointer = testudata<true>(state, pos))
-            return **static_cast<T**>(pointer);
-        return at(state, pos, SubClassesOf<T>);
+            return **static_cast<Class**>(pointer);
+        return at(state, pos, SubClassesOf<Class>);
     }
 
     /// @brief Returns a reference to the value at the given argument stack position and raises an argument error on
     /// failure.
-    static T& check(lua_State* state, int arg)
+    static Class& check(lua_State* state, int arg)
     {
         if (auto result = at(state, arg))
             return *result;
-        detail::noreturn_luaL_typeerror(state, arg, ClassInfo<T>::className());
+        detail::noreturn_luaL_typeerror(state, arg, ClassInfo<Class>::className());
+    }
+
+    /// @brief Returns the name of the class or enum.
+    static constexpr std::string_view getPushTypename() { return ClassInfo<Class>::className(); }
+
+    /// @brief Pushes the in place constructed value or enum string onto the stack.
+    template <typename... TArgs>
+    static auto push(lua_State* state, TArgs&&... values)
+        -> std::enable_if_t<std::is_constructible_v<Class, std::decay_t<TArgs>...>, Class&>
+    {
+        Class* userdata = static_cast<Class*>(lua_newuserdata(state, sizeof(Class)));
+        new (userdata) Class(std::forward<TArgs>(values)...);
+        pushMetatable<false>(state);
+        lua_setmetatable(state, -2);
+        return *userdata;
+    }
+
+    /// @brief Pushes a reference to the value on the stack.
+    static void push(lua_State* state, std::reference_wrapper<Class> value)
+    {
+        Class** userdata = static_cast<Class**>(lua_newuserdata(state, sizeof(Class*)));
+        *userdata = &value.get();
+        pushMetatable<true>(state);
+        lua_setmetatable(state, -2);
+    }
+
+private:
+    /// @brief Whether a stack position is a value, reference or neither.
+    static StoreType type(lua_State* state, int pos)
+    {
+        if (testudata<true>(state, pos))
+            return StoreType::Value;
+        if (testudata<false>(state, pos))
+            return StoreType::Reference;
+        return type(state, pos, SubClassesOf<Class>);
     }
 
     /// @brief Pushes the metatable for a value or reference instance onto the stack.
@@ -285,51 +312,23 @@ struct Convert {
         if (!newmetatable<v_reference>(state))
             return;
 
-        detail::setFuncs(state, class_metatable<T>);
+        detail::setFuncs(state, class_metatable<Class>);
 
         registerIndex<v_reference>(state);
         registerNewindex<v_reference>(state);
         registerDisplayName(state);
 
-        if constexpr (!v_reference && !std::is_trivially_destructible_v<T>)
+        if constexpr (!v_reference && !std::is_trivially_destructible_v<Class>)
             registerCleanup(state);
 
         protectMetatable(state);
     }
 
-    /// @brief Returns the name of the class or enum.
-    static constexpr std::string_view getPushTypename() { return ClassInfo<T>::className(); }
-
-    /// @brief Pushes the in place constructed value or enum string onto the stack.
-    template <typename... TArgs>
-    static auto push(lua_State* state, TArgs&&... values)
-        -> std::enable_if_t<std::is_constructible_v<T, std::decay_t<TArgs>...>, T&>
-    {
-        T* userdata = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
-        new (userdata) T(std::forward<TArgs>(values)...);
-        pushMetatable<false>(state);
-        lua_setmetatable(state, -2);
-        return *userdata;
-    }
-
-    /// @brief Pushes a reference to the value on the stack.
-    static void push(lua_State* state, std::reference_wrapper<T> value) { pushRef(state, value.get()); }
-
-    /// @brief Pushes a reference to the value on the stack.
-    static void pushRef(lua_State* state, T& value)
-    {
-        T** userdata = static_cast<T**>(lua_newuserdata(state, sizeof(T*)));
-        *userdata = &value;
-        pushMetatable<true>(state);
-        lua_setmetatable(state, -2);
-    }
-
-private:
     /// @brief Pushes this types metatable or nil on the stack.
     template <bool v_reference>
     static int getmetatable(lua_State* state)
     {
-        return lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
+        return lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<Class, v_reference>::id());
     }
 
     /// @brief Creates a new metatable for this type unless it already exists and pushes it on the stack in either case.
@@ -341,7 +340,7 @@ private:
         lua_pop(state, 1);
         lua_newtable(state);
         lua_pushvalue(state, -1);
-        lua_rawsetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
+        lua_rawsetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<Class, v_reference>::id());
         return true;
     }
 
@@ -352,7 +351,7 @@ private:
         void* value = lua_touserdata(state, arg);
         if (!value || !lua_getmetatable(state, arg))
             return nullptr;
-        lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<T, v_reference>::id());
+        lua_rawgetp(state, LUA_REGISTRYINDEX, detail::UniqueClassInfo<Class, v_reference>::id());
         if (!lua_rawequal(state, -1, -2))
             value = nullptr;
         lua_pop(state, 2);
@@ -375,14 +374,17 @@ private:
     /// @brief Goes through the full list of subclasses to try and convert the value.
     template <typename TFirst, typename... TRest>
     static auto at(lua_State* state, int pos, SubClassList<TFirst, TRest...>)
-        -> std::optional<std::reference_wrapper<T>>
+        -> std::optional<std::reference_wrapper<Class>>
     {
         auto result = Convert<TFirst>::at(state, pos);
         return result ? result : at(state, pos, SubClassList<TRest...>{});
     }
 
     /// @brief Exit condition when the subclass list is depleted.
-    static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<T>> { return std::nullopt; }
+    static auto at(lua_State*, int, SubClassList<>) -> std::optional<std::reference_wrapper<Class>>
+    {
+        return std::nullopt;
+    }
 
     /// @brief Registers the __index metamethod to the metatable on the top of the stack.
     template <bool v_reference>
@@ -399,27 +401,27 @@ private:
         int pushed = 0;
 
         // Push table for properties.
-        auto get_count = detail::countProperties(class_properties<T>, &Property::get);
+        auto get_count = detail::countProperties(class_properties<Class>, &Property::get);
         auto has_properties = get_count > 0;
         if (has_properties) {
             lua_createtable(state, 0, static_cast<int>(get_count));
             pushed++;
-            detail::setPropertyFuncs(state, class_properties<T>, &Property::get);
+            detail::setPropertyFuncs(state, class_properties<Class>, &Property::get);
             lua_pushvalue(state, -1);
             lua_setfield(state, -2 - pushed, "get");
         }
 
-        // Push class_table<T>
-        auto has_indextable = !class_table<T>.empty();
+        // Push class_table<Class>
+        auto has_indextable = !class_table<Class>.empty();
         if (has_indextable) {
-            lua_createtable(state, 0, static_cast<int>(class_table<T>.size()));
+            lua_createtable(state, 0, static_cast<int>(class_table<Class>.size()));
             pushed++;
-            detail::setFuncs(state, class_table<T>);
+            detail::setFuncs(state, class_table<Class>);
             lua_pushvalue(state, -1);
             lua_setfield(state, -2 - pushed, "indextable");
         }
 
-        // Push class_metatable<T>::__index
+        // Push class_metatable<Class>::__index
         auto has_indexfunction = lua_getfield(state, -1 - pushed, "__index") != LUA_TNIL;
         if (has_indexfunction)
             pushed++;
@@ -465,17 +467,17 @@ private:
         int pushed = 0;
 
         // Push table for properties.
-        auto set_count = detail::countProperties(class_properties<T>, &Property::set);
+        auto set_count = detail::countProperties(class_properties<Class>, &Property::set);
         auto has_properties = set_count > 0;
         if (has_properties) {
             lua_createtable(state, 0, static_cast<int>(set_count));
             pushed++;
-            detail::setPropertyFuncs(state, class_properties<T>, &Property::set);
+            detail::setPropertyFuncs(state, class_properties<Class>, &Property::set);
             lua_pushvalue(state, -1);
             lua_setfield(state, -2 - pushed, "set");
         }
 
-        // Push class_metatable<T>::__newindex
+        // Push class_metatable<Class>::__newindex
         auto has_newindex = lua_getfield(state, -1 - pushed, "__newindex") != LUA_TNIL;
         if (has_newindex)
             pushed++;
@@ -500,7 +502,7 @@ private:
     /// @brief Registers the display name provided by `ClassInfo` to the metatable on the top of the stack.
     static void registerDisplayName(lua_State* state)
     {
-        lua_pushstring(state, ClassInfo<T>::className());
+        lua_pushstring(state, ClassInfo<Class>::className());
         lua_setfield(state, -2, "__name");
     }
 
@@ -523,8 +525,8 @@ private:
     /// @brief __gc, which is used to do cleanup for non-reference values.
     static int cleanup(lua_State* state)
     {
-        T* userdata = static_cast<T*>(lua_touserdata(state, 1));
-        userdata->~T();
+        Class* userdata = static_cast<Class*>(lua_touserdata(state, 1));
+        userdata->~Class();
         return 0;
     }
 
