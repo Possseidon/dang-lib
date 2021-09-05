@@ -795,7 +795,11 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<dutils::remove_cvref
 
 /// @brief Allows for conversion between Lua integers and C++ integral types.
 template <typename T>
-struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
+struct Convert<T,
+               std::enable_if_t<std::is_integral_v<dutils::remove_cvref_t<T>> &&
+                                !std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
+    using Integer = dutils::remove_cvref_t<T>;
+
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -805,16 +809,16 @@ struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<duti
     /// @brief Checks, whether the given Lua integer fits into the range of the C++ integral type.
     static constexpr bool checkRange([[maybe_unused]] lua_Integer value)
     {
-        if constexpr (std::is_same_v<T, std::uint64_t>) {
+        if constexpr (std::is_same_v<Integer, std::uint64_t>) {
             return value >= 0;
         }
         else {
-            if constexpr (std::numeric_limits<T>::max() < std::numeric_limits<lua_Integer>::max()) {
-                if (value > std::numeric_limits<T>::max())
+            if constexpr (std::numeric_limits<Integer>::max() < std::numeric_limits<lua_Integer>::max()) {
+                if (value > std::numeric_limits<Integer>::max())
                     return false;
             }
-            if constexpr (std::numeric_limits<T>::min() > std::numeric_limits<lua_Integer>::min()) {
-                if (value < std::numeric_limits<T>::min())
+            if constexpr (std::numeric_limits<Integer>::min() > std::numeric_limits<lua_Integer>::min()) {
+                if (value < std::numeric_limits<Integer>::min())
                     return false;
             }
             return true;
@@ -824,10 +828,10 @@ struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<duti
     /// @brief Whether the value at the given stack position is an integer and fits the C++ integral type.
     static bool isExact(lua_State* state, int pos)
     {
-        if (lua_type(state, pos) == LUA_TNUMBER)
+        if (lua_type(state, pos) != LUA_TNUMBER)
             return false;
         int isnum;
-        lua_Number value = lua_tointegerx(state, pos, &isnum);
+        lua_Integer value = lua_tointegerx(state, pos, &isnum);
         return isnum && checkRange(value);
     }
 
@@ -836,34 +840,35 @@ struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<duti
     static bool isValid(lua_State* state, int pos)
     {
         int isnum;
-        lua_Number value = lua_tointegerx(state, pos, &isnum);
+        lua_Integer value = lua_tointegerx(state, pos, &isnum);
         return isnum && checkRange(value);
     }
 
     /// @brief Returns an error message for the given number not being in the correct range.
     static std::string getRangeErrorMessage(lua_Integer value)
     {
-        return "value " + std::to_string(value) + " must be in range " + std::to_string(std::numeric_limits<T>::min()) +
-               " .. " + std::to_string(std::numeric_limits<T>::max());
+        return "value " + std::to_string(value) + " must be in range " +
+               std::to_string(std::numeric_limits<Integer>::min()) + " .. " +
+               std::to_string(std::numeric_limits<Integer>::max());
     }
 
     /// @brief Converts the given argument stack position into an integral type and returns std::nullopt on failure.
-    static std::optional<T> at(lua_State* state, int pos)
+    static std::optional<Integer> at(lua_State* state, int pos)
     {
         int isnum;
         lua_Integer result = lua_tointegerx(state, pos, &isnum);
         if (isnum && checkRange(result))
-            return static_cast<T>(result);
+            return static_cast<Integer>(result);
         return std::nullopt;
     }
 
     /// @brief Converts the given argument stack position into an integral type and raises an error on failure.
-    static T check(lua_State* state, int arg)
+    static Integer check(lua_State* state, int arg)
     {
         lua_Integer result = luaL_checkinteger(state, arg);
         if (!checkRange(result))
             detail::noreturn_luaL_argerror(state, arg, getRangeErrorMessage(result).c_str());
-        return static_cast<T>(result);
+        return static_cast<Integer>(result);
     }
 
     static constexpr std::string_view getPushTypename()
@@ -873,7 +878,7 @@ struct Convert<T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<duti
     }
 
     /// @brief Pushes the given integer on the stack.
-    static void push(lua_State* state, T value) { lua_pushinteger(state, static_cast<lua_Integer>(value)); }
+    static void push(lua_State* state, Integer value) { lua_pushinteger(state, static_cast<lua_Integer>(value)); }
 };
 
 /// @brief Allows for conversion between Lua strings and std::string.
