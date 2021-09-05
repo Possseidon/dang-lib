@@ -33,7 +33,7 @@ struct Matrix : std::array<Vector<T, v_rows>, v_cols> {
             (*this)[i] = value;
     }
 
-    /// @brief Initializes the matrix from a C-style array of columns.
+    /// @brief Initializes the matrix from a C-Style array of columns.
     constexpr Matrix(const Vector<T, rows> (&columns)[cols])
         : Base()
     {
