@@ -8,6 +8,7 @@ include(Catch)
 add_executable(${PROJECT_NAME}
   main.cpp
   test-vector.cpp
+  test-marchingcubes.cpp
 )
 
 target_precompile_headers(${PROJECT_NAME}
