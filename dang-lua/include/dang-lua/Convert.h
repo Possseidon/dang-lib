@@ -758,7 +758,9 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, boo
 
 /// @brief Allows for conversion between Lua numbers and C++ floating point types.
 template <typename T>
-struct Convert<T, std::enable_if_t<std::is_floating_point_v<T>>> {
+struct Convert<T, std::enable_if_t<std::is_floating_point_v<dutils::remove_cvref_t<T>>>> {
+    using Number = dutils::remove_cvref_t<T>;
+
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -769,17 +771,17 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<T>>> {
     static bool isValid(lua_State* state, int pos) { return lua_isnumber(state, pos); }
 
     /// @brief Converts the given argument stack position into a Lua number and returns std::nullopt on failure.
-    static std::optional<T> at(lua_State* state, int pos)
+    static std::optional<Number> at(lua_State* state, int pos)
     {
         int isnum;
         lua_Number result = lua_tonumberx(state, pos, &isnum);
         if (isnum)
-            return static_cast<T>(result);
+            return static_cast<Number>(result);
         return std::nullopt;
     }
 
     /// @brief Converts the given argument stack position into a floating point type and raises an error on failure.
-    static T check(lua_State* state, int arg) { return static_cast<T>(luaL_checknumber(state, arg)); }
+    static Number check(lua_State* state, int arg) { return static_cast<Number>(luaL_checknumber(state, arg)); }
 
     static constexpr std::string_view getPushTypename()
     {
@@ -788,7 +790,7 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<T>>> {
     }
 
     /// @brief Pushes the given number on the stack.
-    static void push(lua_State* state, T value) { lua_pushnumber(state, static_cast<lua_Number>(value)); }
+    static void push(lua_State* state, Number value) { lua_pushnumber(state, static_cast<lua_Number>(value)); }
 };
 
 /// @brief Allows for conversion between Lua integers and C++ integral types.
