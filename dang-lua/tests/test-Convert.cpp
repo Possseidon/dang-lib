@@ -1595,6 +1595,86 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.", "[lua][convert
 
 // --- Convert<optional>
 
+TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
+                        "[lua][convert][nil][optional]",
+                        maybe_cref<std::optional<int>>)
+{
+    using namespace std::literals::string_literals;
+
+    using Convert = dlua::Convert<TestType>;
+    using ConvertContained = dlua::Convert<int>;
+
+    SECTION("It has a push count of 1, allows nesting and is named the same as the contained type.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        CHECK(Convert::getPushTypename() == std::string(ConvertContained::getPushTypename()) + "?"s);
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::isExact returns true for exact values and nil/none.")
+        {
+            CHECK(Convert::isExact(*lua, 1));
+            lua_pushnil(*lua);
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushliteral(*lua, "42");
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+        }
+        SECTION("Convert::isValid returns true for valid values and nil/none.")
+        {
+            CHECK(Convert::isValid(*lua, 1));
+            lua_pushnil(*lua);
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isValid(*lua, -1));
+        }
+        SECTION("Convert::at returns an optional that may contain a std::nullopt and std::nullopt otherwise.")
+        {
+            CHECK(Convert::at(*lua, 1).value() == std::nullopt);
+            lua_pushnil(*lua);
+            CHECK(Convert::at(*lua, -1).value() == std::nullopt);
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::at(*lua, -1).value() == 42);
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::at(*lua, -1).value() == 42);
+            lua_pushboolean(*lua, true);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+        }
+        SECTION("Convert::check returns an optional that may contain a std::nullopt and throws a Lua error otherwise.")
+        {
+            CHECK(Convert::check(*lua, 1) == std::nullopt);
+            lua_pushnil(*lua);
+            CHECK(Convert::check(*lua, -1) == std::nullopt);
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::check(*lua, -1) == 42);
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::check(*lua, -1) == 42);
+            CHECK(lua.shouldThrow([&] {
+                lua_pushboolean(*lua, true);
+                Convert::check(*lua, 1);
+            }) == "bad argument #1 to '?' (integer? expected, got boolean)");
+        }
+        SECTION("Convert::push pushes the value or nil.")
+        {
+            Convert::push(*lua, 42);
+            CHECK(lua_type(*lua, -1) == LUA_TNUMBER);
+            CHECK(lua_tointeger(*lua, -1) == 42);
+            Convert::push(*lua, std::nullopt);
+            CHECK(lua_type(*lua, -1) == LUA_TNIL);
+        }
+    }
+}
+
 // --- Convert<pair>
 
 // --- Convert<tuple>
