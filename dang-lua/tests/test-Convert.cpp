@@ -1268,7 +1268,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
         }
         SECTION("Convert::check throws a Lua error when the number is not in range.")
         {
-            auto msg_for = [&](lua_Integer value) {
+            [[maybe_unused]] auto msg_for = [&](lua_Integer value) {
                 return "bad argument #1 to '?' (value " + std::to_string(value) + " must be in range " +
                        std::to_string(min_value) + " .. " + std::to_string(max_value) + ")";
             };
