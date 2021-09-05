@@ -1535,6 +1535,60 @@ TEMPLATE_LIST_TEST_CASE("Convert can push C-Style strings.", "[lua][convert][str
 
 // --- Convert<function>
 
+int dummyLuaFunction(lua_State*) { return 0; }
+
+TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.", "[lua][convert][function]", maybe_cref<lua_CFunction>)
+{
+    using Convert = dlua::Convert<TestType>;
+
+    SECTION("It has a push count of 1, allows nesting and is named 'C function'.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        STATIC_REQUIRE(Convert::getPushTypename() == "C function");
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::isExact and Convert::isValid only return true for C functions.")
+        {
+            auto isExactAndValid = GENERATE(&Convert::isExact, &Convert::isValid);
+
+            CHECK_FALSE(isExactAndValid(*lua, 1));
+            lua_pushcfunction(*lua, dummyLuaFunction);
+            CHECK(isExactAndValid(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(isExactAndValid(*lua, -1));
+        }
+        SECTION("Convert::at returns C functions and std::nullopt otherwise.")
+        {
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+            lua_pushcfunction(*lua, dummyLuaFunction);
+            CHECK(Convert::at(*lua, -1) == dummyLuaFunction);
+            lua_pushboolean(*lua, true);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+        }
+        SECTION("Convert::check returns C functions and throws a Lua error otherwise.")
+        {
+            CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
+                  "bad argument #1 to '?' (C function expected, got no value)");
+            lua_pushcfunction(*lua, dummyLuaFunction);
+            CHECK(Convert::check(*lua, -1) == dummyLuaFunction);
+            CHECK(lua.shouldThrow([&] {
+                lua_pushboolean(*lua, true);
+                Convert::check(*lua, 1);
+            }) == "bad argument #1 to '?' (C function expected, got boolean)");
+        }
+        SECTION("Convert::push pushes a C function.")
+        {
+            Convert::push(*lua, dummyLuaFunction);
+            CHECK(lua_type(*lua, -1) == LUA_TFUNCTION);
+            CHECK(lua_tocfunction(*lua, -1) == dummyLuaFunction);
+        }
+    }
+}
+
 // --- Convert<optional>
 
 // --- Convert<pair>
