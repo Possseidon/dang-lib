@@ -1115,37 +1115,48 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, lua
 
 /// @brief Allows for conversion for possible nil values using std::optional.
 template <typename T>
-struct Convert<std::optional<T>> {
-    using Base = Convert<T>;
+struct ConvertOptional;
 
-    static_assert(Base::push_count == 1, "Only single values can be optional.");
+template <typename T>
+struct ConvertOptional<std::optional<T>> {
+    using Optional = std::optional<T>;
+    using ConvertContained = Convert<T>;
+
+    static_assert(ConvertContained::push_count == 1, "Only single values can be optional.");
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
     /// @brief Whether the value at the given stack position is nil or a valid value.
-    static bool isExact(lua_State* state, int pos) { return lua_isnoneornil(state, pos) || Base::isValid(state, pos); }
+    static bool isExact(lua_State* state, int pos)
+    {
+        return lua_isnoneornil(state, pos) || ConvertContained::isExact(state, pos);
+    }
 
-    /// @brief Whether the value at the given stack position is nil or a valid value.
-    static bool isValid(lua_State* state, int pos) { return isExact(state, pos); }
+    /// @brief Whether the value at the given stack position is nil or an exact value.
+    static bool isValid(lua_State* state, int pos)
+    {
+        return lua_isnoneornil(state, pos) || ConvertContained::isValid(state, pos);
+    }
 
     /// @brief Returns an optional containing a std::nullopt for nil values or a single std::nullopt for invalid values.
-    static std::optional<std::optional<T>> at(lua_State* state, int pos)
+    static std::optional<Optional> at(lua_State* state, int pos)
     {
         if (lua_isnoneornil(state, pos))
-            return std::optional<T>();
-        auto result = Base::at(state, pos);
-        if (result)
+            return Optional();
+        if (auto result = ConvertContained::at(state, pos))
             return result;
         return std::nullopt;
     }
 
     /// @brief Returns std::nullopt for nil values or raises an error for invalid values.
-    static std::optional<T> check(lua_State* state, int arg)
+    static Optional check(lua_State* state, int arg)
     {
         if (lua_isnoneornil(state, arg))
             return std::nullopt;
-        return Base::check(state, arg);
+        if (auto result = ConvertContained::at(state, arg))
+            return result;
+        detail::noreturn_luaL_typeerror(state, arg, getPushTypename().c_str());
     }
 
     static std::string getPushTypename()
@@ -1155,15 +1166,28 @@ struct Convert<std::optional<T>> {
     }
 
     /// @brief Pushes the given value or nil onto the stack.
-    static int push(lua_State* state, std::optional<T> value)
+    static int push(lua_State* state, Optional value)
     {
         if (value)
-            Base::push(state, *value);
+            ConvertContained::push(state, *value);
         else
             lua_pushnil(state);
         return 1;
     }
 };
+
+template <typename T>
+struct is_optional : std::false_type {};
+
+template <typename T>
+inline constexpr auto is_optional_v = is_optional<T>::value;
+
+template <typename T>
+struct is_optional<std::optional<T>> : std::true_type {};
+
+template <typename T>
+struct Convert<T, std::enable_if_t<is_optional_v<dutils::remove_cvref_t<T>>>>
+    : ConvertOptional<dutils::remove_cvref_t<T>> {};
 
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
