@@ -246,7 +246,7 @@ private:
                 vec3 center;
                 for (const auto& point : loop)
                     center += point.position + point.direction / 2;
-                center /= loop.size();
+                center /= static_cast<float>(loop.size());
 
                 for (std::size_t i = 0; i < loop.size() - 1; i++)
                     result.push_back(PlaneInfo{center, loop[i], loop[i + 1]});
