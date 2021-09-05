@@ -170,7 +170,7 @@ protected:
     }
 };
 
-/// @brief Provides information about a function signature and the means to convert arguments of a Lua C-Function into
+/// @brief Provides information about a function signature and the means to convert arguments of a Lua C function into
 /// actual C++ values.
 /// @remark Argument conversion relies on the Convert template.
 template <typename TFunc>
