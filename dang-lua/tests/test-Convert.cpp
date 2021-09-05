@@ -1103,6 +1103,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
             lua_pushstring(*lua, "42");
             CHECK(Convert::check(*lua, -1) == Number{42});
             CHECK(lua.shouldThrow([&] {
+                lua_pushstring(*lua, "test");
+                Convert::check(*lua, 1);
+            }) == "bad argument #1 to '?' (string cannot be converted to a number)");
+            CHECK(lua.shouldThrow([&] {
                 lua_pushboolean(*lua, true);
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (number expected, got boolean)");
@@ -1244,7 +1248,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
         SECTION("Convert::check returns the integer or convertible string and throws a Lua error otherwise.")
         {
             CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
-                  "bad argument #1 to '?' (number expected, got no value)");
+                  "bad argument #1 to '?' (integer expected, got no value)");
             lua_pushinteger(*lua, 42);
             CHECK(Convert::check(*lua, -1) == Integer{42});
             lua_pushnumber(*lua, 42.0);
@@ -1260,11 +1264,11 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
             CHECK(lua.shouldThrow([&] {
                 lua_pushstring(*lua, "42.5");
                 Convert::check(*lua, 1);
-            }) == "bad argument #1 to '?' (number has no integer representation)");
+            }) == "bad argument #1 to '?' (string cannot be converted to an integer)");
             CHECK(lua.shouldThrow([&] {
                 lua_pushboolean(*lua, true);
                 Convert::check(*lua, 1);
-            }) == "bad argument #1 to '?' (number expected, got boolean)");
+            }) == "bad argument #1 to '?' (integer expected, got boolean)");
         }
         SECTION("Convert::check throws a Lua error when the number is not in range.")
         {

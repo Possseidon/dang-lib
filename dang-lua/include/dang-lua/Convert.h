@@ -781,7 +781,16 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<dutils::remove_cvref
     }
 
     /// @brief Converts the given argument stack position into a floating point type and raises an error on failure.
-    static Number check(lua_State* state, int arg) { return static_cast<Number>(luaL_checknumber(state, arg)); }
+    static Number check(lua_State* state, int arg)
+    {
+        int isnum;
+        lua_Number result = lua_tonumberx(state, arg, &isnum);
+        if (isnum)
+            return static_cast<Number>(result);
+        if (lua_type(state, arg) == LUA_TSTRING)
+            detail::noreturn_luaL_argerror(state, arg, "string cannot be converted to a number");
+        detail::noreturn_luaL_typeerror(state, arg, "number");
+    }
 
     static constexpr std::string_view getPushTypename()
     {
@@ -865,7 +874,16 @@ struct Convert<T,
     /// @brief Converts the given argument stack position into an integral type and raises an error on failure.
     static Integer check(lua_State* state, int arg)
     {
-        lua_Integer result = luaL_checkinteger(state, arg);
+        int isnum;
+        lua_Integer result = lua_tointegerx(state, arg, &isnum);
+        if (!isnum) {
+            auto type = lua_type(state, arg);
+            if (type == LUA_TNUMBER)
+                detail::noreturn_luaL_argerror(state, arg, "number has no integer representation");
+            if (type == LUA_TSTRING)
+                detail::noreturn_luaL_argerror(state, arg, "string cannot be converted to an integer");
+            detail::noreturn_luaL_typeerror(state, arg, "integer");
+        }
         if (!checkRange(result))
             detail::noreturn_luaL_argerror(state, arg, getRangeErrorMessage(result).c_str());
         return static_cast<Integer>(result);
