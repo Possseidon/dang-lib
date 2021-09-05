@@ -847,15 +847,15 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to a
         {
             Convert::push(*lua, TestEnum::First);
             CHECK(lua_type(*lua, -1) == LUA_TSTRING);
-            CHECK(std::string(lua_tostring(*lua, -1)) == "first");
+            CHECK(dlua::Convert<std::string>::at(*lua, -1) == "first");
 
             Convert::push(*lua, TestEnum::Second);
             CHECK(lua_type(*lua, -1) == LUA_TSTRING);
-            CHECK(std::string(lua_tostring(*lua, -1)) == "second");
+            CHECK(dlua::Convert<std::string>::at(*lua, -1) == "second");
 
             Convert::push(*lua, TestEnum::Third);
             CHECK(lua_type(*lua, -1) == LUA_TSTRING);
-            CHECK(std::string(lua_tostring(*lua, -1)) == "third");
+            CHECK(dlua::Convert<std::string>::at(*lua, -1) == "third");
         }
     }
 }
@@ -974,7 +974,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boole
     {
         LuaState lua;
 
-        SECTION("Convert::isExact returns true only for actual boolean values.")
+        SECTION("Convert::isExact returns true only for actual booleans.")
         {
             CHECK_FALSE(Convert::isExact(*lua, 1));
             lua_pushboolean(*lua, false);
