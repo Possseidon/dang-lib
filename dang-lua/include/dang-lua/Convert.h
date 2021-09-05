@@ -694,7 +694,7 @@ struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     {
         if (lua_isnoneornil(state, arg))
             return Nil();
-        detail::noreturn_luaL_argerror(state, arg, "expected a nil value");
+        detail::noreturn_luaL_typeerror(state, arg, "nil");
     }
 
     static constexpr std::string_view getPushTypename()
@@ -1082,7 +1082,7 @@ struct Convert<lua_CFunction> {
     {
         if (auto result = lua_tocfunction(state, arg))
             return result;
-        detail::noreturn_luaL_argerror(state, arg, "C function expected");
+        detail::noreturn_luaL_typeerror(state, arg, "C function");
     }
 
     static constexpr std::string_view getPushTypename()
@@ -1297,20 +1297,9 @@ struct Convert<std::variant<TOptions...>> {
     /// @brief Returns the first type that does not return std::nullopt or raises and argument error if none was found.
     static Variant check(lua_State* state, int arg)
     {
-        auto value = at(state, arg);
-        if (value)
+        if (auto value = at(state, arg))
             return *value;
-
-        // Generate a similar message to the official (unfortunately internal) luaL_typeerror() function in the Lua
-        // source code: https://www.lua.org/source/5.4/lauxlib.c.html#luaL_typeerror
-        std::string error = getPushTypename() + " expected, got ";
-        if (luaL_getmetafield(state, arg, "__name") == LUA_TSTRING)
-            error += lua_tostring(state, -1);
-        else if (lua_type(state, arg) == LUA_TLIGHTUSERDATA)
-            error += "light userdata";
-        else
-            error += luaL_typename(state, arg);
-        detail::noreturn_luaL_argerror(state, arg, error.c_str());
+        detail::noreturn_luaL_typeerror(state, arg, getPushTypename().c_str());
     }
 
     /// @brief Combines all possible options of the variant in the form: "a, b, c or d"

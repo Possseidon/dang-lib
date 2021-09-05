@@ -924,7 +924,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]
             CHECK(lua.shouldThrow([&] {
                 lua_pushinteger(*lua, 42);
                 Convert::check(*lua, 1);
-            }) == "bad argument #1 to '?' (expected a nil value)");
+            }) == "bad argument #1 to '?' (nil expected, got number)");
         }
         SECTION("Convert::push pushes nil on the stack.")
         {
