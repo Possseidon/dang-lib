@@ -1020,8 +1020,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boole
         {
             Convert::push(*lua, false);
             CHECK(lua_type(*lua, -1) == LUA_TBOOLEAN);
+            CHECK_FALSE(lua_toboolean(*lua, -1));
             Convert::push(*lua, true);
             CHECK(lua_type(*lua, -1) == LUA_TBOOLEAN);
+            CHECK(lua_toboolean(*lua, -1));
         }
     }
 }
