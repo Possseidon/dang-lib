@@ -1058,8 +1058,8 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, cha
 };
 
 /// @brief Allows for conversion of C functions.
-template <>
-struct Convert<lua_CFunction> {
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, lua_CFunction>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1088,17 +1088,12 @@ struct Convert<lua_CFunction> {
     static constexpr std::string_view getPushTypename()
     {
         using namespace std::literals;
-        return "function"sv;
+        return "C function"sv;
     }
 
     /// @brief Pushes the given C function onto the stack.
     static void push(lua_State* state, lua_CFunction value) { lua_pushcfunction(state, value); }
 };
-
-template <>
-struct Convert<int (&)(lua_State*)> : Convert<lua_CFunction> {};
-template <>
-struct Convert<int(lua_State*)> : Convert<lua_CFunction> {};
 
 /// @brief Allows for conversion for possible nil values using std::optional.
 template <typename T>
