@@ -126,7 +126,8 @@ void setPropertyFuncs(lua_State* state, const T& props, lua_CFunction Property::
 template <typename T>
 auto countProperties(const T& properties, lua_CFunction Property::*accessor)
 {
-    return std::count_if(std::begin(properties), std::end(properties), std::mem_fn(accessor));
+    using std::begin, std::end;
+    return std::count_if(begin(properties), end(properties), std::mem_fn(accessor));
 }
 
 } // namespace detail
