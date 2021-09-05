@@ -655,21 +655,21 @@ struct Convert<void> {
 };
 
 /// @brief True for types that should be treated as "nil" in Lua.
-template <typename T, typename = void>
+template <typename T>
 struct is_nil : std::false_type {};
 
 template <typename T>
 inline constexpr auto is_nil_v = is_nil<T>::value;
 
-template <typename T>
-struct is_nil<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::nullptr_t>>> : std::true_type {};
+template <>
+struct is_nil<std::nullptr_t> : std::true_type {};
 
-template <typename T>
-struct is_nil<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::monostate>>> : std::true_type {};
+template <>
+struct is_nil<std::monostate> : std::true_type {};
 
 /// @brief Converts nil values.
 template <typename TNil>
-struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
+struct Convert<TNil, std::enable_if_t<is_nil_v<dutils::remove_cvref_t<TNil>>>> {
     using Nil = dutils::remove_cvref_t<TNil>;
 
     static constexpr std::optional<int> push_count = 1;
