@@ -1030,6 +1030,90 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boole
 
 // --- Convert<number>
 
+using number_types = maybe_cref<float, double>;
+TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number]", number_types)
+{
+    using Number = dutils::remove_cvref_t<TestType>;
+    using Convert = dlua::Convert<TestType>;
+
+    SECTION("It has a push count of 1, allows nesting and is named 'number'.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        STATIC_REQUIRE(Convert::getPushTypename() == "number");
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::isExact returns true only for numbers and integers.")
+        {
+            CHECK_FALSE(Convert::isExact(*lua, 1));
+            lua_pushnumber(*lua, 42.0);
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushstring(*lua, "42");
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+            lua_pushstring(*lua, "42.0");
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+        }
+        SECTION("Convert::isValid returns true for numbers, integers and convertible strings.")
+        {
+            CHECK_FALSE(Convert::isValid(*lua, 1));
+            lua_pushnumber(*lua, 42.0);
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushstring(*lua, "42.0");
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isValid(*lua, -1));
+        }
+        SECTION("Convert::at returns the number or convertible string and std::nullopt otherwise.")
+        {
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+            lua_pushnumber(*lua, 42.0);
+            CHECK(Convert::at(*lua, -1) == Number{42});
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::at(*lua, -1) == Number{42});
+            lua_pushstring(*lua, "42.0");
+            CHECK(Convert::at(*lua, -1) == Number{42});
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::at(*lua, -1) == Number{42});
+            lua_pushboolean(*lua, true);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+        }
+        SECTION("Convert::check returns the number or convertible string and throws a Lua error otherwise.")
+        {
+            CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
+                  "bad argument #1 to '?' (number expected, got no value)");
+            lua_pushnumber(*lua, 42.0);
+            CHECK(Convert::check(*lua, -1) == Number{42});
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::check(*lua, -1) == Number{42});
+            lua_pushstring(*lua, "42.0");
+            CHECK(Convert::check(*lua, -1) == Number{42});
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::check(*lua, -1) == Number{42});
+            CHECK(lua.shouldThrow([&] {
+                lua_pushboolean(*lua, true);
+                Convert::check(*lua, 1);
+            }) == "bad argument #1 to '?' (number expected, got boolean)");
+        }
+        SECTION("Convert::push pushes a number on the stack.")
+        {
+            Convert::push(*lua, Number{42});
+            CHECK(lua_type(*lua, -1) == LUA_TNUMBER);
+            CHECK(lua_tonumber(*lua, -1) == 42.0);
+        }
+    }
+}
+
 // --- Convert<integer>
 
 // --- Convert<string>
