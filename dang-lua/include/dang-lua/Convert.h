@@ -882,8 +882,8 @@ struct Convert<T,
 };
 
 /// @brief Allows for conversion between Lua strings and std::string.
-template <>
-struct Convert<std::string> {
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::string>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -928,8 +928,8 @@ struct Convert<std::string> {
 };
 
 /// @brief Allows for conversion between Lua strings and std::string_view.
-template <>
-struct Convert<std::string_view> {
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::string_view>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -972,7 +972,7 @@ struct Convert<std::string_view> {
 
 /// @brief Allows pushing of char arrays as strings.
 template <std::size_t v_count>
-struct Convert<char[v_count]> {
+struct Convert<const char[v_count]> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -989,9 +989,24 @@ struct Convert<char[v_count]> {
     }
 };
 
+template <std::size_t v_count>
+struct Convert<const char (&)[v_count]> : Convert<const char[v_count]> {};
+
+template <std::size_t v_count>
+struct Convert<const char(&&)[v_count]> : Convert<const char[v_count]> {};
+
+template <std::size_t v_count>
+struct Convert<char[v_count]> : Convert<const char[v_count]> {};
+
+template <std::size_t v_count>
+struct Convert<char (&)[v_count]> : Convert<const char[v_count]> {};
+
+template <std::size_t v_count>
+struct Convert<char(&&)[v_count]> : Convert<const char[v_count]> {};
+
 /// @brief Allows pushing of C-Style strings.
-template <>
-struct Convert<const char*> {
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, const char*>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1026,9 +1041,21 @@ struct Convert<const char*> {
     static void push(lua_State* state, const char* value) { lua_pushstring(state, value); }
 };
 
-/// @brief Allows pushing of C-Style strings.
-template <>
-struct Convert<char*> : Convert<const char*> {};
+/// @brief Allows pushing of mutable C-Style strings.
+template <typename T>
+struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, char*>>> {
+    static constexpr std::optional<int> push_count = 1;
+    static constexpr bool allow_nesting = true;
+
+    static constexpr std::string_view getPushTypename()
+    {
+        using namespace std::literals;
+        return "string"sv;
+    }
+
+    /// @brief Pushes the given null-terminated string onto the stack.
+    static void push(lua_State* state, const char* value) { lua_pushstring(state, value); }
+};
 
 /// @brief Allows for conversion of C functions.
 template <>
