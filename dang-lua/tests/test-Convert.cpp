@@ -1675,8 +1675,89 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
     }
 }
 
-// --- Convert<pair>
+// --- Convert<pair> and Convert<tuple>
 
-// --- Convert<tuple>
+using pair_types = maybe_cref<std::pair<int, std::string>, std::tuple<int, std::string>>;
+TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua][convert][tuple]", pair_types)
+{
+    using namespace std::literals::string_literals;
+    using Convert = dlua::Convert<TestType>;
+    using Pair = dutils::remove_cvref_t<TestType>;
+
+    SECTION("It has a push count of 2 and can be nested if all elements can be nested.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 2);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        // No getPushTypename, as elements are always checked individually.
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+
+        SECTION("Convert::isExact returns true if all consecutive elements are exact.")
+        {
+            CHECK_FALSE(Convert::isExact(*lua, 1));
+            lua_pushinteger(*lua, 42);
+            CHECK_FALSE(Convert::isExact(*lua, 1));
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::isExact(*lua, 1));
+            CHECK(Convert::isExact(*lua, -2));
+            lua_pushstring(*lua, "test");
+            CHECK_FALSE(Convert::isExact(*lua, 2));
+            CHECK_FALSE(Convert::isExact(*lua, -2));
+        }
+        SECTION("Convert::isValid returns true if all consecutive elements are valid.")
+        {
+            CHECK_FALSE(Convert::isValid(*lua, 1));
+            lua_pushinteger(*lua, 42);
+            CHECK_FALSE(Convert::isValid(*lua, 1));
+            CHECK_FALSE(Convert::isValid(*lua, -1));
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::isValid(*lua, 1));
+            CHECK(Convert::isValid(*lua, -2));
+            lua_pushstring(*lua, "test");
+            CHECK(Convert::isValid(*lua, 2));
+            CHECK(Convert::isValid(*lua, -2));
+        }
+        SECTION("Convert::at returns std::nullopt if any value is not valid.")
+        {
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::at(*lua, 1) == Pair{42, "42"s});
+            CHECK(Convert::at(*lua, -2) == Pair{42, "42"s});
+            lua_pushstring(*lua, "test");
+            CHECK(Convert::at(*lua, 2) == Pair{42, "test"s});
+            CHECK(Convert::at(*lua, -2) == Pair{42, "test"s});
+        }
+        SECTION("Convert::check throws a Lua error if any value is not valid.")
+        {
+            CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
+                  "bad argument #1 to '?' (integer expected, got no value)");
+            CHECK(lua.shouldThrow([&] {
+                lua_pushinteger(*lua, 42);
+                Convert::check(*lua, 1);
+            }) == "bad argument #2 to '?' (string expected, got no value)");
+            lua_pushinteger(*lua, 42);
+            lua_pushstring(*lua, "42");
+            CHECK(Convert::check(*lua, 1) == Pair{42, "42"s});
+            CHECK(Convert::check(*lua, -2) == Pair{42, "42"s});
+            lua_pushstring(*lua, "test");
+            CHECK(Convert::check(*lua, 2) == Pair{42, "test"s});
+            CHECK(Convert::check(*lua, -2) == Pair{42, "test"s});
+        }
+        SECTION("Convert::push pushes all elements on the stack in order.")
+        {
+            Convert::push(*lua, {42, "test"s});
+            CHECK(lua_type(*lua, 1) == LUA_TNUMBER);
+            CHECK(dlua::Convert<int>::at(*lua, 1) == 42);
+            CHECK(lua_type(*lua, 2) == LUA_TSTRING);
+            CHECK(dlua::Convert<std::string>::at(*lua, 2) == "test"s);
+        }
+    }
+}
 
 // --- Convert<variant>
