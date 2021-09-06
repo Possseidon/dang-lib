@@ -1327,8 +1327,11 @@ template <typename T>
 struct Convert<T, std::enable_if_t<is_tuple_v<dutils::remove_cvref_t<T>>>> : ConvertTuple<dutils::remove_cvref_t<T>> {};
 
 /// @brief Allows for conversion of different values using std::variant.
+template <typename>
+struct ConvertVariant;
+
 template <typename... TOptions>
-struct Convert<std::variant<TOptions...>> {
+struct ConvertVariant<std::variant<TOptions...>> {
     static_assert(((Convert<TOptions>::push_count == 1) && ...), "All variant options must have a push count of one.");
 
     using Variant = std::variant<TOptions...>;
@@ -1391,5 +1394,18 @@ private:
             return result + ", " + getPushTypenameHelper(TypeList<TRest...>());
     }
 };
+
+template <typename T>
+struct is_variant : std::false_type {};
+
+template <typename T>
+inline constexpr auto is_variant_v = is_variant<T>::value;
+
+template <typename... TValues>
+struct is_variant<std::variant<TValues...>> : std::true_type {};
+
+template <typename T>
+struct Convert<T, std::enable_if_t<is_variant_v<dutils::remove_cvref_t<T>>>>
+    : ConvertVariant<dutils::remove_cvref_t<T>> {};
 
 } // namespace dang::lua
