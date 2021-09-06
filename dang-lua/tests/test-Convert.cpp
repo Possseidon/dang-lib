@@ -784,16 +784,16 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to a
 
             CHECK_FALSE(isExactAndValid(*lua, 1));
 
-            lua_pushstring(*lua, "first");
+            lua_pushliteral(*lua, "first");
             CHECK(isExactAndValid(*lua, -1));
-            lua_pushstring(*lua, "second");
+            lua_pushliteral(*lua, "second");
             CHECK(isExactAndValid(*lua, -1));
-            lua_pushstring(*lua, "third");
+            lua_pushliteral(*lua, "third");
             CHECK(isExactAndValid(*lua, -1));
 
-            lua_pushstring(*lua, "first_");
+            lua_pushliteral(*lua, "first_");
             CHECK_FALSE(isExactAndValid(*lua, -1));
-            lua_pushstring(*lua, "_first");
+            lua_pushliteral(*lua, "_first");
             CHECK_FALSE(isExactAndValid(*lua, -1));
 
             lua_pushinteger(*lua, 42);
@@ -803,16 +803,16 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to a
         {
             CHECK(Convert::at(*lua, 1) == std::nullopt);
 
-            lua_pushstring(*lua, "first");
+            lua_pushliteral(*lua, "first");
             CHECK(Convert::at(*lua, -1) == TestEnum::First);
-            lua_pushstring(*lua, "second");
+            lua_pushliteral(*lua, "second");
             CHECK(Convert::at(*lua, -1) == TestEnum::Second);
-            lua_pushstring(*lua, "third");
+            lua_pushliteral(*lua, "third");
             CHECK(Convert::at(*lua, -1) == TestEnum::Third);
 
-            lua_pushstring(*lua, "first_");
+            lua_pushliteral(*lua, "first_");
             CHECK(Convert::at(*lua, -1) == std::nullopt);
-            lua_pushstring(*lua, "_first");
+            lua_pushliteral(*lua, "_first");
             CHECK(Convert::at(*lua, -1) == std::nullopt);
 
             lua_pushinteger(*lua, 42);
@@ -823,20 +823,20 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to a
             CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
                   "bad argument #1 to '?' (string expected, got no value)");
 
-            lua_pushstring(*lua, "first");
+            lua_pushliteral(*lua, "first");
             CHECK(Convert::at(*lua, -1) == TestEnum::First);
-            lua_pushstring(*lua, "second");
+            lua_pushliteral(*lua, "second");
             CHECK(Convert::at(*lua, -1) == TestEnum::Second);
-            lua_pushstring(*lua, "third");
+            lua_pushliteral(*lua, "third");
             CHECK(Convert::at(*lua, -1) == TestEnum::Third);
 
             CHECK(lua.shouldThrow([&] {
-                lua_pushstring(*lua, "first_");
+                lua_pushliteral(*lua, "first_");
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (invalid option 'first_')");
 
             CHECK(lua.shouldThrow([&] {
-                lua_pushstring(*lua, "_first");
+                lua_pushliteral(*lua, "_first");
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (invalid option '_first')");
 
@@ -1057,9 +1057,9 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
             CHECK(Convert::isExact(*lua, -1));
             lua_pushinteger(*lua, 42);
             CHECK(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK_FALSE(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK_FALSE(Convert::isExact(*lua, -1));
             lua_pushboolean(*lua, true);
             CHECK_FALSE(Convert::isExact(*lua, -1));
@@ -1071,9 +1071,9 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
             CHECK(Convert::isValid(*lua, -1));
             lua_pushinteger(*lua, 42);
             CHECK(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::isValid(*lua, -1));
             lua_pushboolean(*lua, true);
             CHECK_FALSE(Convert::isValid(*lua, -1));
@@ -1085,9 +1085,9 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
             CHECK(Convert::at(*lua, -1) == Number{42});
             lua_pushinteger(*lua, 42);
             CHECK(Convert::at(*lua, -1) == Number{42});
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::at(*lua, -1) == Number{42});
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::at(*lua, -1) == Number{42});
             lua_pushboolean(*lua, true);
             CHECK(Convert::at(*lua, -1) == std::nullopt);
@@ -1100,12 +1100,12 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
             CHECK(Convert::check(*lua, -1) == Number{42});
             lua_pushinteger(*lua, 42);
             CHECK(Convert::check(*lua, -1) == Number{42});
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::check(*lua, -1) == Number{42});
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::check(*lua, -1) == Number{42});
             CHECK(lua.shouldThrow([&] {
-                lua_pushstring(*lua, "test");
+                lua_pushliteral(*lua, "test");
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (string cannot be converted to a number)");
             CHECK(lua.shouldThrow([&] {
@@ -1166,11 +1166,11 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
             CHECK(Convert::isExact(*lua, -1));
             lua_pushnumber(*lua, 42.5);
             CHECK_FALSE(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK_FALSE(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK_FALSE(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42.5");
+            lua_pushliteral(*lua, "42.5");
             CHECK_FALSE(Convert::isExact(*lua, -1));
             lua_pushboolean(*lua, true);
             CHECK_FALSE(Convert::isExact(*lua, -1));
@@ -1184,11 +1184,11 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
             CHECK(Convert::isValid(*lua, -1));
             lua_pushnumber(*lua, 42.5);
             CHECK_FALSE(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42.5");
+            lua_pushliteral(*lua, "42.5");
             CHECK_FALSE(Convert::isValid(*lua, -1));
             lua_pushboolean(*lua, true);
             CHECK_FALSE(Convert::isValid(*lua, -1));
@@ -1221,11 +1221,11 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
             CHECK(Convert::at(*lua, -1) == Integer{42});
             lua_pushnumber(*lua, 42.5);
             CHECK(Convert::at(*lua, -1) == std::nullopt);
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::at(*lua, -1) == Integer{42});
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::at(*lua, -1) == Integer{42});
-            lua_pushstring(*lua, "42.5");
+            lua_pushliteral(*lua, "42.5");
             CHECK(Convert::at(*lua, -1) == std::nullopt);
             lua_pushboolean(*lua, true);
             CHECK(Convert::at(*lua, -1) == std::nullopt);
@@ -1259,12 +1259,12 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
                 lua_pushnumber(*lua, 42.5);
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (number has no integer representation)");
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::check(*lua, -1) == Integer{42});
-            lua_pushstring(*lua, "42.0");
+            lua_pushliteral(*lua, "42.0");
             CHECK(Convert::check(*lua, -1) == Integer{42});
             CHECK(lua.shouldThrow([&] {
-                lua_pushstring(*lua, "42.5");
+                lua_pushliteral(*lua, "42.5");
                 Convert::check(*lua, 1);
             }) == "bad argument #1 to '?' (string cannot be converted to an integer)");
             CHECK(lua.shouldThrow([&] {
@@ -1700,10 +1700,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
             lua_pushinteger(*lua, 42);
             CHECK_FALSE(Convert::isExact(*lua, 1));
             CHECK_FALSE(Convert::isExact(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::isExact(*lua, 1));
             CHECK(Convert::isExact(*lua, -2));
-            lua_pushstring(*lua, "test");
+            lua_pushliteral(*lua, "test");
             CHECK_FALSE(Convert::isExact(*lua, 2));
             CHECK_FALSE(Convert::isExact(*lua, -2));
         }
@@ -1713,10 +1713,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
             lua_pushinteger(*lua, 42);
             CHECK_FALSE(Convert::isValid(*lua, 1));
             CHECK_FALSE(Convert::isValid(*lua, -1));
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::isValid(*lua, 1));
             CHECK(Convert::isValid(*lua, -2));
-            lua_pushstring(*lua, "test");
+            lua_pushliteral(*lua, "test");
             CHECK(Convert::isValid(*lua, 2));
             CHECK(Convert::isValid(*lua, -2));
         }
@@ -1726,10 +1726,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
             lua_pushinteger(*lua, 42);
             CHECK(Convert::at(*lua, 1) == std::nullopt);
             CHECK(Convert::at(*lua, -1) == std::nullopt);
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::at(*lua, 1) == Pair{42, "42"s});
             CHECK(Convert::at(*lua, -2) == Pair{42, "42"s});
-            lua_pushstring(*lua, "test");
+            lua_pushliteral(*lua, "test");
             CHECK(Convert::at(*lua, 2) == Pair{42, "test"s});
             CHECK(Convert::at(*lua, -2) == Pair{42, "test"s});
         }
@@ -1742,10 +1742,10 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
                 Convert::check(*lua, 1);
             }) == "bad argument #2 to '?' (string expected, got no value)");
             lua_pushinteger(*lua, 42);
-            lua_pushstring(*lua, "42");
+            lua_pushliteral(*lua, "42");
             CHECK(Convert::check(*lua, 1) == Pair{42, "42"s});
             CHECK(Convert::check(*lua, -2) == Pair{42, "42"s});
-            lua_pushstring(*lua, "test");
+            lua_pushliteral(*lua, "test");
             CHECK(Convert::check(*lua, 2) == Pair{42, "test"s});
             CHECK(Convert::check(*lua, -2) == Pair{42, "test"s});
         }
