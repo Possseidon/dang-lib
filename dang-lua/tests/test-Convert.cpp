@@ -1601,8 +1601,6 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
                         "[lua][convert][nil][optional]",
                         maybe_cref<std::optional<int>>)
 {
-    using namespace std::literals::string_literals;
-
     using Convert = dlua::Convert<TestType>;
     using ConvertContained = dlua::Convert<int>;
 
@@ -1610,7 +1608,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
     {
         STATIC_REQUIRE(Convert::push_count == 1);
         STATIC_REQUIRE(Convert::allow_nesting);
-        CHECK(Convert::getPushTypename() == std::string(ConvertContained::getPushTypename()) + "?"s);
+        CHECK(Convert::getPushTypename() == std::string(ConvertContained::getPushTypename()) + "?");
     }
     SECTION("Given a Lua state.")
     {
