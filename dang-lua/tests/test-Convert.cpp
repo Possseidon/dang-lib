@@ -41,7 +41,9 @@ public:
         lua_pushcclosure(state_, lua_func, 1);
         if (lua_pcall(state_, 0, 0, 0) == LUA_OK)
             return std::string();
-        return dlua::Convert<std::string>::at(state_, -1).value_or(std::string());
+        auto msg = dlua::Convert<std::string>::at(state_, -1).value_or(std::string());
+        lua_pop(state_, 1);
+        return msg;
     }
 
 private:
