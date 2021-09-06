@@ -1212,7 +1212,7 @@ static constexpr int combinedPushCount(const TValues&... values)
 
 /// @brief Allows for conversion of multiple values using tuple like types.
 template <typename TTuple, typename... TValues>
-struct ConvertTuple {
+struct ConvertTupleImpl {
     static constexpr std::optional<int> push_count = CombinedPushCount<TValues...>;
     static constexpr bool allow_nesting = (Convert<TValues>::allow_nesting && ...);
 
@@ -1277,9 +1277,9 @@ private:
     template <std::size_t... v_indices>
     static std::optional<TTuple> atHelper(lua_State* state, int pos, std::index_sequence<v_indices...>)
     {
-        TTuple values{Convert<TValues>::at(state, pos + v_indices)...};
-        if ((std::get<v_indices>(values) && ...))
-            return TTuple{*std::get<v_indices>(values)...};
+        std::tuple maybe_values{Convert<TValues>::at(state, pos + v_indices)...};
+        if ((std::get<v_indices>(maybe_values) && ...))
+            return TTuple{*std::get<v_indices>(maybe_values)...};
         return std::nullopt;
     }
 
@@ -1302,11 +1302,29 @@ private:
     }
 };
 
-template <typename... TValues>
-struct Convert<std::tuple<TValues...>> : ConvertTuple<std::tuple<TValues...>, TValues...> {};
+template <typename>
+struct ConvertTuple;
 
 template <typename TFirst, typename TSecond>
-struct Convert<std::pair<TFirst, TSecond>> : ConvertTuple<std::pair<TFirst, TSecond>, TFirst, TSecond> {};
+struct ConvertTuple<std::pair<TFirst, TSecond>> : ConvertTupleImpl<std::pair<TFirst, TSecond>, TFirst, TSecond> {};
+
+template <typename... TValues>
+struct ConvertTuple<std::tuple<TValues...>> : ConvertTupleImpl<std::tuple<TValues...>, TValues...> {};
+
+template <typename T>
+struct is_tuple : std::false_type {};
+
+template <typename T>
+inline constexpr auto is_tuple_v = is_tuple<T>::value;
+
+template <typename TFirst, typename TSecond>
+struct is_tuple<std::pair<TFirst, TSecond>> : std::true_type {};
+
+template <typename... TValues>
+struct is_tuple<std::tuple<TValues...>> : std::true_type {};
+
+template <typename T>
+struct Convert<T, std::enable_if_t<is_tuple_v<dutils::remove_cvref_t<T>>>> : ConvertTuple<dutils::remove_cvref_t<T>> {};
 
 /// @brief Allows for conversion of different values using std::variant.
 template <typename... TOptions>
