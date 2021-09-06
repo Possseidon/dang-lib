@@ -1761,3 +1761,82 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
 }
 
 // --- Convert<variant>
+
+using variant_types = maybe_cref<std::variant<int, std::string>>;
+TEMPLATE_LIST_TEST_CASE("Convert can work with std::variant.", "[lua][convert][variant]", variant_types)
+{
+    using namespace std::literals::string_literals;
+    using Variant = dutils::remove_cvref_t<TestType>;
+    using Convert = dlua::Convert<TestType>;
+
+    SECTION("It has a push count of 1, can be nested and its name is the disjunction of all options.")
+    {
+        STATIC_REQUIRE(Convert::push_count == 1);
+        STATIC_REQUIRE(Convert::allow_nesting);
+        CHECK(Convert::getPushTypename() == "integer or string");
+    }
+    SECTION("Given a Lua state.")
+    {
+        LuaState lua;
+        SECTION("Convert::isExact returns true if any option is exact.")
+        {
+            CHECK_FALSE(Convert::isExact(*lua, 1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushliteral(*lua, "test");
+            CHECK(Convert::isExact(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isExact(*lua, -1));
+        }
+        SECTION("Convert::isValid returns true if any option is valid.")
+        {
+            CHECK_FALSE(Convert::isValid(*lua, 1));
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushliteral(*lua, "test");
+            CHECK(Convert::isValid(*lua, -1));
+            lua_pushboolean(*lua, true);
+            CHECK_FALSE(Convert::isValid(*lua, -1));
+        }
+        SECTION("Convert::at returns the first valid value and std::nullopt otherwise.")
+        {
+            CHECK(Convert::at(*lua, 1) == std::nullopt);
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::at(*lua, -1) == Variant{42});
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::at(*lua, -1) == Variant{42});
+            lua_pushliteral(*lua, "test");
+            CHECK(Convert::at(*lua, -1) == Variant{"test"s});
+            lua_pushboolean(*lua, true);
+            CHECK(Convert::at(*lua, -1) == std::nullopt);
+        }
+        SECTION("Convert::check returns the first valid value and throws a Lua error otherwise.")
+        {
+            CHECK(lua.shouldThrow([&] { Convert::check(*lua, 1); }) ==
+                  "bad argument #1 to '?' (integer or string expected, got no value)");
+            lua_pushinteger(*lua, 42);
+            CHECK(Convert::check(*lua, -1) == Variant{42});
+            lua_pushliteral(*lua, "42");
+            CHECK(Convert::check(*lua, -1) == Variant{42});
+            lua_pushliteral(*lua, "test");
+            CHECK(Convert::check(*lua, -1) == Variant{"test"s});
+            CHECK(lua.shouldThrow([&] {
+                lua_pushboolean(*lua, true);
+                Convert::check(*lua, 1);
+            }) == "bad argument #1 to '?' (integer or string expected, got boolean)");
+        }
+        SECTION("Convert::push pushes the value with the correct type on the stack.")
+        {
+            Convert::push(*lua, 42);
+            CHECK(lua_type(*lua, -1) == LUA_TNUMBER);
+            CHECK(dlua::Convert<int>::at(*lua, -1) == 42);
+            Convert::push(*lua, "test"s);
+            CHECK(lua_type(*lua, -1) == LUA_TSTRING);
+            CHECK(dlua::Convert<std::string>::at(*lua, -1) == "test"s);
+        }
+    }
+}
