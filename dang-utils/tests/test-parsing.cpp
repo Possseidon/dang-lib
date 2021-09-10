@@ -19,7 +19,7 @@ namespace dutils = dang::utils;
 // - optional support for highlighting
 // - optional support for suggestions
 
-TEST_CASE("The basic lexer uses characters as tokens.")
+TEST_CASE("The basic lexer uses characters as tokens.", "[lexer]")
 {
     SECTION("It returns all characters one by one.")
     {
@@ -48,7 +48,7 @@ TEST_CASE("The basic lexer uses characters as tokens.")
     }
 }
 
-TEST_CASE("The UTF-8 lexer uses UTF-8 code points as tokens.")
+TEST_CASE("The UTF-8 lexer uses UTF-8 code points as tokens.", "[lexer]")
 {
     // TODO: C++20 will need u8 literals.
     SECTION("It can lex ASCII.")
