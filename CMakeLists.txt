@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 option(DANG_WERROR "Whether to treat warnings as errors.")
 
 if(MSVC)
-  add_compile_options(/W4 /bigobj "$<$<BOOL:${DANG_WERROR}>:/WX>")
+  add_compile_options(/W4 /utf-8 /bigobj "$<$<BOOL:${DANG_WERROR}>:/WX>")
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     add_compile_options(
       "SHELL:-Xclang -Wno-missing-braces"
