@@ -122,13 +122,13 @@ TEST_CASE("The UTF-8 lexer uses UTF-8 code points as tokens.", "[lexer]")
     }
     SECTION("It can be used constexpr.")
     {
-        constexpr const auto& lexer_and_tokens = [] {
+        constexpr auto lexer_and_tokens = [] {
             auto lexer = dutils::Utf8Lexer("\xEF\xBB\xBFコンスト");
             return std::tuple{
                 lexer, std::array{lexer.next(), lexer.next(), lexer.next(), lexer.next(), lexer.next(), lexer.next()}};
         }();
-        constexpr const auto& lexer = std::get<0>(lexer_and_tokens);
-        constexpr const auto& tokens = std::get<1>(lexer_and_tokens);
+        constexpr auto lexer = std::get<0>(lexer_and_tokens);
+        constexpr auto tokens = std::get<1>(lexer_and_tokens);
         STATIC_REQUIRE(lexer.hasBOM());
         STATIC_REQUIRE(tokens[0] == "コ");
         STATIC_REQUIRE(tokens[1] == "ン");
