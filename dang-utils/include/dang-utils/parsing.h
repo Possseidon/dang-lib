@@ -12,55 +12,71 @@ class LexerError : public std::runtime_error {
 };
 
 // The Lexer concept:
+// - using Char = ...;
 // - using Token = ...;
-// - using TextView = ...;
-// - Lexer(TextView)
+// - Lexer(std::basic_string_view<Char>)
 // - std::optional<Token> next()
+
+template <typename TChar = char>
+struct LexerToken {
+    using Char = TChar;
+    using TextView = std::basic_string_view<Char>;
+
+    TextView text;
+};
 
 /// @brief Tokenizes a series of characters one by one.
 template <typename TChar = char>
 class BasicLexer {
 public:
-    using TextView = std::basic_string_view<TChar>;
-    using Token = TextView;
+    using Char = TChar;
+    using Token = LexerToken<Char>;
 
-    constexpr BasicLexer(TextView text_view)
-        : text_view_(text_view)
+    using TextView = std::basic_string_view<Char>;
+
+    constexpr explicit BasicLexer(TextView text)
+        : text_(text)
     {}
+
+    constexpr TextView textView() const { return text_; }
 
     constexpr std::optional<Token> next()
     {
-        if (text_view_.empty())
+        if (text_.empty())
             return std::nullopt;
-        auto token = text_view_.substr(0, 1);
-        text_view_.remove_prefix(1);
-        return token;
+        auto token = text_.substr(0, 1);
+        text_.remove_prefix(1);
+        return Token{token};
     }
 
 private:
-    TextView text_view_;
+    TextView text_;
 };
 
 /// @brief Tokenizes a series of UTF-8 code units one by one.
 class Utf8Lexer {
 public:
-    using TextView = std::basic_string_view<char>; // TODO: C++20 char8_t
-    using Token = TextView;
+    using Char = char; // TODO: C++20 char8_t
+    using Token = LexerToken<Char>;
 
-    constexpr Utf8Lexer(TextView text_view)
-        : text_view_(text_view)
+    using TextView = std::basic_string_view<Char>;
+
+    constexpr explicit Utf8Lexer(TextView text)
+        : text_(text)
         , has_bom_(scanBOM())
     {}
 
     constexpr bool hasBOM() const { return has_bom_; }
 
+    constexpr TextView textView() const { return text_; }
+
     constexpr std::optional<Token> next()
     {
-        if (text_view_.empty())
+        if (text_.empty())
             return std::nullopt;
 
         std::size_t code_unit_length = [&] {
-            auto code_point = text_view_.front();
+            auto code_point = text_.front();
             if ((code_point & 0b1000'0000) == 0b0000'0000)
                 return 1;
             if ((code_point & 0b1110'0000) == 0b1100'0000)
@@ -72,28 +88,31 @@ public:
             throw LexerError("Invalid initial UTF-8 code point.");
         }();
 
+        if (text_.size() < code_unit_length)
+            throw LexerError("Incomplete UTF-8 code unit.");
+
         for (std::size_t i = 1; i < code_unit_length; i++) {
-            if ((text_view_[i] & 0b1100'0000) != 0b1000'0000)
+            if ((text_[i] & 0b1100'0000) != 0b1000'0000)
                 throw LexerError("Invalid UTF-8 code point.");
         }
 
-        auto result = text_view_.substr(0, code_unit_length);
-        text_view_.remove_prefix(code_unit_length);
-        return result;
+        auto result = text_.substr(0, code_unit_length);
+        text_.remove_prefix(code_unit_length);
+        return Token{result};
     }
 
 private:
     constexpr bool scanBOM()
     {
-        if (text_view_[0] != '\xEF')
+        if (text_[0] != '\xEF')
             return false;
-        if (text_view_.size() < 3 || text_view_[1] != '\xBB' || text_view_[2] != '\xBF')
+        if (text_.size() < 3 || text_[1] != '\xBB' || text_[2] != '\xBF')
             throw LexerError("Invalid UTF-8 BOM.");
-        text_view_.remove_prefix(3);
+        text_.remove_prefix(3);
         return true;
     }
 
-    TextView text_view_;
+    TextView text_;
     bool has_bom_;
 };
 
