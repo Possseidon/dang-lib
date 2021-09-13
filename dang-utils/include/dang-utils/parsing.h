@@ -116,4 +116,143 @@ private:
     bool has_bom_;
 };
 
+namespace lex {
+
+/// @brief Reads a single char from the char lexer if it matches.
+template <auto v_char, typename TCharLexer = BasicLexer<decltype(v_char)>>
+struct Char : LexerToken<typename TCharLexer::Char> {
+    using Base = LexerToken<typename TCharLexer::Char>;
+    using CharLexer = TCharLexer;
+
+    static_assert(std::is_same_v<decltype(v_char), typename Base::Char>);
+
+    static constexpr std::optional<Char> match(CharLexer& char_lexer)
+    {
+        auto next_char = char_lexer.next();
+        if (!next_char || next_char->text.size() != 1 || next_char->text.front() != v_char)
+            return std::nullopt;
+        return Char{next_char->text};
+    }
+};
+
+/// @brief Reads chars as long as the predicate holds true.
+/// @remark Allows both TextView and plain chars in the predicate.
+template <auto v_predicate, typename TCharLexer = BasicLexer<char>, typename = void>
+struct TakeWhile;
+
+template <auto v_predicate, typename TCharLexer>
+struct TakeWhile<v_predicate,
+                 TCharLexer,
+                 std::enable_if_t<std::is_invocable_r_v<bool, decltype(v_predicate), typename TCharLexer::TextView>>>
+    : LexerToken<typename TCharLexer::Char> {
+    using Base = LexerToken<typename TCharLexer::Char>;
+    using CharLexer = TCharLexer;
+
+    static constexpr std::optional<TakeWhile> match(CharLexer& char_lexer)
+    {
+        auto original_text = char_lexer.textView();
+        std::size_t count = 0;
+        while (true) {
+            auto previous_lexer = char_lexer;
+            auto next_char = char_lexer.next();
+            if (!next_char || !v_predicate(next_char->text)) {
+                char_lexer = previous_lexer;
+                break;
+            }
+            count += next_char->text.size();
+        }
+        if (count == 0)
+            return std::nullopt;
+        return TakeWhile{original_text.substr(0, count)};
+    }
+};
+
+namespace detail {
+
+/// @brief Turns a bool(char) predicate into a bool(TextView) predicate.
+template <auto v_predicate, typename TChar>
+constexpr bool singleCharValidator(std::basic_string_view<TChar> c)
+{
+    return c.size() == 1 && v_predicate(c.front());
+}
+
+} // namespace detail
+
+template <auto v_predicate, typename TCharLexer>
+struct TakeWhile<v_predicate,
+                 TCharLexer,
+                 std::enable_if_t<std::is_invocable_r_v<bool, decltype(v_predicate), typename TCharLexer::Char>>>
+    : TakeWhile<detail::singleCharValidator<v_predicate, typename TCharLexer::Char>, TCharLexer> {
+    using Base = TakeWhile<detail::singleCharValidator<v_predicate, typename TCharLexer::Char>, TCharLexer>;
+    using CharLexer = TCharLexer;
+
+    static constexpr std::optional<TakeWhile> match(CharLexer& char_lexer)
+    {
+        auto result = Base::match(char_lexer);
+        if (result)
+            return TakeWhile{result->text};
+        return std::nullopt;
+    }
+};
+
+/// @brief Reads a single char from the char lexer.
+template <typename TCharLexer = BasicLexer<char>>
+struct Any : LexerToken<typename TCharLexer::Char> {
+    using Base = LexerToken<typename TCharLexer::Char>;
+    using CharLexer = TCharLexer;
+
+    static constexpr std::optional<Any> match(CharLexer& char_lexer)
+    {
+        auto next_char = char_lexer.next();
+        if (!next_char)
+            return std::nullopt;
+        return Any{next_char->text};
+    }
+};
+
+} // namespace lex
+
+/// @brief A lexer that can processes the given variant of tokens.
+template <typename TTokenVariant, typename TCharLexer = BasicLexer<char>>
+class AutoLexer;
+
+template <typename... TTokens, typename TCharLexer>
+class AutoLexer<std::variant<TTokens...>, TCharLexer> {
+public:
+    using CharLexer = TCharLexer;
+    using Char = typename TCharLexer::Char;
+    using Token = std::variant<TTokens...>;
+
+    using TextView = typename CharLexer::TextView;
+
+    constexpr explicit AutoLexer(TextView text)
+        : char_lexer_(text)
+    {}
+
+    constexpr CharLexer charLexer() const { return char_lexer_; }
+
+    constexpr std::optional<Token> next() { return tryTokens<TTokens...>(); }
+
+private:
+    template <typename TFirst, typename... TRest>
+    constexpr std::optional<Token> tryTokens()
+    {
+        auto old_lexer = char_lexer_;
+        auto maybe_token = TFirst::match(char_lexer_);
+        if (!maybe_token) {
+            char_lexer_ = old_lexer;
+            if constexpr (sizeof...(TRest) > 0)
+                return tryTokens<TRest...>();
+            else {
+                if (char_lexer_.next())
+                    throw LexerError("Invalid lexer token.");
+                return std::nullopt;
+            }
+        }
+        return *maybe_token;
+    }
+
+    CharLexer char_lexer_;
+};
+
 } // namespace dang::utils
