@@ -1,6 +1,7 @@
 #include <array>
 #include <string>
 #include <tuple>
+#include <variant>
 #include <vector>
 
 #include "dang-utils/parsing.h"
@@ -9,6 +10,9 @@
 
 namespace dutils = dang::utils;
 using Catch::Matchers::Message;
+using dutils::lex::Any;
+using dutils::lex::Char;
+using dutils::lex::TakeWhile;
 
 TEST_CASE("The basic lexer uses characters as tokens.", "[lexer]")
 {
@@ -147,5 +151,65 @@ TEST_CASE("The UTF-8 lexer uses UTF-8 code points as tokens.", "[lexer]")
         CHECK_THROWS_MATCHES(lex("\xE0\x80"), dutils::LexerError, Message("Incomplete UTF-8 code unit."));
         CHECK_THROWS_MATCHES(lex("\xF0\x80\x80\x01"), dutils::LexerError, Message("Invalid UTF-8 code point."));
         CHECK_THROWS_MATCHES(lex("\xF0\x80\x80"), dutils::LexerError, Message("Incomplete UTF-8 code unit."));
+    }
+}
+
+constexpr bool isWhitespace(char c) { return c == ' '; };
+constexpr bool isAlpha(char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; };
+
+using WhitespaceToken = TakeWhile<isWhitespace>;
+using CommaToken = Char<','>;
+using StringToken = TakeWhile<isAlpha>;
+using InvalidToken = Any<>;
+
+using StringListToken = std::variant<WhitespaceToken, CommaToken, StringToken>;
+using StringListLexer = dutils::AutoLexer<StringListToken>;
+
+using StringListTokenWithInvalid = std::variant<WhitespaceToken, CommaToken, StringToken, InvalidToken>;
+using StringListLexerWithInvalid = dutils::AutoLexer<StringListTokenWithInvalid>;
+
+TEST_CASE("The auto lexer uses a variant of lexer tokens.", "[lexer]")
+{
+    SECTION("It can process a valid series of tokens.")
+    {
+        auto lexer = StringListLexer("Hello, World");
+        CHECK(std::get<StringToken>(lexer.next().value()).text == "Hello");
+        CHECK(std::get<CommaToken>(lexer.next().value()).text == ",");
+        CHECK(std::get<WhitespaceToken>(lexer.next().value()).text == " ");
+        CHECK(std::get<StringToken>(lexer.next().value()).text == "World");
+        CHECK_FALSE(lexer.next());
+        CHECK_FALSE(lexer.next());
+    }
+    SECTION("It skips over invalid characters, throwing a LexerError in the process.")
+    {
+        auto lexer = StringListLexer("Hello 7,");
+        CHECK(std::get<StringToken>(lexer.next().value()).text == "Hello");
+        CHECK(std::get<WhitespaceToken>(lexer.next().value()).text == " ");
+        CHECK_THROWS_MATCHES(lexer.next(), dutils::LexerError, Message("Invalid lexer token."));
+        CHECK(std::get<CommaToken>(lexer.next().value()).text == ",");
+        CHECK_FALSE(lexer.next());
+        CHECK_FALSE(lexer.next());
+    }
+    SECTION("To avoid exceptions, a final 'Any' token can be used instead.")
+    {
+        auto lexer = StringListLexerWithInvalid("Hello 7,");
+        CHECK(std::get<StringToken>(lexer.next().value()).text == "Hello");
+        CHECK(std::get<WhitespaceToken>(lexer.next().value()).text == " ");
+        CHECK(std::get<InvalidToken>(lexer.next().value()).text == "7");
+        CHECK(std::get<CommaToken>(lexer.next().value()).text == ",");
+        CHECK_FALSE(lexer.next());
+        CHECK_FALSE(lexer.next());
+    }
+    SECTION("It can be used constexpr as long as all tokens are constexpr.")
+    {
+        constexpr auto tokens = [] {
+            auto lexer = StringListLexer("Hello, World");
+            return std::array{lexer.next(), lexer.next(), lexer.next(), lexer.next(), lexer.next()};
+        }();
+        STATIC_REQUIRE(std::get<StringToken>(tokens[0].value()).text == "Hello");
+        STATIC_REQUIRE(std::get<CommaToken>(tokens[1].value()).text == ",");
+        STATIC_REQUIRE(std::get<WhitespaceToken>(tokens[2].value()).text == " ");
+        STATIC_REQUIRE(std::get<StringToken>(tokens[3].value()).text == "World");
+        STATIC_REQUIRE_FALSE(tokens[4]);
     }
 }
