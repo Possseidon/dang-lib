@@ -4,7 +4,7 @@
 #include <variant>
 #include <vector>
 
-#include "dang-utils/parsing.h"
+#include "dang-utils/parsing/lexer.h"
 
 #include "catch2/catch.hpp"
 
