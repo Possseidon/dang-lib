@@ -748,6 +748,9 @@ TEST_CASE("ClassInfo can specialize the behavior of a classes userdata.", "[lua]
     }
 }
 
+// TODO: Test const classes once implemented.
+// TODO: Test subclass mechanism.
+
 // --- Convert<enum>
 
 enum class TestEnum { First, Second, Third };
