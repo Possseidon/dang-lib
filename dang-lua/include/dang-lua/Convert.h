@@ -836,12 +836,16 @@ struct Convert<TInteger,
             return value >= 0;
         }
         else {
-            if constexpr (std::numeric_limits<Integer>::max() < std::numeric_limits<lua_Integer>::max()) {
-                if (value > std::numeric_limits<Integer>::max())
+            constexpr auto int_min = lua_Integer{std::numeric_limits<Integer>::min()};
+            constexpr auto int_max = lua_Integer{std::numeric_limits<Integer>::max()};
+            constexpr auto lua_min = std::numeric_limits<lua_Integer>::min();
+            constexpr auto lua_max = std::numeric_limits<lua_Integer>::max();
+            if constexpr (int_max < lua_max) {
+                if (value > int_max)
                     return false;
             }
-            if constexpr (std::numeric_limits<Integer>::min() > std::numeric_limits<lua_Integer>::min()) {
-                if (value < std::numeric_limits<Integer>::min())
+            if constexpr (int_min > lua_min) {
+                if (value < int_min)
                     return false;
             }
             return true;
