@@ -4,6 +4,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string_view>
+#include <variant>
 
 namespace dang::utils {
 
@@ -14,7 +15,9 @@ class LexerError : public std::runtime_error {
 // The Lexer concept:
 // - using Char = ...;
 // - using Token = ...;
-// - Lexer(std::basic_string_view<Char>)
+// - using TextView = std::basic_string_view<Char>;
+// - Lexer(TextView)
+// - TextView textView() const
 // - std::optional<Token> next()
 
 template <typename TChar = char>
@@ -230,6 +233,8 @@ public:
     {}
 
     constexpr CharLexer charLexer() const { return char_lexer_; }
+
+    constexpr TextView textView() const { return char_lexer_.textView(); }
 
     constexpr std::optional<Token> next() { return tryTokens<TTokens...>(); }
 
