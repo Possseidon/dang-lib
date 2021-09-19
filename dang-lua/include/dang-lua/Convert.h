@@ -6,15 +6,15 @@
 namespace dang::lua {
 
 /// @brief Serves as a container for typenames that represent subclasses.
-template <typename... TBases>
+template <typename...>
 struct SubClassList {};
 
 /// @brief Can be specialized to provide information about the subclasses of a given class.
-template <typename T>
+template <typename>
 struct SubClasses : SubClassList<> {};
 
-template <typename T>
-constexpr SubClasses<T> SubClassesOf{};
+template <typename TClass>
+constexpr SubClasses<TClass> sub_classes{};
 
 struct Property {
     const char* name;
@@ -214,12 +214,14 @@ struct UniqueClassInfo {
 
 } // namespace detail
 
-/// @brief Converts instances of classes to and from Lua as either value or reference.
-template <typename T, typename = void>
-struct Convert {
-    using Class = dutils::remove_cvref_t<T>;
+// TODO: Convert<const T> should have special handling for const
 
-    static_assert(std::is_class_v<Class>);
+/// @brief Converts instances of classes to and from Lua as either value or reference.
+template <typename TClass, typename = void>
+struct Convert {
+    static_assert(std::is_class_v<TClass>);
+
+    using Class = std::remove_const_t<TClass>;
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
@@ -258,7 +260,7 @@ struct Convert {
             return *static_cast<Class*>(value);
         if (void* pointer = testudata<true>(state, pos))
             return **static_cast<Class**>(pointer);
-        return at(state, pos, SubClassesOf<Class>);
+        return at(state, pos, sub_classes<Class>);
     }
 
     /// @brief Returns a reference to the value at the given argument stack position and raises an argument error on
@@ -302,7 +304,7 @@ private:
             return StoreType::Value;
         if (testudata<false>(state, pos))
             return StoreType::Reference;
-        return type(state, pos, SubClassesOf<Class>);
+        return type(state, pos, sub_classes<Class>);
     }
 
     /// @brief Pushes the metatable for a value or reference instance onto the stack.
@@ -598,8 +600,8 @@ private:
 
 /// @brief Converts enums to and from Lua as strings.
 template <typename TEnum>
-struct Convert<TEnum, std::enable_if_t<std::is_enum_v<dutils::remove_cvref_t<TEnum>>>> {
-    using Enum = dutils::remove_cvref_t<TEnum>;
+struct Convert<TEnum, std::enable_if_t<std::is_enum_v<TEnum>>> {
+    using Enum = std::remove_cv_t<TEnum>;
 
     static_assert(enum_values<Enum>[std::size(enum_values<Enum>) - 1] == nullptr, "enum_values is not null-terminated");
     static_assert(std::size(enum_values<Enum>) > 1, "enum_values is empty");
@@ -648,29 +650,30 @@ private:
 };
 
 /// @brief Converts nothing.
-template <>
-struct Convert<void> {
+template <typename TVoid>
+struct Convert<TVoid, std::enable_if_t<std::is_void_v<TVoid>>> {
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = false;
 };
 
 /// @brief True for types that should be treated as "nil" in Lua.
-template <typename T>
+template <typename T, typename = void>
 struct is_nil : std::false_type {};
 
 template <typename T>
 inline constexpr auto is_nil_v = is_nil<T>::value;
 
-template <>
-struct is_nil<std::nullptr_t> : std::true_type {};
+template <typename TNullptr>
+struct is_nil<TNullptr, std::enable_if_t<std::is_null_pointer_v<TNullptr>>> : std::true_type {};
 
-template <>
-struct is_nil<std::monostate> : std::true_type {};
+template <typename TMonostate>
+struct is_nil<TMonostate, std::enable_if_t<std::is_same_v<std::remove_cv_t<TMonostate>, std::monostate>>>
+    : std::true_type {};
 
 /// @brief Converts nil values.
 template <typename TNil>
-struct Convert<TNil, std::enable_if_t<is_nil_v<dutils::remove_cvref_t<TNil>>>> {
-    using Nil = dutils::remove_cvref_t<TNil>;
+struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
+    using Nil = std::remove_cv_t<TNil>;
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
@@ -704,7 +707,7 @@ struct Convert<TNil, std::enable_if_t<is_nil_v<dutils::remove_cvref_t<TNil>>>> {
     }
 
     /// @brief Pushes a nil value on the stack.
-    static void push(lua_State* state, Nil) { lua_pushnil(state); }
+    static void push(lua_State* state, const Nil&) { lua_pushnil(state); }
 };
 
 /// @brief Tag struct for Lua's `fail` value.
@@ -712,9 +715,21 @@ struct Fail {};
 
 inline constexpr Fail fail;
 
+/// @brief True for types that should be treated as "fail" in Lua.
+template <typename T, typename = void>
+struct is_fail : std::false_type {};
+
+template <typename T>
+inline constexpr auto is_fail_v = is_fail<T>::value;
+
+template <typename TFail>
+struct is_fail<TFail, std::enable_if_t<std::is_same_v<std::remove_cv_t<TFail>, Fail>>> : std::true_type {};
+
 /// @brief Allows for pushing of the `fail` value, which is currently just `nil`.
-template <>
-struct Convert<Fail> {
+template <typename TFail>
+struct Convert<TFail, std::enable_if_t<is_fail_v<TFail>>> {
+    using Fail = std::remove_cv_t<TFail>;
+
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -725,12 +740,12 @@ struct Convert<Fail> {
     }
 
     /// @brief Pushes the `fail` value on the stack.
-    static void push(lua_State* state, Fail) { luaL_pushfail(state); }
+    static void push(lua_State* state, const Fail&) { luaL_pushfail(state); }
 };
 
 /// @brief Allows for conversion between Lua boolean and C++ bool.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
+template <typename TBool>
+struct Convert<TBool, std::enable_if_t<std::is_same_v<std::remove_cv_t<TBool>, bool>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -757,9 +772,9 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, boo
 };
 
 /// @brief Allows for conversion between Lua numbers and C++ floating point types.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_floating_point_v<dutils::remove_cvref_t<T>>>> {
-    using Number = dutils::remove_cvref_t<T>;
+template <typename TNumber>
+struct Convert<TNumber, std::enable_if_t<std::is_floating_point_v<TNumber>>> {
+    using Number = std::remove_cv_t<TNumber>;
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
@@ -803,11 +818,10 @@ struct Convert<T, std::enable_if_t<std::is_floating_point_v<dutils::remove_cvref
 };
 
 /// @brief Allows for conversion between Lua integers and C++ integral types.
-template <typename T>
-struct Convert<T,
-               std::enable_if_t<std::is_integral_v<dutils::remove_cvref_t<T>> &&
-                                !std::is_same_v<dutils::remove_cvref_t<T>, bool>>> {
-    using Integer = dutils::remove_cvref_t<T>;
+template <typename TInteger>
+struct Convert<TInteger,
+               std::enable_if_t<std::is_integral_v<TInteger> && !std::is_same_v<std::remove_cv_t<TInteger>, bool>>> {
+    using Integer = std::remove_cv_t<TInteger>;
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
@@ -901,7 +915,7 @@ struct Convert<T,
 
 /// @brief Allows for conversion between Lua strings and std::string.
 template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::string>>> {
+struct Convert<T, std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, std::string>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -947,7 +961,7 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std
 
 /// @brief Allows for conversion between Lua strings and std::string_view.
 template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std::string_view>>> {
+struct Convert<T, std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, std::string_view>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -990,7 +1004,7 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, std
 
 /// @brief Allows pushing of char arrays as strings.
 template <std::size_t v_count>
-struct Convert<const char[v_count]> {
+struct Convert<const char (&)[v_count]> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1007,24 +1021,9 @@ struct Convert<const char[v_count]> {
     }
 };
 
-template <std::size_t v_count>
-struct Convert<const char (&)[v_count]> : Convert<const char[v_count]> {};
-
-template <std::size_t v_count>
-struct Convert<const char(&&)[v_count]> : Convert<const char[v_count]> {};
-
-template <std::size_t v_count>
-struct Convert<char[v_count]> : Convert<const char[v_count]> {};
-
-template <std::size_t v_count>
-struct Convert<char (&)[v_count]> : Convert<const char[v_count]> {};
-
-template <std::size_t v_count>
-struct Convert<char(&&)[v_count]> : Convert<const char[v_count]> {};
-
 /// @brief Allows pushing of C-Style strings.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, const char*>>> {
+template <typename TCString>
+struct Convert<TCString, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<TCString>, const char*>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1060,8 +1059,8 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, con
 };
 
 /// @brief Allows pushing of mutable C-Style strings.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, char*>>> {
+template <typename TCString>
+struct Convert<TCString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCString>, char*>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1076,8 +1075,8 @@ struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, cha
 };
 
 /// @brief Allows for conversion of C functions.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<T>, lua_CFunction>>> {
+template <typename TCFunction>
+struct Convert<TCFunction, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFunction>, lua_CFunction>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1185,9 +1184,9 @@ inline constexpr auto is_optional_v = is_optional<T>::value;
 template <typename T>
 struct is_optional<std::optional<T>> : std::true_type {};
 
-template <typename T>
-struct Convert<T, std::enable_if_t<is_optional_v<dutils::remove_cvref_t<T>>>>
-    : ConvertOptional<dutils::remove_cvref_t<T>> {};
+template <typename TOptional>
+struct Convert<TOptional, std::enable_if_t<is_optional_v<std::remove_cv_t<TOptional>>>>
+    : ConvertOptional<std::remove_cv_t<TOptional>> {};
 
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
@@ -1323,8 +1322,9 @@ struct is_tuple<std::pair<TFirst, TSecond>> : std::true_type {};
 template <typename... TValues>
 struct is_tuple<std::tuple<TValues...>> : std::true_type {};
 
-template <typename T>
-struct Convert<T, std::enable_if_t<is_tuple_v<dutils::remove_cvref_t<T>>>> : ConvertTuple<dutils::remove_cvref_t<T>> {};
+template <typename TTuple>
+struct Convert<TTuple, std::enable_if_t<is_tuple_v<std::remove_cv_t<TTuple>>>>
+    : ConvertTuple<std::remove_cv_t<TTuple>> {};
 
 /// @brief Allows for conversion of different values using std::variant.
 template <typename>
@@ -1366,7 +1366,9 @@ struct ConvertVariant<std::variant<TOptions...>> {
     /// @brief Pushes the value of the variant.
     static void push(lua_State* state, const Variant& variant)
     {
-        std::visit([state](const auto& value) { Convert<decltype(value)>::push(state, (value)); }, variant);
+        std::visit(
+            [state](const auto& value) { Convert<std::remove_reference_t<decltype(value)>>::push(state, value); },
+            variant);
     }
 
 private:
@@ -1404,8 +1406,8 @@ inline constexpr auto is_variant_v = is_variant<T>::value;
 template <typename... TValues>
 struct is_variant<std::variant<TValues...>> : std::true_type {};
 
-template <typename T>
-struct Convert<T, std::enable_if_t<is_variant_v<dutils::remove_cvref_t<T>>>>
-    : ConvertVariant<dutils::remove_cvref_t<T>> {};
+template <typename TVariant>
+struct Convert<TVariant, std::enable_if_t<is_variant_v<std::remove_cv_t<TVariant>>>>
+    : ConvertVariant<std::remove_cv_t<TVariant>> {};
 
 } // namespace dang::lua
