@@ -154,8 +154,8 @@ TEST_CASE("The UTF-8 lexer uses UTF-8 code points as tokens.", "[lexer]")
     }
 }
 
-constexpr bool isWhitespace(char c) { return c == ' '; };
-constexpr bool isAlpha(char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; };
+constexpr bool isWhitespace(char c) { return c == ' '; }
+constexpr bool isAlpha(char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; }
 
 using WhitespaceToken = TakeWhile<isWhitespace>;
 using CommaToken = Char<','>;
