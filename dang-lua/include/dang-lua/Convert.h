@@ -221,7 +221,7 @@ template <typename TClass, typename = void>
 struct Convert {
     static_assert(std::is_class_v<TClass>);
 
-    using Class = std::remove_const_t<TClass>;
+    using Class = std::remove_cv_t<TClass>;
 
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
