@@ -1194,7 +1194,7 @@ struct Convert<TOptional, std::enable_if_t<is_optional_v<std::remove_cv_t<TOptio
 
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
-constexpr std::optional<int> CombinedPushCount = [] {
+constexpr std::optional<int> combined_push_count = [] {
     if constexpr ((Convert<TValues>::push_count && ...))
         return (0 + ... + *Convert<TValues>::push_count);
     else
@@ -1216,7 +1216,7 @@ static constexpr int combinedPushCount(const TValues&... values)
 /// @brief Allows for conversion of multiple values using tuple like types.
 template <typename TTuple, typename... TValues>
 struct ConvertTupleImpl {
-    static constexpr std::optional<int> push_count = CombinedPushCount<TValues...>;
+    static constexpr std::optional<int> push_count = combined_push_count<TValues...>;
     static constexpr bool allow_nesting = (Convert<TValues>::allow_nesting && ...);
 
     static_assert(allow_nesting, "Tuples do not allow nesting of stack indices.");

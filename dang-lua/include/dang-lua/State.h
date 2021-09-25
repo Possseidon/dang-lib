@@ -2197,13 +2197,12 @@ public:
     template <typename... TValues>
     auto push(TValues&&... values)
     {
-        if constexpr (CombinedPushCount<TValues...>) {
-            constexpr int push_count = *CombinedPushCount<TValues...>;
+        if constexpr (constexpr auto constexpr_push_count = combined_push_count<std::remove_cv_t<TValues>...>) {
             pushHelper(std::forward<TValues>(values)...);
-            if constexpr (push_count == 1)
+            if constexpr (constexpr_push_count == 1)
                 return top().asResult();
             else
-                return top<push_count>().asResults();
+                return top<*constexpr_push_count>().asResults();
         }
         else {
             int push_count = combinedPushCount(values...);
