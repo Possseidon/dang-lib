@@ -4599,7 +4599,7 @@ struct Convert<lua_State*> {
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
-    static bool isExact(lua_State*, int) { return true; }
+    static constexpr bool isExact(lua_State*, int) { return true; }
 
     static constexpr bool isValid(lua_State*, int) { return true; }
 
@@ -4611,7 +4611,7 @@ struct Convert<State> {
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
-    static bool isExact(State&, int) { return true; }
+    static constexpr bool isExact(State&, int) { return true; }
 
     static constexpr bool isValid(State&, int) { return true; }
 
