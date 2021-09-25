@@ -1636,8 +1636,8 @@ struct debug_info_type<DebugInfoType::Upvalues> {
     using type = DebugInfoUpvalues;
 };
 
-template <DebugInfoType type>
-using debug_info_type_t = typename debug_info_type<type>::type;
+template <DebugInfoType v_type>
+using debug_info_type_t = typename debug_info_type<v_type>::type;
 
 template <typename>
 struct debug_info_enum {};
