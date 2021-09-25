@@ -423,11 +423,11 @@ public:
     /// @brief Whether the index is a pseudo index (upvalue or registry).
     bool isPseudo() const { return this->state().isPseudo(index()); }
 
-    /// @brief Whether the index is an upvalue.
-    bool isUpvalue() const { return this->state().isUpvalue(index()); }
-
     /// @brief Whether the index is the index for the registry table.
     bool isRegistry() const { return this->state().isRegistry(index()); }
+
+    /// @brief Whether the index is an upvalue.
+    bool isUpvalue() const { return this->state().isUpvalue(index()); }
 
     /// @brief Whether the index (plus an optional offset) is at the bottom of the stack.
     bool isBottom(int offset = 0) const { return this->state().isIndexBottom(index(), offset); }
@@ -1990,11 +1990,11 @@ public:
     /// @brief Whether the given index is a pseudo index.
     static constexpr bool isPseudo(int index) { return index <= LUA_REGISTRYINDEX; }
 
-    /// @brief Whether the given index is an upvalue index.
-    static constexpr bool isUpvalue(int index) { return index < LUA_REGISTRYINDEX; }
-
     /// @brief Whether the given index is the registry index.
     static constexpr bool isRegistry(int index) { return index == LUA_REGISTRYINDEX; }
+
+    /// @brief Whether the given index is an upvalue index.
+    static constexpr bool isUpvalue(int index) { return index < LUA_REGISTRYINDEX; }
 
     /// @brief Whether the given index is the first stack index or "offset" above it.
     bool isIndexBottom(int index, int offset = 0) const
