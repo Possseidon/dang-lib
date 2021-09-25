@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dang-lua/Convert.h"
+
 #include "lua.hpp"
 
 /// @brief A very basic wrapper for owned Lua states, meant for use in testing.
@@ -28,7 +30,7 @@ public:
         lua_pushcclosure(state_, lua_func, 1);
         if (lua_pcall(state_, 0, 0, 0) == LUA_OK)
             return std::string();
-        auto msg = dlua::Convert<std::string>::at(state_, -1).value_or(std::string());
+        auto msg = dang::lua::Convert<std::string>::at(state_, -1).value_or(std::string());
         lua_pop(state_, 1);
         return msg;
     }
