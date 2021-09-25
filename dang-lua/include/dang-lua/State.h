@@ -197,7 +197,7 @@ protected:
 /// @brief Provides information about a function signature and the means to convert arguments of a Lua C function into
 /// actual C++ values.
 /// @remark Argument conversion relies on the Convert template.
-template <typename TFunc>
+template <typename>
 struct SignatureInfo;
 
 template <typename TRet, typename... TArgs>
@@ -1664,8 +1664,8 @@ struct debug_info_enum<DebugInfoTailCall> : dutils::constant<DebugInfoType::Tail
 template <>
 struct debug_info_enum<DebugInfoUpvalues> : dutils::constant<DebugInfoType::Upvalues> {};
 
-template <typename T>
-inline constexpr auto debug_info_enum_v = debug_info_enum<T>::value;
+template <typename TDebugInfo>
+inline constexpr auto debug_info_enum_v = debug_info_enum<TDebugInfo>::value;
 
 template <typename TValue>
 class next_iterator;
@@ -3650,7 +3650,7 @@ private:
     {
         using Info = detail::SignatureInfo<TFunc>;
         // TODO: Is "check" appropriate here?
-        TFunc func = Convert<TFunc>::check(state, lua_upvalueindex(1));
+        auto func = Convert<TFunc>::check(state, lua_upvalueindex(1));
 
         // TODO: Code duplication with wrap
         State lua(state);
