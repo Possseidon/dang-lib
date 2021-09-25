@@ -3735,7 +3735,7 @@ private:
         auto what = buildDebugInfoWhatString(true, {debug_info_enum_v<TTypes>...}, false, push_lines);
         lua_Debug ar;
         push(std::forward<TFunction>(function));
-        auto x = lua_getinfo(state_, what.data(), &ar);
+        lua_getinfo(state_, what.data(), &ar);
         notifyPush(push_lines - 1);
         return DebugInfo<TTypes...>(ar);
     }
