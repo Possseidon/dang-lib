@@ -341,7 +341,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with custom class types as userdata.",
     }
 }
 
-TEST_CASE("ClassInfo can specialize the behavior of a classes userdata.", "[lua][class]")
+TEST_CASE("ClassInfo can specialize the behavior of a classes userdata.", "[lua][convert][class]")
 {
     LuaState lua;
 
