@@ -6,14 +6,15 @@
 
 namespace dlua = dang::lua;
 
-TEST_CASE("Lua references default construct with an invalid state.")
+TEST_CASE("Lua references default construct with an invalid state.", "[lua][reference]")
 {
     auto reference = dlua::Reference();
     CHECK_FALSE(reference);
     CHECK(reference.state() == nullptr);
 }
 
-TEST_CASE("Lua references can consume elements from the stack, so that they can be pushed back later.")
+TEST_CASE("Lua references can consume elements from the stack, so that they can be pushed back later.",
+          "[lua][reference]")
 {
     LuaState lua;
 
