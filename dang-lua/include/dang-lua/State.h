@@ -3915,7 +3915,7 @@ public:
     /// panic function.
     /// @remark A custom allocation function can be supplied and userdata is used solely as extra parameter to that
     /// function.
-    OwnedState(bool open_libs = true, lua_Alloc allocator = nullptr, void* userdata = nullptr)
+    explicit OwnedState(bool open_libs = true, lua_Alloc allocator = nullptr, void* userdata = nullptr)
         : State(allocator ? lua_newstate(allocator, userdata) : luaL_newstate())
     {
         if (open_libs)
