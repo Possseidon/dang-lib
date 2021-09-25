@@ -14,72 +14,6 @@ class State;
 /// @remark There is no constant for this defined and this value can only be found in the documentation.
 constexpr int auxiliary_required_pushable = 4;
 
-// --- Reference ---
-
-/// @brief Wraps a reference to a Lua value, that lives in the registry table.
-/// @remark Uses luaL_ref and luaL_unref from the auxiliary library.
-class Reference {
-public:
-    friend class State;
-    friend struct Convert<Reference>;
-
-    /// @brief Default constructs a reference with LUA_NOREF and a nullptr state.
-    Reference() = default;
-
-    /// @brief Removes the reference from the registry table.
-    ~Reference()
-    {
-        // Quote: If ref is LUA_NOREF or LUA_REFNIL, luaL_unref does nothing.
-        // This means, state can be nullptr without causing problems.
-        // The Lua 5.4 source code proves this, as it currently checks for ref >= 0 before doing anything.
-        luaL_unref(state_, LUA_REGISTRYINDEX, ref_);
-    }
-
-    Reference(const Reference& other)
-        : Reference((other.push(), other.state_))
-    {}
-
-    Reference(Reference&& other) noexcept
-        : Reference()
-    {
-        swap(other);
-    }
-
-    Reference& operator=(Reference other) noexcept
-    {
-        swap(other);
-        return *this;
-    }
-
-    void swap(Reference& other) noexcept
-    {
-        using std::swap;
-        swap(state_, other.state_);
-        swap(ref_, other.ref_);
-    }
-
-    friend void swap(Reference& lhs, Reference& rhs) noexcept { lhs.swap(rhs); }
-
-private:
-    /// @brief Turns the top of the stack into a reference, popping the value in the process.
-    explicit Reference(lua_State* state)
-        : state_(state)
-        , ref_(luaL_ref(state, LUA_REGISTRYINDEX))
-    {}
-
-    /// @brief Pushes the referenced value on the stack.
-    void push() const { lua_rawgeti(state_, LUA_REGISTRYINDEX, ref_); }
-
-    lua_State* state_ = nullptr;
-    int ref_ = LUA_NOREF;
-};
-
-// UniqueReference not necessary. Reference is very cheap to move on its own.
-
-/// @brief Allows for easy sharing of the same reference.
-using SharedReference = std::shared_ptr<Reference>;
-using WeakReference = std::weak_ptr<Reference>;
-
 template <typename T>
 struct is_index : std::false_type {};
 
@@ -4504,18 +4438,6 @@ public:
 };
 
 // --- Convert Specializations ---
-
-template <>
-struct Convert<Reference> {
-    static constexpr std::optional<int> push_count = 1;
-    static constexpr bool allow_nesting = false;
-
-    static void push([[maybe_unused]] lua_State* state, const Reference& reference)
-    {
-        assert(reference.state_ == state);
-        reference.push();
-    }
-};
 
 template <>
 struct Convert<lua_State*> {
