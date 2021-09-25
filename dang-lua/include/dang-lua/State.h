@@ -168,8 +168,12 @@ namespace detail {
 /// @brief Meant to be used as a base class to provide information about the signature of functions.
 template <typename TRet, typename... TArgs>
 struct SignatureInfoBase {
+private:
+    /// @brief Converts the given type to the type, which is actually returned by Convert::check.
     template <typename TArg>
-    using FixedArgType = decltype(Convert<TArg>::check(std::declval<State&>(), 1));
+    using FixedArgType = decltype(Convert<std::remove_reference_t<TArg>>::check(std::declval<State&>(), 1));
+
+public:
     using Return = TRet;
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
@@ -183,9 +187,10 @@ protected:
     template <std::size_t... v_indices>
     static constexpr int indexOffset(std::index_sequence<v_indices...>)
     {
-        static_assert((Convert<std::tuple_element_t<v_indices, Arguments>>::push_count && ...),
+        using ArgsTuple = std::tuple<std::remove_reference_t<TArgs>...>;
+        static_assert((Convert<std::tuple_element_t<v_indices, ArgsTuple>>::push_count && ...),
                       "Only the last function argument can be variadic.");
-        return (1 + ... + *Convert<std::tuple_element_t<v_indices, Arguments>>::push_count);
+        return (1 + ... + *Convert<std::tuple_element_t<v_indices, ArgsTuple>>::push_count);
     }
 };
 
@@ -218,14 +223,16 @@ private:
     template <std::size_t... v_indices>
     static typename Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<v_indices...>)
     {
-        return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
+        return {Convert<std::remove_reference_t<TArgs>>::check(
+            state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
     }
 
     /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... v_indices>
     static typename Base::Arguments convertArgumentsRawHelper(lua_State* state, std::index_sequence<v_indices...>)
     {
-        return {Convert<TArgs>::check(state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
+        return {Convert<std::remove_reference_t<TArgs>>::check(
+            state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
     }
 };
 
