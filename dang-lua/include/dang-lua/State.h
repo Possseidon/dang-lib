@@ -4607,7 +4607,7 @@ struct Convert<lua_State*> {
 };
 
 template <>
-struct Convert<State&> {
+struct Convert<State> {
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
