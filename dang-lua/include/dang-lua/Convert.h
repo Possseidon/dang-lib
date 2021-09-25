@@ -1179,18 +1179,24 @@ struct ConvertOptional<std::optional<TContained>> {
     }
 };
 
+namespace detail {
+
+template <typename>
+struct is_optional_helper : std::false_type {};
+
+template <typename TContained>
+struct is_optional_helper<std::optional<TContained>> : std::true_type {};
+
+} // namespace detail
+
 template <typename T>
-struct is_optional : std::false_type {};
+struct is_optional : detail::is_optional_helper<std::remove_cv_t<T>> {};
 
 template <typename T>
 inline constexpr auto is_optional_v = is_optional<T>::value;
 
-template <typename T>
-struct is_optional<std::optional<T>> : std::true_type {};
-
 template <typename TOptional>
-struct Convert<TOptional, std::enable_if_t<is_optional_v<std::remove_cv_t<TOptional>>>>
-    : ConvertOptional<std::remove_cv_t<TOptional>> {};
+struct Convert<TOptional, std::enable_if_t<is_optional_v<TOptional>>> : ConvertOptional<std::remove_cv_t<TOptional>> {};
 
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
@@ -1401,17 +1407,23 @@ private:
     }
 };
 
+namespace detail {
+
+template <typename>
+struct is_variant_helper : std::false_type {};
+
+template <typename... TOptions>
+struct is_variant_helper<std::variant<TOptions...>> : std::true_type {};
+
+} // namespace detail
+
 template <typename T>
-struct is_variant : std::false_type {};
+struct is_variant : detail::is_variant_helper<std::remove_cv_t<T>> {};
 
 template <typename T>
 inline constexpr auto is_variant_v = is_variant<T>::value;
 
-template <typename... TValues>
-struct is_variant<std::variant<TValues...>> : std::true_type {};
-
 template <typename TVariant>
-struct Convert<TVariant, std::enable_if_t<is_variant_v<std::remove_cv_t<TVariant>>>>
-    : ConvertVariant<std::remove_cv_t<TVariant>> {};
+struct Convert<TVariant, std::enable_if_t<is_variant_v<TVariant>>> : ConvertVariant<std::remove_cv_t<TVariant>> {};
 
 } // namespace dang::lua
