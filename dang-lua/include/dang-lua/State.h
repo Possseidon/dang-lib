@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-lua/Allocator.h"
 #include "dang-lua/Convert.h"
 #include "dang-lua/Types.h"
 #include "dang-lua/global.h"
@@ -12,19 +13,6 @@ class State;
 /// @brief The amount of stack slots auxiliary library functions can use before they call lua_checkstack themselves.
 /// @remark There is no constant for this defined and this value can only be found in the documentation.
 constexpr int auxiliary_required_pushable = 4;
-
-// --- Utility Structs ---
-
-/// @brief Wraps allocation function and optional userdata, which is always passed to this function.
-struct Allocator {
-    Allocator(lua_Alloc function, void* userdata = nullptr)
-        : function(function)
-        , userdata(userdata)
-    {}
-
-    lua_Alloc function;
-    void* userdata;
-};
 
 // --- Reference ---
 
