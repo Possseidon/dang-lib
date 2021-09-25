@@ -9,7 +9,7 @@ namespace dlua = dang::lua;
 
 void* dummyAlloc(void*, void*, std::size_t, std::size_t) { return nullptr; }
 
-TEST_CASE("Lua allocator wraps allocation function and optional userdata.")
+TEST_CASE("Lua allocator wraps allocation function and optional userdata.", "[lua][allocator]")
 {
     SECTION("It can be implicitly converted from an allocation function.")
     {
