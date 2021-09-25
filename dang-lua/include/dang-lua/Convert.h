@@ -633,7 +633,7 @@ struct Convert<TEnum, std::enable_if_t<std::is_enum_v<TEnum>>> {
     static constexpr std::string_view getPushTypename() { return enum_name<Enum>; }
 
     /// @brief Pushes the string name of the enum value onto the stack.
-    static auto push(lua_State* state, Enum value)
+    static void push(lua_State* state, Enum value)
     {
         lua_pushstring(state, enum_values<Enum>[static_cast<std::size_t>(value)]);
     }
