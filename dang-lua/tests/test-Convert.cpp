@@ -288,7 +288,7 @@ struct ClassInfo<TestClass<AllowTableInitializationClassInfoTag>> : ClassInfo<Te
 
 TEMPLATE_LIST_TEST_CASE("Convert can work with custom class types as userdata.",
                         "[lua][convert][class]",
-                        maybe_const<TestClass<>>)
+                        maybe_cv<TestClass<>>)
 {
     using Convert = dlua::Convert<TestType>;
 
@@ -731,7 +731,7 @@ inline constexpr std::string_view enum_name<TestEnum> = "TestEnum";
 
 TEMPLATE_LIST_TEST_CASE("Convert can work with enum values, converting them to and from strings.",
                         "[lua][convert][enum]",
-                        maybe_const<TestEnum>)
+                        maybe_cv<TestEnum>)
 {
     using Convert = dlua::Convert<TestType>;
 
@@ -845,7 +845,7 @@ TEST_CASE("Convert does nothing for void type.", "[lua][convert][void]")
 
 // --- Convert<nil>
 
-using nil_types = maybe_const<std::nullptr_t, std::monostate>;
+using nil_types = maybe_cv<std::nullptr_t, std::monostate>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with nil-like types.", "[lua][convert][nil]", nil_types)
 {
     using Nil = dutils::remove_cvref_t<TestType>;
@@ -905,7 +905,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with nil-like types.", "[lua][convert]
 
 // --- Convert<fail>
 
-TEMPLATE_LIST_TEST_CASE("Convert supports pushing fail values.", "[lua][convert][fail]", maybe_const<dlua::Fail>)
+TEMPLATE_LIST_TEST_CASE("Convert supports pushing fail values.", "[lua][convert][fail]", maybe_cv<dlua::Fail>)
 {
     using Convert = dlua::Convert<TestType>;
 
@@ -929,7 +929,7 @@ TEMPLATE_LIST_TEST_CASE("Convert supports pushing fail values.", "[lua][convert]
 
 // --- Convert<boolean>
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boolean]", maybe_const<bool>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boolean]", maybe_cv<bool>)
 {
     using Convert = dlua::Convert<TestType>;
 
@@ -1001,7 +1001,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with booleans.", "[lua][convert][boole
 
 // --- Convert<number>
 
-using number_types = maybe_const<float, double>;
+using number_types = maybe_cv<float, double>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number]", number_types)
 {
     using Number = dutils::remove_cvref_t<TestType>;
@@ -1091,7 +1091,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
 
 // --- Convert<integer>
 
-using integer_types = maybe_const<std::int8_t,
+using integer_types = maybe_cv<std::int8_t,
                                   std::int16_t,
                                   std::int32_t,
                                   std::int64_t,
@@ -1282,7 +1282,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
 
 // --- Convert<string>
 
-using string_types = maybe_const<std::string, std::string_view, const char*, char*, const char (&)[5]>;
+using string_types = maybe_cv<std::string, std::string_view, const char*, char*, const char (&)[5]>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with strings.", "[lua][convert][string]", string_types)
 {
     using Convert = dlua::Convert<TestType>;
@@ -1295,7 +1295,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with strings.", "[lua][convert][string
     }
 }
 
-using validity_string_types = maybe_const<std::string, std::string_view>;
+using validity_string_types = maybe_cv<std::string, std::string_view>;
 TEMPLATE_LIST_TEST_CASE("Convert check for validity of std::string and std::string_view.",
                         "[lua][convert][string]",
                         validity_string_types)
@@ -1328,7 +1328,7 @@ TEMPLATE_LIST_TEST_CASE("Convert check for validity of std::string and std::stri
     }
 }
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with std::string.", "[lua][convert][string]", maybe_const<std::string>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with std::string.", "[lua][convert][string]", maybe_cv<std::string>)
 {
     using namespace std::literals::string_literals;
 
@@ -1379,7 +1379,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::string.", "[lua][convert][st
 
 TEMPLATE_LIST_TEST_CASE("Convert can work with std::string_view.",
                         "[lua][convert][string]",
-                        maybe_const<std::string_view>)
+                        maybe_cv<std::string_view>)
 {
     using namespace std::literals::string_view_literals;
 
@@ -1452,7 +1452,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with references to const char arrays."
     }
 }
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with C-Style strings.", "[lua][convert][string]", maybe_const<const char*>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with C-Style strings.", "[lua][convert][string]", maybe_cv<const char*>)
 {
     using namespace std::literals::string_literals;
     using Convert = dlua::Convert<TestType>;
@@ -1492,7 +1492,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with C-Style strings.", "[lua][convert
     }
 }
 
-using cstring_types = maybe_const<const char*, char*>;
+using cstring_types = maybe_cv<const char*, char*>;
 TEMPLATE_LIST_TEST_CASE("Convert can push C-Style strings.", "[lua][convert][string]", cstring_types)
 {
     using Convert = dlua::Convert<TestType>;
@@ -1512,7 +1512,7 @@ int dummyLuaFunction(lua_State*) { return 0; }
 
 TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.",
                         "[lua][convert][function]",
-                        maybe_const<lua_CFunction>)
+                        maybe_cv<lua_CFunction>)
 {
     using Convert = dlua::Convert<TestType>;
 
@@ -1568,7 +1568,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.",
 
 TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
                         "[lua][convert][nil][optional]",
-                        maybe_const<std::optional<int>>)
+                        maybe_cv<std::optional<int>>)
 {
     using Convert = dlua::Convert<TestType>;
     using ConvertContained = dlua::Convert<int>;
@@ -1646,7 +1646,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::optional.",
 
 // --- Convert<pair> and Convert<tuple>
 
-using pair_types = maybe_const<std::pair<int, std::string>, std::tuple<int, std::string>>;
+using pair_types = maybe_cv<std::pair<int, std::string>, std::tuple<int, std::string>>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua][convert][tuple]", pair_types)
 {
     using namespace std::literals::string_literals;
@@ -1731,7 +1731,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::pair and std::tuple.", "[lua
 
 // --- Convert<variant>
 
-using variant_types = maybe_const<std::variant<int, std::string>>;
+using variant_types = maybe_cv<std::variant<int, std::string>>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with std::variant.", "[lua][convert][variant]", variant_types)
 {
     using namespace std::literals::string_literals;

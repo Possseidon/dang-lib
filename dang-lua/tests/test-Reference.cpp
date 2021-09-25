@@ -142,7 +142,7 @@ TEST_CASE("Lua references can be swapped.")
     CHECK(lua_tointeger(*lua, -1) == 1);
 }
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with references.", "[lua][convert][reference]", maybe_const<dlua::Reference>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with references.", "[lua][convert][reference]", maybe_cv<dlua::Reference>)
 {
     using Convert = dlua::Convert<TestType>;
 
