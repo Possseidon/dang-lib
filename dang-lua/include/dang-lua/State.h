@@ -2,6 +2,7 @@
 
 #include "dang-lua/Allocator.h"
 #include "dang-lua/Convert.h"
+#include "dang-lua/Reference.h"
 #include "dang-lua/Types.h"
 #include "dang-lua/global.h"
 #include "dang-utils/utils.h"
