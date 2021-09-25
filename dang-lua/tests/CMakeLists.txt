@@ -5,7 +5,7 @@ find_package(Catch2 CONFIG REQUIRED)
 
 include(Catch)
 
-add_executable(${PROJECT_NAME} main.cpp test-Allocator.cpp test-Convert.cpp test-Reference.cpp #[[test-State.cpp]])
+add_executable(${PROJECT_NAME} main.cpp test-Allocator.cpp test-Convert.cpp test-Reference.cpp test-State.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE dang-lua dang-utils)
 
