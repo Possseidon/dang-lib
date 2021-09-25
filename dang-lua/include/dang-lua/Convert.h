@@ -39,29 +39,29 @@ struct DefaultClassInfo {
 };
 
 /// @brief Can be specialized to provide an index and metatable of a wrapped class.
-template <typename T>
+template <typename TClass>
 struct ClassInfo {
     static_assert(dutils::invalid_type<T>, "Type has no ClassInfo specialization.");
 };
 
 /// @brief Shorthand to access the index table of a wrapped class.
-template <typename T>
-const auto class_table = ClassInfo<T>::table();
+template <typename TClass>
+const auto class_table = ClassInfo<TClass>::table();
 
 /// @brief Shorthand to access the metatable of a wrapped class.
-template <typename T>
-const auto class_metatable = ClassInfo<T>::metatable();
+template <typename TClass>
+const auto class_metatable = ClassInfo<TClass>::metatable();
 
 /// @brief Shorthand to access the properties of a wrapped class.
-template <typename T>
-const auto class_properties = ClassInfo<T>::properties();
+template <typename TClass>
+const auto class_properties = ClassInfo<TClass>::properties();
 
 /// @brief Can be specialized to provide an array of string names for a given enum to convert from and to Lua.
 /// @remark The array needs to end with a "null" entry.
-template <typename T>
+template <typename>
 inline constexpr const char* enum_values[1]{};
 
-template <typename T>
+template <typename>
 inline constexpr std::string_view enum_name = "enum";
 
 namespace detail {
@@ -109,8 +109,8 @@ namespace detail {
 #endif
 
 /// @brief Somewhat similar to luaL_setfuncs, except it uses any kind of container.
-template <typename T>
-void setFuncs(lua_State* state, const T& funcs)
+template <typename TFuncs>
+void setFuncs(lua_State* state, const TFuncs& funcs)
 {
     for (const auto& func : funcs) {
         assert(func.func != nullptr);
@@ -119,8 +119,8 @@ void setFuncs(lua_State* state, const T& funcs)
     }
 }
 
-template <typename T>
-void setPropertyFuncs(lua_State* state, const T& props, lua_CFunction Property::*accessor)
+template <typename TProps>
+void setPropertyFuncs(lua_State* state, const TProps& props, lua_CFunction Property::*accessor)
 {
     for (const auto& prop : props) {
         if (prop.*accessor == nullptr)
@@ -130,11 +130,11 @@ void setPropertyFuncs(lua_State* state, const T& props, lua_CFunction Property::
     }
 }
 
-template <typename T>
-auto countProperties(const T& properties, lua_CFunction Property::*accessor)
+template <typename TProps>
+auto countProperties(const TProps& props, lua_CFunction Property::*accessor)
 {
     using std::begin, std::end;
-    return std::count_if(begin(properties), end(properties), std::mem_fn(accessor));
+    return std::count_if(begin(props), end(props), std::mem_fn(accessor));
 }
 
 } // namespace detail
@@ -207,7 +207,7 @@ enum class StoreType { None, Value, Reference };
 namespace detail {
 
 /// @brief Provides a unique pointers for any given type.
-template <typename T, bool v_reference>
+template <typename, bool v_reference>
 struct UniqueClassInfo {
     static void* id() { return reinterpret_cast<void*>(&id); }
 };
@@ -716,11 +716,11 @@ struct Fail {};
 inline constexpr Fail fail;
 
 /// @brief True for types that should be treated as "fail" in Lua.
-template <typename T, typename = void>
+template <typename, typename = void>
 struct is_fail : std::false_type {};
 
-template <typename T>
-inline constexpr auto is_fail_v = is_fail<T>::value;
+template <typename TFail>
+inline constexpr auto is_fail_v = is_fail<TFail>::value;
 
 template <typename TFail>
 struct is_fail<TFail, std::enable_if_t<std::is_same_v<std::remove_cv_t<TFail>, Fail>>> : std::true_type {};
@@ -918,8 +918,8 @@ struct Convert<TInteger,
 };
 
 /// @brief Allows for conversion between Lua strings and std::string.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, std::string>>> {
+template <typename TString>
+struct Convert<TString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TString>, std::string>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -964,8 +964,8 @@ struct Convert<T, std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, std::stri
 };
 
 /// @brief Allows for conversion between Lua strings and std::string_view.
-template <typename T>
-struct Convert<T, std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, std::string_view>>> {
+template <typename TStringView>
+struct Convert<TStringView, std::enable_if_t<std::is_same_v<std::remove_cv_t<TStringView>, std::string_view>>> {
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1117,13 +1117,13 @@ struct Convert<TCFunction, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFu
 };
 
 /// @brief Allows for conversion for possible nil values using std::optional.
-template <typename T>
+template <typename>
 struct ConvertOptional;
 
-template <typename T>
-struct ConvertOptional<std::optional<T>> {
-    using Optional = std::optional<T>;
-    using ConvertContained = Convert<T>;
+template <typename TContained>
+struct ConvertOptional<std::optional<TContained>> {
+    using Optional = std::optional<TContained>;
+    using ConvertContained = Convert<TContained>;
 
     static_assert(ConvertContained::push_count == 1, "Only single values can be optional.");
 
@@ -1165,7 +1165,7 @@ struct ConvertOptional<std::optional<T>> {
     static std::string getPushTypename()
     {
         using namespace std::literals;
-        return std::string(Convert<T>::getPushTypename()) + "?"s;
+        return std::string(ConvertContained::getPushTypename()) + "?"s;
     }
 
     /// @brief Pushes the given value or nil onto the stack.
