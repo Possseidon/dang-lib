@@ -3401,7 +3401,7 @@ public:
 
         push(std::forward<T>(value));
         notifyPush(-1);
-        return Reference(state_);
+        return Reference::consume(state_);
     }
 
     // --- To Close ---
