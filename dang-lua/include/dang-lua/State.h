@@ -7,6 +7,9 @@
 #include "dang-lua/global.h"
 #include "dang-utils/utils.h"
 
+// TODO: Replace decay_t with remove_reference_t or whatever is appropriate.
+// TODO: More explicit about which index parameters must be positive
+
 namespace dang::lua {
 
 namespace detail {
@@ -1559,7 +1562,7 @@ struct DebugInfoName {
     {}
 
     std::optional<std::string> name;
-    std::string name_what;
+    std::string name_what; // TODO: Replace with an enum.
 };
 
 struct DebugInfoSource {
@@ -3727,6 +3730,7 @@ private:
                                             std::random_access_iterator_tag>) {
             constexpr auto max = std::numeric_limits<int>::max();
             auto size = std::distance(first, last);
+            // TODO: This comparison/casting seems odd...
             return size < max ? int(size) : max;
         }
         else
