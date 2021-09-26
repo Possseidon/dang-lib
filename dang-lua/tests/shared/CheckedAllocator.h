@@ -17,6 +17,13 @@ public:
     CheckedAllocator& operator=(const CheckedAllocator&) = delete;
     CheckedAllocator& operator=(CheckedAllocator&&) = delete;
 
+    void checkNotEmpty() const { CHECK(allocations_.size() > 0); }
+
+    void checkEmpty() const { CHECK(allocations_.size() == 0); }
+
+    dang::lua::Allocator allocator() { return dang::lua::Allocator(alloc, this); }
+
+private:
     static void* alloc(void* ud, void* ptr, std::size_t osize, std::size_t nsize)
     {
         auto& self = *static_cast<CheckedAllocator*>(ud);
@@ -36,12 +43,5 @@ public:
         return nullptr;
     }
 
-    void checkNotEmpty() const { CHECK(allocations_.size() > 0); }
-
-    void checkEmpty() const { CHECK(allocations_.size() == 0); }
-
-    dang::lua::Allocator allocator() { return dang::lua::Allocator(alloc, this); }
-
-private:
     std::set<void*> allocations_;
 };
