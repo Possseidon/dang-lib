@@ -448,10 +448,17 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
         }
     };
 
-    SECTION("Using the constructor.")
+    SECTION("Using the constructor without standard libraries.")
+    {
+        auto lua = dlua::State(maybe_allocator);
+        if (maybe_allocator)
+            checked_allocator.checkNotEmpty();
+        check_close_function(lua);
+    }
+    SECTION("Using the constructor with and without standard libraries.")
     {
         auto open_libs = GENERATE(true, false);
-        auto lua = dlua::State(open_libs, maybe_allocator);
+        auto lua = dlua::State(maybe_allocator, open_libs);
         if (maybe_allocator)
             checked_allocator.checkNotEmpty();
         check_close_function(lua);
@@ -463,13 +470,6 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
             checked_allocator.checkNotEmpty();
         check_close_function(lua);
     }
-    SECTION("Using the withoutLibs function.")
-    {
-        auto lua = dlua::State::withoutLibs(maybe_allocator);
-        if (maybe_allocator)
-            checked_allocator.checkNotEmpty();
-        check_close_function(lua);
-    }
 
     if (maybe_allocator)
         checked_allocator.checkEmpty();
@@ -477,7 +477,7 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
 
 TEST_CASE("Lua State can be moved.", "[lua][state]")
 {
-    auto lua = dlua::State::withoutLibs();
+    auto lua = dlua::State();
     lua.push(42);
 
     SECTION("Using move-constructor.")
@@ -487,7 +487,7 @@ TEST_CASE("Lua State can be moved.", "[lua][state]")
     }
     SECTION("Using move-assignment.")
     {
-        auto moved_lua = dlua::State::withoutLibs();
+        auto moved_lua = dlua::State();
         moved_lua = std::move(lua);
         CHECK(moved_lua.to<int>(1) == 42);
     }
@@ -495,10 +495,10 @@ TEST_CASE("Lua State can be moved.", "[lua][state]")
 
 TEST_CASE("Lua State can be swapped.", "[lua][state]")
 {
-    auto lua1 = dlua::State::withoutLibs();
+    auto lua1 = dlua::State();
     lua1.push(1);
 
-    auto lua2 = dlua::State::withoutLibs();
+    auto lua2 = dlua::State();
     lua2.push(2);
     lua2.push(2);
 
