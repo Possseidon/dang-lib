@@ -1765,7 +1765,6 @@ using IterateVaryingWrapper = GeneratorIterationWrapper<generator_index_range_it
 class State {
 public:
     friend class OwnedState;
-    friend class ScopedStack;
 
     /// @brief Mainly used to construct from a C function parameter.
     State(lua_State* state)
@@ -3970,7 +3969,7 @@ public:
     /// @brief Constructs a scoped stack for the given stack.
     explicit ScopedStack(State& state, int offset = 0)
         : state_(state)
-        , initially_pushed_(state.top_ + offset)
+        , initially_pushed_(state.size() + offset)
     {}
 
     /// @brief Resets the top to the initial one, effectively popping all leftover elements.
@@ -3978,8 +3977,8 @@ public:
     {
         // accidentally popped values cannot be recreated and would simply be filled with nil
         // therefore this sanity check
-        assert(state_.top_ >= initially_pushed_);
-        state_.pop(state_.top_ - initially_pushed_);
+        assert(state_.size() >= initially_pushed_);
+        state_.pop(state_.size() - initially_pushed_);
     }
 
 private:
