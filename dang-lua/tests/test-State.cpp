@@ -508,4 +508,39 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
         CHECK(allocations.size() == 0);
 }
 
-// --- StateRef and State
+TEST_CASE("Lua State can be moved.", "[lua][state]")
+{
+    auto lua = dlua::State::withoutLibs();
+    lua.push(42);
+
+    SECTION("Using move-constructor.")
+    {
+        auto moved_lua = std::move(lua);
+        CHECK(moved_lua.to<int>(1) == 42);
+    }
+    SECTION("Using move-assignment.")
+    {
+        auto moved_lua = dlua::State::withoutLibs();
+        moved_lua = std::move(lua);
+        CHECK(moved_lua.to<int>(1) == 42);
+    }
+}
+
+TEST_CASE("Lua State can be swapped.", "[lua][state]")
+{
+    auto lua1 = dlua::State::withoutLibs();
+    lua1.push(1);
+
+    auto lua2 = dlua::State::withoutLibs();
+    lua2.push(2);
+    lua2.push(2);
+
+    SECTION("Using swap member function.") { lua1.swap(lua2); }
+    SECTION("Using swap friend function.") { swap(lua1, lua2); }
+
+    CHECK(lua1.size() == 2);
+    CHECK(lua1.to<int>(1) == 2);
+    CHECK(lua1.to<int>(2) == 2);
+    CHECK(lua2.size() == 1);
+    CHECK(lua2.to<int>(1) == 1);
+}
