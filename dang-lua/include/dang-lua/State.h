@@ -1847,12 +1847,14 @@ public:
     bool gcIsRunning() const { return gc(GCOption::IsRunning); }
 
     /// @brief Changes the collector to incremental mode with the given parameters and returns the previous mode.
+    /// @remark A zero parameter means to not change that value.
     auto gcIncremental(int pause, int stepmul, int stepsize)
     {
         return static_cast<GCOption>(gc(GCOption::Incremental, pause, stepmul, stepsize));
     }
 
     /// @brief Changes the collector to generational mode with the given parameters and returns the previous mode.
+    /// @remark A zero parameter means to not change that value.
     auto gcGenerational(int minormul, int majormul)
     {
         return static_cast<GCOption>(gc(GCOption::Generational, minormul, majormul));
