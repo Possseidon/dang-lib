@@ -452,7 +452,7 @@ void* dummyAllocCheckUserdata(void* ud, void* ptr, std::size_t osize, std::size_
 
 } // namespace
 
-TEST_CASE("Lua State can be constructed and closed.", "[lua][owned-state]")
+TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
 {
     auto allocator = GENERATE(as<std::optional<dlua::Allocator>>{},
                               std::nullopt,
