@@ -3817,9 +3817,8 @@ public:
     State(const State&) = delete;
 
     State(State&& other) noexcept
-        : State(std::exchange(other.state_, nullptr))
+        : StateBase(std::exchange(other.state_, nullptr), other.top_)
     {
-        top_ = other.top_;
 #ifndef NDEBUG
         pushable_ = other.pushable_;
 #endif
