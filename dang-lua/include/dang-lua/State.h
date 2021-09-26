@@ -7,7 +7,6 @@
 #include "dang-lua/global.h"
 #include "dang-utils/utils.h"
 
-// TODO: Replace decay_t with remove_reference_t or whatever is appropriate.
 // TODO: More explicit about which index parameters must be positive
 
 namespace dang::lua {
@@ -2423,9 +2422,9 @@ public:
         using ConvertValue = Convert<std::remove_reference_t<TValue>>;
 
         static_assert(ConvertValue::push_count == 1, "Supplied value must take up a single stack position.");
-        static_assert(is_index_v<std::decay_t<TIndex>>, "Supplied index must be an index.");
+        static_assert(is_index_v<std::remove_reference_t<TIndex>>, "Supplied index must be an index.");
 
-        if constexpr (is_index_v<std::decay_t<TValue>>) {
+        if constexpr (is_index_v<std::remove_reference_t<TValue>>) {
             assertPushable();
             lua_copy(state_, value.index(), index.index());
             if constexpr (is_any_moved_stack_index_result_v<TValue&&>)
@@ -2759,8 +2758,8 @@ public:
         static_assert(ConvertLeft::push_count == 1, "Left operand must take up a single stack position.");
         static_assert(ConvertRight::push_count == 1, "Right operand must take up a single stack position.");
 
-        constexpr bool left_is_index = is_index_v<std::decay_t<TLeft>>;
-        constexpr bool right_is_index = is_index_v<std::decay_t<TRight>>;
+        constexpr bool left_is_index = is_index_v<std::remove_reference_t<TLeft>>;
+        constexpr bool right_is_index = is_index_v<std::remove_reference_t<TRight>>;
         if constexpr (left_is_index) {
             if constexpr (right_is_index)
                 return lua_compare(state_, lhs.index(), rhs.index(), static_cast<int>(operation)) != 0;
@@ -2833,7 +2832,8 @@ public:
 
         static_assert(ConvertKey::push_count == 1, "Supplied key must take up a single stack position.");
 
-        if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
+        if constexpr (std::is_integral_v<std::remove_reference_t<TKey>> &&
+                      !std::is_same_v<dutils::remove_cvref_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             auto type = static_cast<Type>(lua_geti(state_, table.index(), lua_Integer{key}));
@@ -2851,7 +2851,7 @@ public:
             notifyPush();
             return std::tuple{type, top().asResult()};
         }
-        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+        else if constexpr (std::is_same_v<dutils::remove_cvref_t<TKey>, std::string>) {
             return getTable(table, key.c_str());
         }
         else {
@@ -2884,7 +2884,8 @@ public:
         static_assert(ConvertKey::push_count == 1, "Supplied key must take up a single stack position.");
         static_assert(ConvertValue::push_count == 1, "Supplied value must take up a single stack position.");
 
-        if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
+        if constexpr (std::is_integral_v<std::remove_reference_t<TKey>> &&
+                      !std::is_same_v<dutils::remove_cvref_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             lua_seti(state_, table.index(), lua_Integer{key});
@@ -2899,7 +2900,7 @@ public:
             // -1, +0
             notifyPush(-1);
         }
-        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+        else if constexpr (std::is_same_v<dutils::remove_cvref_t<TKey>, std::string>) {
             setTable(table, key.c_str(), std::forward<TValue>(value));
         }
         else {
@@ -2919,7 +2920,8 @@ public:
 
         static_assert(ConvertKey::push_count == 1, "Supplied key must take up a single stack position.");
 
-        if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
+        if constexpr (std::is_integral_v<std::remove_reference_t<TKey>> &&
+                      !std::is_same_v<dutils::remove_cvref_t<TKey>, bool>) {
             assertPushable();
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             auto type = static_cast<Type>(lua_rawgeti(state_, table.index(), lua_Integer{key}));
@@ -2964,7 +2966,8 @@ public:
         static_assert(ConvertKey::push_count == 1, "Supplied key must take up a single stack position.");
         static_assert(ConvertValue::push_count == 1, "Supplied value must take up a single stack position.");
 
-        if constexpr (std::is_integral_v<std::decay_t<TKey>> && !std::is_same_v<std::decay_t<TKey>, bool>) {
+        if constexpr (std::is_integral_v<std::remove_reference_t<TKey>> &&
+                      !std::is_same_v<dutils::remove_cvref_t<TKey>, bool>) {
             push(std::forward<TValue>(value));
             // lua_Integer{ key } disallows narrowing conversions, which is perfect
             lua_rawseti(state_, table.index(), lua_Integer{key});
@@ -3000,7 +3003,7 @@ public:
             notifyPush(1);
             return std::tuple{type, top().asResult()};
         }
-        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+        else if constexpr (std::is_same_v<dutils::remove_cvref_t<TKey>, std::string>) {
             return getGlobalWithType(key.c_str());
         }
         else {
@@ -3030,7 +3033,7 @@ public:
             lua_setglobal(state_, key);
             notifyPush(-1);
         }
-        else if constexpr (std::is_same_v<std::decay_t<TKey>, std::string>) {
+        else if constexpr (std::is_same_v<dutils::remove_cvref_t<TKey>, std::string>) {
             return setGlobal(key.c_str(), std::forward<TValue>(value));
         }
         else {
@@ -4510,7 +4513,7 @@ template <typename... TIterators>
 class iterator_variant : public std::variant<TIterators...> {
 public:
     using difference_type = lua_Integer;
-    using value_type = std::decay_t<decltype((*std::declval<TIterators>(), ...))>;
+    using value_type = dutils::remove_cvref_t<decltype((*std::declval<TIterators>(), ...))>;
     using pointer = value_type*;
     using reference = value_type&;
     using iterator_category = std::input_iterator_tag;
@@ -4867,7 +4870,7 @@ namespace detail {
 template <typename TLeft, typename TRight>
 inline auto& stateOf(TLeft& lhs, TRight& rhs)
 {
-    if constexpr (is_index_v<std::decay_t<TLeft>>)
+    if constexpr (is_index_v<TLeft>)
         return lhs.state();
     else
         return rhs.state();
@@ -4875,7 +4878,7 @@ inline auto& stateOf(TLeft& lhs, TRight& rhs)
 
 /// @brief Whether any of the type parameters is an index.
 template <typename... TArgs>
-using any_is_index = std::disjunction<is_index<std::decay_t<TArgs>>...>;
+using any_is_index = std::disjunction<is_index<std::remove_reference_t<TArgs>>...>;
 
 template <typename... TArgs>
 inline constexpr auto any_is_index_v = any_is_index<TArgs...>::value;
@@ -4960,7 +4963,8 @@ std::forward<TRight>(rhs));
 
 template <typename TLeft, typename TRight>
 inline auto operator<<(TLeft&& lhs, TRight&& rhs)
-    -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight> && !std::is_same_v<std::decay_t<TLeft>, std::ostream>,
+    -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight> &&
+                            !std::is_same_v<dutils::remove_cvref_t<TLeft>, std::ostream>,
                         StackIndexResult>
 {
     return detail::stateOf(lhs, rhs).template arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs),
