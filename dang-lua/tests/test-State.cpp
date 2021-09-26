@@ -325,9 +325,9 @@ TEMPLATE_LIST_TEST_CASE("Lua UpvalueIndexRange has correct type traits.",
     STATIC_REQUIRE_FALSE(dlua::is_fixed_size_stack_index_v<UpvalueIndexRange>);
 }
 
-// --- State
+// --- StateRef
 
-TEST_CASE("Lua State can be constructed from the lua_State passed to a C function.", "[lua][state]")
+TEST_CASE("Lua StateRef can be constructed from the lua_State passed to a C function.", "[lua][state]")
 {
     LuaState owned_lua_state;
 
@@ -340,34 +340,34 @@ TEST_CASE("Lua State can be constructed from the lua_State passed to a C functio
     // See below for more info.
     luaL_checkstack(*owned_lua_state, LUA_MINSTACK, nullptr);
 
-    // State is meant exclusively for when Lua calls a C function.
+    // StateRef is meant exclusively for when Lua calls a C function.
 
     // 1. Stack Size (See https://www.lua.org/manual/5.4/manual.html#4.1.1)
     // Lua ensures, that LUA_MINSTACK (20) elements can be safely pushed.
-    // When State is created it assumes these 20 elements can safely be pushed.
-    // Unless NDEBUG is set, State keeps track of the stack size and asserts, that the stack doesn't overflow.
+    // When StateRef is created it assumes these 20 elements can safely be pushed.
+    // Unless NDEBUG is set, StateRef keeps track of the stack size and asserts, that the stack doesn't overflow.
 
     // 2. Pushed Elements
     // When a C function is called, a variable number of elements will lie on the stack.
-    // Creating a State will therefore query the stack size once and store it.
-    // Any operations on the State will automatically update without any further size queries.
+    // Creating a StateRef will therefore query the stack size once and store it.
+    // Any operations on the StateRef will automatically update without any further size queries.
     // This should allow for better optimizations and avoid many calls to lua_gettop.
     // However each call always calls lua_gettop exactly once, which might not have been necessary.
-    // Wrapped functions that do not use any State or Arg parameter do not have this overhead.
+    // Wrapped functions that do not use any StateRef or Arg parameter do not have this overhead.
 
-    auto lua = dlua::State(*owned_lua_state);
+    auto lua = dlua::StateRef(*owned_lua_state);
 
     CHECK(lua.state() == *owned_lua_state);
     CHECK(lua.size() == pushed);
 }
 
-TEST_CASE("Lua State can be moved.", "[lua][state]")
+TEST_CASE("Lua StateRef can be moved.", "[lua][state]")
 {
     LuaState owned_lua_state;
     lua_pushinteger(*owned_lua_state, 42);
     luaL_checkstack(*owned_lua_state, LUA_MINSTACK, nullptr);
 
-    auto lua = dlua::State(*owned_lua_state);
+    auto lua = dlua::StateRef(*owned_lua_state);
 
     SECTION("Using move-constructor.")
     {
@@ -379,14 +379,14 @@ TEST_CASE("Lua State can be moved.", "[lua][state]")
     {
         LuaState other_lua_state;
 
-        auto moved_lua = dlua::State(*other_lua_state);
+        auto moved_lua = dlua::StateRef(*other_lua_state);
         moved_lua = std::move(lua);
         CHECK(moved_lua.state() == *owned_lua_state);
         CHECK(moved_lua.size() == 1);
     }
 }
 
-TEST_CASE("Lua State can be swapped.", "[lua][state]")
+TEST_CASE("Lua StateRef can be swapped.", "[lua][state]")
 {
     LuaState owned_lua_state1;
     lua_pushinteger(*owned_lua_state1, 1);
@@ -397,8 +397,8 @@ TEST_CASE("Lua State can be swapped.", "[lua][state]")
     lua_pushinteger(*owned_lua_state2, 2);
     luaL_checkstack(*owned_lua_state2, LUA_MINSTACK, nullptr);
 
-    auto lua1 = dlua::State(*owned_lua_state1);
-    auto lua2 = dlua::State(*owned_lua_state2);
+    auto lua1 = dlua::StateRef(*owned_lua_state1);
+    auto lua2 = dlua::StateRef(*owned_lua_state2);
 
     SECTION("Using swap member function.") { lua1.swap(lua2); }
     SECTION("Using swap friend function.") { swap(lua1, lua2); }
@@ -409,17 +409,17 @@ TEST_CASE("Lua State can be swapped.", "[lua][state]")
     CHECK(lua2.size() == 1);
 }
 
-TEST_CASE("Lua State's underlying state can be checked and extracted.", "[lua][state]")
+TEST_CASE("Lua StateRef's underlying state can be checked and extracted.", "[lua][state]")
 {
     LuaState owned_lua_state;
 
-    auto lua = dlua::State(*owned_lua_state);
+    auto lua = dlua::StateRef(*owned_lua_state);
 
     CHECK(lua.state() == *owned_lua_state);
     CHECK(std::move(lua).state() == *owned_lua_state);
 }
 
-// --- OwnedState
+// --- State
 
 namespace {
 
@@ -452,14 +452,14 @@ void* dummyAllocCheckUserdata(void* ud, void* ptr, std::size_t osize, std::size_
 
 } // namespace
 
-TEST_CASE("Lua OwnedState can be constructed and closed.", "[lua][owned-state]")
+TEST_CASE("Lua State can be constructed and closed.", "[lua][owned-state]")
 {
     auto allocator = GENERATE(as<std::optional<dlua::Allocator>>{},
                               std::nullopt,
                               dlua::Allocator(dummyAlloc),
                               dlua::Allocator(dummyAllocCheckUserdata, userdata.get()));
 
-    auto check_close_function = [](dlua::OwnedState& lua) {
+    auto check_close_function = [](dlua::State& lua) {
         CHECK_FALSE(lua.closed());
         SECTION("Letting it go out of scope.") {}
         SECTION("Closing it explicitly.")
@@ -482,21 +482,21 @@ TEST_CASE("Lua OwnedState can be constructed and closed.", "[lua][owned-state]")
     SECTION("Using the constructor.")
     {
         auto open_libs = GENERATE(true, false);
-        auto lua = dlua::OwnedState(open_libs, allocator);
+        auto lua = dlua::State(open_libs, allocator);
         if (allocator)
             CHECK(allocations.size() > 0);
         check_close_function(lua);
     }
     SECTION("Using the withLibs function.")
     {
-        auto lua = dlua::OwnedState::withLibs(allocator);
+        auto lua = dlua::State::withLibs(allocator);
         if (allocator)
             CHECK(allocations.size() > 0);
         check_close_function(lua);
     }
     SECTION("Using the withoutLibs function.")
     {
-        auto lua = dlua::OwnedState::withoutLibs(allocator);
+        auto lua = dlua::State::withoutLibs(allocator);
         if (allocator)
             CHECK(allocations.size() > 0);
         check_close_function(lua);
@@ -505,4 +505,4 @@ TEST_CASE("Lua OwnedState can be constructed and closed.", "[lua][owned-state]")
     CHECK(allocations.size() == 0);
 }
 
-// --- State and OwnedState
+// --- StateRef and State
