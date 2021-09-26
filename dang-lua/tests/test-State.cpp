@@ -1,3 +1,10 @@
+#include <cstddef>
+#include <cstdlib>
+#include <memory>
+#include <optional>
+#include <set>
+
+#include "dang-lua/Allocator.h"
 #include "dang-lua/State.h"
 
 #include "catch2/catch.hpp"
@@ -413,5 +420,89 @@ TEST_CASE("Lua State's underlying state can be checked and extracted.", "[lua][s
 }
 
 // --- OwnedState
+
+namespace {
+
+auto allocations = std::set<void*>();
+void* dummyAlloc(void* ud, void* ptr, std::size_t osize, std::size_t nsize)
+{
+    CHECK(ud == nullptr);
+    INFO("realloc " << ptr << " from " << osize << " to " << nsize);
+    if (nsize > 0) {
+        if (ptr != nullptr)
+            CHECK(allocations.erase(ptr) == 1);
+        ptr = std::realloc(ptr, nsize);
+        auto [_, inserted] = allocations.insert(ptr);
+        CHECK(inserted);
+        return ptr;
+    }
+    if (ptr != nullptr) {
+        CHECK(allocations.erase(ptr) == 1);
+        std::free(ptr);
+    }
+    return nullptr;
+}
+
+auto userdata = std::make_unique<int>();
+void* dummyAllocCheckUserdata(void* ud, void* ptr, std::size_t osize, std::size_t nsize)
+{
+    CHECK(ud == userdata.get());
+    return dummyAlloc(nullptr, ptr, osize, nsize);
+}
+
+} // namespace
+
+TEST_CASE("Lua OwnedState can be constructed and closed.", "[lua][owned-state]")
+{
+    auto allocator = GENERATE(as<std::optional<dlua::Allocator>>{},
+                              std::nullopt,
+                              dlua::Allocator(dummyAlloc),
+                              dlua::Allocator(dummyAllocCheckUserdata, userdata.get()));
+
+    auto check_close_function = [](dlua::OwnedState& lua) {
+        CHECK_FALSE(lua.closed());
+        SECTION("Letting it go out of scope.") {}
+        SECTION("Closing it explicitly.")
+        {
+            lua.close();
+            CHECK(lua.closed());
+            CHECK(allocations.size() == 0);
+        }
+        SECTION("Closing it multiple times.")
+        {
+            lua.close();
+            CHECK(lua.closed());
+            CHECK(allocations.size() == 0);
+
+            lua.close();
+            CHECK(lua.closed());
+        }
+    };
+
+    SECTION("Using the constructor.")
+    {
+        auto open_libs = GENERATE(true, false);
+        auto lua = dlua::OwnedState(open_libs, allocator);
+        if (allocator)
+            CHECK(allocations.size() > 0);
+        check_close_function(lua);
+    }
+    SECTION("Using the withLibs function.")
+    {
+        auto lua = dlua::OwnedState::withLibs(allocator);
+        if (allocator)
+            CHECK(allocations.size() > 0);
+        check_close_function(lua);
+    }
+    SECTION("Using the withoutLibs function.")
+    {
+        auto lua = dlua::OwnedState::withoutLibs(allocator);
+        if (allocator)
+            CHECK(allocations.size() > 0);
+        check_close_function(lua);
+    }
+
+    CHECK(allocations.size() == 0);
+}
 
 // --- State and OwnedState
