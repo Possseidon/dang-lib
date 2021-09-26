@@ -2,6 +2,7 @@
 
 #include "dang-lua/Convert.h"
 
+#include "catch2/catch.hpp"
 #include "lua.hpp"
 
 /// @brief A very basic wrapper for owned Lua states, meant for use in testing.

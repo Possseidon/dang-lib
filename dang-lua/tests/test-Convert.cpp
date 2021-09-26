@@ -11,6 +11,7 @@
 #include "dang-utils/utils.h"
 
 #include "catch2/catch.hpp"
+#include "lua.hpp"
 #include "shared/LuaState.h"
 #include "shared/utils.h"
 
@@ -1092,13 +1093,13 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with numbers.", "[lua][convert][number
 // --- Convert<integer>
 
 using integer_types = maybe_cv<std::int8_t,
-                                  std::int16_t,
-                                  std::int32_t,
-                                  std::int64_t,
-                                  std::uint8_t,
-                                  std::uint16_t,
-                                  std::uint32_t,
-                                  std::uint64_t>;
+                               std::int16_t,
+                               std::int32_t,
+                               std::int64_t,
+                               std::uint8_t,
+                               std::uint16_t,
+                               std::uint32_t,
+                               std::uint64_t>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integer]", integer_types)
 {
     using Integer = dutils::remove_cvref_t<TestType>;
@@ -1377,9 +1378,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::string.", "[lua][convert][st
     }
 }
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with std::string_view.",
-                        "[lua][convert][string]",
-                        maybe_cv<std::string_view>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with std::string_view.", "[lua][convert][string]", maybe_cv<std::string_view>)
 {
     using namespace std::literals::string_view_literals;
 
@@ -1510,9 +1509,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can push C-Style strings.", "[lua][convert][str
 
 int dummyLuaFunction(lua_State*) { return 0; }
 
-TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.",
-                        "[lua][convert][function]",
-                        maybe_cv<lua_CFunction>)
+TEMPLATE_LIST_TEST_CASE("Convert can work with Lua C functions.", "[lua][convert][function]", maybe_cv<lua_CFunction>)
 {
     using Convert = dlua::Convert<TestType>;
 

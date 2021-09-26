@@ -5,6 +5,7 @@
 #include "dang-lua/State.h"
 
 #include "catch2/catch.hpp"
+#include "lua.hpp"
 #include "shared/CheckedAllocator.h"
 #include "shared/LuaState.h"
 #include "shared/utils.h"
