@@ -324,9 +324,9 @@ TEST_CASE("Lua State can be constructed from the lua_State passed to a C functio
 {
     LuaState owned_lua_state;
 
-    auto pushed = GENERATE(as<std::size_t>{}, 0, 1, 5);
+    auto pushed = GENERATE(0, 1, 5);
 
-    for (std::size_t i = 0; i < pushed; i++)
+    for (int i = 0; i < pushed; i++)
         lua_pushinteger(*owned_lua_state, i);
 
     // Simulate a proper call, allowing LUA_MINSTACK (20) elements to be pushed safely.
