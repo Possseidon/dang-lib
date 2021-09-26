@@ -1,13 +1,11 @@
-#include <cstddef>
-#include <cstdlib>
 #include <memory>
 #include <optional>
-#include <set>
 
 #include "dang-lua/Allocator.h"
 #include "dang-lua/State.h"
 
 #include "catch2/catch.hpp"
+#include "shared/CheckedAllocator.h"
 #include "shared/LuaState.h"
 #include "shared/utils.h"
 
@@ -421,43 +419,12 @@ TEST_CASE("Lua StateRef's underlying state can be checked and extracted.", "[lua
 
 // --- State
 
-namespace {
-
-auto allocations = std::set<void*>();
-void* dummyAlloc(void* ud, void* ptr, std::size_t osize, std::size_t nsize)
-{
-    CHECK(ud == nullptr);
-    INFO("realloc " << ptr << " from " << osize << " to " << nsize);
-    if (nsize > 0) {
-        if (ptr != nullptr)
-            CHECK(allocations.erase(ptr) == 1);
-        ptr = std::realloc(ptr, nsize);
-        auto [_, inserted] = allocations.insert(ptr);
-        CHECK(inserted);
-        return ptr;
-    }
-    if (ptr != nullptr) {
-        CHECK(allocations.erase(ptr) == 1);
-        std::free(ptr);
-    }
-    return nullptr;
-}
-
-auto userdata = std::make_unique<int>();
-void* dummyAllocCheckUserdata(void* ud, void* ptr, std::size_t osize, std::size_t nsize)
-{
-    CHECK(ud == userdata.get());
-    return dummyAlloc(nullptr, ptr, osize, nsize);
-}
-
-} // namespace
-
 TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
 {
-    auto allocator = GENERATE(as<std::optional<dlua::Allocator>>{},
-                              std::nullopt,
-                              dlua::Allocator(dummyAlloc),
-                              dlua::Allocator(dummyAllocCheckUserdata, userdata.get()));
+    auto checked_allocator = CheckedAllocator();
+    auto allocator = checked_allocator.allocator();
+
+    auto maybe_allocator = GENERATE_COPY(as<std::optional<dlua::Allocator>>{}, std::nullopt, allocator);
 
     auto check_close_function = [&](dlua::State& lua) {
         CHECK_FALSE(lua.closed());
@@ -466,15 +433,15 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
         {
             lua.close();
             CHECK(lua.closed());
-            if (allocator)
-                CHECK(allocations.size() == 0);
+            if (maybe_allocator)
+                checked_allocator.checkEmpty();
         }
         SECTION("Closing it multiple times.")
         {
             lua.close();
             CHECK(lua.closed());
-            if (allocator)
-                CHECK(allocations.size() == 0);
+            if (maybe_allocator)
+                checked_allocator.checkEmpty();
 
             lua.close();
             CHECK(lua.closed());
@@ -484,28 +451,28 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][state]")
     SECTION("Using the constructor.")
     {
         auto open_libs = GENERATE(true, false);
-        auto lua = dlua::State(open_libs, allocator);
-        if (allocator)
-            CHECK(allocations.size() > 0);
+        auto lua = dlua::State(open_libs, maybe_allocator);
+        if (maybe_allocator)
+            checked_allocator.checkNotEmpty();
         check_close_function(lua);
     }
     SECTION("Using the withLibs function.")
     {
-        auto lua = dlua::State::withLibs(allocator);
-        if (allocator)
-            CHECK(allocations.size() > 0);
+        auto lua = dlua::State::withLibs(maybe_allocator);
+        if (maybe_allocator)
+            checked_allocator.checkNotEmpty();
         check_close_function(lua);
     }
     SECTION("Using the withoutLibs function.")
     {
-        auto lua = dlua::State::withoutLibs(allocator);
-        if (allocator)
-            CHECK(allocations.size() > 0);
+        auto lua = dlua::State::withoutLibs(maybe_allocator);
+        if (maybe_allocator)
+            checked_allocator.checkNotEmpty();
         check_close_function(lua);
     }
 
-    if (allocator)
-        CHECK(allocations.size() == 0);
+    if (maybe_allocator)
+        checked_allocator.checkEmpty();
 }
 
 TEST_CASE("Lua State can be moved.", "[lua][state]")
