@@ -459,20 +459,22 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][owned-state]")
                               dlua::Allocator(dummyAlloc),
                               dlua::Allocator(dummyAllocCheckUserdata, userdata.get()));
 
-    auto check_close_function = [](dlua::State& lua) {
+    auto check_close_function = [&](dlua::State& lua) {
         CHECK_FALSE(lua.closed());
         SECTION("Letting it go out of scope.") {}
         SECTION("Closing it explicitly.")
         {
             lua.close();
             CHECK(lua.closed());
-            CHECK(allocations.size() == 0);
+            if (allocator)
+                CHECK(allocations.size() == 0);
         }
         SECTION("Closing it multiple times.")
         {
             lua.close();
             CHECK(lua.closed());
-            CHECK(allocations.size() == 0);
+            if (allocator)
+                CHECK(allocations.size() == 0);
 
             lua.close();
             CHECK(lua.closed());
@@ -502,7 +504,8 @@ TEST_CASE("Lua State can be constructed and closed.", "[lua][owned-state]")
         check_close_function(lua);
     }
 
-    CHECK(allocations.size() == 0);
+    if (allocator)
+        CHECK(allocations.size() == 0);
 }
 
 // --- StateRef and State
