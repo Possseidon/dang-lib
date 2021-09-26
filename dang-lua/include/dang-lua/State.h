@@ -1766,10 +1766,15 @@ class State {
 public:
     friend class OwnedState;
 
-    /// @brief Mainly used to construct from a C function parameter.
+    /// @brief Used exclusively to construct from a C function parameter.
+    /// @remark It expects LUA_MINSTACK (20) pushable values and asserts that there is no overflow.
+    /// @remark It queries the stack size once and manually keeps track for better optimization.
     State(lua_State* state)
         : state_(state)
     {}
+
+    // Only moves are allowed to prevent different states from going out of sync.
+    // Technically not even moves should be necessary with the specific use case of this class.
 
     State(const State&) = delete;
     State(State&&) = default;
@@ -1791,10 +1796,12 @@ public:
     // --- State Conversion ---
 
     /// @brief Returns the wrapped Lua state.
-    lua_State* state() const { return state_; }
+    /// @remark The returned state is const to prevent direct API calls on it.
+    const lua_State* state() const& { return state_; }
 
-    /// @brief Returns the wrapped Lua state.
-    operator lua_State*() const { return state_; }
+    /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
+    /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
+    lua_State* state() && { return state_; }
 
     // --- State Properties ---
 
