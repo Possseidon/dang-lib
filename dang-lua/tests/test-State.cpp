@@ -7,6 +7,7 @@
 #include "catch2/catch.hpp"
 #include "lua.hpp"
 #include "shared/CheckedAllocator.h"
+#include "shared/LuaEnums.h"
 #include "shared/LuaState.h"
 #include "shared/utils.h"
 
@@ -322,6 +323,87 @@ TEMPLATE_LIST_TEST_CASE("Lua UpvalueIndexRange has correct type traits.",
     STATIC_REQUIRE_FALSE(dlua::is_any_moved_stack_index_result_v<UpvalueIndexRange&&>);
 
     STATIC_REQUIRE_FALSE(dlua::is_fixed_size_stack_index_v<UpvalueIndexRange>);
+}
+
+// --- StateBase (using State)
+
+namespace {
+
+int dummyPanicFunction(lua_State*) { return 0; }
+
+} // namespace
+
+TEST_CASE("Lua StateBase can check properties of the state itself.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    CHECK(lua.version() == LUA_VERSION_NUM);
+    lua.checkVersion();
+
+    CHECK(lua.status() == dlua::Status::Ok);
+    CHECK_FALSE(lua.isYieldable());
+
+    auto old_panic_function = lua.replacePanicFunction(dummyPanicFunction);
+    CHECK(lua.replacePanicFunction(old_panic_function) == dummyPanicFunction);
+
+    auto data = std::make_unique<int>();
+    lua.extraspace() = data.get();
+    CHECK(lua.extraspace() == data.get());
+}
+
+TEST_CASE("Lua StateBase can query and switch out the allocator.", "[lua][state]")
+{
+    // This test is a bit questionable as it relies on how Lua allocates things.
+    // If this ever breaks for "no reason" it is probably a good idea to simplify or remove it.
+    // Hot swapping an allocator isn't something very common anyway.
+
+    auto lua = dlua::State();
+    auto checked_allocator = CheckedAllocator();
+
+    // Make sure all garbage is cleaned up.
+    lua.gcCollect();
+
+    // Hot swap the allocator.
+    auto old_allocator = lua.getAllocator();
+    lua.setAllocator(checked_allocator.allocator());
+
+    // Allocate a table.
+    lua.pushTable();
+    checked_allocator.checkNotEmpty();
+
+    // Remove the table and let the gc deallocate it.
+    lua.pop();
+    lua.gcCollect();
+    checked_allocator.checkEmpty();
+
+    // Put back the old allocator.
+    lua.setAllocator(old_allocator);
+}
+
+TEST_CASE("Lua StateBase can work with the garbage collector.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    SECTION("A full garbage-collection cycle can be triggered.") { lua.gcCollect(); }
+    SECTION("A single garbage-collection step can be triggered.") { lua.gcStep(1); }
+    SECTION("It can be stopped and restarted.")
+    {
+        CHECK(lua.gcIsRunning());
+        lua.gcStop();
+        CHECK_FALSE(lua.gcIsRunning());
+        lua.gcRestart();
+        CHECK(lua.gcIsRunning());
+    }
+    SECTION("The current memory in use can be queried.")
+    {
+        auto bytes = lua.gcCount() * 1024 + lua.gcCountBytes();
+        CHECK(bytes > 0);
+    }
+    SECTION("It can be switched between generational and incremental mode.")
+    {
+        lua.gcGenerational(0, 0);
+        CHECK(lua.gcIncremental(0, 0, 0) == dlua::GCOption::Generational);
+    }
 }
 
 // --- StateRef
