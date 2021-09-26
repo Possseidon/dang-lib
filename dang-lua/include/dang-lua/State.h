@@ -3648,30 +3648,7 @@ private:
     /// @brief A function wrapper, that expects a std::function of the templated type in the first upvalue slot of the
     /// called closure.
     template <typename TFunc>
-    static int wrappedFunction(lua_State* state)
-    {
-        using Info = detail::SignatureInfo<TFunc>;
-        // TODO: Is "check" appropriate here?
-        auto func = Convert<TFunc>::check(state, lua_upvalueindex(1));
-
-        // TODO: Code duplication with wrap
-        StateRef lua(state);
-        auto old_top = lua.size();
-        auto&& args = Info::convertArguments(lua);
-        if (old_top != lua.size()) {
-            assert(lua.size() > old_top);
-            lua.ensurePushable(lua.size() - old_top);
-            lua_settop(state, lua.size());
-        }
-
-        if constexpr (std::is_void_v<typename Info::Return>) {
-            std::apply(func, std::move(args));
-            return 0;
-        }
-        else {
-            return lua.push(std::apply(func, std::move(args))).size();
-        }
-    }
+    static int wrappedFunction(lua_State* state);
 
     /// @brief Builds the "what" string, used in lua_getinfo
     /// @param stack_function Prefixes the string with a `>`.
@@ -5101,6 +5078,32 @@ inline IPairsRawIterationWrapper StateBase::ipairsRaw(int index) { return {*this
 inline IKeysRawIterationWrapper StateBase::ikeysRaw(int index) { return {*this, index}; }
 
 inline IValuesRawIterationWrapper StateBase::ivaluesRaw(int index) { return {*this, index}; }
+
+template <typename TFunc>
+inline int StateBase::wrappedFunction(lua_State* state)
+{
+    using Info = detail::SignatureInfo<TFunc>;
+    // TODO: Is "check" appropriate here?
+    auto func = Convert<TFunc>::check(state, lua_upvalueindex(1));
+
+    // TODO: Code duplication with wrap
+    StateRef lua(state);
+    auto old_top = lua.size();
+    auto&& args = Info::convertArguments(lua);
+    if (old_top != lua.size()) {
+        assert(lua.size() > old_top);
+        lua.ensurePushable(lua.size() - old_top);
+        lua_settop(state, lua.size());
+    }
+
+    if constexpr (std::is_void_v<typename Info::Return>) {
+        std::apply(func, std::move(args));
+        return 0;
+    }
+    else {
+        return lua.push(std::apply(func, std::move(args))).size();
+    }
+}
 
 } // namespace detail
 
