@@ -1200,12 +1200,9 @@ struct Convert<TOptional, std::enable_if_t<is_optional_v<TOptional>>> : ConvertO
 
 /// @brief Returns the combined push count of all types or std::nullopt if any push count is not known at compile-time.
 template <typename... TValues>
-constexpr std::optional<int> combined_push_count = [] {
-    if constexpr ((Convert<TValues>::push_count && ...))
-        return (0 + ... + *Convert<TValues>::push_count);
-    else
-        return std::nullopt;
-}();
+inline constexpr auto combined_push_count = (Convert<TValues>::push_count && ...)
+                                                ? std::optional((0 + ... + *Convert<TValues>::push_count))
+                                                : std::nullopt;
 
 /// @brief Returns the combined push count of all values.
 template <typename... TValues>
