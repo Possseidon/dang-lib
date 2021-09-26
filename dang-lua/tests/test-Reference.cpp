@@ -131,7 +131,8 @@ TEST_CASE("Lua references can be swapped.")
     lua_pushinteger(*lua, 2);
     auto reference2 = dlua::Reference::consume(*lua);
 
-    swap(reference1, reference2);
+    SECTION("Using swap member function.") { reference1.swap(reference2); }
+    SECTION("Using swap friend function.") { swap(reference1, reference2); }
 
     reference1.push();
     CHECK(lua_gettop(*lua) == 1);
