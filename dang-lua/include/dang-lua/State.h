@@ -9,6 +9,14 @@
 
 namespace dang::lua {
 
+namespace detail {
+
+class StateBase;
+
+} // namespace detail
+
+class StateRef;
+class Thread;
 class State;
 
 /// @brief The amount of stack slots auxiliary library functions can use before they call lua_checkstack themselves.
@@ -171,14 +179,14 @@ struct SignatureInfoBase {
 private:
     /// @brief Converts the given type to the type, which is actually returned by Convert::check.
     template <typename TArg>
-    using FixedArgType = decltype(Convert<std::remove_reference_t<TArg>>::check(std::declval<State&>(), 1));
+    using FixedArgType = decltype(Convert<std::remove_reference_t<TArg>>::check(std::declval<StateRef&>(), 1));
 
 public:
     using Return = TRet;
     using Arguments = std::tuple<FixedArgType<TArgs>...>;
 
     static constexpr bool any_fixed_size_stack_args = (is_fixed_size_stack_index_v<TArgs> || ...);
-    static constexpr bool any_state_args = ((std::is_same_v<TArgs, State&> || is_any_index_v<TArgs>) || ...);
+    static constexpr bool any_state_args = ((std::is_same_v<TArgs, StateRef&> || is_any_index_v<TArgs>) || ...);
 
 protected:
     /// @brief Calculates the index of the next argument from the given index list of all previous arguments.
@@ -204,7 +212,7 @@ template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (*)(TArgs...)> : SignatureInfoBase<TRet, TArgs...> {
     /// @brief Uses the Convert template to check all the arguments on the stack and returns a tuple representing these
     /// arguments.
-    static auto convertArguments(State& state)
+    static auto convertArguments(StateRef& state)
     {
         return convertArgumentsHelper(state, std::index_sequence_for<TArgs...>{});
     }
@@ -221,7 +229,7 @@ private:
 
     /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... v_indices>
-    static typename Base::Arguments convertArgumentsHelper(State& state, std::index_sequence<v_indices...>)
+    static typename Base::Arguments convertArgumentsHelper(StateRef& state, std::index_sequence<v_indices...>)
     {
         return {Convert<std::remove_reference_t<TArgs>>::check(
             state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
@@ -724,63 +732,63 @@ public:
         return this->state().next(index(), std::forward<TKey>(key));
     }
 
-    /// @copydoc dang::lua::State::pairs(int)
+    /// @copydoc dang::lua::detail::StateBase::pairs(int)
     auto pairs() const { return this->state().pairs(index()); }
-    /// @copydoc dang::lua::State::keys(int)
+    /// @copydoc dang::lua::detail::StateBase::keys(int)
     auto keys() const { return this->state().keys(index()); }
-    /// @copydoc dang::lua::State::values(int)
+    /// @copydoc dang::lua::detail::StateBase::values(int)
     auto values() const { return this->state().values(index()); }
 
-    /// @copydoc dang::lua::State::pairsRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::pairsRaw(int)
     auto pairsRaw() const { return this->state().pairsRaw(index()); }
-    /// @copydoc dang::lua::State::keysRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::keysRaw(int)
     auto keysRaw() const { return this->state().keysRaw(index()); }
-    /// @copydoc dang::lua::State::valuesRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::valuesRaw(int)
     auto valuesRaw() const { return this->state().valuesRaw(index()); }
 
-    /// @copydoc dang::lua::State::ipairs(int)
+    /// @copydoc dang::lua::detail::StateBase::ipairs(int)
     auto ipairs() const { return this->state().ipairs(index()); }
-    /// @copydoc dang::lua::State::ikeys(int)
+    /// @copydoc dang::lua::detail::StateBase::ikeys(int)
     auto ikeys() const { return this->state().ikeys(index()); }
-    /// @copydoc dang::lua::State::ivalues(int)
+    /// @copydoc dang::lua::detail::StateBase::ivalues(int)
     auto ivalues() const { return this->state().ivalues(index()); }
 
-    /// @copydoc dang::lua::State::ipairsLen(int)
+    /// @copydoc dang::lua::detail::StateBase::ipairsLen(int)
     auto ipairsLen() const { return this->state().ipairsLen(index()); }
-    /// @copydoc dang::lua::State::ikeysLen(int)
+    /// @copydoc dang::lua::detail::StateBase::ikeysLen(int)
     auto ikeysLen() const { return this->state().ikeysLen(index()); }
-    /// @copydoc dang::lua::State::ivaluesLen(int)
+    /// @copydoc dang::lua::detail::StateBase::ivaluesLen(int)
     auto ivaluesLen() const { return this->state().ivaluesLen(index()); }
 
-    /// @copydoc dang::lua::State::ipairsRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::ipairsRaw(int)
     auto ipairsRaw() const { return this->state().ipairsRaw(index()); }
-    /// @copydoc dang::lua::State::ikeysRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::ikeysRaw(int)
     auto ikeysRaw() const { return this->state().ikeysRaw(index()); }
-    /// @copydoc dang::lua::State::ivaluesRaw(int)
+    /// @copydoc dang::lua::detail::StateBase::ivaluesRaw(int)
     auto ivaluesRaw() const { return this->state().ivaluesRaw(index()); }
 
-    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterate(int,int)
     template <int v_value_offset = 0>
     auto iterate()
     {
         return this->state().template iterate<v_value_offset>(index(), 1);
     }
 
-    /// @copydoc dang::lua::State::iterateMultiple(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterateMultiple(int,int)
     template <int v_value_count, int v_value_offset = 0>
     auto iterateMultiple()
     {
         return this->state().template iterateMultiple<v_value_count, v_value_offset>(index(), 1);
     }
 
-    /// @copydoc dang::lua::State::iteratePair(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iteratePair(int,int)
     template <int v_value_offset = 0>
     auto iteratePair()
     {
         return this->state().template iteratePair<v_value_offset>(index(), 1);
     }
 
-    /// @copydoc dang::lua::State::iterateVarying(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterateVarying(int,int)
     template <int v_value_offset = 0>
     auto iterateVarying()
     {
@@ -1338,41 +1346,41 @@ public:
 
 } // namespace detail
 
-using StackIndex = detail::StackIndex<State, detail::StackIndexType::Reference>;
-using ConstStackIndex = detail::StackIndex<const State, detail::StackIndexType::Reference>;
+using StackIndex = detail::StackIndex<detail::StateBase, detail::StackIndexType::Reference>;
+using ConstStackIndex = detail::StackIndex<const detail::StateBase, detail::StackIndexType::Reference>;
 
-using StackIndexResult = detail::StackIndex<State, detail::StackIndexType::Result>;
-using ConstStackIndexResult = detail::StackIndex<const State, detail::StackIndexType::Result>;
+using StackIndexResult = detail::StackIndex<detail::StateBase, detail::StackIndexType::Result>;
+using ConstStackIndexResult = detail::StackIndex<const detail::StateBase, detail::StackIndexType::Result>;
 
-using RegistryIndex = detail::RegistryIndex<State>;
-using ConstRegistryIndex = detail::RegistryIndex<const State>;
+using RegistryIndex = detail::RegistryIndex<detail::StateBase>;
+using ConstRegistryIndex = detail::RegistryIndex<const detail::StateBase>;
 
-using UpvalueIndex = detail::UpvalueIndex<State>;
-using ConstUpvalueIndex = detail::UpvalueIndex<const State>;
-
-template <int v_size>
-using StackIndices = detail::StackIndices<State, v_size, detail::StackIndexType::Reference>;
-template <int v_size>
-using ConstStackIndices = detail::StackIndices<const State, v_size, detail::StackIndexType::Reference>;
+using UpvalueIndex = detail::UpvalueIndex<detail::StateBase>;
+using ConstUpvalueIndex = detail::UpvalueIndex<const detail::StateBase>;
 
 template <int v_size>
-using StackIndicesResult = detail::StackIndices<State, v_size, detail::StackIndexType::Result>;
+using StackIndices = detail::StackIndices<detail::StateBase, v_size, detail::StackIndexType::Reference>;
 template <int v_size>
-using ConstStackIndicesResult = detail::StackIndices<const State, v_size, detail::StackIndexType::Result>;
+using ConstStackIndices = detail::StackIndices<const detail::StateBase, v_size, detail::StackIndexType::Reference>;
 
 template <int v_size>
-using UpvalueIndices = detail::UpvalueIndices<State, v_size>;
+using StackIndicesResult = detail::StackIndices<detail::StateBase, v_size, detail::StackIndexType::Result>;
 template <int v_size>
-using ConstUpvalueIndices = detail::UpvalueIndices<const State, v_size>;
+using ConstStackIndicesResult = detail::StackIndices<const detail::StateBase, v_size, detail::StackIndexType::Result>;
 
-using StackIndexRange = detail::StackIndexRange<State, detail::StackIndexType::Reference>;
-using ConstStackIndexRange = detail::StackIndexRange<const State, detail::StackIndexType::Reference>;
+template <int v_size>
+using UpvalueIndices = detail::UpvalueIndices<detail::StateBase, v_size>;
+template <int v_size>
+using ConstUpvalueIndices = detail::UpvalueIndices<const detail::StateBase, v_size>;
 
-using StackIndexRangeResult = detail::StackIndexRange<State, detail::StackIndexType::Result>;
-using ConstStackIndexRangeResult = detail::StackIndexRange<const State, detail::StackIndexType::Result>;
+using StackIndexRange = detail::StackIndexRange<detail::StateBase, detail::StackIndexType::Reference>;
+using ConstStackIndexRange = detail::StackIndexRange<const detail::StateBase, detail::StackIndexType::Reference>;
 
-using UpvalueIndexRange = detail::UpvalueIndexRange<State>;
-using ConstUpvalueIndexRange = detail::UpvalueIndexRange<const State>;
+using StackIndexRangeResult = detail::StackIndexRange<detail::StateBase, detail::StackIndexType::Result>;
+using ConstStackIndexRangeResult = detail::StackIndexRange<const detail::StateBase, detail::StackIndexType::Result>;
+
+using UpvalueIndexRange = detail::UpvalueIndexRange<detail::StateBase>;
+using ConstUpvalueIndexRange = detail::UpvalueIndexRange<const detail::StateBase>;
 
 namespace detail {
 
@@ -1761,47 +1769,18 @@ using IterateMultipleWrapper = GeneratorIterationWrapper<generator_indices_itera
 template <int v_value_offset>
 using IterateVaryingWrapper = GeneratorIterationWrapper<generator_index_range_iterator<v_value_offset>>;
 
+namespace detail {
+
 /// @brief Wraps a Lua state or thread.
-class State {
+class StateBase {
 public:
-    friend class OwnedState;
-
-    /// @brief Used exclusively to construct from a C function parameter.
-    /// @remark It expects LUA_MINSTACK (20) pushable values and asserts that there is no overflow.
-    /// @remark It queries the stack size once and manually keeps track for better optimization.
-    State(lua_State* state)
-        : state_(state)
-    {}
-
-    // Only moves are allowed to prevent different states from going out of sync.
-    // Technically not even moves should be necessary with the specific use case of this class.
-
-    State(const State&) = delete;
-    State(State&&) = default;
-    State& operator=(const State&) = delete;
-    State& operator=(State&&) = default;
-
-    void swap(State& other)
-    {
-        using std::swap;
-        swap(state_, other.state_);
-        swap(top_, other.top_);
-#ifndef NDEBUG
-        swap(pushable_, other.pushable_);
-#endif
-    }
-
-    friend void swap(State& lhs, State& rhs) { lhs.swap(rhs); }
-
-    // --- State Conversion ---
+    friend class dang::lua::StateRef;
+    friend class dang::lua::Thread;
+    friend class dang::lua::State;
 
     /// @brief Returns the wrapped Lua state.
     /// @remark The returned state is const to prevent direct API calls on it.
-    const lua_State* state() const& { return state_; }
-
-    /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
-    /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
-    lua_State* state() && { return state_; }
+    const lua_State* state() { return state_; }
 
     // --- State Properties ---
 
@@ -1880,49 +1859,49 @@ public:
     // --- Index Wrapping ---
 
     /// @brief Returns a wrapper to a stack index.
-    StackIndex stackIndex(int index) { return {*this, index}; }
+    dang::lua::StackIndex stackIndex(int index) { return {*this, index}; }
 
     /// @brief Returns a wrapper to a stack index.
-    ConstStackIndex stackIndex(int index) const { return {*this, index}; }
+    dang::lua::ConstStackIndex stackIndex(int index) const { return {*this, index}; }
 
     /// @brief Returns a wrapper to the registry pseudo index.
-    RegistryIndex registry() { return {*this}; }
+    dang::lua::RegistryIndex registry() { return {*this}; }
 
     /// @brief Returns a wrapper to the registry pseudo index.
-    ConstRegistryIndex registry() const { return {*this}; }
+    dang::lua::ConstRegistryIndex registry() const { return {*this}; }
 
     /// @brief Converts a 1-based index into an upvalue index and returns a wrapper to it.
-    UpvalueIndex upvalue(int index) { return {*this, index}; }
+    dang::lua::UpvalueIndex upvalue(int index) { return {*this, index}; }
 
     /// @brief Converts a 1-based index into an upvalue index and returns a wrapper to it.
-    ConstUpvalueIndex upvalue(int index) const { return {*this, index}; }
+    dang::lua::ConstUpvalueIndex upvalue(int index) const { return {*this, index}; }
 
     // --- Indices Wrapping ---
 
     /// @brief Returns a wrapper to a compile-time fixed range of stack indices.
     template <int v_count>
-    StackIndices<v_count> stackIndices(int first)
+    dang::lua::StackIndices<v_count> stackIndices(int first)
     {
         return {*this, first};
     }
 
     /// @brief Returns a wrapper to a compile-time fixed range of stack indices.
     template <int v_count>
-    ConstStackIndices<v_count> stackIndices(int first) const
+    dang::lua::ConstStackIndices<v_count> stackIndices(int first) const
     {
         return {*this, first};
     }
 
     /// @brief Returns a wrapper to a compile-time fixed range of upvalues.
     template <int v_count>
-    UpvalueIndices<v_count> upvalueIndices(int first)
+    dang::lua::UpvalueIndices<v_count> upvalueIndices(int first)
     {
         return {*this, first};
     }
 
     /// @brief Returns a wrapper to a compile-time fixed range of upvalues.
     template <int v_count>
-    ConstUpvalueIndices<v_count> upvalueIndices(int first) const
+    dang::lua::ConstUpvalueIndices<v_count> upvalueIndices(int first) const
     {
         return {*this, first};
     }
@@ -1930,16 +1909,16 @@ public:
     // --- Index Range Wrapping ---
 
     /// @brief Returns a wrapper to a range of stack indices.
-    StackIndexRange stackIndexRange(int first, int count) { return {*this, first, count}; }
+    dang::lua::StackIndexRange stackIndexRange(int first, int count) { return {*this, first, count}; }
 
     /// @brief Returns a wrapper to a range of stack indices.
-    ConstStackIndexRange stackIndexRange(int first, int count) const { return {*this, first, count}; }
+    dang::lua::ConstStackIndexRange stackIndexRange(int first, int count) const { return {*this, first, count}; }
 
     /// @brief Returns a wrapper to a range of upvalues.
-    UpvalueIndexRange upvalueIndexRange(int first, int count) { return {*this, first, count}; }
+    dang::lua::UpvalueIndexRange upvalueIndexRange(int first, int count) { return {*this, first, count}; }
 
     /// @brief Returns a wrapper to a range of upvalues.
-    ConstUpvalueIndexRange upvalueIndexRange(int first, int count) const { return {*this, first, count}; }
+    dang::lua::ConstUpvalueIndexRange upvalueIndexRange(int first, int count) const { return {*this, first, count}; }
 
     // --- Top and Bottom Wrapping ---
 
@@ -2363,9 +2342,10 @@ public:
     /// @brief Pushes a newly created thread on the stack.
     auto pushThread()
     {
-        State thread = lua_newthread(state_);
-        notifyPush();
-        return std::tuple{std::move(thread), top().asResult()};
+        // TODO: Fix this once Thread is properly implemented.
+        // Thread thread = lua_newthread(state_);
+        // notifyPush();
+        // return std::tuple{std::move(thread), top().asResult()};
     }
 
     /// @brief Pushes an in-place constructed object with the given parameters.
@@ -3106,7 +3086,7 @@ public:
     /// @remark Like Lua `pairs` this respects the `__pairs` metamethod.
     PairsIterationWrapper pairs(int index);
 
-    /// @copybrief dang::lua::State::pairs(int)
+    /// @copybrief dang::lua::detail::StateBase::pairs(int)
     /// ```lua
     /// for key in pairs(table) do
     ///   -- use key
@@ -3115,7 +3095,7 @@ public:
     /// @remark Like Lua `pairs` this respects the `__pairs` metamethod.
     KeysIterationWrapper keys(int index);
 
-    /// @copybrief dang::lua::State::pairs(int)
+    /// @copybrief dang::lua::detail::StateBase::pairs(int)
     /// ```lua
     /// for _, value in pairs(table) do
     ///   -- use value
@@ -3132,7 +3112,7 @@ public:
     /// ```
     PairsRawIterationWrapper pairsRaw(int index);
 
-    /// @copybrief dang::lua::State::pairsRaw(int)
+    /// @copybrief dang::lua::detail::StateBase::pairsRaw(int)
     /// ```lua
     /// for key in next, table do
     ///   -- use key
@@ -3140,7 +3120,7 @@ public:
     /// ```
     KeysRawIterationWrapper keysRaw(int index);
 
-    /// @copybrief dang::lua::State::pairsRaw(int)
+    /// @copybrief dang::lua::detail::StateBase::pairsRaw(int)
     /// ```lua
     /// for _, value in next, table do
     ///   -- use value
@@ -3158,7 +3138,7 @@ public:
     /// table.
     IPairsIterationWrapper ipairs(int index);
 
-    /// @copybrief dang::lua::State::ipairs(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairs(int)
     /// ```lua
     /// for index in ipairs(table) do
     ///   -- use index
@@ -3168,7 +3148,7 @@ public:
     /// table.
     IKeysIterationWrapper ikeys(int index);
 
-    /// @copybrief dang::lua::State::ipairs(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairs(int)
     /// ```lua
     /// for _, value in ipairs(table) do
     ///   -- use value
@@ -3187,7 +3167,7 @@ public:
     /// ```
     IPairsLenIterationWrapper ipairsLen(int index);
 
-    /// @copybrief dang::lua::State::ipairsLen(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairsLen(int)
     /// ```lua
     /// for index = 1, #table do
     ///   -- use index
@@ -3196,7 +3176,7 @@ public:
     /// @remark This is optimized in a way, so that it doesn't push anything on the stack.
     IKeysLenIterationWrapper ikeysLen(int index);
 
-    /// @copybrief dang::lua::State::ipairsLen(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairsLen(int)
     /// ```lua
     /// for index = 1, #table do
     ///   local value = table[index]
@@ -3214,7 +3194,7 @@ public:
     /// ```
     IPairsRawIterationWrapper ipairsRaw(int index);
 
-    /// @copybrief dang::lua::State::ipairsRaw(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairsRaw(int)
     /// ```lua
     /// for index = 1, rawlen(table) do
     ///   local value = rawget(table, index)
@@ -3224,7 +3204,7 @@ public:
     /// @remark This is optimized in a way, so that it doesn't push anything on the stack.
     IKeysRawIterationWrapper ikeysRaw(int index);
 
-    /// @copybrief dang::lua::State::ipairsRaw(int)
+    /// @copybrief dang::lua::detail::StateBase::ipairsRaw(int)
     /// ```lua
     /// for index = 1, rawlen(table) do
     ///   -- use index
@@ -3248,7 +3228,7 @@ public:
         return {*this, index, input_count};
     }
 
-    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterate(int,int)
     /// @remark Multiple return values can be used instead of just one.
     template <int v_value_count, int v_value_offset = 0>
     IterateMultipleWrapper<v_value_count, v_value_offset> iterateMultiple(int index, int input_count)
@@ -3256,7 +3236,7 @@ public:
         return {*this, index, input_count};
     }
 
-    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterate(int,int)
     /// @remark A pair of two return values can be used instead of just one.
     template <int v_value_offset = 0>
     auto iteratePair(int index, int input_count)
@@ -3264,7 +3244,7 @@ public:
         return iterateMultiple<2, v_value_offset>(index, input_count);
     }
 
-    /// @copydoc dang::lua::State::iterate(int,int)
+    /// @copydoc dang::lua::detail::StateBase::iterate(int,int)
     /// @remark A varying number of return values can be used instead of just one.
     template <int v_value_offset = 0>
     IterateVaryingWrapper<v_value_offset> iterateVarying(int index, int input_count)
@@ -3525,6 +3505,22 @@ public:
     }
 
 private:
+    /// @brief Initializes state and stack size with the given values.
+    StateBase(lua_State* state, int top)
+        : state_(state)
+        , top_(top)
+    {}
+
+    void swap(StateBase& other)
+    {
+        using std::swap;
+        swap(state_, other.state_);
+        swap(top_, other.top_);
+#ifndef NDEBUG
+        swap(pushable_, other.pushable_);
+#endif
+    }
+
     /// @brief Helper function for lua_gc which is const, since some options are, in fact, const.
     template <typename... TArgs>
     int gc(GCOption option, TArgs&&... args) const
@@ -3659,7 +3655,7 @@ private:
         auto func = Convert<TFunc>::check(state, lua_upvalueindex(1));
 
         // TODO: Code duplication with wrap
-        State lua(state);
+        StateRef lua(state);
         auto old_top = lua.size();
         auto&& args = Info::convertArguments(lua);
         if (old_top != lua.size()) {
@@ -3761,11 +3757,13 @@ private:
     }
 
     lua_State* state_;
-    int top_ = lua_gettop(state_);
+    int top_;
 #ifndef NDEBUG
     mutable int pushable_ = LUA_MINSTACK;
 #endif
 };
+
+} // namespace detail
 
 template <typename TFunctionType, auto v_func>
 inline int wrapUnsafeHelper(lua_State* state)
@@ -3773,7 +3771,7 @@ inline int wrapUnsafeHelper(lua_State* state)
     using Info = detail::SignatureInfo<TFunctionType>;
 
     if constexpr (Info::any_state_args) {
-        State lua(state);
+        StateRef lua(state);
         auto old_top = lua.size();
         auto&& args = Info::convertArguments(lua);
 
@@ -3914,36 +3912,68 @@ inline constexpr Property field(const char* name)
     return {name, wrap<v_field, TCovariantClass>, wrapSet<v_field, TCovariantClass>};
 }
 
+/// @brief Wraps a Lua state that got passed to a C function.
+class StateRef : public detail::StateBase {
+public:
+    /// @brief Used exclusively to construct from a C function parameter.
+    /// @remark It queries the stack size once and manually keeps track for better optimization.
+    /// @remark It expects LUA_MINSTACK (20) pushable values and asserts that there is no overflow.
+    StateRef(lua_State* state)
+        : StateBase(state, lua_gettop(state))
+    {}
+
+    // Only moves are allowed to prevent different states from going out of sync.
+    // Technically not even moves should be necessary with the specific use case of this class.
+
+    StateRef(const StateRef&) = delete;
+    StateRef(StateRef&&) = default;
+    StateRef& operator=(const StateRef&) = delete;
+    StateRef& operator=(StateRef&&) = default;
+
+    void swap(StateRef& other) { StateBase::swap(other); }
+
+    friend void swap(StateRef& lhs, StateRef& rhs) { lhs.swap(rhs); }
+
+    // --- State Conversion ---
+
+    /// @brief Returns the wrapped Lua state.
+    /// @remark The returned state is const to prevent direct API calls on it.
+    const lua_State* state() const& { return state_; }
+
+    /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
+    /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
+    lua_State* state() && { return state_; }
+};
+
+/// @brief Wraps a Lua thread.
+class Thread : public detail::StateBase {
+    // TODO: Implement Thread.
+};
+
 /// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
-class OwnedState : public State {
+class State : public detail::StateBase {
 public:
     /// @brief Creates a new Lua state with the given allocator and optionally opens the standard libraries.
     /// @remark Prefer withLibs and withoutLibs functions unless you already have an open_libs bool flag.
-    explicit OwnedState(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
-        : State(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate())
+    explicit State(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
+        : StateBase(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate(), 0)
     {
         if (open_libs)
             openLibs();
     }
 
     /// @brief Creates a new Lua state with the given allocator and opens the standard libraries.
-    static OwnedState withLibs(std::optional<Allocator> allocator = std::nullopt)
-    {
-        return OwnedState(true, allocator);
-    }
+    static State withLibs(std::optional<Allocator> allocator = std::nullopt) { return State(true, allocator); }
 
     /// @brief Creates a new Lua state with the given allocator and doesn't open the standard libraries.
-    static OwnedState withoutLibs(std::optional<Allocator> allocator = std::nullopt)
-    {
-        return OwnedState(false, allocator);
-    }
+    static State withoutLibs(std::optional<Allocator> allocator = std::nullopt) { return State(false, allocator); }
 
     /// @brief Closes the Lua state if it is not already closed.
-    ~OwnedState() { close(); }
+    ~State() { close(); }
 
-    OwnedState(const OwnedState&) = delete;
+    State(const State&) = delete;
 
-    OwnedState(OwnedState&& other) noexcept
+    State(State&& other) noexcept
         : State(std::exchange(other.state_, nullptr))
     {
         top_ = other.top_;
@@ -3952,9 +3982,9 @@ public:
 #endif
     }
 
-    OwnedState& operator=(const OwnedState&) = delete;
+    State& operator=(const State&) = delete;
 
-    OwnedState& operator=(OwnedState&& other) noexcept
+    State& operator=(State&& other) noexcept
     {
         if (this == &other)
             return *this;
@@ -3966,6 +3996,10 @@ public:
 #endif
         return *this;
     }
+
+    void swap(State& other) { StateBase::swap(other); }
+
+    friend void swap(State& lhs, State& rhs) { lhs.swap(rhs); }
 
     /// @brief Whether the state as been closed manually.
     bool closed() { return state_ == nullptr; }
@@ -3984,7 +4018,7 @@ public:
 class ScopedStack {
 public:
     /// @brief Constructs a scoped stack for the given stack.
-    explicit ScopedStack(State& state, int offset = 0)
+    explicit ScopedStack(detail::StateBase& state, int offset = 0)
         : state_(state)
         , initially_pushed_(state.size() + offset)
     {}
@@ -3999,7 +4033,7 @@ public:
     }
 
 private:
-    State& state_;
+    detail::StateBase& state_;
     int initially_pushed_;
 };
 
@@ -4017,7 +4051,7 @@ public:
 
     table_iterator_base() = default;
 
-    table_iterator_base(State& state, int table_index)
+    table_iterator_base(detail::StateBase& state, int table_index)
         : state_(&state)
         , table_index_(table_index)
     {}
@@ -4027,7 +4061,7 @@ public:
     auto table() const { return state().stackIndex(table_index_); }
 
 private:
-    State* state_ = nullptr;
+    detail::StateBase* state_ = nullptr;
     int table_index_;
 };
 
@@ -4041,7 +4075,7 @@ public:
 
     next_iterator() = default;
 
-    next_iterator(State& state, int table_index)
+    next_iterator(detail::StateBase& state, int table_index)
         : table_iterator_base<TValue>(state, table_index)
     {
         if (auto next = this->table().next(nullptr))
@@ -4103,7 +4137,7 @@ public:
 
     index_length_iterator() = default;
 
-    index_length_iterator(State& state, int table_index, lua_Integer index, lua_Integer size)
+    index_length_iterator(detail::StateBase& state, int table_index, lua_Integer index, lua_Integer size)
         : table_iterator_base<TValue>(state, table_index)
         , top_(state.size())
         , index_(index)
@@ -4167,7 +4201,7 @@ public:
 
     index_length_key_iterator() = default;
 
-    index_length_key_iterator([[maybe_unused]] State& state,
+    index_length_key_iterator([[maybe_unused]] detail::StateBase& state,
                               [[maybe_unused]] int table_index,
                               lua_Unsigned index,
                               [[maybe_unused]] bool is_end)
@@ -4247,7 +4281,7 @@ public:
 
     index_while_iterator() = default;
 
-    index_while_iterator(State& state, int table_index)
+    index_while_iterator(detail::StateBase& state, int table_index)
         : table_iterator_base<TValue>(state, table_index)
         , top_(state.size())
         , index_(1)
@@ -4335,7 +4369,7 @@ public:
     generator_iterator_base() = default;
 
     /// @brief Takes up to 4 values being: `func`, `state`, `initial` and `close`.
-    generator_iterator_base(State& state, int base_index, int input_count)
+    generator_iterator_base(detail::StateBase& state, int base_index, int input_count)
         : state_(&state)
         , base_index_(base_index)
         , input_count_(input_count)
@@ -4399,7 +4433,7 @@ private:
         }
     }
 
-    State* state_;
+    detail::StateBase* state_;
     int base_index_;
     int input_count_;
     std::optional<int> value_index_;
@@ -4532,13 +4566,13 @@ public:
 /// @brief A non-polymorphic base class for different iteration wrappers.
 class IterationWrapperBase {
 public:
-    IterationWrapperBase(State& state, int table_index)
+    IterationWrapperBase(detail::StateBase& state, int table_index)
         : state_(state)
         , table_index_(table_index)
     {}
 
 protected:
-    State& state_;
+    detail::StateBase& state_;
     int table_index_;
 
 private:
@@ -4572,7 +4606,7 @@ private:
 template <typename TIterator>
 class GeneratorIterationWrapper {
 public:
-    GeneratorIterationWrapper(State& state, int base_index, int input_count)
+    GeneratorIterationWrapper(detail::StateBase& state, int base_index, int input_count)
         : state_(state)
         , base_index_(base_index)
         , input_count_(input_count)
@@ -4582,7 +4616,7 @@ public:
     auto end() const { return TIterator(); }
 
 private:
-    State& state_;
+    detail::StateBase& state_;
     ScopedStack scoped_stack_{state_};
     int base_index_;
     int input_count_;
@@ -4623,15 +4657,15 @@ struct Convert<lua_State*> {
 };
 
 template <>
-struct Convert<State> {
+struct Convert<StateRef> {
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
-    static constexpr bool isExact(State&, int) { return true; }
+    static constexpr bool isExact(StateRef&, int) { return true; }
 
-    static constexpr bool isValid(State&, int) { return true; }
+    static constexpr bool isValid(StateRef&, int) { return true; }
 
-    static State& check(State& state, int) { return state; }
+    static StateRef& check(StateRef& state, int) { return state; }
 };
 
 namespace detail {
@@ -4661,13 +4695,13 @@ struct ConvertIndex : ConvertIndexBase {
 };
 
 struct ConvertStackIndex : ConvertIndex {
-    static std::optional<dang::lua::StackIndex> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndex> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos);
         return state.stackIndex(pos);
     }
 
-    static dang::lua::StackIndex check(State& state, int arg)
+    static dang::lua::StackIndex check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg);
         return state.stackIndex(arg);
@@ -4675,13 +4709,13 @@ struct ConvertStackIndex : ConvertIndex {
 };
 
 struct ConvertStackIndexResult : ConvertIndex {
-    static std::optional<dang::lua::StackIndexResult> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndexResult> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos);
         return state.stackIndex(pos).asResult();
     }
 
-    static dang::lua::StackIndexResult check(State& state, int arg)
+    static dang::lua::StackIndexResult check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg);
         return state.stackIndex(arg).asResult();
@@ -4710,13 +4744,13 @@ private:
 
 template <int v_count>
 struct ConvertStackIndices : ConvertIndices<v_count> {
-    static std::optional<dang::lua::StackIndices<v_count>> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndices<v_count>> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos + v_count - 1);
         return state.stackIndices<v_count>(pos);
     }
 
-    static dang::lua::StackIndices<v_count> check(State& state, int arg)
+    static dang::lua::StackIndices<v_count> check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg + v_count - 1);
         return state.stackIndices<v_count>(arg);
@@ -4725,13 +4759,13 @@ struct ConvertStackIndices : ConvertIndices<v_count> {
 
 template <int v_count>
 struct ConvertStackIndicesResult : ConvertIndices<v_count> {
-    static std::optional<dang::lua::StackIndicesResult<v_count>> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndicesResult<v_count>> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos + v_count - 1);
         return state.stackIndices<v_count>(pos).asResults();
     }
 
-    static dang::lua::StackIndicesResult<v_count> check(State& state, int arg)
+    static dang::lua::StackIndicesResult<v_count> check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg + v_count - 1);
         return state.stackIndices<v_count>(arg).asResults();
@@ -4758,24 +4792,24 @@ struct ConvertIndexRange : ConvertIndexBase {
 };
 
 struct ConvertStackIndexRange : ConvertIndexRange {
-    static std::optional<dang::lua::StackIndexRange> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndexRange> at(StateRef& state, int pos)
     {
         return state.stackIndexRange(pos, state.size() - pos + 1);
     }
 
-    static dang::lua::StackIndexRange check(State& state, int arg)
+    static dang::lua::StackIndexRange check(StateRef& state, int arg)
     {
         return state.stackIndexRange(arg, state.size() - arg + 1);
     }
 };
 
 struct ConvertStackIndexRangeResult : ConvertIndexRange {
-    static std::optional<dang::lua::StackIndexRangeResult> at(State& state, int pos)
+    static std::optional<dang::lua::StackIndexRangeResult> at(StateRef& state, int pos)
     {
         return state.stackIndexRange(pos, state.size() - pos + 1).asResults();
     }
 
-    static dang::lua::StackIndexRangeResult check(State& state, int arg)
+    static dang::lua::StackIndexRangeResult check(StateRef& state, int arg)
     {
         return state.stackIndexRange(arg, state.size() - arg + 1).asResults();
     }
@@ -4839,7 +4873,7 @@ struct ValueTo {
 /// @brief Can be used to provide __pairs for custom ClassInfo specializations.
 inline auto indextable_pairs(Arg value)
 {
-    constexpr auto next = +[](State& lua, Arg table, Arg key) {
+    constexpr auto next = +[](StateRef& lua, Arg table, Arg key) {
         auto result = table.next(std::move(key));
         return result ? VarArgs(*result) : VarArgs(lua.pushNil());
     };
@@ -5013,9 +5047,11 @@ inline auto operator>=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail:
         .compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
 }
 
-// --- State Implementation ---
+// --- StateBase Implementation ---
 
-inline PairsIterationWrapper State::pairs(int index)
+namespace detail {
+
+inline PairsIterationWrapper StateBase::pairs(int index)
 {
     if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
@@ -5024,7 +5060,7 @@ inline PairsIterationWrapper State::pairs(int index)
     return pairsRaw(index);
 }
 
-inline KeysIterationWrapper State::keys(int index)
+inline KeysIterationWrapper StateBase::keys(int index)
 {
     if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
@@ -5033,7 +5069,7 @@ inline KeysIterationWrapper State::keys(int index)
     return keysRaw(index);
 }
 
-inline ValuesIterationWrapper State::values(int index)
+inline ValuesIterationWrapper StateBase::values(int index)
 {
     if (auto pairs = getMetafield(index, "__pairs")) {
         auto result = std::move(*pairs).call<3>(stackIndex(index));
@@ -5042,29 +5078,31 @@ inline ValuesIterationWrapper State::values(int index)
     return valuesRaw(index);
 }
 
-inline PairsRawIterationWrapper State::pairsRaw(int index) { return {*this, index}; }
+inline PairsRawIterationWrapper StateBase::pairsRaw(int index) { return {*this, index}; }
 
-inline KeysRawIterationWrapper State::keysRaw(int index) { return {*this, index}; }
+inline KeysRawIterationWrapper StateBase::keysRaw(int index) { return {*this, index}; }
 
-inline ValuesRawIterationWrapper State::valuesRaw(int index) { return {*this, index}; }
+inline ValuesRawIterationWrapper StateBase::valuesRaw(int index) { return {*this, index}; }
 
-inline IPairsIterationWrapper State::ipairs(int index) { return {*this, index}; }
+inline IPairsIterationWrapper StateBase::ipairs(int index) { return {*this, index}; }
 
-inline IKeysIterationWrapper State::ikeys(int index) { return {*this, index}; }
+inline IKeysIterationWrapper StateBase::ikeys(int index) { return {*this, index}; }
 
-inline IValuesIterationWrapper State::ivalues(int index) { return {*this, index}; }
+inline IValuesIterationWrapper StateBase::ivalues(int index) { return {*this, index}; }
 
-inline IPairsLenIterationWrapper State::ipairsLen(int index) { return {*this, index}; }
+inline IPairsLenIterationWrapper StateBase::ipairsLen(int index) { return {*this, index}; }
 
-inline IKeysLenIterationWrapper State::ikeysLen(int index) { return {*this, index}; }
+inline IKeysLenIterationWrapper StateBase::ikeysLen(int index) { return {*this, index}; }
 
-inline IValuesLenIterationWrapper State::ivaluesLen(int index) { return {*this, index}; }
+inline IValuesLenIterationWrapper StateBase::ivaluesLen(int index) { return {*this, index}; }
 
-inline IPairsRawIterationWrapper State::ipairsRaw(int index) { return {*this, index}; }
+inline IPairsRawIterationWrapper StateBase::ipairsRaw(int index) { return {*this, index}; }
 
-inline IKeysRawIterationWrapper State::ikeysRaw(int index) { return {*this, index}; }
+inline IKeysRawIterationWrapper StateBase::ikeysRaw(int index) { return {*this, index}; }
 
-inline IValuesRawIterationWrapper State::ivaluesRaw(int index) { return {*this, index}; }
+inline IValuesRawIterationWrapper StateBase::ivaluesRaw(int index) { return {*this, index}; }
+
+} // namespace detail
 
 /*
 #ifdef _DEBUG
@@ -5072,7 +5110,7 @@ namespace detail::force_include
 {
 
 // forcefully include these functions for debugger visualization
-extern const auto State_formatDebug = &State::formatDebug;
+extern const auto State_formatDebug = &StateBase::formatDebug;
 
 }
 #endif
