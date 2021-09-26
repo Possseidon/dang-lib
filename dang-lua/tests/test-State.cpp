@@ -1,6 +1,7 @@
 #include "dang-lua/State.h"
 
 #include "catch2/catch.hpp"
+#include "shared/LuaState.h"
 #include "shared/utils.h"
 
 namespace dlua = dang::lua;
@@ -318,6 +319,98 @@ TEMPLATE_LIST_TEST_CASE("Lua UpvalueIndexRange has correct type traits.",
 }
 
 // --- State
+
+TEST_CASE("Lua State can be constructed from the lua_State passed to a C function.", "[lua][state]")
+{
+    LuaState owned_lua_state;
+
+    auto pushed = GENERATE(as<std::size_t>{}, 0, 1, 5);
+
+    for (std::size_t i = 0; i < pushed; i++)
+        lua_pushinteger(*owned_lua_state, i);
+
+    // Simulate a proper call, allowing LUA_MINSTACK (20) elements to be pushed safely.
+    // See below for more info.
+    luaL_checkstack(*owned_lua_state, LUA_MINSTACK, nullptr);
+
+    // State is meant exclusively for when Lua calls a C function.
+
+    // 1. Stack Size (See https://www.lua.org/manual/5.4/manual.html#4.1.1)
+    // Lua ensures, that LUA_MINSTACK (20) elements can be safely pushed.
+    // When State is created it assumes these 20 elements can safely be pushed.
+    // Unless NDEBUG is set, State keeps track of the stack size and asserts, that the stack doesn't overflow.
+
+    // 2. Pushed Elements
+    // When a C function is called, a variable number of elements will lie on the stack.
+    // Creating a State will therefore query the stack size once and store it.
+    // Any operations on the State will automatically update without any further size queries.
+    // This should allow for better optimizations and avoid many calls to lua_gettop.
+    // However each call always calls lua_gettop exactly once, which might not have been necessary.
+    // Wrapped functions that do not use any State or Arg parameter do not have this overhead.
+
+    auto lua = dlua::State(*owned_lua_state);
+
+    CHECK(lua.state() == *owned_lua_state);
+    CHECK(lua.size() == pushed);
+}
+
+TEST_CASE("Lua State can be moved.", "[lua][state]")
+{
+    LuaState owned_lua_state;
+    lua_pushinteger(*owned_lua_state, 42);
+    luaL_checkstack(*owned_lua_state, LUA_MINSTACK, nullptr);
+
+    auto lua = dlua::State(*owned_lua_state);
+
+    SECTION("Using move-constructor.")
+    {
+        auto moved_lua = std::move(lua);
+        CHECK(moved_lua.state() == *owned_lua_state);
+        CHECK(moved_lua.size() == 1);
+    }
+    SECTION("Using move-assignment.")
+    {
+        LuaState other_lua_state;
+
+        auto moved_lua = dlua::State(*other_lua_state);
+        moved_lua = std::move(lua);
+        CHECK(moved_lua.state() == *owned_lua_state);
+        CHECK(moved_lua.size() == 1);
+    }
+}
+
+TEST_CASE("Lua State can be swapped.", "[lua][state]")
+{
+    LuaState owned_lua_state1;
+    lua_pushinteger(*owned_lua_state1, 1);
+    luaL_checkstack(*owned_lua_state1, LUA_MINSTACK, nullptr);
+
+    LuaState owned_lua_state2;
+    lua_pushinteger(*owned_lua_state2, 2);
+    lua_pushinteger(*owned_lua_state2, 2);
+    luaL_checkstack(*owned_lua_state2, LUA_MINSTACK, nullptr);
+
+    auto lua1 = dlua::State(*owned_lua_state1);
+    auto lua2 = dlua::State(*owned_lua_state2);
+
+    SECTION("Using swap member function.") { lua1.swap(lua2); }
+    SECTION("Using swap friend function.") { swap(lua1, lua2); }
+
+    CHECK(lua1.state() == *owned_lua_state2);
+    CHECK(lua1.size() == 2);
+    CHECK(lua2.state() == *owned_lua_state1);
+    CHECK(lua2.size() == 1);
+}
+
+TEST_CASE("Lua State's underlying state can be checked and extracted.", "[lua][state]")
+{
+    LuaState owned_lua_state;
+
+    auto lua = dlua::State(*owned_lua_state);
+
+    CHECK(lua.state() == *owned_lua_state);
+    CHECK(std::move(lua).state() == *owned_lua_state);
+}
 
 // --- OwnedState
 
