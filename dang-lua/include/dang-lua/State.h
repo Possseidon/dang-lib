@@ -2705,7 +2705,7 @@ public:
     {
         assert(operation == ArithOp::UnaryMinus || operation == ArithOp::BinaryNot);
         auto pushed_operand = push(std::forward<T>(operand));
-        static_assert(std::is_same_v<decltype(pushed_operand), StackIndex>,
+        static_assert(std::is_same_v<decltype(pushed_operand), dang::lua::StackIndex>,
                       "Unary operations require exactly one operand.");
         lua_arith(state_, static_cast<int>(operation));
         return top().asResult();
@@ -2718,7 +2718,7 @@ public:
     {
         assert(operation != ArithOp::UnaryMinus && operation != ArithOp::BinaryNot);
         auto pushed_operands = push(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
-        static_assert(std::is_same_v<decltype(pushed_operands), StackIndices<2>>,
+        static_assert(std::is_same_v<decltype(pushed_operands), dang::lua::StackIndices<2>>,
                       "Binary operations require exactly two operands.");
         lua_arith(state_, static_cast<int>(operation));
         notifyPush(-1);
