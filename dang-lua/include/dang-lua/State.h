@@ -2218,12 +2218,14 @@ public:
     template <typename... TValues>
     auto push(TValues&&... values)
     {
-        if constexpr (constexpr auto constexpr_push_count = combined_push_count<std::remove_reference_t<TValues>...>) {
+        constexpr auto constexpr_push_count = combined_push_count<std::remove_reference_t<TValues>...>;
+        if constexpr (constexpr_push_count) {
+            constexpr int push_count = *constexpr_push_count;
             pushHelper(std::forward<TValues>(values)...);
-            if constexpr (constexpr_push_count == 1)
+            if constexpr (push_count == 1)
                 return top().asResult();
             else
-                return top<*constexpr_push_count>().asResults();
+                return top<push_count>().asResults();
         }
         else {
             int push_count = combinedPushCount(values...);
@@ -2354,14 +2356,16 @@ public:
     template <typename T, typename... TArgs>
     auto pushNew(TArgs&&... args)
     {
-        if constexpr (constexpr auto constexpr_push_count = Convert<T>::push_count) {
-            assertPushable(*constexpr_push_count);
+        constexpr auto constexpr_push_count = Convert<T>::push_count;
+        if constexpr (constexpr_push_count) {
+            constexpr auto push_count = *constexpr_push_count;
+            assertPushable(push_count);
             Convert<T>::push(state_, std::forward<TArgs>(args)...);
-            notifyPush(*constexpr_push_count);
-            if constexpr (constexpr_push_count == 1)
+            notifyPush(push_count);
+            if constexpr (push_count == 1)
                 return top().asResult();
             else
-                return top<*constexpr_push_count>().asResults();
+                return top<push_count>().asResults();
         }
         else {
             T object(std::forward<TArgs>(args)...);
@@ -3638,10 +3642,12 @@ private:
     {
         using ConvertT = Convert<std::remove_reference_t<T>>;
 
-        if constexpr (constexpr auto constexpr_push_count = ConvertT::push_count) {
-            assertPushable(*constexpr_push_count);
+        constexpr auto constexpr_push_count = ConvertT::push_count;
+        if constexpr (constexpr_push_count) {
+            constexpr auto push_count = *constexpr_push_count;
+            assertPushable(push_count);
             ConvertT::push(state_, std::forward<T>(value));
-            notifyPush(*constexpr_push_count);
+            notifyPush(push_count);
         }
         else {
             int push_count = ConvertT::getPushCount(value);
