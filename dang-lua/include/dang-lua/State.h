@@ -3268,6 +3268,7 @@ public:
     std::string format(int index) const
     {
         std::size_t length;
+        checkPushableAuxiliary();
         const char* string = luaL_tolstring(state_, index, &length);
         std::string result(string, string + length);
         lua_pop(state_, 1);
@@ -3543,12 +3544,12 @@ private:
     {
         if constexpr (false) {
             if (count < 0)
-                std::cout << "pop " << -count << '\n';
+                std::clog << "pop " << -count << '\n';
             else if (count > 0) {
-                std::cout << "push " << format(top_);
-                for (int i = 1; i < count; i++)
-                    std::cout << ", " << format(top_ + i);
-                std::cout << '\n';
+                std::clog << "push " << format(top_ + 1);
+                for (int i = 2; i <= count; i++)
+                    std::clog << ", " << format(top_ + i);
+                std::clog << '\n';
             }
         }
 
