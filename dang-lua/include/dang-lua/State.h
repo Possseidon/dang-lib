@@ -3798,8 +3798,8 @@ class Thread : public detail::StateBase {
 class State : public detail::StateBase {
 public:
     /// @brief Creates a new Lua state with the given allocator and optionally opens the standard libraries.
-    /// @remark Prefer withLibs and withoutLibs functions unless you already have an open_libs bool flag.
-    explicit State(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
+    /// @remark Prefer withLibs when standard libraries should be opened unconditionally.
+    explicit State(std::optional<Allocator> allocator = std::nullopt, bool open_libs = false)
         : StateBase(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate(), 0)
     {
         if (open_libs)
@@ -3807,10 +3807,7 @@ public:
     }
 
     /// @brief Creates a new Lua state with the given allocator and opens the standard libraries.
-    static State withLibs(std::optional<Allocator> allocator = std::nullopt) { return State(true, allocator); }
-
-    /// @brief Creates a new Lua state with the given allocator and doesn't open the standard libraries.
-    static State withoutLibs(std::optional<Allocator> allocator = std::nullopt) { return State(false, allocator); }
+    static State withLibs(std::optional<Allocator> allocator = std::nullopt) { return State(allocator, true); }
 
     /// @brief Closes the Lua state if it is not already closed.
     ~State() { close(); }
