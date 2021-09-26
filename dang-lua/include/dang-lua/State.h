@@ -3917,15 +3917,25 @@ inline constexpr Property field(const char* name)
 /// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
 class OwnedState : public State {
 public:
-    /// @brief Creates a new Lua state, by default opening the standard libraries and using the auxiliary allocation and
-    /// panic function.
-    /// @remark A custom allocation function can be supplied and userdata is used solely as extra parameter to that
-    /// function.
-    explicit OwnedState(bool open_libs = true, lua_Alloc allocator = nullptr, void* userdata = nullptr)
-        : State(allocator ? lua_newstate(allocator, userdata) : luaL_newstate())
+    /// @brief Creates a new Lua state with the given allocator and optionally opens the standard libraries.
+    /// @remark Prefer withLibs and withoutLibs functions unless you already have an open_libs bool flag.
+    explicit OwnedState(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
+        : State(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate())
     {
         if (open_libs)
             openLibs();
+    }
+
+    /// @brief Creates a new Lua state with the given allocator and opens the standard libraries.
+    static OwnedState withLibs(std::optional<Allocator> allocator = std::nullopt)
+    {
+        return OwnedState(true, allocator);
+    }
+
+    /// @brief Creates a new Lua state with the given allocator and doesn't open the standard libraries.
+    static OwnedState withoutLibs(std::optional<Allocator> allocator = std::nullopt)
+    {
+        return OwnedState(false, allocator);
     }
 
     /// @brief Closes the Lua state if it is not already closed.
