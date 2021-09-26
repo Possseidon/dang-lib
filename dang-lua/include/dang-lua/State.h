@@ -3742,6 +3742,131 @@ private:
 
 } // namespace detail
 
+/// @brief Wraps a Lua state that got passed to a C function.
+class StateRef : public detail::StateBase {
+public:
+    /// @brief Used exclusively to construct from a C function parameter.
+    /// @remark It queries the stack size once and manually keeps track for better optimization.
+    /// @remark It expects LUA_MINSTACK (20) pushable values and asserts that there is no overflow.
+    StateRef(lua_State* state)
+        : StateBase(state, lua_gettop(state))
+    {}
+
+    // Only moves are allowed to prevent different states from going out of sync.
+    // Technically not even moves should be necessary with the specific use case of this class.
+
+    StateRef(const StateRef&) = delete;
+    StateRef(StateRef&&) = default;
+    StateRef& operator=(const StateRef&) = delete;
+    StateRef& operator=(StateRef&&) = default;
+
+    void swap(StateRef& other) { StateBase::swap(other); }
+
+    friend void swap(StateRef& lhs, StateRef& rhs) { lhs.swap(rhs); }
+
+    // --- State Conversion ---
+
+    /// @brief Returns the wrapped Lua state.
+    /// @remark The returned state is const to prevent direct API calls on it.
+    const lua_State* state() const& { return state_; }
+
+    /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
+    /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
+    lua_State* state() && { return state_; }
+};
+
+/// @brief Wraps a Lua thread.
+class Thread : public detail::StateBase {
+    // TODO: Implement Thread.
+};
+
+/// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
+class State : public detail::StateBase {
+public:
+    /// @brief Creates a new Lua state with the given allocator and optionally opens the standard libraries.
+    /// @remark Prefer withLibs and withoutLibs functions unless you already have an open_libs bool flag.
+    explicit State(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
+        : StateBase(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate(), 0)
+    {
+        if (open_libs)
+            openLibs();
+    }
+
+    /// @brief Creates a new Lua state with the given allocator and opens the standard libraries.
+    static State withLibs(std::optional<Allocator> allocator = std::nullopt) { return State(true, allocator); }
+
+    /// @brief Creates a new Lua state with the given allocator and doesn't open the standard libraries.
+    static State withoutLibs(std::optional<Allocator> allocator = std::nullopt) { return State(false, allocator); }
+
+    /// @brief Closes the Lua state if it is not already closed.
+    ~State() { close(); }
+
+    State(const State&) = delete;
+
+    State(State&& other) noexcept
+        : State(std::exchange(other.state_, nullptr))
+    {
+        top_ = other.top_;
+#ifndef NDEBUG
+        pushable_ = other.pushable_;
+#endif
+    }
+
+    State& operator=(const State&) = delete;
+
+    State& operator=(State&& other) noexcept
+    {
+        if (this == &other)
+            return *this;
+        close();
+        state_ = std::exchange(other.state_, nullptr);
+        top_ = other.top_;
+#ifndef NDEBUG
+        pushable_ = other.pushable_;
+#endif
+        return *this;
+    }
+
+    void swap(State& other) { StateBase::swap(other); }
+
+    friend void swap(State& lhs, State& rhs) { lhs.swap(rhs); }
+
+    /// @brief Whether the state as been closed manually.
+    bool closed() { return state_ == nullptr; }
+
+    /// @brief Closes the Lua state manually, can be called multiple times.
+    void close()
+    {
+        if (closed())
+            return;
+        lua_close(state_);
+        state_ = nullptr;
+    }
+};
+
+/// @brief Used to automatically pop any pushed elements at the end of the scope.
+class ScopedStack {
+public:
+    /// @brief Constructs a scoped stack for the given stack.
+    explicit ScopedStack(detail::StateBase& state, int offset = 0)
+        : state_(state)
+        , initially_pushed_(state.size() + offset)
+    {}
+
+    /// @brief Resets the top to the initial one, effectively popping all leftover elements.
+    ~ScopedStack()
+    {
+        // accidentally popped values cannot be recreated and would simply be filled with nil
+        // therefore this sanity check
+        assert(state_.size() >= initially_pushed_);
+        state_.pop(state_.size() - initially_pushed_);
+    }
+
+private:
+    detail::StateBase& state_;
+    int initially_pushed_;
+};
+
 template <typename TFunctionType, auto v_func>
 inline int wrapUnsafeHelper(lua_State* state)
 {
@@ -3888,131 +4013,6 @@ inline constexpr Property field(const char* name)
 {
     return {name, wrap<v_field, TCovariantClass>, wrapSet<v_field, TCovariantClass>};
 }
-
-/// @brief Wraps a Lua state that got passed to a C function.
-class StateRef : public detail::StateBase {
-public:
-    /// @brief Used exclusively to construct from a C function parameter.
-    /// @remark It queries the stack size once and manually keeps track for better optimization.
-    /// @remark It expects LUA_MINSTACK (20) pushable values and asserts that there is no overflow.
-    StateRef(lua_State* state)
-        : StateBase(state, lua_gettop(state))
-    {}
-
-    // Only moves are allowed to prevent different states from going out of sync.
-    // Technically not even moves should be necessary with the specific use case of this class.
-
-    StateRef(const StateRef&) = delete;
-    StateRef(StateRef&&) = default;
-    StateRef& operator=(const StateRef&) = delete;
-    StateRef& operator=(StateRef&&) = default;
-
-    void swap(StateRef& other) { StateBase::swap(other); }
-
-    friend void swap(StateRef& lhs, StateRef& rhs) { lhs.swap(rhs); }
-
-    // --- State Conversion ---
-
-    /// @brief Returns the wrapped Lua state.
-    /// @remark The returned state is const to prevent direct API calls on it.
-    const lua_State* state() const& { return state_; }
-
-    /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
-    /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
-    lua_State* state() && { return state_; }
-};
-
-/// @brief Wraps a Lua thread.
-class Thread : public detail::StateBase {
-    // TODO: Implement Thread.
-};
-
-/// @brief A Lua state wrapper, which owns the state and therefore closes it when it goes out of scope.
-class State : public detail::StateBase {
-public:
-    /// @brief Creates a new Lua state with the given allocator and optionally opens the standard libraries.
-    /// @remark Prefer withLibs and withoutLibs functions unless you already have an open_libs bool flag.
-    explicit State(bool open_libs, std::optional<Allocator> allocator = std::nullopt)
-        : StateBase(allocator ? lua_newstate(allocator->function, allocator->userdata) : luaL_newstate(), 0)
-    {
-        if (open_libs)
-            openLibs();
-    }
-
-    /// @brief Creates a new Lua state with the given allocator and opens the standard libraries.
-    static State withLibs(std::optional<Allocator> allocator = std::nullopt) { return State(true, allocator); }
-
-    /// @brief Creates a new Lua state with the given allocator and doesn't open the standard libraries.
-    static State withoutLibs(std::optional<Allocator> allocator = std::nullopt) { return State(false, allocator); }
-
-    /// @brief Closes the Lua state if it is not already closed.
-    ~State() { close(); }
-
-    State(const State&) = delete;
-
-    State(State&& other) noexcept
-        : State(std::exchange(other.state_, nullptr))
-    {
-        top_ = other.top_;
-#ifndef NDEBUG
-        pushable_ = other.pushable_;
-#endif
-    }
-
-    State& operator=(const State&) = delete;
-
-    State& operator=(State&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
-        close();
-        state_ = std::exchange(other.state_, nullptr);
-        top_ = other.top_;
-#ifndef NDEBUG
-        pushable_ = other.pushable_;
-#endif
-        return *this;
-    }
-
-    void swap(State& other) { StateBase::swap(other); }
-
-    friend void swap(State& lhs, State& rhs) { lhs.swap(rhs); }
-
-    /// @brief Whether the state as been closed manually.
-    bool closed() { return state_ == nullptr; }
-
-    /// @brief Closes the Lua state manually, can be called multiple times.
-    void close()
-    {
-        if (closed())
-            return;
-        lua_close(state_);
-        state_ = nullptr;
-    }
-};
-
-/// @brief Used to automatically pop any pushed elements at the end of the scope.
-class ScopedStack {
-public:
-    /// @brief Constructs a scoped stack for the given stack.
-    explicit ScopedStack(detail::StateBase& state, int offset = 0)
-        : state_(state)
-        , initially_pushed_(state.size() + offset)
-    {}
-
-    /// @brief Resets the top to the initial one, effectively popping all leftover elements.
-    ~ScopedStack()
-    {
-        // accidentally popped values cannot be recreated and would simply be filled with nil
-        // therefore this sanity check
-        assert(state_.size() >= initially_pushed_);
-        state_.pop(state_.size() - initially_pushed_);
-    }
-
-private:
-    detail::StateBase& state_;
-    int initially_pushed_;
-};
 
 // --- Iteration Wrappers ---
 
