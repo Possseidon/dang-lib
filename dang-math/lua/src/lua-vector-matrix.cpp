@@ -37,7 +37,7 @@ const char* ClassInfo<dang::math::Vector<T, v_dim>>::className()
 template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
 {
-    constexpr auto type = +[](State& lua) { return lua.pushRequire<Vector>(false); };
+    constexpr auto type = +[](StateRef& lua) { return lua.pushRequire<Vector>(false); };
 
     constexpr auto set = +[](Vector& vec, Args<v_dim> values) {
         std::transform(values.begin(), values.end(), vec.begin(), ArgCheck<T>{});
@@ -128,8 +128,8 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
     constexpr auto lt = +[](const Vector& lhs, const Vector& rhs) { return lhs < rhs; };
     constexpr auto le = +[](const Vector& lhs, const Vector& rhs) { return lhs <= rhs; };
 
-    constexpr auto index = +[](State& lua, const Vector& vec, Key key) { return std::visit(Index{lua, vec}, key); };
-    constexpr auto newindex = +[](State& lua, Vector& vec, Key key, Arg value) {
+    constexpr auto index = +[](StateRef& lua, const Vector& vec, Key key) { return std::visit(Index{lua, vec}, key); };
+    constexpr auto newindex = +[](StateRef& lua, Vector& vec, Key key, Arg value) {
         std::visit(NewIndex{lua, vec, value}, key);
     };
 
@@ -183,9 +183,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(StateRef& lua)
 {
-    constexpr auto create = +[](State& lua, Arg, VarArgs values) {
+    constexpr auto create = +[](StateRef& lua, Arg, VarArgs values) {
         if (values.size() == 0)
             return Vector();
         if (values.size() == 1)
@@ -427,7 +427,7 @@ const char* ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::className()
 template <typename T, std::size_t v_cols, std::size_t v_rows>
 std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
 {
-    constexpr auto type = +[](State& lua) { return lua.pushRequire<Matrix>(false); };
+    constexpr auto type = +[](StateRef& lua) { return lua.pushRequire<Matrix>(false); };
 
     constexpr auto set = +[](Matrix& mat, Args<v_cols> values) {
         std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, v_rows>>{});
@@ -441,17 +441,17 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
         return std::nullopt;
     };
 
-    constexpr auto set_at = +[](State& lua, Matrix& mat, std::size_t col, std::size_t row, T value) {
+    constexpr auto set_at = +[](StateRef& lua, Matrix& mat, std::size_t col, std::size_t row, T value) {
         checkRange(lua, col, row, 2, 3);
         mat(col - 1, row - 1) = value;
     };
 
-    constexpr auto cofactor_at = +[](State& lua, const Matrix& mat, std::size_t col, std::size_t row) {
+    constexpr auto cofactor_at = +[](StateRef& lua, const Matrix& mat, std::size_t col, std::size_t row) {
         checkRange(lua, col, row, 2, 3);
         return mat.cofactor(col - 1, row - 1);
     };
 
-    constexpr auto cofactor = +[](State& lua, const Matrix& mat, dang::math::svec2 pos) {
+    constexpr auto cofactor = +[](StateRef& lua, const Matrix& mat, dang::math::svec2 pos) {
         checkRange(lua, pos, 2, 2);
         return mat.cofactor(pos);
     };
@@ -476,7 +476,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
     // (swaps columns around, but reverts to the original at the end)
 
     if constexpr (v_cols == v_rows + 1) {
-        constexpr auto solve_col = +[](State& lua, Matrix& mat, std::size_t col) {
+        constexpr auto solve_col = +[](StateRef& lua, Matrix& mat, std::size_t col) {
             checkColumn(lua, col, 2);
             return mat.solveCol(col - 1);
         };
@@ -490,7 +490,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
         result.push_back(reg<&Matrix::inverse>("inverse"));
 
         constexpr auto solve_col =
-            +[](State& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, v_cols>& vec) {
+            +[](StateRef& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, v_cols>& vec) {
                 checkColumn(lua, col, 2);
                 return mat.solveCol(col - 1, vec);
             };
@@ -525,7 +525,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
     constexpr auto le = +[](const Matrix& lhs, const Matrix& rhs) { return lhs <= rhs; };
 
     constexpr auto index = +[](const Matrix& mat, const IndexPosOrString& key) { return std::visit(Index{mat}, key); };
-    constexpr auto newindex = +[](State& lua, Matrix& mat, const IndexOrPos& key, Arg value) {
+    constexpr auto newindex = +[](StateRef& lua, Matrix& mat, const IndexOrPos& key, Arg value) {
         std::visit(NewIndex{lua, mat, value}, key);
     };
 
@@ -551,9 +551,9 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(State& lua)
+Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(StateRef& lua)
 {
-    constexpr auto create = +[](State& lua, Arg, VarArgs values) {
+    constexpr auto create = +[](StateRef& lua, Arg, VarArgs values) {
         if (values.size() == 0)
             return Matrix();
         if (values.size() == 1)
@@ -607,14 +607,14 @@ bool ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::inRange(dang::math::svec2
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkColumn(State& lua, std::size_t col, int arg)
+void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkColumn(StateRef& lua, std::size_t col, int arg)
 {
     if (col < 1 || col > v_cols)
         lua.argError(arg, "column out of range");
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRow(State& lua, std::size_t row, int arg)
+void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRow(StateRef& lua, std::size_t row, int arg)
 {
     if (row < 1 || row > v_rows)
         lua.argError(arg, "row out of range");
@@ -622,14 +622,14 @@ void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRow(State& lua, std:
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
 void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRange(
-    State& lua, std::size_t col, std::size_t row, int col_arg, int row_arg)
+    StateRef& lua, std::size_t col, std::size_t row, int col_arg, int row_arg)
 {
     checkColumn(lua, col, col_arg);
     checkRow(lua, row, row_arg);
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRange(State& lua,
+void ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::checkRange(StateRef& lua,
                                                                   dang::math::svec2 pos,
                                                                   int col_arg,
                                                                   int row_arg)
@@ -701,7 +701,7 @@ template struct ClassInfo<dang::math::Matrix<double, 4, 4>>;
 namespace dang::math::lua {
 
 template <typename T>
-void requireVector(dang::lua::State& lua, bool global)
+void requireVector(dang::lua::StateRef& lua, bool global)
 {
     lua.require<Vector<T, 2>>(global);
     lua.require<Vector<T, 3>>(global);
@@ -709,7 +709,7 @@ void requireVector(dang::lua::State& lua, bool global)
 }
 
 template <typename T>
-void requireMatrix(dang::lua::State& lua, bool global)
+void requireMatrix(dang::lua::StateRef& lua, bool global)
 {
     lua.require<Matrix<T, 2, 2>>(global);
     lua.require<Matrix<T, 2, 3>>(global);
@@ -722,14 +722,14 @@ void requireMatrix(dang::lua::State& lua, bool global)
     lua.require<Matrix<T, 4, 4>>(global);
 }
 
-template void requireVector<float>(dang::lua::State&, bool);
-template void requireVector<double>(dang::lua::State&, bool);
-template void requireVector<int>(dang::lua::State&, bool);
-template void requireVector<unsigned>(dang::lua::State&, bool);
-template void requireVector<std::size_t>(dang::lua::State&, bool);
-template void requireVector<bool>(dang::lua::State&, bool);
+template void requireVector<float>(dang::lua::StateRef&, bool);
+template void requireVector<double>(dang::lua::StateRef&, bool);
+template void requireVector<int>(dang::lua::StateRef&, bool);
+template void requireVector<unsigned>(dang::lua::StateRef&, bool);
+template void requireVector<std::size_t>(dang::lua::StateRef&, bool);
+template void requireVector<bool>(dang::lua::StateRef&, bool);
 
-template void requireMatrix<float>(dang::lua::State&, bool);
-template void requireMatrix<double>(dang::lua::State&, bool);
+template void requireMatrix<float>(dang::lua::StateRef&, bool);
+template void requireMatrix<double>(dang::lua::StateRef&, bool);
 
 } // namespace dang::math::lua

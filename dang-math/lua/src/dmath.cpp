@@ -4,7 +4,7 @@
 #include "dang-math/lua-vector-matrix.h"
 
 template <typename T>
-static void add(dang::lua::State& lua, dang::lua::Arg table)
+static void add(dang::lua::StateRef& lua, dang::lua::Arg table)
 {
     auto name = lua(dang::lua::ClassInfo<T>::className());
     auto lib = table.state().pushRequire<T>(false);
@@ -13,7 +13,7 @@ static void add(dang::lua::State& lua, dang::lua::Arg table)
 
 extern "C" int luaopen_dmath(lua_State* L)
 {
-    dang::lua::State lua(L);
+    dang::lua::StateRef lua(L);
     lua.checkVersion();
     auto table = lua.pushTable();
 

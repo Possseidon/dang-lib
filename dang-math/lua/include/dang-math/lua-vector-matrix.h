@@ -52,7 +52,7 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> : DefaultClassInfo {
     static std::vector<luaL_Reg> table();
     static std::vector<luaL_Reg> metatable();
 
-    static Arg require(State& lua);
+    static Arg require(StateRef& lua);
 
 private:
     template <std::size_t... v_indices>
@@ -64,7 +64,7 @@ private:
     static std::optional<int> axisToIndex(char axis);
 
     struct Index {
-        State& lua;
+        StateRef& lua;
         const Vector& vector;
 
         template <std::size_t... v_indices, typename... TSwizzles>
@@ -78,7 +78,7 @@ private:
     };
 
     struct NewIndex {
-        State& lua;
+        StateRef& lua;
         Vector& vector;
         Arg value;
 
@@ -136,7 +136,7 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> : DefaultClassInfo {
     static std::vector<luaL_Reg> table();
     static std::vector<luaL_Reg> metatable();
 
-    static Arg require(State& lua);
+    static Arg require(StateRef& lua);
 
 private:
     static bool columnInRange(std::size_t col);
@@ -144,10 +144,10 @@ private:
     static bool inRange(std::size_t col, std::size_t row);
     static bool inRange(dang::math::svec2 pos);
 
-    static void checkColumn(State& lua, std::size_t col, int arg);
-    static void checkRow(State& lua, std::size_t row, int arg);
-    static void checkRange(State& lua, std::size_t col, std::size_t row, int col_arg, int row_arg);
-    static void checkRange(State& lua, dang::math::svec2 pos, int col_arg, int row_arg);
+    static void checkColumn(StateRef& lua, std::size_t col, int arg);
+    static void checkRow(StateRef& lua, std::size_t row, int arg);
+    static void checkRange(StateRef& lua, std::size_t col, std::size_t row, int col_arg, int row_arg);
+    static void checkRange(StateRef& lua, dang::math::svec2 pos, int col_arg, int row_arg);
 
     struct Index {
         const Matrix& matrix;
@@ -158,7 +158,7 @@ private:
     };
 
     struct NewIndex {
-        State& lua;
+        StateRef& lua;
         Matrix& matrix;
         Arg value;
 
@@ -172,9 +172,9 @@ private:
 namespace dang::math::lua {
 
 template <typename T>
-void requireVector(dang::lua::State& lua, bool global = true);
+void requireVector(dang::lua::StateRef& lua, bool global = true);
 
 template <typename T>
-void requireMatrix(dang::lua::State& lua, bool global = true);
+void requireMatrix(dang::lua::StateRef& lua, bool global = true);
 
 } // namespace dang::math::lua

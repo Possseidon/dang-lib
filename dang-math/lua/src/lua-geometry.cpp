@@ -7,7 +7,7 @@ namespace dang::lua {
 
 namespace detail {
 
-void checkIndex(State& lua, int arg, std::size_t index, std::size_t size)
+void checkIndex(StateRef& lua, int arg, std::size_t index, std::size_t size)
 {
     if (index < 1 || index > size)
         lua.argError(arg,
@@ -109,7 +109,7 @@ std::vector<Property> ClassInfo<dang::math::Line<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Line<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
@@ -156,36 +156,36 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
 {
     constexpr auto at = +[](const Plane& plane, Factor x, Factor y) { return plane[{x, y}]; };
-    constexpr auto line = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto line = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 2);
         return plane.line(index - 1);
     };
-    constexpr auto plane = +[](State& lua, const Plane& plane, std::size_t index1, std::size_t index2) {
+    constexpr auto plane = +[](StateRef& lua, const Plane& plane, std::size_t index1, std::size_t index2) {
         detail::checkIndex(lua, 2, index1, 2);
         detail::checkIndex(lua, 3, index2, 2);
         return plane.plane(index1 - 1, index2 - 1);
     };
-    constexpr auto direction = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto direction = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 2);
         return plane.directions[index - 1];
     };
-    constexpr auto setDirection = +[](State& lua, Plane& plane, std::size_t index, const Direction& direction) {
+    constexpr auto setDirection = +[](StateRef& lua, Plane& plane, std::size_t index, const Direction& direction) {
         detail::checkIndex(lua, 2, index, 2);
         plane.directions[index - 1] = direction;
     };
-    constexpr auto quadPoint = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto quadPoint = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 4);
         return plane.quadPoint(index - 1);
     };
-    constexpr auto trianglePoint = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto trianglePoint = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.trianglePoint(index - 1);
     };
-    constexpr auto innerRadians = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto innerRadians = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.innerRadians(index - 1);
     };
-    constexpr auto innerDegrees = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto innerDegrees = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.innerDegrees(index - 1);
     };
@@ -276,7 +276,7 @@ std::vector<Property> ClassInfo<dang::math::Plane<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
@@ -324,27 +324,27 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
 {
     constexpr auto at = +[](const Spat& spat, Factor x, Factor y, Factor z) { return spat[{x, y, z}]; };
-    constexpr auto line = +[](State& lua, const Spat& spat, std::size_t index) {
+    constexpr auto line = +[](StateRef& lua, const Spat& spat, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return spat.line(index - 1);
     };
-    constexpr auto plane = +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2) {
+    constexpr auto plane = +[](StateRef& lua, const Spat& spat, std::size_t index1, std::size_t index2) {
         detail::checkIndex(lua, 2, index1, 3);
         detail::checkIndex(lua, 3, index2, 3);
         return spat.plane(index1 - 1, index2 - 1);
     };
     constexpr auto spat =
-        +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2, std::size_t index3) {
+        +[](StateRef& lua, const Spat& spat, std::size_t index1, std::size_t index2, std::size_t index3) {
             detail::checkIndex(lua, 2, index1, 3);
             detail::checkIndex(lua, 3, index2, 3);
             detail::checkIndex(lua, 4, index3, 3);
             return spat.spat(index1 - 1, index2 - 1, index3 - 1);
         };
-    constexpr auto direction = +[](State& lua, const Spat& spat, std::size_t index) {
+    constexpr auto direction = +[](StateRef& lua, const Spat& spat, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return spat.directions[index - 1];
     };
-    constexpr auto setDirection = +[](State& lua, Spat& spat, std::size_t index, const Direction& direction) {
+    constexpr auto setDirection = +[](StateRef& lua, Spat& spat, std::size_t index, const Direction& direction) {
         detail::checkIndex(lua, 2, index, 3);
         spat.directions[index - 1] = direction;
     };
@@ -396,7 +396,7 @@ std::vector<Property> ClassInfo<dang::math::Spat<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())

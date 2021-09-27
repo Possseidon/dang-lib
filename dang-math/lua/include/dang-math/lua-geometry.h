@@ -29,7 +29,7 @@ struct ClassInfo<dang::math::Line<T, v_dim>> : DefaultClassInfo {
     static std::vector<luaL_Reg> metatable();
     static std::vector<Property> properties();
 
-    static Arg require(State& lua);
+    static Arg require(StateRef& lua);
 };
 
 template <typename T, std::size_t v_dim>
@@ -53,7 +53,7 @@ struct ClassInfo<dang::math::Plane<T, v_dim>> : DefaultClassInfo {
     static std::vector<luaL_Reg> metatable();
     static std::vector<Property> properties();
 
-    static Arg require(State& lua);
+    static Arg require(StateRef& lua);
 };
 
 template <typename T, std::size_t v_dim>
@@ -76,7 +76,7 @@ struct ClassInfo<dang::math::Spat<T, v_dim>> : DefaultClassInfo {
     static std::vector<luaL_Reg> metatable();
     static std::vector<Property> properties();
 
-    static Arg require(State& lua);
+    static Arg require(StateRef& lua);
 };
 
 } // namespace dang::lua
