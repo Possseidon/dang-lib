@@ -2770,6 +2770,10 @@ public:
             if constexpr (right_is_index)
                 return lua_compare(state_, lhs.index(), rhs.index(), static_cast<int>(operation)) != 0;
             else {
+                // Make sure it doesn't overwrite a potential none value and compares that to itself.
+                // Note, that comparing anything with none is false (even none itself).
+                if (lhs.isNone())
+                    return false;
                 assertPushable();
                 ConvertRight::push(state_, std::forward<TRight>(rhs));
                 bool result = lua_compare(state_, lhs.index(), -1, static_cast<int>(operation)) != 0;
@@ -2779,6 +2783,9 @@ public:
         }
         else {
             if constexpr (right_is_index) {
+                // See above.
+                if (rhs.isNone())
+                    return false;
                 assertPushable();
                 ConvertLeft::push(state_, std::forward<TLeft>(lhs));
                 bool result = lua_compare(state_, -1, rhs.index(), static_cast<int>(operation)) != 0;
