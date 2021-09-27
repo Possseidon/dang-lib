@@ -1283,7 +1283,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with integers.", "[lua][convert][integ
 
 // --- Convert<string>
 
-using string_types = maybe_cv<std::string, std::string_view, const char*, char*, const char (&)[5]>;
+using string_types = maybe_cv<std::string, std::string_view, const char*, char*>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with strings.", "[lua][convert][string]", string_types)
 {
     using Convert = dlua::Convert<TestType>;
@@ -1427,7 +1427,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can work with std::string_view.", "[lua][conver
     }
 }
 
-using char_array_types = std::tuple<const char (&)[5]>;
+using char_array_types = std::tuple<const char[5]>;
 TEMPLATE_LIST_TEST_CASE("Convert can work with references to const char arrays.",
                         "[lua][convert][string]",
                         char_array_types)
