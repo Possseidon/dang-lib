@@ -4846,165 +4846,164 @@ inline auto& stateOf(TLeft& lhs, TRight& rhs)
         return rhs.state();
 }
 
-/// @brief Whether any of the type parameters is an index.
+/// @brief Whether any argument is any index type.
 template <typename... TArgs>
-using any_is_index = std::disjunction<is_index<std::remove_reference_t<TArgs>>...>;
+struct any_index : std::disjunction<is_any_index<TArgs>...> {};
 
 template <typename... TArgs>
-inline constexpr auto any_is_index_v = any_is_index<TArgs...>::value;
+inline constexpr auto any_index_v = any_index<TArgs...>::value;
 
-/// @brief Enable-if wrapper to check for any index and results in StackIndexResult.
+/// @brief Whether all arguments are convertible using Convert.
 template <typename... TArgs>
-using EnableIfAnyIndex = std::enable_if_t<any_is_index_v<TArgs...>, StackIndexResult>;
+struct all_convertible : std::bool_constant<(dang::lua::Convert<TArgs>::convertible && ...)> {};
 
-} // namespace detail
+template <typename... TArgs>
+inline constexpr auto all_convertible_v = all_convertible<TArgs...>::value;
+
+/// @brief If any index type is present and the other types are convertible using Convert.
+template <typename... TArgs>
+inline constexpr auto op_arguments_valid = (any_index_v<std::remove_reference_t<TArgs>...> &&
+                                            all_convertible_v<std::remove_reference_t<TArgs>...>);
+// Parentheses above are just for formatting...
+
+/// @brief Enable-if for arithmetic operations.
+template <typename... TArgs>
+using EnableArith = std::enable_if_t<op_arguments_valid<TArgs...>, dang::lua::StackIndexResult>;
+
+/// @brief Enable-if for compare operations.
+template <typename... TArgs>
+using EnableCompare = std::enable_if_t<op_arguments_valid<TArgs...>, bool>;
 
 template <typename TLeft, typename TRight>
-inline auto operator+(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator+(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Add>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Add>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator-(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator-(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Sub>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Sub>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator*(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator*(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Mul>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Mul>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator%(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator%(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Mod>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Mod>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 // Would be ambiguous with binary xor
 /*
 template <typename TLeft, typename TRight>
-inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator^(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Pow>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Pow>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
 template <typename TLeft, typename TRight>
-inline auto operator/(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator/(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::Div>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::Div>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 // Integer division works different in C++
 /*
 template <typename TLeft, typename TRight>
-inline auto operator//(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator//(TLeft&& lhs, TRight&& rhs) -> EnableIfAnyIndex<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::IDiv>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::IDiv>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
 template <typename TLeft, typename TRight>
-inline auto operator&(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator&(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryAnd>(std::forward<TLeft>(lhs),
-                                                                        std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::BinaryAnd>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator|(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator|(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryOr>(std::forward<TLeft>(lhs),
-                                                                       std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::BinaryOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 // Would be ambiguous with pow
 /*
 template <typename TLeft, typename TRight>
-inline auto operator^(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator^(TLeft&& lhs, TRight&& rhs) ->EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs),
-std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::BinaryXOr>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 */
 
 template <typename TLeft, typename TRight>
-inline auto operator<<(TLeft&& lhs, TRight&& rhs)
-    -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight> &&
-                            !std::is_same_v<dutils::remove_cvref_t<TLeft>, std::ostream>,
-                        StackIndexResult>
+inline auto operator<<(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs),
-                                                                        std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::LeftShift>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator>>(TLeft&& lhs, TRight&& rhs) -> detail::EnableIfAnyIndex<TLeft, TRight>
+inline auto operator>>(TLeft&& lhs, TRight&& rhs) -> EnableArith<TLeft, TRight>
 {
-    return detail::stateOf(lhs, rhs).template arith<ArithOp::RightShift>(std::forward<TLeft>(lhs),
-                                                                         std::forward<TRight>(rhs));
+    return stateOf(lhs, rhs).template arith<ArithOp::RightShift>(std::forward<TLeft>(lhs), std::forward<TRight>(rhs));
 }
 
 template <typename T>
-inline auto operator-(T&& operand) -> detail::EnableIfAnyIndex<T>
+inline auto operator-(T&& operand) -> EnableArith<T>
 {
     return operand.stack().template arith<ArithOp::UnaryMinus>(std::forward<T>(operand));
 }
 
 template <typename T>
-inline auto operator~(T&& operand) -> detail::EnableIfAnyIndex<T>
+inline auto operator~(T&& operand) -> EnableArith<T>
 {
     return operand.stack().template arith<ArithOp::BinaryNot>(std::forward<T>(operand));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator==(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator==(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return detail::stateOf(left, right)
-        .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return stateOf(left, right).compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator!=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator!=(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return !detail::stateOf(left, right)
-                .compare(CompareOp::Equal, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return !(left == right);
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator<(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator<(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return detail::stateOf(left, right)
-        .compare(CompareOp::LessThan, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return stateOf(left, right).compare(CompareOp::LessThan, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator<=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator<=(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return detail::stateOf(left, right)
-        .compare(CompareOp::LessEqual, std::forward<TLeft>(left), std::forward<TRight>(right));
+    return stateOf(left, right).compare(CompareOp::LessEqual, std::forward<TLeft>(left), std::forward<TRight>(right));
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator>(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator>(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return detail::stateOf(left, right)
-        .compare(CompareOp::LessThan, std::forward<TRight>(right), std::forward<TLeft>(left));
+    return right < left;
 }
 
 template <typename TLeft, typename TRight>
-inline auto operator>=(TLeft&& left, TRight&& right) -> std::enable_if_t<detail::any_is_index_v<TLeft, TRight>, bool>
+inline auto operator>=(TLeft&& left, TRight&& right) -> EnableCompare<TLeft, TRight>
 {
-    return detail::stateOf(left, right)
-        .compare(CompareOp::LessEqual, std::forward<TRight>(right), std::forward<TLeft>(left));
+    return right <= left;
 }
 
 // --- StateBase Implementation ---
-
-namespace detail {
 
 inline PairsIterationWrapper StateBase::pairs(int index)
 {
