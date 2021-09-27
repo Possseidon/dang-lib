@@ -25,6 +25,8 @@ struct Property {
 /// @brief Returns an empty index and metatable and does nothing when required.
 /// @remark className() will be used in error messages.
 struct DefaultClassInfo {
+    static constexpr auto specialized = true;
+
     // static constexpr const char* className();
 
     static constexpr auto allow_table_initialization = false;
@@ -41,7 +43,8 @@ struct DefaultClassInfo {
 /// @brief Can be specialized to provide an index and metatable of a wrapped class.
 template <typename TClass>
 struct ClassInfo {
-    static_assert(dutils::invalid_type<T>, "Type has no ClassInfo specialization.");
+    /// @brief A flag to find out if a specific class is specialized and can be used with Convert.
+    static constexpr auto specialized = false;
 };
 
 /// @brief Shorthand to access the index table of a wrapped class.
@@ -143,6 +146,10 @@ auto countProperties(const TProps& props, lua_CFunction Property::*accessor)
 
 --- Convert Protocol ---
 
+static constexpr bool convertible = true;
+    -> Always true.
+    -> Only false in the unspecialized Convert template for SFINAE.
+
 static constexpr std::optional<int> push_count = 1;
     -> How many items are pushed by push, usually 1
     -> Can be std::nullopt if the size varies, in which case the getPushCount function must be provided
@@ -181,6 +188,7 @@ static void push(lua_State* state, T value);
 
 template <>
 struct Convert<T> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -217,12 +225,16 @@ struct UniqueClassInfo {
 // TODO: Convert<const T> should have special handling for const
 
 /// @brief Converts instances of classes to and from Lua as either value or reference.
-template <typename TClass, typename = void>
+template <typename, typename = void>
 struct Convert {
-    static_assert(std::is_class_v<TClass>);
+    static constexpr bool convertible = false;
+};
 
+template <typename TClass>
+struct Convert<TClass, std::enable_if_t<ClassInfo<std::remove_cv_t<TClass>>::specialized>> {
     using Class = std::remove_cv_t<TClass>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -603,9 +615,7 @@ template <typename TEnum>
 struct Convert<TEnum, std::enable_if_t<std::is_enum_v<TEnum>>> {
     using Enum = std::remove_cv_t<TEnum>;
 
-    static_assert(enum_values<Enum>[std::size(enum_values<Enum>) - 1] == nullptr, "enum_values is not null-terminated");
-    static_assert(std::size(enum_values<Enum>) > 1, "enum_values is empty");
-
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -626,15 +636,21 @@ struct Convert<TEnum, std::enable_if_t<std::is_enum_v<TEnum>>> {
     /// @brief Returns the enum value at the given argument stack position and raises an argument error on failure.
     static Enum check(lua_State* state, int arg)
     {
+        assertValid();
         return static_cast<Enum>(luaL_checkoption(state, arg, nullptr, enum_values<Enum>));
     }
 
     /// @brief Returns the name of the enum.
-    static constexpr std::string_view getPushTypename() { return enum_name<Enum>; }
+    static constexpr std::string_view getPushTypename()
+    {
+        assertValid();
+        return enum_name<Enum>;
+    }
 
     /// @brief Pushes the string name of the enum value onto the stack.
     static void push(lua_State* state, Enum value)
     {
+        assertValid();
         lua_pushstring(state, enum_values<Enum>[static_cast<std::size_t>(value)]);
     }
 
@@ -642,16 +658,25 @@ private:
     /// @brief Finds the given string's enum value or std::nullopt if not found.
     static std::optional<Enum> findEnumValue(const char* value)
     {
+        assertValid();
         for (std::size_t i = 0; enum_values<Enum>[i]; i++)
             if (std::strcmp(enum_values<Enum>[i], value) == 0)
                 return static_cast<Enum>(i);
         return std::nullopt;
+    }
+
+    constexpr static void assertValid()
+    {
+        static_assert(enum_values<Enum>[std::size(enum_values<Enum>) - 1] == nullptr,
+                      "enum_values is not null-terminated");
+        static_assert(std::size(enum_values<Enum>) > 1, "enum_values is empty");
     }
 };
 
 /// @brief Converts nothing.
 template <typename TVoid>
 struct Convert<TVoid, std::enable_if_t<std::is_void_v<TVoid>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = false;
 };
@@ -675,6 +700,7 @@ template <typename TNil>
 struct Convert<TNil, std::enable_if_t<is_nil_v<TNil>>> {
     using Nil = std::remove_cv_t<TNil>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -730,6 +756,7 @@ template <typename TFail>
 struct Convert<TFail, std::enable_if_t<is_fail_v<TFail>>> {
     using Fail = std::remove_cv_t<TFail>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -746,6 +773,7 @@ struct Convert<TFail, std::enable_if_t<is_fail_v<TFail>>> {
 /// @brief Allows for conversion between Lua boolean and C++ bool.
 template <typename TBool>
 struct Convert<TBool, std::enable_if_t<std::is_same_v<std::remove_cv_t<TBool>, bool>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -776,6 +804,7 @@ template <typename TNumber>
 struct Convert<TNumber, std::enable_if_t<std::is_floating_point_v<TNumber>>> {
     using Number = std::remove_cv_t<TNumber>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -823,6 +852,7 @@ struct Convert<TInteger,
                std::enable_if_t<std::is_integral_v<TInteger> && !std::is_same_v<std::remove_cv_t<TInteger>, bool>>> {
     using Integer = std::remove_cv_t<TInteger>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -920,6 +950,7 @@ struct Convert<TInteger,
 /// @brief Allows for conversion between Lua strings and std::string.
 template <typename TString>
 struct Convert<TString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TString>, std::string>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -966,6 +997,7 @@ struct Convert<TString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TString
 /// @brief Allows for conversion between Lua strings and std::string_view.
 template <typename TStringView>
 struct Convert<TStringView, std::enable_if_t<std::is_same_v<std::remove_cv_t<TStringView>, std::string_view>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1008,7 +1040,8 @@ struct Convert<TStringView, std::enable_if_t<std::is_same_v<std::remove_cv_t<TSt
 
 /// @brief Allows pushing of char arrays as strings.
 template <std::size_t v_count>
-struct Convert<const char (&)[v_count]> {
+struct Convert<const char[v_count]> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1028,6 +1061,7 @@ struct Convert<const char (&)[v_count]> {
 /// @brief Allows pushing of C-Style strings.
 template <typename TCString>
 struct Convert<TCString, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<TCString>, const char*>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1065,6 +1099,7 @@ struct Convert<TCString, std::enable_if_t<std::is_same_v<dutils::remove_cvref_t<
 /// @brief Allows pushing of mutable C-Style strings.
 template <typename TCString>
 struct Convert<TCString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCString>, char*>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1081,6 +1116,7 @@ struct Convert<TCString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCStri
 /// @brief Allows for conversion of C functions.
 template <typename TCFunction>
 struct Convert<TCFunction, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFunction>, lua_CFunction>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1116,6 +1152,8 @@ struct Convert<TCFunction, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFu
     static void push(lua_State* state, lua_CFunction value) { lua_pushcfunction(state, value); }
 };
 
+// TODO: Convert<T*> (or just void*?) to push light userdata
+
 /// @brief Allows for conversion for possible nil values using std::optional.
 template <typename>
 struct ConvertOptional;
@@ -1127,6 +1165,7 @@ struct ConvertOptional<std::optional<TContained>> {
 
     static_assert(ConvertContained::push_count == 1, "Only single values can be optional.");
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
@@ -1219,6 +1258,7 @@ static constexpr int combinedPushCount(const TValues&... values)
 /// @brief Allows for conversion of multiple values using tuple like types.
 template <typename TTuple, typename... TValues>
 struct ConvertTupleImpl {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = combined_push_count<TValues...>;
     static constexpr bool allow_nesting = (Convert<TValues>::allow_nesting && ...);
 
@@ -1317,21 +1357,27 @@ struct ConvertTuple<std::pair<TFirst, TSecond>> : ConvertTupleImpl<std::pair<TFi
 template <typename... TValues>
 struct ConvertTuple<std::tuple<TValues...>> : ConvertTupleImpl<std::tuple<TValues...>, TValues...> {};
 
+namespace detail {
+
+template <typename>
+struct is_tuple_helper : std::false_type {};
+
+template <typename TFirst, typename TSecond>
+struct is_tuple_helper<std::pair<TFirst, TSecond>> : std::true_type {};
+
+template <typename... TValues>
+struct is_tuple_helper<std::tuple<TValues...>> : std::true_type {};
+
+} // namespace detail
+
 template <typename T>
-struct is_tuple : std::false_type {};
+struct is_tuple : detail::is_tuple_helper<std::remove_cv_t<T>> {};
 
 template <typename T>
 inline constexpr auto is_tuple_v = is_tuple<T>::value;
 
-template <typename TFirst, typename TSecond>
-struct is_tuple<std::pair<TFirst, TSecond>> : std::true_type {};
-
-template <typename... TValues>
-struct is_tuple<std::tuple<TValues...>> : std::true_type {};
-
 template <typename TTuple>
-struct Convert<TTuple, std::enable_if_t<is_tuple_v<std::remove_cv_t<TTuple>>>>
-    : ConvertTuple<std::remove_cv_t<TTuple>> {};
+struct Convert<TTuple, std::enable_if_t<is_tuple_v<TTuple>>> : ConvertTuple<std::remove_cv_t<TTuple>> {};
 
 /// @brief Allows for conversion of different values using std::variant.
 template <typename>
@@ -1343,6 +1389,7 @@ struct ConvertVariant<std::variant<TOptions...>> {
 
     using Variant = std::variant<TOptions...>;
 
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
