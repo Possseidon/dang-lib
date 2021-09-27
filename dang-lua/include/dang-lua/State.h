@@ -2831,7 +2831,7 @@ public:
         return luaL_len(state_, index);
     }
 
-    /// @brief Returns the raw length of the value, which does not invoke metamethod.
+    /// @brief Returns the raw length of the value, which does not invoke a metamethod.
     auto rawLength(int index) const { return lua_rawlen(state_, index); }
 
     // --- Table Access ---
