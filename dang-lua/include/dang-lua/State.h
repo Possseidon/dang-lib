@@ -4668,7 +4668,7 @@ struct Convert<StateRef> {
 
 namespace detail {
 
-struct ConvertIndexBase {
+struct ConvertAnyIndexBase {
     static constexpr bool isExact(lua_State*, int) { return true; }
 
     static constexpr bool isValid(lua_State*, int) { return true; }
@@ -4680,11 +4680,12 @@ struct ConvertIndexBase {
     }
 };
 
-struct ConvertIndex : ConvertIndexBase {
+template <typename TIndex>
+struct ConvertIndex : ConvertAnyIndexBase {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = false;
 
-    template <typename TIndex>
     static void push(lua_State* state, TIndex index)
     {
         assert(index.state().state() == state);
@@ -4692,40 +4693,27 @@ struct ConvertIndex : ConvertIndexBase {
     }
 };
 
-struct ConvertStackIndex : ConvertIndex {
-    static std::optional<dang::lua::StackIndex> at(StateRef& state, int pos)
+template <typename TStackIndex>
+struct ConvertStackIndex : ConvertIndex<TStackIndex> {
+    static std::optional<TStackIndex> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos);
-        return state.stackIndex(pos);
+        return TStackIndex(state, pos);
     }
 
-    static dang::lua::StackIndex check(StateRef& state, int arg)
+    static TStackIndex check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg);
-        return state.stackIndex(arg);
+        return TStackIndex(state, arg);
     }
 };
 
-struct ConvertStackIndexResult : ConvertIndex {
-    static std::optional<dang::lua::StackIndexResult> at(StateRef& state, int pos)
-    {
-        state.maxFuncArg(pos);
-        return state.stackIndex(pos).asResult();
-    }
-
-    static dang::lua::StackIndexResult check(StateRef& state, int arg)
-    {
-        state.maxFuncArg(arg);
-        return state.stackIndex(arg).asResult();
-    }
-};
-
-template <int v_count>
-struct ConvertIndices : ConvertIndexBase {
+template <typename TIndices, int v_count>
+struct ConvertIndices : ConvertAnyIndexBase {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = v_count;
     static constexpr bool allow_nesting = false;
 
-    template <typename TIndices>
     static void push(lua_State* state, TIndices indices)
     {
         assert(indices.state().state() == state);
@@ -4733,118 +4721,86 @@ struct ConvertIndices : ConvertIndexBase {
     }
 
 private:
-    template <typename TIndices, std::size_t... v_indices>
+    template <std::size_t... v_indices>
     static void pushHelper(lua_State* state, TIndices indices, std::index_sequence<v_indices...>)
     {
         (lua_pushvalue(state, indices[v_indices].index()), ...);
     }
 };
 
-template <int v_count>
-struct ConvertStackIndices : ConvertIndices<v_count> {
-    static std::optional<dang::lua::StackIndices<v_count>> at(StateRef& state, int pos)
+template <typename TStackIndices, int v_count>
+struct ConvertStackIndices : ConvertIndices<TStackIndices, v_count> {
+    static std::optional<TStackIndices> at(StateRef& state, int pos)
     {
         state.maxFuncArg(pos + v_count - 1);
-        return state.stackIndices<v_count>(pos);
+        return TStackIndices(state, pos);
     }
 
-    static dang::lua::StackIndices<v_count> check(StateRef& state, int arg)
+    static TStackIndices check(StateRef& state, int arg)
     {
         state.maxFuncArg(arg + v_count - 1);
-        return state.stackIndices<v_count>(arg);
+        return TStackIndices(state, arg);
     }
 };
 
-template <int v_count>
-struct ConvertStackIndicesResult : ConvertIndices<v_count> {
-    static std::optional<dang::lua::StackIndicesResult<v_count>> at(StateRef& state, int pos)
-    {
-        state.maxFuncArg(pos + v_count - 1);
-        return state.stackIndices<v_count>(pos).asResults();
-    }
-
-    static dang::lua::StackIndicesResult<v_count> check(StateRef& state, int arg)
-    {
-        state.maxFuncArg(arg + v_count - 1);
-        return state.stackIndices<v_count>(arg).asResults();
-    }
-};
-
-struct ConvertIndexRange : ConvertIndexBase {
+template <typename TIndexRange>
+struct ConvertIndexRange : ConvertAnyIndexBase {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = std::nullopt;
     static constexpr bool allow_nesting = false;
 
-    template <typename TIndexRange>
     static void push(lua_State* state, TIndexRange index_range)
     {
         assert(index_range.state().state() == state);
-        for (int i = 0; i < index_range.size(); i++)
-            lua_pushvalue(state, index_range[i].index());
+        for (auto index : index_range)
+            lua_pushvalue(state, index.index());
     }
 
-    template <typename TIndexRange>
-    static int getPushCount(TIndexRange index_range)
+    static int getPushCount(TIndexRange index_range) { return index_range.size(); }
+};
+
+template <typename TStackIndexRange>
+struct ConvertStackIndexRange : ConvertIndexRange<TStackIndexRange> {
+    static std::optional<TStackIndexRange> at(StateRef& state, int pos)
     {
-        return index_range.size();
+        return TStackIndexRange(state, pos, state.size() - pos + 1);
+    }
+
+    static TStackIndexRange check(StateRef& state, int arg)
+    {
+        return TStackIndexRange(state, arg, state.size() - arg + 1);
     }
 };
 
-struct ConvertStackIndexRange : ConvertIndexRange {
-    static std::optional<dang::lua::StackIndexRange> at(StateRef& state, int pos)
-    {
-        return state.stackIndexRange(pos, state.size() - pos + 1);
-    }
+template <typename>
+struct ConvertAnyIndex;
 
-    static dang::lua::StackIndexRange check(StateRef& state, int arg)
-    {
-        return state.stackIndexRange(arg, state.size() - arg + 1);
-    }
-};
+template <typename TState, StackIndexType v_type>
+struct ConvertAnyIndex<StackIndex<TState, v_type>> : ConvertStackIndex<StackIndex<TState, v_type>> {};
 
-struct ConvertStackIndexRangeResult : ConvertIndexRange {
-    static std::optional<dang::lua::StackIndexRangeResult> at(StateRef& state, int pos)
-    {
-        return state.stackIndexRange(pos, state.size() - pos + 1).asResults();
-    }
+template <typename TState>
+struct ConvertAnyIndex<RegistryIndex<TState>> : ConvertIndex<RegistryIndex<TState>> {};
 
-    static dang::lua::StackIndexRangeResult check(StateRef& state, int arg)
-    {
-        return state.stackIndexRange(arg, state.size() - arg + 1).asResults();
-    }
-};
+template <typename TState>
+struct ConvertAnyIndex<UpvalueIndex<TState>> : ConvertIndex<UpvalueIndex<TState>> {};
+
+template <typename TState, int v_count, StackIndexType v_type>
+struct ConvertAnyIndex<StackIndices<TState, v_count, v_type>>
+    : ConvertStackIndices<StackIndices<TState, v_count, v_type>, v_count> {};
+
+template <typename TState, int v_count>
+struct ConvertAnyIndex<UpvalueIndices<TState, v_count>> : ConvertIndices<UpvalueIndices<TState, v_count>, v_count> {};
+
+template <typename TState, StackIndexType v_type>
+struct ConvertAnyIndex<StackIndexRange<TState, v_type>> : ConvertStackIndexRange<StackIndexRange<TState, v_type>> {};
+
+template <typename TState>
+struct ConvertAnyIndex<UpvalueIndexRange<TState>> : ConvertIndexRange<UpvalueIndexRange<TState>> {};
 
 } // namespace detail
 
-template <typename TState, typename TIndex>
-struct Convert<detail::IndexImpl<TState, TIndex>> : detail::ConvertIndex {};
-template <typename TState>
-struct Convert<detail::StackIndex<TState, detail::StackIndexType::Reference>> : detail::ConvertStackIndex {};
-template <typename TState>
-struct Convert<detail::StackIndex<TState, detail::StackIndexType::Result>> : detail::ConvertStackIndexResult {};
-template <typename TState>
-struct Convert<detail::RegistryIndex<TState>> : detail::ConvertIndex {};
-template <typename TState>
-struct Convert<detail::UpvalueIndex<TState>> : detail::ConvertIndex {};
-
-template <typename TState, typename TIndex, int v_count>
-struct Convert<detail::MultiIndexImpl<TState, TIndex, v_count>> : detail::ConvertIndices<v_count> {};
-
-template <typename TState, int v_count>
-struct Convert<detail::StackIndices<TState, v_count, detail::StackIndexType::Reference>>
-    : detail::ConvertStackIndices<v_count> {};
-template <typename TState, int v_count>
-struct Convert<detail::StackIndices<TState, v_count, detail::StackIndexType::Result>>
-    : detail::ConvertStackIndicesResult<v_count> {};
-template <typename TState, int v_count>
-struct Convert<detail::UpvalueIndices<TState, v_count>> : detail::ConvertIndices<v_count> {};
-
-template <typename TState>
-struct Convert<detail::StackIndexRange<TState, detail::StackIndexType::Reference>> : detail::ConvertStackIndexRange {};
-template <typename TState>
-struct Convert<detail::StackIndexRange<TState, detail::StackIndexType::Result>>
-    : detail::ConvertStackIndexRangeResult {};
-template <typename TState>
-struct Convert<detail::UpvalueIndexRange<TState>> : detail::ConvertIndexRange {};
+template <typename TIndex>
+struct Convert<TIndex, std::enable_if_t<is_any_index_v<TIndex>>> : detail::ConvertAnyIndex<std::remove_cv_t<TIndex>> {};
 
 // --- Utility ---
 
