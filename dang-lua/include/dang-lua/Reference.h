@@ -83,6 +83,7 @@ using WeakReference = std::weak_ptr<Reference>;
 
 template <typename TReference>
 struct Convert<TReference, std::enable_if_t<std::is_same_v<std::remove_cv_t<TReference>, Reference>>> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
 
