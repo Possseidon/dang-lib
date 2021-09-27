@@ -1436,7 +1436,7 @@ struct is_upvalue_index_helper<UpvalueIndex<TState>> : std::true_type {};
 
 using Arg = StackIndexResult;
 
-template <std::size_t v_size>
+template <int v_size>
 using Args = StackIndicesResult<v_size>;
 
 using VarArgs = StackIndexRangeResult;
