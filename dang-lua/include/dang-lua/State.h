@@ -4642,6 +4642,7 @@ public:
 
 template <>
 struct Convert<lua_State*> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
@@ -4654,6 +4655,7 @@ struct Convert<lua_State*> {
 
 template <>
 struct Convert<StateRef> {
+    static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 0;
     static constexpr bool allow_nesting = true;
 
