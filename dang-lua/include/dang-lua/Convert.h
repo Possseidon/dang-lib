@@ -1115,7 +1115,9 @@ struct Convert<TCString, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCStri
 
 /// @brief Allows for conversion of C functions.
 template <typename TCFunction>
-struct Convert<TCFunction, std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFunction>, lua_CFunction>>> {
+struct Convert<TCFunction,
+               std::enable_if_t<std::is_same_v<std::remove_cv_t<TCFunction>, lua_CFunction> ||
+                                std::is_same_v<std::remove_cv_t<TCFunction>, std::remove_pointer_t<lua_CFunction>>>> {
     static constexpr bool convertible = true;
     static constexpr std::optional<int> push_count = 1;
     static constexpr bool allow_nesting = true;
