@@ -524,7 +524,7 @@ public:
     }
 
     /// @brief Follows the same semantics as Lua, returning "true" for anything but "false" and "nil".
-    explicit operator bool() { return check<bool>(); }
+    explicit operator bool() const { return this->state().template check<bool>(index()); }
 
     // --- Error ---
 
