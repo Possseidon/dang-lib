@@ -135,8 +135,8 @@ jobs:
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"
 
-      # - name: Build dmath
-      #   run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --target dmath
+      - name: Build dmath
+        run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --target dmath
 
       - name: Run tests
         run: |
