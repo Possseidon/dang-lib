@@ -2740,7 +2740,7 @@ public:
         constexpr bool unary_op = v_operation == ArithOp::UnaryMinus || v_operation == ArithOp::BinaryNot;
         constexpr bool binary_op = !unary_op;
         auto pushed_args = push(std::forward<TArgs>(args)...);
-        constexpr auto push_count = Convert<decltype(pushed_args)>::push_count;
+        constexpr auto push_count = pushed_args.size();
         constexpr bool unary_arg = push_count == 1;
         constexpr bool binary_args = push_count == 2;
         static_assert(unary_op && unary_arg || binary_op && binary_args,
