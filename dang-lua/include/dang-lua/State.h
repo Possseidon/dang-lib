@@ -3796,6 +3796,16 @@ public:
     /// @brief Invalidates the State wrapper, extracting the wrapped Lua state.
     /// @remark Doesn't actually clear the state, but using both would invalidate the internal state of the wrapper.
     lua_State* state() && { return state_; }
+
+private:
+    template <typename, typename...>
+    friend struct detail::SignatureInfoBase;
+
+    template <typename>
+    friend struct detail::SignatureInfo;
+
+    /// @brief This implicit conversion simplifies signature info greatly.
+    operator lua_State*() const { return state_; }
 };
 
 /// @brief Wraps a Lua thread.
