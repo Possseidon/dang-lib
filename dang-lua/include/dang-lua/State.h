@@ -3400,6 +3400,8 @@ public:
 
     // --- Function Wrapping ---
 
+    // TODO: Make this private and friend Convert?
+
     /// @brief Updates the internally stored top value to allow "wrap" to pad parameters with nil.
     void maxFuncArg(int index)
     {
