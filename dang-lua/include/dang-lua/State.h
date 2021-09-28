@@ -2085,7 +2085,7 @@ public:
         return lua_isnumber(state_, index);
     }
 
-    /// @brief Whether the element at the given index is an integer or a string convertible to an integer.
+    /// @brief Whether the element at the given index is an actual integer.
     bool isInteger(int index) const
     {
         assertAcceptable(index);
