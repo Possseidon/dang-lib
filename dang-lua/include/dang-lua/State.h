@@ -246,6 +246,8 @@ private:
     }
 };
 
+// TODO: Fix this SignatureInfo mess with SFINAE or something...
+
 template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (*)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
