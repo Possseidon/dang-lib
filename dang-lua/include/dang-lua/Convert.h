@@ -665,7 +665,7 @@ private:
         return std::nullopt;
     }
 
-    constexpr static void assertValid()
+    static constexpr void assertValid()
     {
         static_assert(enum_values<Enum>[std::size(enum_values<Enum>) - 1] == nullptr,
                       "enum_values is not null-terminated");
