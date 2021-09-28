@@ -2160,25 +2160,18 @@ public:
     /// @brief Asserts, whether the given positive index is currently acceptable without checking the stack.
     void assertAcceptable([[maybe_unused]] int index) const { assert(index >= 1 && index - size() <= pushable_); }
 
+    /// @brief Asserts, whether it is possible to push a given number of elements without checking the stack.
+    void assertPushable([[maybe_unused]] int count = 1) const { assert(count <= pushable_); }
+
+    /// @brief Asserts, whether it is possible to call an auxiliary function with the current stack.
+    void assertPushableAuxiliary() const { assertPushable(auxiliary_required_pushable); }
+
     /// @brief Ensures, that the given positive index is going to be acceptable and returns false if it can't.
     bool checkAcceptable(int index) const
     {
         assert(index >= 1);
         return checkPushable(index - size());
     }
-
-    /// @brief Ensures, that the given positive index is going to be acceptable and raises a Lua error if it can't.
-    void ensureAcceptable(int index, const char* error_message = nullptr) const
-    {
-        assert(index >= 1);
-        ensurePushable(index - size(), error_message);
-    }
-
-    /// @brief Asserts, whether it is possible to push a given number of elements without checking the stack.
-    void assertPushable([[maybe_unused]] int count = 1) const { assert(count <= pushable_); }
-
-    /// @brief Asserts, whether it is possible to call an auxiliary function with the current stack.
-    void assertPushableAuxiliary() const { assertPushable(auxiliary_required_pushable); }
 
     /// @brief Tries to ensure, that it is possible to push a given number of values, returning false if it can't.
     bool checkPushable(int count = 1) const
@@ -2193,6 +2186,13 @@ public:
 
     /// @brief Tries to ensures, that an auxiliary library function can be called, returning false if it can't.
     bool checkPushableAuxiliary() const { return checkPushable(auxiliary_required_pushable); }
+
+    /// @brief Ensures, that the given positive index is going to be acceptable and raises a Lua error if it can't.
+    void ensureAcceptable(int index, const char* error_message = nullptr) const
+    {
+        assert(index >= 1);
+        ensurePushable(index - size(), error_message);
+    }
 
     /// @brief Ensures, that it is possible to push a given number of values, raising a Lua error if it can't.
     void ensurePushable(int count = 1, const char* error_message = nullptr) const
