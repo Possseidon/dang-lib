@@ -2211,7 +2211,8 @@ public:
     /// @brief Pushes nil values up to the given positive index.
     void padWithNil(int index)
     {
-        assert(index >= 1);
+        // Can also pad "nothing".
+        assert(index >= 0);
         int current_top = size();
         if (index <= current_top)
             return;
