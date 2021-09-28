@@ -231,7 +231,7 @@ private:
 
     /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... v_indices>
-    static typename Base::Arguments convertArgumentsHelper(StateRef& state, std::index_sequence<v_indices...>)
+    static typename Base::Arguments convertArgumentsHelper([[maybe_unused]] StateRef& state, std::index_sequence<v_indices...>)
     {
         return {Convert<std::remove_reference_t<TArgs>>::check(
             state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
@@ -239,7 +239,7 @@ private:
 
     /// @brief Helper function to convert all arguments, as "indexOffset" relies on an index sequence itself.
     template <std::size_t... v_indices>
-    static typename Base::Arguments convertArgumentsRawHelper(lua_State* state, std::index_sequence<v_indices...>)
+    static typename Base::Arguments convertArgumentsRawHelper([[maybe_unused]] lua_State* state, std::index_sequence<v_indices...>)
     {
         return {Convert<std::remove_reference_t<TArgs>>::check(
             state, Base::indexOffset(std::make_index_sequence<v_indices>{}))...};
