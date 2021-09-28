@@ -847,8 +847,7 @@ TEST_CASE("Lua StateBase can do queries on the Lua stack.", "[lua][state]")
         }
         SECTION("A C function.")
         {
-            constexpr auto func = +[](lua_State*) { return 0; };
-            lua.pushFunction<func>();
+            lua.push(+[](lua_State*) { return 0; });
             CHECK(lua.type(1) == dlua::Type::Function);
             CHECK(lua.typeName(1) == "function");
             CHECK_FALSE(lua.isNone(1));
