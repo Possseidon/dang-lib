@@ -420,11 +420,11 @@ public:
 
     /// @brief Returns 1.
     /// @remark Merely for compatibility with StackIndices and StackIndexRange.
-    constexpr int size() const { return 1; }
+    static constexpr int size() { return 1; }
 
     /// @brief Returns false.
     /// @remark Merely for compatibility with StackIndices and StackIndexRange.
-    constexpr bool empty() const { return size() == 0; }
+    static constexpr bool empty() { return false; }
 
     /// @brief Returns another index, which is offset by a given amount.
     /// @remark See: applyOffset
@@ -865,10 +865,10 @@ public:
     int first() const { return first_; }
 
     /// @brief Returns the size of the range.
-    constexpr int size() const { return v_count; }
+    static constexpr int size() { return v_count; }
 
     /// @brief Whether the size is zero.
-    constexpr bool empty() const { return size() == 0; }
+    static constexpr bool empty() { return size() == 0; }
 
 private:
     int first_ = 0;
@@ -1221,6 +1221,15 @@ public:
     RegistryIndex(TState& state)
         : IndexImpl<TState, RegistryIndex<TState>>(DirectInit{}, state, LUA_REGISTRYINDEX)
     {}
+
+    /// @brief Returns the registry index.
+    static constexpr int index() { return LUA_REGISTRYINDEX; }
+
+    /// @brief Returns the registry index.
+    static constexpr int first() { return LUA_REGISTRYINDEX; }
+
+    /// @brief Returns the registry index.
+    static constexpr int last() { return LUA_REGISTRYINDEX; }
 };
 
 /// @brief Wraps an upvalue index.
@@ -1995,7 +2004,7 @@ public:
     static constexpr bool isUpvalue(int index) { return index < LUA_REGISTRYINDEX; }
 
     /// @brief Whether the given index is the first stack index or "offset" above it.
-    bool isIndexBottom(int index, int offset = 0) const
+    static constexpr bool isIndexBottom(int index, int offset = 0)
     {
         assert(offset >= 0);
         return index == 1 + offset;
@@ -2009,7 +2018,7 @@ public:
     }
 
     /// @brief Returns how many positions the given stack index is above the first index.
-    int indexOffsetFromBottom(int index) const { return index - 1; }
+    static constexpr int indexOffsetFromBottom(int index) { return index - 1; }
 
     /// @brief Returns how many positions the given stack index is below the last index.
     int indexOffsetFromTop(int index) const { return size() - index; }
