@@ -17,20 +17,13 @@ namespace dang::utils {
 
 inline constexpr auto char_bit = std::numeric_limits<unsigned char>::digits;
 
-namespace detail {
+/// @brief Also known as always_false.
+template <typename, typename...>
+inline constexpr bool invalid_type = false;
 
-struct AlwaysFalseHelper {};
-
-} // namespace detail
-
-template <typename...>
-struct always_false : std::false_type {};
-
-template <>
-struct always_false<detail::AlwaysFalseHelper> : std::true_type {};
-
-template <typename... TArgs>
-inline constexpr auto always_false_v = always_false<TArgs...>::value;
+/// @brief Value version of always_false.
+template <auto, auto...>
+inline constexpr bool invalid_value = false;
 
 template <auto v>
 struct constant : std::integral_constant<decltype(v), v> {};
