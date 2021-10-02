@@ -40,7 +40,7 @@ struct DefaultClassInfo {
 /// @brief Can be specialized to provide an index and metatable of a wrapped class.
 template <typename T>
 struct ClassInfo {
-    static_assert(dutils::always_false_v<T>, "Type has no ClassInfo specialization.");
+    static_assert(dutils::invalid_type<T>, "Type has no ClassInfo specialization.");
 };
 
 /// @brief Shorthand to access the index table of a wrapped class.

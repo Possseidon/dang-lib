@@ -22,7 +22,7 @@ const std::string ClassInfo<dang::math::Vector<T, v_dim>>::base_class_name = [] 
     else if constexpr (std::is_same_v<T, bool>)
         return "bvec"s;
     else
-        static_assert(dutils::always_false_v<T>, "unsupported vector type");
+        static_assert(dutils::invalid_type<T>, "unsupported vector type");
 }();
 
 template <typename T, std::size_t v_dim>
@@ -411,7 +411,7 @@ const std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::base_class_n
     else if constexpr (std::is_same_v<T, double>)
         return "dmat"s;
     else
-        static_assert(dutils::always_false_v<T>, "unsupported matrix type");
+        static_assert(dutils::invalid_type<T>, "unsupported matrix type");
 }();
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>

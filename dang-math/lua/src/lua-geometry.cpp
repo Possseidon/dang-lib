@@ -25,7 +25,7 @@ const std::string ClassInfo<dang::math::Line<T, v_dim>>::base_class_name = [] {
     else if constexpr (std::is_same_v<T, double>)
         return "DLine"s;
     else
-        static_assert(dutils::always_false_v<T>, "unsupported Line type");
+        static_assert(dutils::invalid_type<T>, "unsupported Line type");
 }();
 
 template <typename T, std::size_t v_dim>
@@ -138,7 +138,7 @@ const std::string ClassInfo<dang::math::Plane<T, v_dim>>::base_class_name = [] {
     else if constexpr (std::is_same_v<T, double>)
         return "DPlane"s;
     else
-        static_assert(dutils::always_false_v<T>, "unsupported Plane type");
+        static_assert(dutils::invalid_type<T>, "unsupported Plane type");
 }();
 
 template <typename T, std::size_t v_dim>
@@ -304,7 +304,7 @@ const std::string ClassInfo<dang::math::Spat<T, v_dim>>::base_class_name = [] {
     else if constexpr (std::is_same_v<T, double>)
         return "DSpat"s;
     else
-        static_assert(dutils::always_false_v<T>, "unsupported Spat type");
+        static_assert(dutils::invalid_type<T>, "unsupported Spat type");
 }();
 
 template <typename T, std::size_t v_dim>
