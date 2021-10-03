@@ -21,7 +21,7 @@ struct Quaternion : private Vector<T, 4> {
         : Base()
     {}
     /// @brief Initializes the quaternion from a four-dimensional vector.
-    constexpr explicit Quaternion(const Base& vector)
+    explicit constexpr Quaternion(const Base& vector)
         : Base(vector)
     {}
     /// @brief Initializes the quaternion from scalar and vector without normalization.
