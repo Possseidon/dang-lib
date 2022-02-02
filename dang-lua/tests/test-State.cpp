@@ -1,7 +1,16 @@
+#include <algorithm>
+#include <array>
+#include <functional>
+#include <map>
 #include <memory>
 #include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <variant>
 
 #include "dang-lua/Allocator.h"
+#include "dang-lua/Convert.h"
 #include "dang-lua/State.h"
 
 #include "catch2/catch.hpp"
@@ -368,7 +377,7 @@ TEST_CASE("Lua StateBase can query and switch out the allocator.", "[lua][state]
     lua.setAllocator(checked_allocator.allocator());
 
     // Allocate a table.
-    lua.pushTable();
+    lua.pushEmptyTable();
     checked_allocator.checkNotEmpty();
 
     // Remove the table and let the gc deallocate it.
@@ -809,7 +818,7 @@ TEST_CASE("Lua StateBase can do queries on the Lua stack.", "[lua][state]")
         }
         SECTION("A table.")
         {
-            lua.pushTable();
+            lua.pushEmptyTable();
             CHECK(lua.type(1) == dlua::Type::Table);
             CHECK(lua.typeName(1) == "table");
             CHECK_FALSE(lua.isNone(1));
@@ -908,6 +917,92 @@ TEST_CASE("Lua StateBase can do queries on the Lua stack.", "[lua][state]")
             CHECK(lua.isThread(1));
             */
         }
+        SECTION("Negative indices can be used.")
+        {
+            lua.pushNil();
+            CHECK(lua.type(-1) == dlua::Type::Nil);
+            CHECK(lua.typeName(-1) == "nil");
+            CHECK_FALSE(lua.isNone(-1));
+            CHECK(lua.isNil(-1));
+            CHECK(lua.isNoneOrNil(-1));
+            CHECK_FALSE(lua.isBoolean(-1));
+            CHECK_FALSE(lua.isLightUserdata(-1));
+            CHECK_FALSE(lua.isNumber(-1));
+            CHECK_FALSE(lua.isInteger(-1));
+            CHECK_FALSE(lua.isString(-1));
+            CHECK_FALSE(lua.isTable(-1));
+            CHECK_FALSE(lua.isFunction(-1));
+            CHECK_FALSE(lua.isCFunction(-1));
+            CHECK_FALSE(lua.isUserdata(-1));
+            CHECK_FALSE(lua.isThread(-1));
+        }
+        SECTION("The registry index can be used.")
+        {
+            CHECK(lua.type(LUA_REGISTRYINDEX) == dlua::Type::Table);
+            CHECK(lua.typeName(LUA_REGISTRYINDEX) == "table");
+            CHECK_FALSE(lua.isNone(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isNil(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isNoneOrNil(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isBoolean(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isLightUserdata(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isNumber(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isInteger(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isString(LUA_REGISTRYINDEX));
+            CHECK(lua.isTable(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isFunction(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isCFunction(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isUserdata(LUA_REGISTRYINDEX));
+            CHECK_FALSE(lua.isThread(LUA_REGISTRYINDEX));
+        }
+        SECTION("Upvalue indices can be used.")
+        {
+            // Upvalues are only acceptable when a C function is being called.
+            // Otherwise lua_type crashes.
+
+            auto lua_func = +[](lua_State* state) {
+                auto lua = dlua::StateRef(state);
+
+                SECTION("Valid upvalue indices.")
+                {
+                    CHECK(lua.type(lua_upvalueindex(1)) == dlua::Type::Nil);
+                    CHECK(lua.typeName(lua_upvalueindex(1)) == "nil");
+                    CHECK_FALSE(lua.isNone(lua_upvalueindex(1)));
+                    CHECK(lua.isNil(lua_upvalueindex(1)));
+                    CHECK(lua.isNoneOrNil(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isBoolean(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isLightUserdata(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isNumber(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isInteger(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isString(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isTable(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isFunction(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isCFunction(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isUserdata(lua_upvalueindex(1)));
+                    CHECK_FALSE(lua.isThread(lua_upvalueindex(1)));
+                }
+                SECTION("Invalid upvalue indices.")
+                {
+                    CHECK(lua.type(lua_upvalueindex(2)) == dlua::Type::None);
+                    CHECK(lua.typeName(lua_upvalueindex(2)) == "no value");
+                    CHECK(lua.isNone(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isNil(lua_upvalueindex(2)));
+                    CHECK(lua.isNoneOrNil(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isBoolean(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isLightUserdata(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isNumber(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isInteger(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isString(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isTable(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isFunction(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isCFunction(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isUserdata(lua_upvalueindex(2)));
+                    CHECK_FALSE(lua.isThread(lua_upvalueindex(2)));
+                }
+
+                return 0;
+            };
+            lua.pushFunction(lua_func, dlua::nil).call<0>();
+        }
     }
 }
 
@@ -943,7 +1038,419 @@ TEST_CASE("Lua StateBase can check if the stack can be extended.")
     }
 }
 
-TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove existing ones.", "[lua][state]") {}
+TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove existing ones.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    SECTION("It can push arbitrary values using Convert.")
+    {
+        auto initial_size = GENERATE(0, 1, 3);
+        lua.padWithNil(initial_size);
+        INFO("Given " << initial_size << " already pushed nil values.");
+
+        SECTION("Pushing single values.")
+        {
+            auto index = lua.push(1);
+            CHECK(index.index() == initial_size + 1);
+
+            CHECK(lua.size() == initial_size + 1);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing multiple values.")
+        {
+            auto indices = lua.push(1, 2, 3);
+            CHECK(indices.first() == initial_size + 1);
+            CHECK(indices.last() == initial_size + 3);
+
+            CHECK(lua.size() == initial_size + 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing a single existing index.")
+        {
+            auto one = lua(1);
+            auto index = lua.push(one);
+            CHECK(index.index() == initial_size + 2);
+
+            CHECK(lua.size() == initial_size + 2);
+            CHECK(lua.to<int>(-2) == 1);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing a single moved index that is already on top of the stack does nothing.")
+        {
+            auto one = lua(1);
+            auto index = lua.push(std::move(one));
+            CHECK(index.index() == initial_size + 1);
+
+            CHECK(lua.size() == initial_size + 1);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing a single moved index that is not at top of the stack.")
+        {
+            auto one = lua(1);
+            lua.push(2);
+            auto index = lua.push(std::move(one));
+            CHECK(index.index() == initial_size + 3);
+
+            CHECK(lua.size() == initial_size + 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing existing indices.")
+        {
+            auto nums = lua(1, 2, 3);
+            auto indices = lua.push(nums);
+            CHECK(indices.first() == initial_size + 4);
+            CHECK(indices.last() == initial_size + 6);
+
+            CHECK(lua.size() == initial_size + 6);
+            CHECK(lua.to<int>(-6) == 1);
+            CHECK(lua.to<int>(-5) == 2);
+            CHECK(lua.to<int>(-4) == 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing moved indices that are already on top of the stack does nothing.")
+        {
+            auto nums = lua(1, 2, 3);
+            auto indices = lua.push(std::move(nums));
+            CHECK(indices.first() == initial_size + 1);
+            CHECK(indices.last() == initial_size + 3);
+
+            CHECK(lua.size() == initial_size + 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing moved indices that are not at the top of the stack.")
+        {
+            auto nums = lua.push(1, 2, 3);
+            lua.push(4);
+            auto indices = lua.push(std::move(nums));
+            CHECK(indices.first() == initial_size + 5);
+            CHECK(indices.last() == initial_size + 7);
+
+            CHECK(lua.size() == initial_size + 7);
+            CHECK(lua.to<int>(-7) == 1);
+            CHECK(lua.to<int>(-6) == 2);
+            CHECK(lua.to<int>(-5) == 3);
+            CHECK(lua.to<int>(-4) == 4);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing an existing index range.")
+        {
+            lua.push(1, 2, 3);
+            auto nums = lua.stackIndexRange(-3, 3).asResult();
+            auto index_range = lua.push(nums);
+            CHECK(index_range.first() == initial_size + 4);
+            CHECK(index_range.last() == initial_size + 6);
+
+            CHECK(lua.size() == initial_size + 6);
+            CHECK(lua.to<int>(-6) == 1);
+            CHECK(lua.to<int>(-5) == 2);
+            CHECK(lua.to<int>(-4) == 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing a moved index range that is on top of the stack does nothing.")
+        {
+            lua.push(1, 2, 3);
+            auto nums = lua.stackIndexRange(-3, 3).asResult();
+            auto index_range = lua.push(std::move(nums));
+            CHECK(index_range.first() == initial_size + 1);
+            CHECK(index_range.last() == initial_size + 3);
+
+            CHECK(lua.size() == initial_size + 3);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing a moved index range that is not at the top of the stack.")
+        {
+            lua.push(1, 2, 3, 4);
+            auto nums = lua.stackIndexRange(-4, 3).asResult();
+            auto index_range = lua.push(std::move(nums));
+            CHECK(index_range.first() == initial_size + 5);
+            CHECK(index_range.last() == initial_size + 7);
+
+            CHECK(lua.size() == initial_size + 7);
+            CHECK(lua.to<int>(-7) == 1);
+            CHECK(lua.to<int>(-6) == 2);
+            CHECK(lua.to<int>(-5) == 3);
+            CHECK(lua.to<int>(-4) == 4);
+            CHECK(lua.to<int>(-3) == 1);
+            CHECK(lua.to<int>(-2) == 2);
+            CHECK(lua.to<int>(-1) == 3);
+        }
+        SECTION("Pushing multiple single moved indices.")
+        {
+            lua.push(1);
+            auto two = lua(2);
+            auto three = lua(3);
+            auto indices = lua.push(std::move(two), std::move(three), 4);
+            CHECK(indices.first() == initial_size + 2);
+            CHECK(indices.last() == initial_size + 4);
+
+            CHECK(lua.size() == initial_size + 4);
+            CHECK(lua.to<int>(-4) == 1);
+            CHECK(lua.to<int>(-3) == 2);
+            CHECK(lua.to<int>(-2) == 3);
+            CHECK(lua.to<int>(-1) == 4);
+        }
+    }
+    SECTION("Values can be pushed using the call operator.")
+    {
+        auto indices = lua(1, 2, 3);
+        CHECK(indices.first() == 1);
+        CHECK(indices.last() == 3);
+
+        CHECK(lua.size() == 3);
+        CHECK(lua.to<int>(1) == 1);
+        CHECK(lua.to<int>(2) == 2);
+        CHECK(lua.to<int>(3) == 3);
+    }
+    SECTION("Nil values can be pushed explicitly.")
+    {
+        SECTION("Single nil values.")
+        {
+            auto index = lua.pushNil();
+            CHECK(index.index() == 1);
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isNil(-1));
+        }
+        SECTION("Pad with nil to a given index.")
+        {
+            auto first_pad = GENERATE(0, 1, 3);
+            lua.padWithNil(first_pad);
+            CHECK(lua.size() == first_pad);
+
+            auto second_pad = GENERATE(0, 1, 3);
+            lua.padWithNil(second_pad);
+            CHECK(lua.size() == std::max(first_pad, second_pad));
+        }
+        SECTION("Fail values.")
+        {
+            // Currently nil, but might change in the future. Important is, that the value is falsy.
+            auto index = lua.pushFail();
+            CHECK(index.index() == 1);
+
+            CHECK(lua.size() == 1);
+            CHECK_FALSE(lua.check<bool>(-1));
+        }
+    }
+    SECTION("Tables can be pushed and even directly populated from common C++ constructs.")
+    {
+        SECTION("Empty tables.")
+        {
+            SECTION("Empty tables without size hints.")
+            {
+                auto index = lua.pushEmptyTable();
+                CHECK(index.index() == 1);
+            }
+            SECTION("Empty tables with array hint.")
+            {
+                auto index = lua.pushEmptyTable(3);
+                CHECK(index.index() == 1);
+            }
+            SECTION("Empty tables with record hint.")
+            {
+                auto index = lua.pushEmptyTable(0, 3);
+                CHECK(index.index() == 1);
+            }
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isTable(1));
+            CHECK(lua.rawLength(1) == 0);
+        }
+        SECTION("Array tables.")
+        {
+            auto with_n = GENERATE(false, true);
+            CAPTURE(with_n);
+
+            SECTION("From an iterator pair.")
+            {
+                auto data = std::array{1, 2, 3};
+                auto index = lua.pushArrayTable(begin(data), end(data), with_n);
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a collection.")
+            {
+                auto index = lua.pushArrayTable(std::array{1, 2, 3}, with_n);
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a std::initializer_list.")
+            {
+                auto index = lua.pushArrayTable({1, 2, 3}, with_n);
+                CHECK(index.index() == 1);
+            }
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isTable(1));
+            CHECK(lua.rawLength(1) == 3);
+            CHECK(lua.getTable(1, 1) == 1);
+            CHECK(lua.getTable(1, 2) == 2);
+            CHECK(lua.getTable(1, 3) == 3);
+            if (with_n)
+                CHECK(lua.getTable(1, "n") == 3);
+            else
+                CHECK(lua.getTable(1, "n") == dlua::nil);
+        }
+        SECTION("Set tables.")
+        {
+            SECTION("From an iterator pair.")
+            {
+                auto data = std::array{"a", "b", "c"};
+                auto index = lua.pushSetTable(begin(data), end(data));
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a collection.")
+            {
+                auto index = lua.pushSetTable(std::array{"a", "b", "c"});
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a std::initializer_list.")
+            {
+                auto index = lua.pushSetTable({"a", "b", "c"});
+                CHECK(index.index() == 1);
+            }
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isTable(1));
+            CHECK(lua.rawLength(1) == 0);
+            CHECK(lua.getTable(1, "a") == true);
+            CHECK(lua.getTable(1, "b") == true);
+            CHECK(lua.getTable(1, "c") == true);
+        }
+        SECTION("Set tables with custom value types.")
+        {
+            using Types = std::variant<bool, int, const char*>;
+            auto value = GENERATE(as<Types>{}, true, 42, "x");
+
+            SECTION("From an iterator pair.")
+            {
+                auto data = std::array{"a", "b", "c"};
+                auto index = lua.pushSetTable(begin(data), end(data), value);
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a collection.")
+            {
+                auto index = lua.pushSetTable(std::array{"a", "b", "c"}, value);
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a std::initializer_list.")
+            {
+                auto index = lua.pushSetTable({"a", "b", "c"}, value);
+                CHECK(index.index() == 1);
+            }
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isTable(1));
+            CHECK(lua.rawLength(1) == 0);
+            CHECK(lua.getTable(1, "a") == value);
+            CHECK(lua.getTable(1, "b") == value);
+            CHECK(lua.getTable(1, "c") == value);
+        }
+        SECTION("Map tables.")
+        {
+            using namespace std::literals;
+
+            SECTION("From an iterator pair.")
+            {
+                std::map data{std::pair{"a"s, 1}, {"b"s, 2}, {"c"s, 3}};
+                auto index = lua.pushMapTable(begin(data), end(data));
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a collection.")
+            {
+                auto index = lua.pushMapTable(std::map{std::pair{"a"s, 1}, {"b"s, 2}, {"c"s, 3}});
+                CHECK(index.index() == 1);
+            }
+            SECTION("From a std::initializer_list.")
+            {
+                auto index = lua.pushMapTable({std::pair{"a"s, 1}, {"b"s, 2}, {"c"s, 3}});
+                CHECK(index.index() == 1);
+            }
+
+            CHECK(lua.size() == 1);
+            CHECK(lua.isTable(1));
+            CHECK(lua.rawLength(1) == 0);
+            CHECK(lua.getTable(1, "a") == 1);
+            CHECK(lua.getTable(1, "b") == 2);
+            CHECK(lua.getTable(1, "c") == 3);
+        }
+    }
+    SECTION("New Threads can be pushed.")
+    {
+        // TODO: Make threads pushable.
+        // lua.pushThread();
+    }
+    SECTION("New userdata instances can be pushed.")
+    {
+        // TODO: Create a test type.
+        // lua.pushNew<Type>();
+    }
+    SECTION("Functions and closures can be pushed.")
+    {
+        SECTION("Using a lua_CFunction.")
+        {
+            // When no upvalues are used this is equivalent to using push.
+            auto index = lua.pushFunction(+[](lua_State*) { return 1; });
+            CHECK(index.index() == 1);
+            CHECK(index.call<1>(42) == 42);
+        }
+        SECTION("Using a lua_CFunction with upvalues.")
+        {
+            auto func = +[](lua_State* state) {
+                lua_pushvalue(state, lua_upvalueindex(1));
+                lua_pushvalue(state, lua_upvalueindex(2));
+                lua_pushvalue(state, lua_upvalueindex(3));
+                return 3;
+            };
+            auto index = lua.pushFunction(func, 1, 2, 3);
+            CHECK(index.index() == 1);
+            auto result = index.call<3>();
+            CHECK(result[0] == 1);
+            CHECK(result[1] == 2);
+            CHECK(result[2] == 3);
+        }
+    }
+
+    // TODO: Why are indices not nestable inside tuples?
+
+    // TODO:
+    // lua.pushThread();
+    // lua.pushNew<>();
+    // lua.pushFunction();
+    // lua.pushGlobalTable();
+    // lua.replace();
+    // lua.pop();
+    // lua.remove();
+}
+
+TEST_CASE("Testing")
+{
+    auto lua = dlua::State();
+
+    auto x = lua(1, 2, 3);
+    auto r = lua.stackIndexRange(1, 3).asResult();
+    auto a = lua.push(std::tuple(std::tuple(std::tuple(std::move(r), 4), 5), 6), 7);
+    CHECK(lua.size() == 7);
+    CHECK(a.size() == 7);
+    CHECK(a[0] == 1);
+    CHECK(a[1] == 2);
+    CHECK(a[2] == 3);
+    CHECK(a[3] == 4);
+    CHECK(a[4] == 5);
+    CHECK(a[5] == 6);
+    CHECK(a[6] == 7);
+}
 
 TEST_CASE("Lua StateBase can raise errors.", "[lua][state]") {}
 

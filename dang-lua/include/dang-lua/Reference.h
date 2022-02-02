@@ -1,6 +1,9 @@
 #pragma once
 
-#include "dang-lua/Convert.h"
+#include <cstddef>
+#include <memory>
+#include <utility>
+
 #include "dang-lua/global.h"
 
 namespace dang::lua {
@@ -80,18 +83,5 @@ private:
 /// @brief Allows for easy sharing of the same reference.
 using SharedReference = std::shared_ptr<Reference>;
 using WeakReference = std::weak_ptr<Reference>;
-
-template <typename TReference>
-struct Convert<TReference, std::enable_if_t<std::is_same_v<std::remove_cv_t<TReference>, Reference>>> {
-    static constexpr bool convertible = true;
-    static constexpr std::optional<int> push_count = 1;
-    static constexpr bool allow_nesting = true;
-
-    static void push([[maybe_unused]] lua_State* state, const Reference& reference)
-    {
-        assert(reference.state() == state);
-        reference.push();
-    }
-};
 
 } // namespace dang::lua
