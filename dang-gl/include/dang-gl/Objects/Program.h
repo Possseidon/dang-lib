@@ -48,12 +48,12 @@ inline constexpr dutils::EnumArray<ShaderType, GLenum> gl_constants<ShaderType> 
                                                                                    GL_COMPUTE_SHADER};
 
 /// @brief Human-readable names for each shader stage.
-const dutils::EnumArray<ShaderType, std::string> ShaderTypeNames{"Vertex-Shader",
-                                                                 "Fragment-Shader",
-                                                                 "Geometry-Shader",
-                                                                 "Tesselation-Control-Shader",
-                                                                 "Tesselation-Evaluation-Shader",
-                                                                 "Compute-Shader"};
+const dutils::EnumArray<ShaderType, std::string> shader_type_names{"Vertex-Shader",
+                                                                   "Fragment-Shader",
+                                                                   "Geometry-Shader",
+                                                                   "Tesselation-Control-Shader",
+                                                                   "Tesselation-Evaluation-Shader",
+                                                                   "Compute-Shader"};
 
 /// @brief Base class for shader errors with an info log.
 class ShaderError : public std::runtime_error {
@@ -68,7 +68,7 @@ class ShaderCompilationError : public ShaderError {
 public:
     /// @brief Creates an error message using the name of the shader stage, followed by the info log.
     ShaderCompilationError(ShaderType type, const std::string& info_log)
-        : ShaderError(ShaderTypeNames[type] + "\n" + info_log)
+        : ShaderError(shader_type_names[type] + "\n" + info_log)
         , type_(type)
     {}
 
