@@ -15,6 +15,8 @@
 namespace dang::utils {
 
 /// @brief An integral constant converting the given enum value to its underlying type.
+// TODO: Turn into function to be compatible with C++23 std::to_underlying
+// TODO: C++23 replace with std::to_underlying
 template <auto v>
 struct underlying_value
     : std::integral_constant<std::underlying_type_t<decltype(v)>, static_cast<std::underlying_type_t<decltype(v)>>(v)> {
