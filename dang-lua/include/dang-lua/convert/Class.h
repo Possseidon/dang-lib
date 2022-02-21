@@ -95,6 +95,9 @@ struct DefaultClassInfo {
     static std::string getCheckTypename() { return "<class>"; }
     static std::string getPushTypename() { return getCheckTypename(); }
 
+    // TODO: Even more customizable initializations:
+    //   - function -> std::function (containing reference)
+    //   - table -> std::vector/std::map/...
     static constexpr auto allow_table_initialization = false;
 
     static constexpr std::array<luaL_Reg, 0> methods() { return {}; }
