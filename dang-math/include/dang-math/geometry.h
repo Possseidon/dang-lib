@@ -449,9 +449,9 @@ struct Line<T, 3> : detail::LineBase<T, 3> {
     /// @brief Returns the factor to the point on this line, which lies closest to the given line.
     constexpr std::optional<Factor> closestFactorTo(const Line& other) const
     {
-        return Plane(this->support,
-                     typename Plane::Directions({this->direction(), this->direction().cross(other.direction())}))
-            .intersectionLineFactor(other);
+        return Plane(other.support,
+                     typename Plane::Directions({other.direction(), other.direction().cross(this->direction())}))
+            .intersectionLineFactor(*this);
     }
 
     using Base::closestPointTo;
