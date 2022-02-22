@@ -134,6 +134,13 @@ struct Vector : std::array<T, v_dim> {
         return std::sqrt(sqrdot());
     }
 
+    // @brief Sets the length of the vector, keeping its direction.
+    constexpr void setLength(T new_length)
+    {
+        static_assert(std::is_floating_point_v<T>);
+        *this *= new_length / length();
+    }
+
     /// @brief Returns a normalized version of the vector.
     constexpr auto normalize() const
     {
