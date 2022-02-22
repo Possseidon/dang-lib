@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dang-lua/State.h"
+#include "dang-lua/convert/Class.h"
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 
@@ -44,13 +45,12 @@ struct ClassInfo<dang::math::Vector<T, v_dim>> : DefaultClassInfo {
                            std::variant<T, std::optional<Vector>, std::optional<dang::math::Matrix<T, v_dim>>>,
                            std::variant<T, std::optional<Vector>>>;
 
-    static const std::string base_class_name;
-    static const std::string class_name;
+    static std::string getCheckTypename();
+    static std::string getPushTypename() { return getCheckTypename(); }
 
-    static const char* className();
-
-    static std::vector<luaL_Reg> table();
-    static std::vector<luaL_Reg> metatable();
+    static std::vector<luaL_Reg> methods();
+    static std::vector<luaL_Reg> metamethods();
+    static std::vector<Property> properties();
 
     static Arg require(StateRef& lua);
 
@@ -128,13 +128,12 @@ struct ClassInfo<dang::math::Matrix<T, v_cols, v_rows>> : DefaultClassInfo {
                            std::variant<T, std::optional<Matrix>>,
                            std::variant<T, std::optional<Matrix>, std::optional<dang::math::Matrix<T, v_cols>>>>;
 
-    static const std::string base_class_name;
-    static const std::string class_name;
+    static std::string getCheckTypename();
+    static std::string getPushTypename() { return getCheckTypename(); }
 
-    static const char* className();
-
-    static std::vector<luaL_Reg> table();
-    static std::vector<luaL_Reg> metatable();
+    static std::vector<luaL_Reg> methods();
+    static std::vector<luaL_Reg> metamethods();
+    static std::vector<Property> properties();
 
     static Arg require(StateRef& lua);
 

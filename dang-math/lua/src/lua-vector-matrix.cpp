@@ -1,53 +1,60 @@
 #include "dang-math/lua-vector-matrix.h"
 
+#include "dang-lua/convert/Boolean.h"
+#include "dang-lua/convert/CFunction.h"
+#include "dang-lua/convert/Integer.h"
+#include "dang-lua/convert/Number.h"
+#include "dang-lua/convert/Optional.h"
+#include "dang-lua/convert/String.h"
+#include "dang-lua/convert/Variant.h"
+
 #include "dang-math/lua-enums.h"
 #include "dang-utils/utils.h"
+
+namespace {
+
+template <typename T>
+auto getType(dang::lua::StateRef& lua)
+{
+    return lua.pushRequire<T>(false);
+}
+
+} // namespace
 
 namespace dang::lua {
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Vector<T, v_dim>>::base_class_name = [] {
-    using namespace std::literals;
-    if constexpr (std::is_same_v<T, float>)
-        return "vec"s;
-    else if constexpr (std::is_same_v<T, double>)
-        return "dvec"s;
-    else if constexpr (std::is_same_v<T, int>)
-        return "ivec"s;
-    else if constexpr (std::is_same_v<T, unsigned>)
-        return "uvec"s;
-    else if constexpr (std::is_same_v<T, std::size_t>)
-        return "svec"s;
-    else if constexpr (std::is_same_v<T, bool>)
-        return "bvec"s;
-    else
-        static_assert(dutils::invalid_type<T>, "unsupported vector type");
-}();
-
-template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Vector<T, v_dim>>::class_name =
-    ClassInfo<dang::math::Vector<T, v_dim>>::base_class_name + std::to_string(v_dim);
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Vector<T, v_dim>>::className()
+std::string ClassInfo<dang::math::Vector<T, v_dim>>::getCheckTypename()
 {
-    return class_name.c_str();
+    return [] {
+        using namespace std::literals;
+        if constexpr (std::is_same_v<T, float>)
+            return "vec"s;
+        else if constexpr (std::is_same_v<T, double>)
+            return "dvec"s;
+        else if constexpr (std::is_same_v<T, int>)
+            return "ivec"s;
+        else if constexpr (std::is_same_v<T, unsigned>)
+            return "uvec"s;
+        else if constexpr (std::is_same_v<T, std::size_t>)
+            return "svec"s;
+        else if constexpr (std::is_same_v<T, bool>)
+            return "bvec"s;
+        else
+            static_assert(dutils::invalid_type<T>, "unsupported vector type");
+    }() + std::to_string(v_dim);
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
+std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::methods()
 {
-    constexpr auto type = +[](StateRef& lua) { return lua.pushRequire<Vector>(false); };
-
     constexpr auto set = +[](Vector& vec, Args<v_dim> values) {
         std::transform(values.begin(), values.end(), vec.begin(), ArgCheck<T>{});
     };
-
     constexpr auto copy = +[](const Vector& vec) { return vec; };
-
     constexpr auto unpack = +[](const Vector& vec) { return unpackHelper(vec, std::make_index_sequence<v_dim>{}); };
 
-    std::vector result{reg<type>("type"),
+    std::vector result{reg<(getType<Vector>)>("getType"),
                        reg<set>("set"),
                        reg<copy>("copy"),
                        reg<unpack>("unpack"),
@@ -58,17 +65,18 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
                        reg<&Vector::equal>("equal"),
                        reg<&Vector::notEqual>("notEqual"),
                        reg<&Vector::format>("format"),
-                       reg<&Vector::mirroredSwizzle>("mirroredSwizzle")};
+                       reg<&Vector::mirroredSwizzle>("getMirroredSwizzle")};
 
     if constexpr (std::is_floating_point_v<T>) {
-        result.push_back(reg<&Vector::length>("length"));
+        result.push_back(reg<&Vector::length>("getLength"));
+        result.push_back(reg<&Vector::setLength>("setLength"));
         result.push_back(reg<&Vector::normalize>("normalize"));
         result.push_back(reg<&Vector::distanceTo>("distanceTo"));
         result.push_back(reg<&Vector::cosAngleTo>("cosAngleTo"));
         result.push_back(reg<&Vector::radiansTo>("radiansTo"));
         result.push_back(reg<&Vector::degreesTo>("degreesTo"));
-        result.push_back(reg<&Vector::radians>("radians"));
-        result.push_back(reg<&Vector::degrees>("degrees"));
+        result.push_back(reg<&Vector::radians>("getRadians"));
+        result.push_back(reg<&Vector::degrees>("getDegrees"));
         result.push_back(reg<&Vector::floor>("floor"));
         result.push_back(reg<&Vector::ceil>("ceil"));
 
@@ -77,9 +85,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
                 return other ? vec.cross(*other) : vec.cross();
             };
             result.push_back(reg<cross>("cross"));
-
-            constexpr auto slope = +[](const Vector& vec) { return vec.slope(); };
-            result.push_back(reg<slope>("slope"));
+            result.push_back(reg<&Vector::slope>("getSlope"));
         }
     }
 
@@ -90,19 +96,19 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
         result.push_back(reg<&Vector::invert>("invert"));
     }
     else {
-        result.push_back(reg<&Vector::sum>("sum"));
-        result.push_back(reg<&Vector::product>("product"));
+        result.push_back(reg<&Vector::sum>("getSum"));
+        result.push_back(reg<&Vector::product>("getProduct"));
         result.push_back(reg<&Vector::dot>("dot"));
         result.push_back(reg<&Vector::sqrdot>("sqrdot"));
         result.push_back(reg<&Vector::vectorTo>("vectorTo"));
         result.push_back(reg<&Vector::min>("min"));
         result.push_back(reg<&Vector::max>("max"));
-        result.push_back(reg<&Vector::minAxis>("minAxis"));
-        result.push_back(reg<&Vector::maxAxis>("maxAxis"));
-        result.push_back(reg<&Vector::minMaxAxis>("minMaxAxis"));
-        result.push_back(reg<&Vector::minValue>("minValue"));
-        result.push_back(reg<&Vector::maxValue>("maxValue"));
-        result.push_back(reg<&Vector::minMaxValue>("minMaxValue"));
+        result.push_back(reg<&Vector::minAxis>("getMinAxis"));
+        result.push_back(reg<&Vector::maxAxis>("getMaxAxis"));
+        result.push_back(reg<&Vector::minMaxAxis>("getMinMaxAxis"));
+        result.push_back(reg<&Vector::minValue>("getMinValue"));
+        result.push_back(reg<&Vector::maxValue>("getMaxValue"));
+        result.push_back(reg<&Vector::minMaxValue>("getMinMaxValue"));
         result.push_back(reg<&Vector::clamp>("clamp"));
         result.push_back(reg<&Vector::reflect>("reflect"));
 
@@ -112,7 +118,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
         }
 
         if constexpr (std::is_signed_v<T>) {
-            result.push_back(reg<&Vector::abs>("abs"));
+            result.push_back(reg<&Vector::abs>("getAbs"));
         }
     }
 
@@ -120,7 +126,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::table()
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
+std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metamethods()
 {
     constexpr auto len = +[](const Vector&) { return v_dim; };
 
@@ -183,6 +189,38 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Vector<T, v_dim>>::metatable()
 }
 
 template <typename T, std::size_t v_dim>
+std::vector<Property> ClassInfo<dang::math::Vector<T, v_dim>>::properties()
+{
+    std::vector<Property> result{{"type", wrap<getType<Vector>>}, {"mirroredSwizzle", wrap<&Vector::mirroredSwizzle>}};
+
+    if constexpr (std::is_floating_point_v<T>) {
+        // TODO: C++20 emplace_back works, yay
+        result.push_back({"length", wrap<&Vector::length>, wrap<&Vector::setLength>});
+        result.push_back({"radians", wrap<&Vector::radians>});
+        result.push_back({"degrees", wrap<&Vector::degrees>});
+
+        if constexpr (v_dim == 2) {
+            result.push_back({"slope", wrap<&Vector::slope>});
+        }
+    }
+
+    if constexpr (!std::is_same_v<T, bool>) {
+        result.push_back({"sum", wrap<&Vector::sum>});
+        result.push_back({"product", wrap<&Vector::product>});
+        result.push_back({"minAxis", wrap<&Vector::minAxis>});
+        result.push_back({"maxAxis", wrap<&Vector::maxAxis>});
+        result.push_back({"minValue", wrap<&Vector::minValue>});
+        result.push_back({"maxValue", wrap<&Vector::maxValue>});
+
+        if constexpr (std::is_signed_v<T>) {
+            result.push_back({"abs", wrap<&Vector::abs>});
+        }
+    }
+
+    return result;
+}
+
+template <typename T, std::size_t v_dim>
 Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](StateRef& lua, Arg, VarArgs values) {
@@ -204,7 +242,7 @@ Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(StateRef& lua)
             lua.error("0, 1 or " + std::to_string(v_dim) + " arguments expected, got " + std::to_string(values.size()));
     };
 
-    auto result = lua.pushTable();
+    auto result = lua.pushEmptyTable();
 
     if constexpr (v_dim >= 1) {
         Vector vec;
@@ -242,7 +280,7 @@ Arg ClassInfo<dang::math::Vector<T, v_dim>>::require(StateRef& lua)
         }
     }
 
-    auto result_mt = lua.pushTable();
+    auto result_mt = lua.pushEmptyTable();
     result_mt.setTable("__call", wrap<create>);
 
     result.setMetatable(std::move(result_mt));
@@ -403,32 +441,23 @@ template struct ClassInfo<dang::math::Vector<bool, 3>>;
 template struct ClassInfo<dang::math::Vector<bool, 4>>;
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-const std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::base_class_name = [] {
-    using namespace std::literals;
-    if constexpr (std::is_same_v<T, float>)
-        return "mat"s;
-    else if constexpr (std::is_same_v<T, double>)
-        return "dmat"s;
-    else
-        static_assert(dutils::invalid_type<T>, "unsupported matrix type");
-}();
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
-const std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::class_name =
-    ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::base_class_name + std::to_string(v_cols) +
-    (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
-
-template <typename T, std::size_t v_cols, std::size_t v_rows>
-const char* ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::className()
+std::string ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::getCheckTypename()
 {
-    return class_name.c_str();
+    return [] {
+        using namespace std::literals;
+        if constexpr (std::is_same_v<T, float>)
+            return "mat"s;
+        else if constexpr (std::is_same_v<T, double>)
+            return "dmat"s;
+        else
+            static_assert(dutils::invalid_type<T>, "unsupported matrix type");
+    }() + std::to_string(v_cols) +
+           (v_cols != v_rows ? 'x' + std::to_string(v_rows) : "");
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
+std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::methods()
 {
-    constexpr auto type = +[](StateRef& lua) { return lua.pushRequire<Matrix>(false); };
-
     constexpr auto set = +[](Matrix& mat, Args<v_cols> values) {
         std::transform(values.begin(), values.end(), mat.begin(), ArgCheck<dang::math::Vector<T, v_rows>>{});
     };
@@ -453,10 +482,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
 
     constexpr auto cofactor = +[](StateRef& lua, const Matrix& mat, dang::math::svec2 pos) {
         checkRange(lua, pos, 2, 2);
-        return mat.cofactor(pos);
+        return mat.cofactor(pos - 1);
     };
 
-    std::vector result{reg<type>("type"),
+    std::vector result{reg<getType<Matrix>>("getType"),
                        reg<set>("set"),
                        reg<copy>("copy"),
                        reg<get_at>("getAt"),
@@ -465,10 +494,10 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
                        reg<&Matrix::transpose>("transpose"),
                        reg<cofactor_at>("cofactorAt"),
                        reg<cofactor>("cofactor"),
-                       reg<&Matrix::cofactorMatrix>("cofactorMatrix"),
-                       reg<&Matrix::adjugate>("adjugate"),
-                       reg<&Matrix::determinant>("determinant"),
-                       reg<&Matrix::solvable>("solvable"),
+                       reg<&Matrix::cofactorMatrix>("getCofactorMatrix"),
+                       reg<&Matrix::adjugate>("getAdjugate"),
+                       reg<&Matrix::determinant>("getDeterminant"),
+                       reg<&Matrix::solvable>("isSolvable"),
                        reg<&Matrix::compMul>("compMul"),
                        reg<&Matrix::compDiv>("compDiv")};
 
@@ -487,7 +516,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
     }
 
     if constexpr (v_cols == v_rows) {
-        result.push_back(reg<&Matrix::inverse>("inverse"));
+        result.push_back(reg<&Matrix::inverse>("getInverse"));
 
         constexpr auto solve_col =
             +[](StateRef& lua, Matrix& mat, std::size_t col, const dang::math::Vector<T, v_cols>& vec) {
@@ -503,7 +532,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::table()
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
-std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatable()
+std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metamethods()
 {
     constexpr auto add = +[](const MatrixOrScalar& lhs, const MatrixOrScalar& rhs) {
         return std::visit([](const auto& a, const auto& b) -> MatrixOrScalar { return a + b; }, lhs, rhs);
@@ -551,6 +580,22 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::metatabl
 }
 
 template <typename T, std::size_t v_cols, std::size_t v_rows>
+std::vector<Property> ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::properties()
+{
+    std::vector<Property> result{{"type", wrap<getType<Matrix>>},
+                                 {"cofactorMatrix", wrap<&Matrix::cofactorMatrix>},
+                                 {"adjugate", wrap<&Matrix::adjugate>},
+                                 {"determinant", wrap<&Matrix::determinant>},
+                                 {"solvable", wrap<&Matrix::solvable>}};
+
+    if constexpr (v_cols == v_rows) {
+        result.push_back({"inverse", wrap<&Matrix::inverse>});
+    }
+
+    return result;
+}
+
+template <typename T, std::size_t v_cols, std::size_t v_rows>
 Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(StateRef& lua)
 {
     constexpr auto create = +[](StateRef& lua, Arg, VarArgs values) {
@@ -572,10 +617,10 @@ Arg ClassInfo<dang::math::Matrix<T, v_cols, v_rows>>::require(StateRef& lua)
     constexpr auto identity =
         +[](std::optional<T> value) { return value ? Matrix::identity(*value) : Matrix::identity(); };
 
-    auto result = lua.pushTable();
+    auto result = lua.pushEmptyTable();
     result.setTable("identity", wrap<identity>);
 
-    auto result_mt = lua.pushTable();
+    auto result_mt = lua.pushEmptyTable();
     result_mt.setTable("__call", wrap<create>);
 
     result.setMetatable(std::move(result_mt));

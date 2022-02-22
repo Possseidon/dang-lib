@@ -1,66 +1,128 @@
 #pragma once
 
-#include "dang-lua/Convert.h"
+#include "dang-lua/convert/Enum.h"
 #include "dang-math/enums.h"
 
 namespace dang::lua {
 
 template <>
-inline constexpr const char* enum_values<dang::math::Axis1>[2] = {"x"};
+struct EnumInfo<dang::math::Axis1> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Axis1"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
 
-template <>
-inline constexpr const char* enum_values<dang::math::Axis2>[3] = {"x", "y"};
-
-template <>
-inline constexpr const char* enum_values<dang::math::Axis3>[4] = {"x", "y", "z"};
-
-template <>
-inline constexpr const char* enum_values<dang::math::Axis4>[5] = {"x", "y", "z", "w"};
-
-template <>
-inline constexpr const char* enum_values<dang::math::Corner1>[3] = {"left", "right"};
-
-template <>
-inline constexpr const char* enum_values<dang::math::Corner2>[5] = {"leftBottom", "rightBottom", "leftTop", "rightTop"};
-
-template <>
-inline constexpr const char* enum_values<dang::math::Corner3>[9] = {
-    "leftBottomBack",
-    "rightBottomBack",
-    "leftTopBack",
-    "rightTopBack",
-    "leftBottomFront",
-    "rightBottomFront",
-    "leftTopFront",
-    "rightTopFront",
+    static constexpr const char* values[2]{"x"};
 };
 
 template <>
-inline constexpr const char* enum_values<dang::math::Edge2>[5] = {"left", "right", "bottom", "top"};
+struct EnumInfo<dang::math::Axis2> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Axis2"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
 
-template <>
-inline constexpr const char* enum_values<dang::math::Edge3>[13] = {
-    "leftBottom",
-    "rightBottom",
-    "leftTop",
-    "rightTop",
-    "bottomBack",
-    "topBack",
-    "bottomFront",
-    "topFront",
-    "leftFront",
-    "rightFront",
-    "leftBack",
-    "rightBack",
+    static constexpr const char* values[3]{"x", "y"};
 };
 
 template <>
-inline constexpr const char* enum_values<dang::math::Facing1>[3] = {"left", "right"};
+struct EnumInfo<dang::math::Axis3> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Axis3"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[4]{"x", "y", "z"};
+};
 
 template <>
-inline constexpr const char* enum_values<dang::math::Facing2>[5] = {"left", "right", "up", "down"};
+struct EnumInfo<dang::math::Axis4> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Axis4"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[5]{"x", "y", "z", "w"};
+};
 
 template <>
-inline constexpr const char* enum_values<dang::math::Facing3>[7] = {"left", "right", "up", "down", "back", "front"};
+struct EnumInfo<dang::math::Corner1> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Corner1"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[3]{"left", "right"};
+};
+
+template <>
+struct EnumInfo<dang::math::Corner2> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Corner2"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[5]{"leftBottom", "rightBottom", "leftTop", "rightTop"};
+};
+
+template <>
+struct EnumInfo<dang::math::Corner3> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Corner3"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[9]{
+        "leftBottomBack",
+        "rightBottomBack",
+        "leftTopBack",
+        "rightTopBack",
+        "leftBottomFront",
+        "rightBottomFront",
+        "leftTopFront",
+        "rightTopFront",
+    };
+};
+
+template <>
+struct EnumInfo<dang::math::Edge2> : DefaultEnumInfo {
+    static constexpr auto specialized = true;
+
+    static std::string getCheckTypename() { return "Edge2"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[5]{"left", "right", "bottom", "top"};
+};
+
+template <>
+struct EnumInfo<dang::math::Edge3> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Edge3"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[13]{
+        "leftBottom",
+        "rightBottom",
+        "leftTop",
+        "rightTop",
+        "bottomBack",
+        "topBack",
+        "bottomFront",
+        "topFront",
+        "leftFront",
+        "rightFront",
+        "leftBack",
+        "rightBack",
+    };
+};
+
+template <>
+struct EnumInfo<dang::math::Facing1> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Facing1"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[3]{"left", "right"};
+};
+
+template <>
+struct EnumInfo<dang::math::Facing2> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Facing2"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[5]{"left", "right", "up", "down"};
+};
+
+template <>
+struct EnumInfo<dang::math::Facing3> : DefaultEnumInfo {
+    static std::string getCheckTypename() { return "Facing3"; }
+    static std::string getPushTypename() { return getCheckTypename(); }
+
+    static constexpr const char* values[7]{"left", "right", "up", "down", "back", "front"};
+};
 
 } // namespace dang::lua
