@@ -1434,24 +1434,6 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
     // lua.remove();
 }
 
-TEST_CASE("Testing")
-{
-    auto lua = dlua::State();
-
-    auto x = lua(1, 2, 3);
-    auto r = lua.stackIndexRange(1, 3).asResult();
-    auto a = lua.push(std::tuple(std::tuple(std::tuple(std::move(r), 4), 5), 6), 7);
-    CHECK(lua.size() == 7);
-    CHECK(a.size() == 7);
-    CHECK(a[0] == 1);
-    CHECK(a[1] == 2);
-    CHECK(a[2] == 3);
-    CHECK(a[3] == 4);
-    CHECK(a[4] == 5);
-    CHECK(a[5] == 6);
-    CHECK(a[6] == 7);
-}
-
 TEST_CASE("Lua StateBase can raise errors.", "[lua][state]") {}
 
 TEST_CASE("Lua StateBase can compile Lua code.", "[lua][state]") {}
