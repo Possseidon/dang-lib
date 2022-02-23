@@ -1203,6 +1203,42 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
             CHECK(lua.to<int>(-2) == 3);
             CHECK(lua.to<int>(-1) == 4);
         }
+        SECTION("Pushing tuples with stack indices.")
+        {
+            auto tuple = std::tuple{lua(1)};
+            auto indices = lua.push(tuple);
+            CHECK(indices.first() == initial_size + 2);
+            CHECK(indices.last() == initial_size + 2);
+
+            CHECK(lua.size() == initial_size + 2);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing moved tuples with stack indices.")
+        {
+            auto tuple = std::tuple{lua(1)};
+            auto indices = lua.push(std::move(tuple));
+            CHECK(indices.first() == initial_size + 1);
+            CHECK(indices.last() == initial_size + 1);
+
+            CHECK(lua.size() == initial_size + 1);
+            CHECK(lua.to<int>(-1) == 1);
+        }
+        SECTION("Pushing arbitrarily nested moved tuples with stack indices.")
+        {
+            auto index1 = lua(1);
+            auto index2 = lua(2);
+            auto index3 = lua(3);
+            auto tuple = std::tuple{index2, std::tuple{index3, 4}};
+            auto indices = lua.push(std::move(index1), std::move(tuple));
+            CHECK(indices.first() == initial_size + 1);
+            CHECK(indices.last() == initial_size + 4);
+
+            CHECK(lua.size() == initial_size + 4);
+            CHECK(lua.to<int>(-4) == 1);
+            CHECK(lua.to<int>(-3) == 2);
+            CHECK(lua.to<int>(-2) == 3);
+            CHECK(lua.to<int>(-1) == 4);
+        }
     }
     SECTION("Values can be pushed using the call operator.")
     {
@@ -1422,12 +1458,7 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
         }
     }
 
-    // TODO: Why are indices not nestable inside tuples?
-
     // TODO:
-    // lua.pushThread();
-    // lua.pushNew<>();
-    // lua.pushFunction();
     // lua.pushGlobalTable();
     // lua.replace();
     // lua.pop();
