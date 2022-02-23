@@ -199,7 +199,7 @@ TEMPLATE_LIST_TEST_CASE("Convert can push integers.", "[lua][convert][integer][p
     using Convert = dlua::Convert<TestType>;
 
     constexpr bool is_uint64 = std::is_same_v<Integer, std::uint64_t>;
-    constexpr auto max_value = std::numeric_limits<Integer>::max();
+    [[maybe_unused]] constexpr auto max_value = std::numeric_limits<Integer>::max();
 
     SECTION("It can be pushed as a single value and has a typename.")
     {

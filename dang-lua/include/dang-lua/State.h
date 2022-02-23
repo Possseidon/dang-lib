@@ -3821,7 +3821,7 @@ private:
 
     /// @brief Returns a suggested array hint to use when creating a table from a range.
     template <typename TIter>
-    constexpr auto getTableHint(TIter first, TIter last)
+    constexpr auto getTableHint([[maybe_unused]] TIter first, [[maybe_unused]] TIter last)
     {
         if constexpr (std::is_convertible_v<typename std::iterator_traits<TIter>::iterator_category,
                                             std::random_access_iterator_tag>) {
