@@ -1,12 +1,6 @@
 #include "dang-math/lua-vector-matrix.h"
 
-#include "dang-lua/convert/Boolean.h"
-#include "dang-lua/convert/CFunction.h"
-#include "dang-lua/convert/Integer.h"
-#include "dang-lua/convert/Number.h"
-#include "dang-lua/convert/Optional.h"
-#include "dang-lua/convert/String.h"
-#include "dang-lua/convert/Variant.h"
+#include "dang-lua/Convert.h"
 
 #include "dang-math/lua-enums.h"
 #include "dang-utils/utils.h"

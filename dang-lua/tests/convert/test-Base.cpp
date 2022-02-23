@@ -1,4 +1,4 @@
-#include "dang-lua/convert/Base.h"
+#include "dang-lua/Convert.h"
 
 #include "catch.hpp"
 

@@ -3,7 +3,7 @@
 #include <string_view>
 #include <tuple>
 
-#include "dang-lua/convert/String.h"
+#include "dang-lua/Convert.h"
 
 #include "catch2/catch.hpp"
 #include "shared/LuaState.h"

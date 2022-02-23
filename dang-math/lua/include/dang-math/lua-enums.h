@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dang-lua/convert/Enum.h"
+#include "dang-lua/Convert.h"
 #include "dang-math/enums.h"
 
 namespace dang::lua {

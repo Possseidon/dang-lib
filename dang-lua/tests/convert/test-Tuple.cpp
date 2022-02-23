@@ -4,9 +4,7 @@
 #include <tuple>
 #include <utility>
 
-#include "dang-lua/convert/Integer.h"
-#include "dang-lua/convert/String.h"
-#include "dang-lua/convert/Tuple.h"
+#include "dang-lua/Convert.h"
 
 #include "dang-utils/utils.h"
 

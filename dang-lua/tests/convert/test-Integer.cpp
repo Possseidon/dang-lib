@@ -4,7 +4,7 @@
 #include <string>
 #include <type_traits>
 
-#include "dang-lua/convert/Integer.h"
+#include "dang-lua/Convert.h"
 
 #include "dang-utils/utils.h"
 

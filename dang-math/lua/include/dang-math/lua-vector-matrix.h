@@ -1,7 +1,7 @@
 #pragma once
 
+#include "dang-lua/Convert.h"
 #include "dang-lua/State.h"
-#include "dang-lua/convert/Class.h"
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 

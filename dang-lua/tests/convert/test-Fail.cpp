@@ -1,4 +1,4 @@
-#include "dang-lua/convert/Fail.h"
+#include "dang-lua/Convert.h"
 
 #include "catch2/catch.hpp"
 #include "shared/LuaState.h"

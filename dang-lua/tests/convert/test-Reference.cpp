@@ -1,9 +1,8 @@
 #include <tuple>
 #include <utility>
 
+#include "dang-lua/Convert.h"
 #include "dang-lua/Reference.h"
-#include "dang-lua/convert/Reference.h"
-#include "dang-lua/convert/Tuple.h"
 
 #include "catch.hpp"
 #include "shared/LuaState.h"

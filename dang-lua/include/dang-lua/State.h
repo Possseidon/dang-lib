@@ -3,14 +3,10 @@
 // TODO: #include <std>
 
 #include "dang-lua/Allocator.h"
+#include "dang-lua/Convert.h"
 #include "dang-lua/NoreturnError.h"
 #include "dang-lua/Reference.h"
 #include "dang-lua/Types.h"
-#include "dang-lua/convert/Base.h"
-#include "dang-lua/convert/Class.h"
-#include "dang-lua/convert/Fail.h"
-#include "dang-lua/convert/Nil.h"
-#include "dang-lua/convert/Tuple.h"
 #include "dang-lua/global.h"
 #include "dang-utils/utils.h"
 

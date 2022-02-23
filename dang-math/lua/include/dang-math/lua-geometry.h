@@ -1,8 +1,7 @@
 #pragma once
 
+#include "dang-lua/Convert.h"
 #include "dang-lua/State.h"
-#include "dang-lua/convert/Class.h"
-#include "dang-lua/convert/Enum.h"
 #include "dang-math/geometry.h"
 
 namespace dang::lua {

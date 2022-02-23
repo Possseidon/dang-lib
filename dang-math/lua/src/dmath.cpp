@@ -1,6 +1,6 @@
 #include "dang-math/dmath.h"
 
-#include "dang-lua/convert/String.h"
+#include "dang-lua/Convert.h"
 #include "dang-math/lua-geometry.h"
 #include "dang-math/lua-vector-matrix.h"
 
