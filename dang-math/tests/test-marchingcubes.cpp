@@ -48,7 +48,7 @@ TEMPLATE_TEST_CASE("MarchingCubes generates a valid configuration of plane infor
                     CHECK(corners.contains(point.corner));
 
                     auto corner_position = dmath::vec3(dmath::corner_vector_3[point.corner]);
-                    UNSCOPED_INFO("The point's position should that of its assigned corner.");
+                    UNSCOPED_INFO("The point's position should match its assigned corner.");
                     CHECK(point.position == corner_position);
 
                     auto opposite_position = dmath::ivec3(point.position + point.direction);
