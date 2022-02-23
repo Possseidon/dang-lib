@@ -22,6 +22,8 @@
 
 namespace dlua = dang::lua;
 
+using Catch::StartsWith;
+
 // --- Indices
 
 using StackIndexTypes = maybe_cv<dlua::StackIndex, dlua::ConstStackIndex>;
@@ -1678,4 +1680,72 @@ TEST_CASE("Lua State can be swapped.", "[lua][state]")
     CHECK(lua1.to<int>(2) == 2);
     CHECK(lua2.size() == 1);
     CHECK(lua2.to<int>(1) == 1);
+}
+
+// --- ClassInfo specializations
+
+TEST_CASE("ClassInfo is specialized for std::function.")
+{
+    dlua::State lua;
+
+    SECTION("It can be called.")
+    {
+        auto result = lua(std::function([](int x) { return x * 2; })).call<1>(21);
+        CHECK(result == 42);
+    }
+    SECTION("It has pretty formatting of all its arguments.")
+    {
+        CHECK_THAT(lua(std::function([] {})).format(), StartsWith("function(): "));
+        CHECK_THAT(lua(std::function([](int) {})).format(), StartsWith("function(integer): "));
+        CHECK_THAT(lua(std::function([] { return 0; })).format(), StartsWith("function() -> integer: "));
+        CHECK_THAT(lua(std::function([](int) { return 0; })).format(), StartsWith("function(integer) -> integer: "));
+    }
+    SECTION("Exceptions are forwarded as Lua errors")
+    {
+        auto error_message = "creative error message";
+        lua(std::function([&] { throw std::runtime_error(error_message); }))
+            .pcall<0>()
+            .then([](dlua::Args<0>) { FAIL_CHECK("Lua error expected."); },
+                  [&](const dlua::Error& error) {
+                      CHECK(error.status == dlua::Status::RuntimeError);
+                      CHECK(error.message == error_message);
+                  });
+    }
+}
+
+TEST_CASE("ClassInfo is specialized for FunctionUnsafe.")
+{
+    dlua::State lua;
+
+    SECTION("It can be called.")
+    {
+        auto result = lua(dlua::functionUnsafe([](int x) { return x * 2; })).call<1>(21);
+        CHECK(result == 42);
+    }
+    SECTION("It has pretty formatting of all its arguments.")
+    {
+        CHECK_THAT(lua(dlua::functionUnsafe([] {})).format(), StartsWith("function(): "));
+    }
+    // It makes no guarantees about exception safety; i.e. don't throw.
+}
+
+TEST_CASE("ClassInfo is specialized for FunctionReturnException.")
+{
+    dlua::State lua;
+    SECTION("It can be called.")
+    {
+        auto result = lua(dlua::functionReturnException([](int x) { return x * 2; })).call<1>(21);
+        CHECK(result == 42);
+    }
+    SECTION("It has pretty formatting of all its arguments.")
+    {
+        CHECK_THAT(lua(dlua::functionReturnException([] {})).format(), StartsWith("function(): "));
+    }
+    SECTION("Exceptions are returned as a fail value followed by the message.")
+    {
+        auto error_message = "creative error message";
+        auto result = lua(dlua::functionReturnException([&] { throw std::runtime_error(error_message); })).call<2>();
+        CHECK(result[0] == dlua::fail);
+        CHECK(result[1] == error_message);
+    }
 }
