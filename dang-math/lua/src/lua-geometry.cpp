@@ -2,7 +2,6 @@
 
 #include "dang-lua/Convert.h"
 #include "dang-lua/State.h"
-
 #include "dang-math/lua-vector-matrix.h"
 #include "dang-utils/utils.h"
 

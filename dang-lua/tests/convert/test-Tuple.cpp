@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "dang-lua/Convert.h"
-
 #include "dang-utils/utils.h"
 
 #include "catch2/catch.hpp"

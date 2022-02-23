@@ -1704,12 +1704,12 @@ TEST_CASE("ClassInfo is specialized for std::function.")
     {
         auto error_message = "creative error message";
         lua(std::function([&] { throw std::runtime_error(error_message); }))
-            .pcall<0>()
-            .then([](dlua::Args<0>) { FAIL_CHECK("Lua error expected."); },
-                  [&](const dlua::Error& error) {
-                      CHECK(error.status == dlua::Status::RuntimeError);
-                      CHECK(error.message == error_message);
-                  });
+            .pcall()
+            .map([] { FAIL("Lua error expected."); })
+            .map_error([&](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::RuntimeError);
+                CHECK(error.message == error_message);
+            });
     }
 }
 

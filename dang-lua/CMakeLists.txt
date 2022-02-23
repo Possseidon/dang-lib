@@ -6,6 +6,7 @@ dang_check_dependencies(UTILS)
 dang_include_finder(FindLua)
 
 dang_find_package(Lua REQUIRED)
+dang_find_package(tl-expected CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
@@ -25,14 +26,14 @@ target_precompile_headers(
   <memory>
   <numeric>
   <optional>
-  <string>
   <string_view>
+  <string>
   <tuple>
   <type_traits>
   <typeinfo>
   <variant>)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE dang-utils lua-cpp)
+target_link_libraries(${PROJECT_NAME} INTERFACE dang-utils lua-cpp tl::expected)
 
 target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                                                      $<INSTALL_INTERFACE:include>)

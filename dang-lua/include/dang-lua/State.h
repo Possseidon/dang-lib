@@ -10,6 +10,8 @@
 #include "dang-lua/global.h"
 #include "dang-utils/utils.h"
 
+#include "tl/expected.hpp"
+
 // TODO: More explicit about which index parameters must be positive
 
 namespace dang::lua {
@@ -1458,6 +1460,12 @@ using Args = StackIndicesResult<v_size>;
 
 using VarArgs = StackIndexRangeResult;
 
+template <int v_count>
+using CallResult = std::conditional_t<
+    v_count == 0,
+    void,
+    std::conditional_t<v_count == LUA_MULTRET, VarArgs, std::conditional_t<v_count == 1, Arg, Args<v_count>>>>;
+
 // --- State ---
 
 /// @brief Wraps the template supplied function into a Lua function in an almost cost-free way.
@@ -1525,28 +1533,8 @@ struct Error {
     StackIndexResult message;
 };
 
-template <typename TResult>
-struct Expected : std::variant<TResult, Error> {
-    using std::variant<TResult, Error>::variant;
-
-    explicit operator bool() const { return std::holds_alternative<TResult>(*this); }
-
-    template <typename TOkFunc>
-    auto then(TOkFunc&& ok_func) const
-    {
-        return then(std::forward<TOkFunc>(ok_func), [](Error) {});
-    }
-
-    template <typename TOkFunc, typename TErrFunc>
-    auto then(TOkFunc&& ok_func, TErrFunc&& err_func) const
-    {
-        return std::visit(dutils::Overloaded{
-                              [&](TResult result) { return std::forward<TOkFunc>(ok_func)(result); },
-                              [&](Error error) { return std::forward<TErrFunc>(err_func)(error); },
-                          },
-                          *this);
-    }
-};
+template <typename T>
+using Expected = tl::expected<T, Error>;
 
 struct LoadInfo {
     // TODO: Name by pointer is quite questionable.
@@ -2544,23 +2532,22 @@ public:
 
     /// @brief Compiles the given code and returns a the compilation status and depending on this either the function or
     /// error message.
-    auto load(const LoadInfo& info)
+    Expected<Arg> load(const LoadInfo& info)
     {
         assertPushableAuxiliary();
         auto status = static_cast<Status>(
             luaL_loadbufferx(state_, info.buffer.data(), info.buffer.size(), info.name, load_mode_names[info.mode]));
         notifyPush();
-        if (status == Status::Ok)
-            return Expected<Arg>{top().asResult()};
-        else
-            return Expected<Arg>{Error{status, top().asResult()}};
+        if (status != Status::Ok)
+            return tl::unexpected(Error{status, top().asResult()});
+        return top().asResult();
     }
 
     // --- Calling ---
 
     /// @brief Calls the given function with the supplied arguments and returns a template specified number of results.
     template <int v_results = 0, typename TFunc, typename... TArgs>
-    auto call(TFunc&& func, TArgs&&... args)
+    auto call(TFunc&& func, TArgs&&... args) -> CallResult<v_results>
     {
         using ConvertFunc = Convert<std::remove_reference_t<TFunc>>;
 
@@ -2580,10 +2567,15 @@ public:
             assertPushable(diff);
             lua_call(state_, arg_count, v_results);
             notifyPush(diff);
-            if constexpr (v_results == 1)
+            if constexpr (v_results == 0) {
+                return;
+            }
+            else if constexpr (v_results == 1) {
                 return top().asResult();
-            else
+            }
+            else {
                 return top<v_results>().asResult();
+            }
         }
     }
 
@@ -2615,7 +2607,7 @@ public:
     /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a
     /// template specified number of results.
     template <int v_results = 0, typename TFunc, typename... TArgs>
-    auto pcall(TFunc&& func, TArgs&&... args)
+    auto pcall(TFunc&& func, TArgs&&... args) -> Expected<CallResult<v_results>>
     {
         using ConvertFunc = Convert<std::remove_reference_t<TFunc>>;
 
@@ -2628,27 +2620,29 @@ public:
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, v_results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? lua_gettop(state_) - first_result_index : 1;
             notifyPush(results - 1 - arg_count);
-            if (status == Status::Ok)
-                return Expected<VarArgs>{top(results).asResult()};
-            else
-                return Expected<VarArgs>{Error{status, top().asResult()}};
+            if (status != Status::Ok)
+                return tl::unexpected(Error{status, top().asResult()});
+            return top(results).asResult();
         }
         else {
             assertPushable(v_results - 1 - arg_count);
             auto status = static_cast<Status>(lua_pcall(state_, arg_count, v_results, 0)); // TODO: Message Handler
             auto results = status == Status::Ok ? v_results : 1;
             notifyPush(results - 1 - arg_count);
-            if constexpr (v_results == 1) {
-                if (status == Status::Ok)
-                    return Expected<Arg>{top().asResult()};
-                else
-                    return Expected<Arg>{Error{status, top().asResult()}};
+            if constexpr (v_results == 0) {
+                if (status != Status::Ok)
+                    return tl::unexpected(Error{status, top().asResult()});
+                return {};
+            }
+            else if constexpr (v_results == 1) {
+                if (status != Status::Ok)
+                    return tl::unexpected(Error{status, top().asResult()});
+                return top().asResult();
             }
             else {
-                if (status == Status::Ok)
-                    return Expected<Args<v_results>>{top<v_results>().asResult()};
-                else
-                    return Expected<Args<v_results>>{Error{status, top().asResult()}};
+                if (status != Status::Ok)
+                    return tl::unexpected(Error{status, top().asResult()});
+                return top<v_results>().asResult();
             }
         }
     }
@@ -2664,7 +2658,7 @@ public:
     /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a
     /// specified number of results.
     template <typename TFunc, typename... TArgs>
-    auto pcallReturning(int results, TFunc&& func, TArgs&&... args)
+    auto pcallReturning(int results, TFunc&& func, TArgs&&... args) -> Expected<VarArgs>
     {
         using ConvertFunc = Convert<std::remove_reference_t<TFunc>>;
 
@@ -2679,10 +2673,9 @@ public:
         if (status != Status::Ok)
             results = 1;
         notifyPush(results - 1 - arg_count);
-        if (status == Status::Ok)
-            return Expected<VarArgs>{top(results).asResult()};
-        else
-            return Expected<VarArgs>{Error{status, top().asResult()}};
+        if (status != Status::Ok)
+            return tl::unexpected(Error{status, top().asResult()});
+        return Expected<VarArgs>{top(results).asResult()};
     }
 
     /// @brief Returns a metafield including its type, if it exists.
@@ -2721,10 +2714,8 @@ public:
     template <int v_results = 0, typename... TArgs>
     auto callString(const LoadInfo& info, TArgs&&... args)
     {
-        using E = decltype(std::declval<Arg>().pcall<v_results>());
-        return load(info).then(
-            [&](Arg function) { return E{std::move(function).call<v_results>(std::forward<TArgs>(args)...)}; },
-            [](Error error) { return E{error}; });
+        return load(info).map(
+            [&](Arg function) { return std::move(function).call<v_results>(std::forward<TArgs>(args)...); });
     }
 
     template <typename... TArgs>
@@ -2736,18 +2727,15 @@ public:
     template <typename... TArgs>
     auto callStringReturning(int results, const LoadInfo& info, TArgs&&... args)
     {
-        using E = Expected<VarArgs>;
-        return load(info).then(
-            [&](Arg function) { return E{std::move(function).callReturning(results, std::forward<TArgs>(args)...)}; },
-            [](Error error) { return E{error}; });
+        return load(info).map(
+            [&](Arg function) { return std::move(function).callReturning(results, std::forward<TArgs>(args)...); });
     }
 
     template <int v_results = 0, typename... TArgs>
     auto pcallString(const LoadInfo& info, TArgs&&... args)
     {
-        return load(info).then(
-            [&](Arg function) { return std::move(function).pcall<v_results>(std::forward<TArgs>(args)...); },
-            [](Error error) { return decltype(std::declval<Arg>().pcall<v_results>()){error}; });
+        return load(info).and_then(
+            [&](Arg function) { return std::move(function).pcall<v_results>(std::forward<TArgs>(args)...); });
     }
 
     template <typename... TArgs>
@@ -2759,9 +2747,8 @@ public:
     template <typename... TArgs>
     auto pcallStringReturning(int results, const LoadInfo& info, TArgs&&... args)
     {
-        return load(info).then(
-            [&](Arg function) { return std::move(function).pcallReturning(results, std::forward<TArgs>(args)...); },
-            [](Error error) { return Expected<VarArgs>{error}; });
+        return load(info).and_then(
+            [&](Arg function) { return std::move(function).pcallReturning(results, std::forward<TArgs>(args)...); });
     }
 
     // --- Operations ---

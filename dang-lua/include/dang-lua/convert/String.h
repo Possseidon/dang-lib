@@ -8,7 +8,6 @@
 
 #include "dang-lua/convert/Base.h"
 #include "dang-lua/global.h"
-
 #include "dang-utils/utils.h"
 
 namespace dang::lua {

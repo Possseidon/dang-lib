@@ -30,7 +30,8 @@
           "features": [
             "cpp"
           ]
-        }
+        },
+        "tl-expected"
       ]
     },
     "math": {
