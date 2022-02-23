@@ -2469,38 +2469,6 @@ public:
         return top().asResult();
     }
 
-    // TODO: Doc type erasure and stuff...
-
-    /*
-    template <typename TFunc, typename... TUpvalues>
-    auto pushFunctionUnsafe(TFunc&& func, TUpvalues&&... upvalues)
-    {
-        auto wrapped_func = std::function(func);
-        return pushFunction(wrapUnsafe<detail::WrappedFunction<decltype(wrapped_func)>::call>,
-                            std::move(wrapped_func),
-                            std::forward<TUpvalues>(upvalues)...);
-    }
-
-    template <typename TFunc, typename... TUpvalues>
-    auto pushFunction(TFunc&& func, TUpvalues&&... upvalues)
-    {
-        return push(std::function(func));
-        // auto wrapped_func = std::function(func);
-        // return pushFunction(wrap<detail::WrappedFunction<decltype(wrapped_func)>::call>,
-        // std::move(wrapped_func),
-        // std::forward<TUpvalues>(upvalues)...);
-    }
-
-    template <typename TFunc, typename... TUpvalues>
-    auto pushFunctionReturnException(TFunc&& func, TUpvalues&&... upvalues)
-    {
-        auto wrapped_func = std::function(func);
-        return pushFunction(wrapReturnException<detail::WrappedFunction<decltype(wrapped_func)>::call>,
-                            std::move(wrapped_func),
-                            std::forward<TUpvalues>(upvalues)...);
-    }
-    */
-
     /// @brief Pushes the global table on the stack.
     auto pushGlobalTable()
     {
