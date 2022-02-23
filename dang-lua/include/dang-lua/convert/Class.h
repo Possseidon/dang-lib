@@ -69,10 +69,28 @@ inline constexpr auto otherClassStoreType(ClassStoreType class_store_type)
 }
 
 /// @brief Provides a unique pointers for any given type.
-template <typename, detail::ClassStoreType>
+template <typename, ClassStoreType>
 struct UniqueClassInfo {
     static void* id() { return reinterpret_cast<void*>(&id); }
 };
+
+template <ClassStoreType, typename>
+struct class_value_store;
+
+/// @brief Values are wrapped inside an optional for non-trivial destructors.
+template <typename TClass>
+struct class_value_store<ClassStoreType::Value, TClass> {
+    using type = std::conditional_t<std::is_trivially_destructible_v<TClass>, TClass, std::optional<TClass>>;
+};
+
+/// @brief References are stored as a pointer to the object.
+template <typename TClass>
+struct class_value_store<ClassStoreType::Reference, TClass> {
+    using type = TClass*;
+};
+
+template <ClassStoreType v_store_type, typename TClass>
+using class_value_store_t = typename class_value_store<v_store_type, TClass>::type;
 
 } // namespace detail
 
@@ -122,25 +140,10 @@ struct Convert<TClass, std::enable_if_t<ClassInfo<std::remove_cv_t<TClass>>::spe
     using Info = ClassInfo<Class>;
     using StoreType = detail::ClassStoreType;
 
-    static constexpr bool trivially_destructible = std::is_trivially_destructible_v<Class>;
-
-    template <StoreType>
-    struct value_store;
-
-    /// @brief Values are wrapped inside an optional for non-trivial destructors.
-    template <>
-    struct value_store<StoreType::Value> {
-        using type = std::conditional_t<trivially_destructible, Class, std::optional<Class>>;
-    };
-
-    /// @brief References are stored as a pointer to the object.
-    template <>
-    struct value_store<StoreType::Reference> {
-        using type = Class*;
-    };
-
     template <StoreType v_store_type>
-    using value_store_t = typename value_store<v_store_type>::type;
+    using value_store_t = detail::class_value_store_t<v_store_type, Class>;
+
+    static constexpr bool trivially_destructible = std::is_trivially_destructible_v<Class>;
 
     static constexpr bool can_check = true;
     static constexpr std::optional<int> check_count = 1;
