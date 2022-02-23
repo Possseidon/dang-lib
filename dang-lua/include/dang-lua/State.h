@@ -5043,15 +5043,15 @@ inline constexpr auto any_index_v = any_index<TArgs...>::value;
 
 /// @brief Whether all arguments are checkable using Convert.
 template <typename... TArgs>
-struct all_checkable : std::conjunction<convert_can_check<TArgs>...> {};
+struct all_pushable : std::conjunction<convert_can_push<TArgs>...> {};
 
 template <typename... TArgs>
-inline constexpr auto all_checkable_v = all_checkable<TArgs...>::value;
+inline constexpr auto all_pushable_v = all_pushable<TArgs...>::value;
 
-/// @brief If any index type is present and the other types are checkable using Convert.
+/// @brief If any index type is present and the other types are pushable using Convert.
 template <typename... TArgs>
 inline constexpr auto op_arguments_valid = (any_index_v<std::remove_reference_t<TArgs>...> &&
-                                            all_checkable_v<std::remove_reference_t<TArgs>...>);
+                                            all_pushable_v<std::remove_reference_t<TArgs>...>);
 // Parentheses above are just for formatting...
 
 /// @brief Enable-if for arithmetic operations.
