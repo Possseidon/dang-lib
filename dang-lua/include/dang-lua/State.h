@@ -2226,7 +2226,8 @@ public:
     /// @brief Ensures, that an auxiliary library function can be called, returning false if it can't.
     void ensurePushableAuxiliary() const { ensurePushable(auxiliary_required_pushable); }
 
-    // --- Push and Pop ---
+private:
+    // --- Push and Pop Tuple Helper ---
 
     template <std::size_t v_index, typename TFirst, typename... TRest>
     static constexpr std::optional<std::size_t> findFirstTupleHelper()
@@ -2249,7 +2250,7 @@ public:
     }
 
     template <typename... TBefore>
-    struct pushUnpackTupleSkip {
+    struct PushUnpackTupleSkip {
         StateBase& lua;
 
         template <typename TTuple, typename... TAfter, std::size_t... v_indices>
@@ -2269,10 +2270,13 @@ public:
                             std::forward<TFirst>(first),
                             std::forward<TRest>(rest)...);
             else
-                return pushUnpackTupleSkip<TBefore..., TFirst>{lua}.template pushSkip<v_skip - 1>(
+                return PushUnpackTupleSkip<TBefore..., TFirst>{lua}.template pushSkip<v_skip - 1>(
                     std::forward<TBefore>(before)..., std::forward<TFirst>(first), std::forward<TRest>(rest)...);
         }
     };
+
+public:
+    // --- Push and Pop ---
 
     /// @brief Uses the Convert template to push all given values on the stack and returns a wrapper to them.
     /// @remark Automatically ignores all rvalue stack indices if possible.
@@ -2281,7 +2285,7 @@ public:
     {
         constexpr auto first_tuple_index = findFirstTuple<std::remove_reference_t<TValues>...>();
         if constexpr (first_tuple_index) {
-            return pushUnpackTupleSkip<>{*this}.pushSkip<*first_tuple_index>(std::forward<TValues>(values)...);
+            return PushUnpackTupleSkip<>{*this}.pushSkip<*first_tuple_index>(std::forward<TValues>(values)...);
         }
         else {
             constexpr auto constexpr_push_count = combined_push_count<std::remove_reference_t<TValues>...>;
@@ -3823,8 +3827,7 @@ private:
                                             std::random_access_iterator_tag>) {
             constexpr auto max = std::numeric_limits<int>::max();
             auto size = std::distance(first, last);
-            // TODO: This comparison/casting seems odd...
-            return size < max ? int(size) : max;
+            return size < max ? static_cast<int>(size) : max;
         }
         else
             return 0;
