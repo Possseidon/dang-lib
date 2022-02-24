@@ -1465,9 +1465,60 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
         CHECK(index.index() == 1);
         CHECK(index.type() == dlua::Type::Table);
     }
+    SECTION("Stack values can be replaced with other values.")
+    {
+        auto index1 = lua(1);
+        auto index2 = lua(2);
+
+        SECTION("Replacing an index with itself.")
+        {
+            lua.replace(1, index1);
+            CHECK(lua.size() == 2);
+            CHECK(index1 == 1);
+            CHECK(index2 == 2);
+        }
+        SECTION("Replacing the top index with a new value.")
+        {
+            lua.replace(2, 3);
+            CHECK(lua.size() == 2);
+            CHECK(index1 == 1);
+            CHECK(index2 == 3);
+        }
+        SECTION("Replacing an index with another index.")
+        {
+            auto index3 = lua(3);
+            lua.replace(1, index3);
+            CHECK(lua.size() == 3);
+            CHECK(index1 == 3);
+            CHECK(index2 == 2);
+            CHECK(index3 == 3);
+        }
+        SECTION("Replacing an index with a moved index.")
+        {
+            auto index3 = lua(3);
+            lua.replace(1, std::move(index3));
+            CHECK(lua.size() == 2);
+            CHECK(index1 == 3);
+            CHECK(index2 == 2);
+        }
+        SECTION("Replacing an index with a moved index that isn't at the top of the stack.")
+        {
+            auto index3 = lua(3);
+            lua.replace(1, std::move(index2));
+            CHECK(lua.size() == 3);
+            CHECK(index1 == 2);
+            CHECK(index3 == 3);
+        }
+        SECTION("Replacing an index with a new value.")
+        {
+            lua.replace(1, 3);
+            CHECK(lua.size() == 2);
+            CHECK(index1 == 3);
+            CHECK(index2 == 2);
+        }
+    }
 
     // TODO:
-    // lua.replace();
     // lua.pop();
     // lua.remove();
 }
