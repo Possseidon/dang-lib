@@ -1542,7 +1542,42 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
     }
 }
 
-TEST_CASE("Lua StateBase can raise errors.", "[lua][state]") {}
+TEST_CASE("Lua StateBase can raise errors.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    SECTION("Errors can be raised with any value.")
+    {
+        lua(std::function([](dlua::StateRef& lua) { lua.error(42); }))
+            .pcall()
+            .map([] { FAIL("Lua error expected."); })
+            .map_error([](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::RuntimeError);
+                CHECK(error.message == 42);
+            });
+    }
+    SECTION("Argument errors can be raised.")
+    {
+        lua(std::function([](dlua::StateRef& lua) { lua.argError(1, "creative error message"); }))
+            .pcall()
+            .map([] { FAIL("Lua error expected."); })
+            .map_error([](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::RuntimeError);
+                CHECK(error.message == "bad argument #1 to '?' (creative error message)");
+            });
+    }
+    SECTION("Type errors can be raised.")
+    {
+        lua(std::function([](dlua::StateRef& lua) { lua.typeError(1, "foo"); }))
+            .pcall()
+            .map([] { FAIL("Lua error expected."); })
+            .map_error([](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::RuntimeError);
+                CHECK(error.message == "bad argument #1 to '?' (foo expected, got function())");
+                // Since std::function is wrapped as userdata, the first argument to __call is always self.
+            });
+    }
+}
 
 TEST_CASE("Lua StateBase can compile Lua code.", "[lua][state]") {}
 
