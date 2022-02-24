@@ -618,13 +618,7 @@ public:
     template <typename T>
     auto& replace(T&& value) const
     {
-        if (isTop()) {
-            this->state().pop();
-            this->state().push(std::forward<T>(value));
-        }
-        else {
-            this->state().replace(index(), std::forward<T>(value));
-        }
+        this->state().replace(index(), std::forward<T>(value));
         return *this;
     }
 
@@ -2473,25 +2467,37 @@ public:
     }
 
     /// @brief Replaces the given positive index with a single value.
-    template <typename TIndex, typename TValue>
-    void replace(TIndex&& index, TValue&& value)
+    template <typename TValue>
+    void replace(int index, TValue&& value)
     {
         using ConvertValue = Convert<std::remove_reference_t<TValue>>;
 
         static_assert(ConvertValue::push_count == 1, "Supplied value must take up a single stack position.");
-        static_assert(is_index_v<std::remove_reference_t<TIndex>>, "Supplied index must be an index.");
+
+        assert(isPositiveStack(index));
 
         if constexpr (is_index_v<std::remove_reference_t<TValue>>) {
-            assertPushable();
-            lua_copy(state_, value.index(), index.index());
-            if constexpr (is_any_moved_stack_index_result_v<TValue&&>)
+            if (value.index() == index)
+                return;
+        }
+
+        if (isIndexTop(index)) {
+            lua_pop(state_, 1);
+            ConvertValue::push(state_, std::forward<TValue>(value));
+            return;
+        }
+
+        if constexpr (is_index_v<std::remove_reference_t<TValue>>) {
+            lua_copy(state_, value.index(), index);
+            if constexpr (is_any_moved_stack_index_result_v<TValue&&>) {
                 if (value.isTop())
                     pop();
+            }
         }
         else {
             assertPushable();
             ConvertValue::push(state_, std::forward<TValue>(value));
-            lua_replace(state_, index.index());
+            lua_replace(state_, index);
         }
     }
 
