@@ -1465,6 +1465,21 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
         CHECK(index.index() == 1);
         CHECK(index.type() == dlua::Type::Table);
     }
+    SECTION("Stack values can be popped from the stack.")
+    {
+        lua.push(1, 2, 3);
+
+        SECTION("By default, a single value is popped from the stack.")
+        {
+            lua.pop();
+            CHECK(lua.size() == 2);
+        }
+        SECTION("As many values as specified are popped from the stack.")
+        {
+            lua.pop(2);
+            CHECK(lua.size() == 1);
+        }
+    }
     SECTION("Stack values can be replaced with other values.")
     {
         auto index1 = lua(1);
@@ -1517,10 +1532,14 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
             CHECK(index2 == 2);
         }
     }
-
-    // TODO:
-    // lua.pop();
-    // lua.remove();
+    SECTION("Stack values can be removed from the stack.")
+    {
+        lua.push(1, 2, 3);
+        lua.remove(1);
+        CHECK(lua.size() == 2);
+        CHECK(lua.stackIndex(1) == 2);
+        CHECK(lua.stackIndex(2) == 3);
+    }
 }
 
 TEST_CASE("Lua StateBase can raise errors.", "[lua][state]") {}
