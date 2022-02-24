@@ -1554,17 +1554,17 @@ struct AnyChunk {
 /// @brief Wraps a chunk of Lua code.
 using Chunk = std::variant<TextChunk, BinaryChunk, AnyChunk>;
 
-inline auto chunkContent(const Chunk& chunk)
+constexpr auto chunkContent(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.content; }, chunk);
 }
 
-inline auto chunkName(const Chunk& chunk)
+constexpr auto chunkName(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.name; }, chunk);
 }
 
-inline auto chunkLoadMode(const Chunk& chunk)
+constexpr auto chunkLoadMode(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.load_mode; }, chunk);
 }
@@ -4071,19 +4071,19 @@ inline int wrapReturnException(lua_State* state)
 }
 
 template <auto v_func, typename TCovariantClass>
-inline constexpr luaL_Reg regUnsafe(const char* name)
+constexpr luaL_Reg regUnsafe(const char* name)
 {
     return {name, wrapUnsafe<v_func, TCovariantClass>};
 }
 
 template <auto v_func, typename TCovariantClass>
-inline constexpr luaL_Reg reg(const char* name)
+constexpr luaL_Reg reg(const char* name)
 {
     return {name, wrap<v_func, TCovariantClass>};
 }
 
 template <auto v_func, typename TCovariantClass>
-inline constexpr luaL_Reg regReturnException(const char* name)
+constexpr luaL_Reg regReturnException(const char* name)
 {
     return {name, wrapReturnException<v_func, TCovariantClass>};
 }
@@ -4111,25 +4111,25 @@ inline int wrapSet(lua_State* state)
 }
 
 template <auto v_field, typename TCovariantClass>
-inline constexpr luaL_Reg regSetUnsafe(const char* name)
+constexpr luaL_Reg regSetUnsafe(const char* name)
 {
     return {name, wrapSetUnsafe<v_field, TCovariantClass>};
 }
 
 template <auto v_field, typename TCovariantClass>
-inline constexpr luaL_Reg regSet(const char* name)
+constexpr luaL_Reg regSet(const char* name)
 {
     return {name, wrapSet<v_field, TCovariantClass>};
 }
 
 template <auto v_field, typename TCovariantClass>
-inline constexpr Property fieldUnsafe(const char* name)
+constexpr Property fieldUnsafe(const char* name)
 {
     return {name, wrapUnsafe<v_field, TCovariantClass>, wrapSetUnsafe<v_field, TCovariantClass>};
 }
 
 template <auto v_field, typename TCovariantClass>
-inline constexpr Property field(const char* name)
+constexpr Property field(const char* name)
 {
     return {name, wrap<v_field, TCovariantClass>, wrapSet<v_field, TCovariantClass>};
 }
