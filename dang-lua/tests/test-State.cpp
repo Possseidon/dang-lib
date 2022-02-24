@@ -1459,9 +1459,14 @@ TEST_CASE("Lua StateBase can push elements onto the stack and replace or remove 
             CHECK(result[2] == 3);
         }
     }
+    SECTION("The global table can be pushed.")
+    {
+        auto index = lua.pushGlobalTable();
+        CHECK(index.index() == 1);
+        CHECK(index.type() == dlua::Type::Table);
+    }
 
     // TODO:
-    // lua.pushGlobalTable();
     // lua.replace();
     // lua.pop();
     // lua.remove();
