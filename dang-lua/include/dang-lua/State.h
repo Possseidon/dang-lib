@@ -552,6 +552,11 @@ public:
 
     [[noreturn]] void typeError(const std::string& type_name) { this->state().typeError(index(), type_name); }
 
+    // --- Compiling ---
+
+    /// @brief Dumps the given function into a binary chunk.
+    auto dump(bool strip = false) { return this->state().dump(index(), strip); }
+
     // --- Calling ---
 
     /// @brief Calls the element with an arbitrary number of arguments, returning a fixed number of results.
@@ -2553,7 +2558,7 @@ public:
 
     // --- Compiling ---
 
-    /// @brief Compiles the given chunk and returns it.
+    /// @brief Compiles the given chunk and pushes it on the stack.
     Expected<Arg> load(const Chunk& chunk)
     {
         assertPushableAuxiliary();
@@ -2564,6 +2569,30 @@ public:
         if (status != Status::Ok)
             return tl::unexpected(Error{status, top().asResult()});
         return top().asResult();
+    }
+
+    /// @brief Dumps the given function into a binary chunk.
+    std::string dump(int index, bool strip = false)
+    {
+        auto writer = [](lua_State*, const void* data, std::size_t size, void* chunk) {
+            *static_cast<std::string*>(chunk) += std::string_view(static_cast<const char*>(data), size);
+            return 0;
+        };
+
+        auto is_top = isIndexTop(index);
+        if (!is_top) {
+            assertPushable();
+            lua_pushvalue(state_, index);
+        }
+
+        std::string chunk;
+        lua_dump(state_, writer, &chunk, strip);
+
+        if (!is_top)
+            lua_pop(state_, 1);
+
+        chunk.shrink_to_fit();
+        return chunk;
     }
 
     // --- Calling ---
