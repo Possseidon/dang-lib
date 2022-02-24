@@ -1579,7 +1579,75 @@ TEST_CASE("Lua StateBase can raise errors.", "[lua][state]")
     }
 }
 
-TEST_CASE("Lua StateBase can compile Lua code.", "[lua][state]") {}
+TEST_CASE("Lua StateBase can compile and dump Lua code.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    auto text_chunk_content = "return 42";
+    auto binary_chunk_content = [&] {
+        auto stack = dlua::ScopedStack(lua);
+        return lua.load(dlua::TextChunk{text_chunk_content}).value().dump();
+    }();
+
+    SECTION("Text chunks can be compiled.")
+    {
+        auto function = lua.load(dlua::TextChunk{text_chunk_content}).value();
+        CHECK(function.call<1>() == 42);
+    }
+    SECTION("Chunks can be named.")
+    {
+        auto function = lua.load(dlua::TextChunk{"", "foo"}).value();
+        CHECK(function.getFunctionInfo<dlua::DebugInfoSource>().source == "foo");
+    }
+    SECTION("Binary chunks can be loaded.")
+    {
+        auto function = lua.load(dlua::BinaryChunk{binary_chunk_content}).value();
+        CHECK(function.call<1>() == 42);
+    }
+    SECTION("Text chunks cannot load binary content.")
+    {
+        lua.load(dlua::TextChunk{binary_chunk_content})
+            .map([](auto) { FAIL("Lua error expected."); })
+            .map_error([](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::SyntaxError);
+                CHECK(error.message == "attempt to load a binary chunk (mode is 't')");
+            });
+    }
+    SECTION("Binary chunks cannot load text content.")
+    {
+        lua.load(dlua::BinaryChunk{text_chunk_content})
+            .map([](auto) { FAIL("Lua error expected."); })
+            .map_error([](const dlua::Error& error) {
+                CHECK(error.status == dlua::Status::SyntaxError);
+                CHECK(error.message == "attempt to load a text chunk (mode is 'b')");
+            });
+    }
+    SECTION("When loading a chunk, Lua can automatically detect whether it is text or binary.")
+    {
+        SECTION("Loading a text chunk.")
+        {
+            auto function = lua.load(dlua::AnyChunk{text_chunk_content}).value();
+            CHECK(function.call<1>() == 42);
+        }
+        SECTION("Loading a binary chunk.")
+        {
+            auto function = lua.load(dlua::AnyChunk{binary_chunk_content}).value();
+            CHECK(function.call<1>() == 42);
+        }
+    }
+    SECTION("Functions can be dumped even when they aren't on the top of the stack.")
+    {
+        // Regular dump is already checked via binary_chunk_content.
+        // However, lua_dump can only dump the function on the top of the stack.
+        // This implementation supports dump on any index as shown:
+
+        lua.load(dlua::TextChunk{text_chunk_content});
+        lua.push(1);
+
+        CHECK(lua.dump(1) == binary_chunk_content);
+        CHECK(lua.size() == 2);
+    }
+}
 
 TEST_CASE("Lua StateBase can call functions.", "[lua][state]") {}
 
