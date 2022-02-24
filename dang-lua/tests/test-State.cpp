@@ -839,7 +839,7 @@ TEST_CASE("Lua StateBase can do queries on the Lua stack.", "[lua][state]")
         }
         SECTION("A Lua function.")
         {
-            lua.load("");
+            lua.load(dlua::TextChunk{""});
             CHECK(lua.type(1) == dlua::Type::Function);
             CHECK(lua.typeName(1) == "function");
             CHECK_FALSE(lua.isNone(1));
