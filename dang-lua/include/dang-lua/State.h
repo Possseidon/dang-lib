@@ -1530,27 +1530,44 @@ struct Error {
 template <typename T>
 using Expected = tl::expected<T, Error>;
 
-struct LoadInfo {
-    // TODO: Name by pointer is quite questionable.
-
-    template <typename TBuffer>
-    LoadInfo(TBuffer&& buffer, const char* name = nullptr, LoadMode mode = LoadMode::Default)
-        : buffer(std::forward<TBuffer>(buffer))
-        , name(name)
-        , mode(mode)
-    {}
-
-    template <typename TBuffer>
-    LoadInfo(TBuffer&& buffer, const std::string& name, LoadMode mode = LoadMode::Default)
-        : buffer(std::forward<TBuffer>(buffer))
-        , name(name.c_str())
-        , mode(mode)
-    {}
-
-    std::string_view buffer;
-    const char* name;
-    LoadMode mode;
+/// @brief Wraps a chunk of Lua source code with an optional name.
+struct TextChunk {
+    std::string_view content;
+    const char* name = nullptr;
+    static constexpr auto load_mode = LoadMode::Text;
 };
+
+/// @brief Wraps a chunk of binary Lua code with an optional name.
+struct BinaryChunk {
+    std::string_view content;
+    const char* name = nullptr;
+    static constexpr auto load_mode = LoadMode::Binary;
+};
+
+/// @brief Wraps a chunk that could either be binary or text with an optional name.
+struct AnyChunk {
+    std::string_view content;
+    const char* name = nullptr;
+    static constexpr auto load_mode = LoadMode::Both;
+};
+
+/// @brief Wraps a chunk of Lua code.
+using Chunk = std::variant<TextChunk, BinaryChunk, AnyChunk>;
+
+auto chunkContent(const Chunk& chunk)
+{
+    return std::visit([](const auto& chunk) { return chunk.content; }, chunk);
+}
+
+auto chunkName(const Chunk& chunk)
+{
+    return std::visit([](const auto& chunk) { return chunk.name; }, chunk);
+}
+
+auto chunkLoadMode(const Chunk& chunk)
+{
+    return std::visit([](const auto& chunk) { return chunk.load_mode; }, chunk);
+}
 
 struct DebugInfoHook {
     DebugInfoHook(const lua_Debug& ar)
@@ -2536,13 +2553,13 @@ public:
 
     // --- Compiling ---
 
-    /// @brief Compiles the given code and returns a the compilation status and depending on this either the function or
-    /// error message.
-    Expected<Arg> load(const LoadInfo& info)
+    /// @brief Compiles the given chunk and returns it.
+    Expected<Arg> load(const Chunk& chunk)
     {
         assertPushableAuxiliary();
-        auto status = static_cast<Status>(
-            luaL_loadbufferx(state_, info.buffer.data(), info.buffer.size(), info.name, load_mode_names[info.mode]));
+        auto content = chunkContent(chunk);
+        auto status = static_cast<Status>(luaL_loadbufferx(
+            state_, content.data(), content.size(), chunkName(chunk), load_mode_names[chunkLoadMode(chunk)]));
         notifyPush();
         if (status != Status::Ok)
             return tl::unexpected(Error{status, top().asResult()});
@@ -2718,42 +2735,42 @@ public:
     // --- Compiling and Calling ---
 
     template <int v_results = 0, typename... TArgs>
-    auto callString(const LoadInfo& info, TArgs&&... args)
+    auto callString(const Chunk& chunk, TArgs&&... args)
     {
-        return load(info).map(
+        return load(chunk).map(
             [&](Arg function) { return std::move(function).call<v_results>(std::forward<TArgs>(args)...); });
     }
 
     template <typename... TArgs>
-    auto callStringMultRet(const LoadInfo& info, TArgs&&... args)
+    auto callStringMultRet(const Chunk& chunk, TArgs&&... args)
     {
-        return callString<LUA_MULTRET>(info, std::forward<TArgs>(args)...);
+        return callString<LUA_MULTRET>(chunk, std::forward<TArgs>(args)...);
     }
 
     template <typename... TArgs>
-    auto callStringReturning(int results, const LoadInfo& info, TArgs&&... args)
+    auto callStringReturning(int results, const Chunk& chunk, TArgs&&... args)
     {
-        return load(info).map(
+        return load(chunk).map(
             [&](Arg function) { return std::move(function).callReturning(results, std::forward<TArgs>(args)...); });
     }
 
     template <int v_results = 0, typename... TArgs>
-    auto pcallString(const LoadInfo& info, TArgs&&... args)
+    auto pcallString(const Chunk& chunk, TArgs&&... args)
     {
-        return load(info).and_then(
+        return load(chunk).and_then(
             [&](Arg function) { return std::move(function).pcall<v_results>(std::forward<TArgs>(args)...); });
     }
 
     template <typename... TArgs>
-    auto pcallStringMultRet(const LoadInfo& info, TArgs&&... args)
+    auto pcallStringMultRet(const Chunk& chunk, TArgs&&... args)
     {
-        return pcallString<LUA_MULTRET>(info, std::forward<TArgs>(args)...);
+        return pcallString<LUA_MULTRET>(chunk, std::forward<TArgs>(args)...);
     }
 
     template <typename... TArgs>
-    auto pcallStringReturning(int results, const LoadInfo& info, TArgs&&... args)
+    auto pcallStringReturning(int results, const Chunk& chunk, TArgs&&... args)
     {
-        return load(info).and_then(
+        return load(chunk).and_then(
             [&](Arg function) { return std::move(function).pcallReturning(results, std::forward<TArgs>(args)...); });
     }
 
