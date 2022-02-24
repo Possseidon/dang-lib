@@ -1554,17 +1554,17 @@ struct AnyChunk {
 /// @brief Wraps a chunk of Lua code.
 using Chunk = std::variant<TextChunk, BinaryChunk, AnyChunk>;
 
-auto chunkContent(const Chunk& chunk)
+inline auto chunkContent(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.content; }, chunk);
 }
 
-auto chunkName(const Chunk& chunk)
+inline auto chunkName(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.name; }, chunk);
 }
 
-auto chunkLoadMode(const Chunk& chunk)
+inline auto chunkLoadMode(const Chunk& chunk)
 {
     return std::visit([](const auto& chunk) { return chunk.load_mode; }, chunk);
 }
