@@ -1,0 +1,216 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}"
+    },
+    {
+      "name": "windows-base",
+      "description": "Target Windows.",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "description": "Target Windows with MSVC.",
+      "hidden": true,
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "cl.exe"
+      }
+    },
+    {
+      "name": "windows-msvc-x64-debug",
+      "displayName": "MSVC - x64 Debug",
+      "description": "Target Windows (64-bit) with MSVC. (Debug)",
+      "inherits": "windows-msvc",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-msvc-x64-release",
+      "displayName": "MSVC - x64 Release",
+      "description": "Target Windows (64-bit) with MSVC. (RelWithDebInfo)",
+      "inherits": "windows-msvc-x64-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "windows-msvc-x86-debug",
+      "displayName": "MSVC - x86 Debug",
+      "description": "Target Windows (32-bit) with MSVC. (Debug)",
+      "inherits": "windows-msvc",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-msvc-x86-release",
+      "displayName": "MSVC - x86 Release",
+      "description": "Target Windows (32-bit) with MSVC. (RelWithDebInfo)",
+      "inherits": "windows-msvc-x86-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "windows-clang",
+      "description": "Target Windows with Clang.",
+      "hidden": true,
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang-cl.exe"
+      }
+    },
+    {
+      "name": "windows-clang-x64-debug",
+      "displayName": "Clang - x64 Debug",
+      "description": "Target Windows (64-bit) with Clang. (Debug)",
+      "inherits": "windows-clang",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-clang-x64-release",
+      "displayName": "Clang - x64 Release",
+      "description": "Target Windows (64-bit) with Clang. (RelWithDebInfo)",
+      "inherits": "windows-clang-x64-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "windows-clang-x86-debug",
+      "displayName": "Clang - x86 Debug",
+      "description": "Target Windows (32-bit) with Clang. (Debug)",
+      "inherits": "windows-clang",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "windows-clang-x86-release",
+      "displayName": "Clang - x86 Release",
+      "description": "Target Windows (32-bit) with Clang. (RelWithDebInfo)",
+      "inherits": "windows-clang-x86-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "linux-base",
+      "displayName": "Linux Debug",
+      "hidden": true,
+      "inherits": "base",
+      "description": "Target Linux/WSL.",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "vendor": { "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": { "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}" } }
+    },
+    {
+      "name": "linux-gcc",
+      "description": "Target Linux/WSL with GCC.",
+      "hidden": true,
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-gcc-x64-debug",
+      "displayName": "GCC - x64 Debug",
+      "description": "Target Linux/WSL (64-bit) with GCC. (Debug)",
+      "inherits": "linux-gcc",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-gcc-x64-release",
+      "displayName": "GCC - x64 Release",
+      "description": "Target Linux/WSL (64-bit) with GCC. (RelWithDebInfo)",
+      "inherits": "linux-gcc-x64-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "linux-gcc-x86-debug",
+      "displayName": "GCC - x86 Debug",
+      "description": "Target Linux/WSL (32-bit) with GCC. (Debug)",
+      "inherits": "linux-gcc",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-gcc-x86-release",
+      "displayName": "GCC - x86 Release",
+      "description": "Target Linux/WSL (32-bit) with GCC. (RelWithDebInfo)",
+      "inherits": "linux-gcc-x86-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "linux-clang",
+      "description": "Target Linux/WSL with Clang.",
+      "hidden": true,
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "linux-clang-x64-debug",
+      "displayName": "Clang - x64 Debug",
+      "description": "Target Linux/WSL (64-bit) with Clang. (Debug)",
+      "inherits": "linux-clang",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-clang-x64-release",
+      "displayName": "Clang - x64 Release",
+      "description": "Target Linux/WSL (64-bit) with Clang. (RelWithDebInfo)",
+      "inherits": "linux-clang-x64-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "linux-clang-x86-debug",
+      "displayName": "Clang - x86 Debug",
+      "description": "Target Linux/WSL (32-bit) with Clang. (Debug)",
+      "inherits": "linux-clang",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "linux-clang-x86-release",
+      "displayName": "Clang - x86 Release",
+      "description": "Target Linux/WSL (32-bit) with Clang. (RelWithDebInfo)",
+      "inherits": "linux-clang-x86-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ]
+}
