@@ -56,6 +56,7 @@ jobs:
             !${{env.VCPKG_ROOT}}/buildtrees
             !${{env.VCPKG_ROOT}}/packages
             !${{env.VCPKG_ROOT}}/downloads
+            !${{env.VCPKG_ROOT}}/installed
           key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
           restore-keys: |
             ${{env.vcpkg-cache-base}}-
