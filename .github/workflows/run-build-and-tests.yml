@@ -21,16 +21,16 @@ jobs:
         runs:
           - name: Ubuntu - gcc
             os: ubuntu-latest
-            compiler: g++
+            preset: linux-gcc-x64-debug
           - name: Ubuntu - clang
             os: ubuntu-latest
-            compiler: clang++
+            preset: linux-clang-x64-debug
           - name: Windows - cl
             os: windows-latest
-            compiler: cl
+            preset: windows-msvc-x64-debug
           - name: Windows - clang
             os: windows-latest
-            compiler: clang-cl
+            preset: windows-clang-x64-debug
 
     env:
       CMAKE_BUILD_DIR: ${{github.workspace}}/build/
@@ -72,7 +72,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies and generate project files
-        run: cmake -S "${{github.workspace}}" -B "${{env.CMAKE_BUILD_DIR}}" -GNinja -DCMAKE_CXX_COMPILER=${{matrix.runs.compiler}} -DDANG_WERROR:BOOL=ON
+        run: cmake --preset=${{matrix.runs.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
 
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"
