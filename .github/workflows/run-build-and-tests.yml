@@ -48,7 +48,7 @@ jobs:
       - name: Restore vcpkg and its artifacts
         uses: actions/cache@v2
         env:
-          vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{runner.os}}
+          vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{runner.preset}}
         with:
           path: |
             ${{env.CMAKE_BUILD_DIR}}/vcpkg_installed/
