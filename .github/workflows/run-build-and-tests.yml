@@ -21,16 +21,16 @@ jobs:
         runs:
           - name: Ubuntu - gcc
             os: ubuntu-latest
-            preset: linux-gcc-x64-debug
+            preset: linux-gcc-x64
           - name: Ubuntu - clang
             os: ubuntu-latest
-            preset: linux-clang-x64-debug
+            preset: linux-clang-x64
           - name: Windows - cl
             os: windows-latest
-            preset: windows-msvc-x64-debug
+            preset: windows-msvc-x64
           - name: Windows - clang
             os: windows-latest
-            preset: windows-clang-x64-debug
+            preset: windows-clang-x64
 
     env:
       CMAKE_BUILD_DIR: ${{github.workspace}}/build/
