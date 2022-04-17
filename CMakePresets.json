@@ -4,7 +4,7 @@
     {
       "name": "base",
       "hidden": true,
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}"
     },
@@ -29,40 +29,24 @@
       }
     },
     {
-      "name": "windows-msvc-x64-debug",
-      "displayName": "MSVC - x64 Debug",
-      "description": "Target Windows (64-bit) with MSVC. (Debug)",
+      "name": "windows-msvc-x64",
+      "displayName": "MSVC - x64",
+      "description": "Target Windows (64-bit) with MSVC.",
       "inherits": "windows-msvc",
       "architecture": {
         "value": "x64",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      }
     },
     {
-      "name": "windows-msvc-x64-release",
-      "displayName": "MSVC - x64 Release",
-      "description": "Target Windows (64-bit) with MSVC. (RelWithDebInfo)",
-      "inherits": "windows-msvc-x64-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
-    {
-      "name": "windows-msvc-x86-debug",
-      "displayName": "MSVC - x86 Debug",
-      "description": "Target Windows (32-bit) with MSVC. (Debug)",
+      "name": "windows-msvc-x86",
+      "displayName": "MSVC - x86",
+      "description": "Target Windows (32-bit) with MSVC.",
       "inherits": "windows-msvc",
       "architecture": {
         "value": "x86",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-    },
-    {
-      "name": "windows-msvc-x86-release",
-      "displayName": "MSVC - x86 Release",
-      "description": "Target Windows (32-bit) with MSVC. (RelWithDebInfo)",
-      "inherits": "windows-msvc-x86-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      }
     },
     {
       "name": "windows-clang",
@@ -74,47 +58,30 @@
       }
     },
     {
-      "name": "windows-clang-x64-debug",
-      "displayName": "Clang - x64 Debug",
-      "description": "Target Windows (64-bit) with Clang. (Debug)",
+      "name": "windows-clang-x64",
+      "displayName": "Clang - x64",
+      "description": "Target Windows (64-bit) with Clang.",
       "inherits": "windows-clang",
       "architecture": {
         "value": "x64",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      }
     },
     {
-      "name": "windows-clang-x64-release",
-      "displayName": "Clang - x64 Release",
-      "description": "Target Windows (64-bit) with Clang. (RelWithDebInfo)",
-      "inherits": "windows-clang-x64-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
-    {
-      "name": "windows-clang-x86-debug",
-      "displayName": "Clang - x86 Debug",
-      "description": "Target Windows (32-bit) with Clang. (Debug)",
+      "name": "windows-clang-x86",
+      "displayName": "Clang - x86",
+      "description": "Target Windows (32-bit) with Clang.",
       "inherits": "windows-clang",
       "architecture": {
         "value": "x86",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-    },
-    {
-      "name": "windows-clang-x86-release",
-      "displayName": "Clang - x86 Release",
-      "description": "Target Windows (32-bit) with Clang. (RelWithDebInfo)",
-      "inherits": "windows-clang-x86-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      }
     },
     {
       "name": "linux-base",
-      "displayName": "Linux Debug",
+      "description": "Target Linux/WSL.",
       "hidden": true,
       "inherits": "base",
-      "description": "Target Linux/WSL.",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -132,40 +99,24 @@
       }
     },
     {
-      "name": "linux-gcc-x64-debug",
-      "displayName": "GCC - x64 Debug",
-      "description": "Target Linux/WSL (64-bit) with GCC. (Debug)",
+      "name": "linux-gcc-x64",
+      "displayName": "GCC - x64",
+      "description": "Target Linux/WSL (64-bit) with GCC.",
       "inherits": "linux-gcc",
       "architecture": {
         "value": "x64",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      }
     },
     {
-      "name": "linux-gcc-x64-release",
-      "displayName": "GCC - x64 Release",
-      "description": "Target Linux/WSL (64-bit) with GCC. (RelWithDebInfo)",
-      "inherits": "linux-gcc-x64-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
-    {
-      "name": "linux-gcc-x86-debug",
-      "displayName": "GCC - x86 Debug",
-      "description": "Target Linux/WSL (32-bit) with GCC. (Debug)",
+      "name": "linux-gcc-x86",
+      "displayName": "GCC - x86",
+      "description": "Target Linux/WSL (32-bit) with GCC.",
       "inherits": "linux-gcc",
       "architecture": {
         "value": "x86",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-    },
-    {
-      "name": "linux-gcc-x86-release",
-      "displayName": "GCC - x86 Release",
-      "description": "Target Linux/WSL (32-bit) with GCC. (RelWithDebInfo)",
-      "inherits": "linux-gcc-x86-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      }
     },
     {
       "name": "linux-clang",
@@ -177,40 +128,218 @@
       }
     },
     {
-      "name": "linux-clang-x64-debug",
-      "displayName": "Clang - x64 Debug",
-      "description": "Target Linux/WSL (64-bit) with Clang. (Debug)",
+      "name": "linux-clang-x64",
+      "displayName": "Clang - x64",
+      "description": "Target Linux/WSL (64-bit) with Clang.",
       "inherits": "linux-clang",
       "architecture": {
         "value": "x64",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      }
     },
     {
-      "name": "linux-clang-x64-release",
-      "displayName": "Clang - x64 Release",
-      "description": "Target Linux/WSL (64-bit) with Clang. (RelWithDebInfo)",
-      "inherits": "linux-clang-x64-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
-    {
-      "name": "linux-clang-x86-debug",
-      "displayName": "Clang - x86 Debug",
-      "description": "Target Linux/WSL (32-bit) with Clang. (Debug)",
+      "name": "linux-clang-x86",
+      "displayName": "Clang - x86",
+      "description": "Target Linux/WSL (32-bit) with Clang.",
       "inherits": "linux-clang",
       "architecture": {
         "value": "x86",
         "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc-x64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "Debug"
     },
     {
-      "name": "linux-clang-x86-release",
-      "displayName": "Clang - x86 Release",
-      "description": "Target Linux/WSL (32-bit) with Clang. (RelWithDebInfo)",
-      "inherits": "linux-clang-x86-debug",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "name": "windows-msvc-x64-Release",
+      "displayName": "Release",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-msvc-x64-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-msvc-x64-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "windows-msvc-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "windows-msvc-x86",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "windows-msvc-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-msvc-x86-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "windows-msvc-x86",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-msvc-x86-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "windows-msvc-x86",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "windows-clang-x64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "windows-clang-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-clang-x64-Release",
+      "displayName": "Release",
+      "configurePreset": "windows-clang-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clang-x64-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "windows-clang-x64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-clang-x64-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "windows-clang-x64",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "windows-clang-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "windows-clang-x86",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-clang-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "windows-clang-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clang-x86-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "windows-clang-x86",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-clang-x86-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "windows-clang-x86",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "linux-gcc-x64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-gcc-x64-Release",
+      "displayName": "Release",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-gcc-x64-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "linux-gcc-x64-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "linux-gcc-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-gcc-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-gcc-x86-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "linux-gcc-x86-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "linux-clang-x64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-clang-x64-Release",
+      "displayName": "Release",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-clang-x64-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "linux-clang-x64-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "linux-clang-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-clang-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-clang-x86-RelWithDebInfo",
+      "displayName": "Release - With Debug Info",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "linux-clang-x86-MinSizeRel",
+      "displayName": "Release - Minimize Size",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "MinSizeRel"
     }
   ]
 }
