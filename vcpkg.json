@@ -1,6 +1,6 @@
 {
   "name": "dang-lib",
-  "version-string": "0.0.1",
+  "version-semver": "0.1.0",
   "dependencies": [
     "catch2",
     "glad",
