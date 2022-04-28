@@ -33,38 +33,44 @@ endif()
 
 include(CTest)
 include(FindVLD)
+include(dang_add_feature)
 
-option(WITH_DANG_EXAMPLE "Include examples." ON)
-if(${WITH_DANG_EXAMPLE})
-  add_subdirectory(dang-example)
-endif()
+dang_add_feature(
+  UTILS dang-utils
+  "Include utility library."
+)
 
-option(WITH_DANG_GL "Include OpenGL library." ON)
-if(${WITH_DANG_GL})
-  add_subdirectory(dang-gl)
-endif()
+dang_add_feature(
+  MATH dang-math
+  "Include math library."
+  UTILS
+)
 
-option(WITH_DANG_GLFW "Include GLFW wrapper library." ON)
-if(${WITH_DANG_GLFW})
-  add_subdirectory(dang-glfw)
-endif()
+dang_add_feature(
+  GL dang-gl
+  "Include OpenGL library."
+  UTILS MATH
+)
 
-option(WITH_DANG_LUA "Include Lua wrapper library." ON)
-if(${WITH_DANG_LUA})
-  add_subdirectory(dang-lua)
-endif()
+dang_add_feature(
+  GLFW dang-glfw
+  "Include GLFW wrapper library."
+  UTILS MATH GL
+)
 
-option(WITH_DANG_MATH "Include math library." ON)
-if(${WITH_DANG_MATH})
-  add_subdirectory(dang-math)
-endif()
+dang_add_feature(
+  LUA dang-lua
+  "Include Lua wrapper library."
+  UTILS
+)
 
-option(WITH_DANG_UTILS "Include utility library." ON)
-if(${WITH_DANG_UTILS})
-  add_subdirectory(dang-utils)
-endif()
+dang_add_feature(
+  EXAMPLE dang-example
+  "Include examples."
+  UTILS MATH GL GLFW LUA
+)
 
-option(WITH_DANG_DOC "Include documentation." ON)
-if(${WITH_DANG_DOC})
-  add_subdirectory(doc)
-endif()
+dang_add_feature(
+  DOC doc
+  "Include documentation."
+)
