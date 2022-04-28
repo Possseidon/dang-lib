@@ -35,5 +35,4 @@ endif()
 install(
   DIRECTORY "include/"
   TYPE INCLUDE
-  COMPONENT ${PROJECT_NAME}
 )
