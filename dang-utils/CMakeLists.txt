@@ -13,3 +13,9 @@ add_subdirectory(catch2)
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+  COMPONENT ${PROJECT_NAME}
+)

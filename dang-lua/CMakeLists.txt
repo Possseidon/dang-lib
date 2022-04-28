@@ -41,3 +41,9 @@ target_include_directories(${PROJECT_NAME}
 )
 
 add_subdirectory(stl)
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+  COMPONENT ${PROJECT_NAME}
+)

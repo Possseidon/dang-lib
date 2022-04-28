@@ -31,3 +31,9 @@ add_subdirectory(lua)
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+  COMPONENT ${PROJECT_NAME}
+)

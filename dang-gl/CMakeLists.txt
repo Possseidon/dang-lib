@@ -102,3 +102,14 @@ target_include_directories(${PROJECT_NAME}
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+install(
+  TARGETS ${PROJECT_NAME}
+  COMPONENT ${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+  COMPONENT ${PROJECT_NAME}
+)
