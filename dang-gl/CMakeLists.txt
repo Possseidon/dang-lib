@@ -105,6 +105,7 @@ endif()
 
 install(
   TARGETS ${PROJECT_NAME}
+  DESTINATION "${CMAKE_INSTALL_DATADIR}"
 )
 
 install(
