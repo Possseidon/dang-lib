@@ -83,14 +83,14 @@ install(
   EXPORT ${PROJECT_NAME}-targets
   FILE ${PROJECT_NAME}-targets.cmake
   NAMESPACE ${PROJECT_NAME}::
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
 )
 
 string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${DANG_DEPENDENCIES}")
 configure_package_config_file(
   cmake/${PROJECT_NAME}-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-  INSTALL_DESTINATION "share/cmake/${PROJECT_NAME}"
+  INSTALL_DESTINATION "share/${PROJECT_NAME}"
 )
 
 write_basic_package_version_file(
@@ -103,5 +103,5 @@ install(
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
   DESTINATION
-    ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
+    ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}
 )
