@@ -1,3 +1,4 @@
+# Forwards to include() and makes sure the config also contains this include().
 macro(dang_include_finder)
   include(${ARGN})
   string(REPLACE ";" " " FINDER "include(${ARGN})")
