@@ -34,6 +34,7 @@ endif()
 include(CTest)
 include(FindVLD)
 include(dang_add_feature)
+include(dang_find_package)
 
 dang_add_feature(
   UTILS dang-utils
@@ -76,9 +77,25 @@ dang_add_feature(
 )
 
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 install(
-  EXPORT dang-lib-targets
-  FILE dang-lib-config.cmake
-  NAMESPACE dang-lib::
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dang-lib"
+  EXPORT ${PROJECT_NAME}-targets
+  FILE ${PROJECT_NAME}-targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+)
+
+string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${DANG_DEPENDENCIES}")
+configure_package_config_file(
+  cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION "share/cmake/${PROJECT_NAME}"
+)
+
+install(
+  FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  DESTINATION
+    ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
 )

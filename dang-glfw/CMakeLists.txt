@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-glfw CXX)
 
-find_package(glfw3 CONFIG REQUIRED)
+dang_find_package(glfw3 CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
     src/GLFW.cpp

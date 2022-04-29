@@ -3,7 +3,7 @@ project(dang-lua CXX)
 
 include(FindLua)
 
-find_package(Lua REQUIRED)
+dang_find_package(Lua REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 

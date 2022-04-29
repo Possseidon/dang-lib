@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-gl CXX)
 
-find_package(glad CONFIG REQUIRED)
-find_package(libpng CONFIG REQUIRED)
+dang_find_package(glad CONFIG REQUIRED)
+dang_find_package(libpng CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
     src/Context/Context.cpp
