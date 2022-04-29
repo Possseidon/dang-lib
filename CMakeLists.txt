@@ -7,7 +7,7 @@ set(
 
 macro(dang_feature_option FEATURE_NAME FEATURE_DESCRIPTION)
   option(WITH_DANG_${FEATURE_NAME} ${FEATURE_DESCRIPTION} ON)
-  if (WITH_DANG_${FEATURE_NAME})
+  if(WITH_DANG_${FEATURE_NAME})
     list(APPEND VCPKG_MANIFEST_FEATURES ${ARGN})
   endif()
 endmacro()
@@ -20,7 +20,9 @@ dang_feature_option(LUA "Include Lua wrapper library." lua)
 dang_feature_option(MATH "Include math library." math)
 dang_feature_option(UTILS "Include utility library." utils)
 
-if (BUILD_TESTING)
+# Cannot include(CTest) before project, but VCPKG_MANIFEST_FEATURES must be filled before.
+option(BUILD_TESTING "" ON)
+if(BUILD_TESTING)
   list(APPEND VCPKG_MANIFEST_FEATURES tests)
 endif()
 
