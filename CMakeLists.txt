@@ -1,7 +1,30 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-  CACHE STRING "Vcpkg toolchain file")
+set(
+  CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  CACHE STRING "Vcpkg toolchain file"
+)
+
+macro(dang_feature_option FEATURE_NAME FEATURE_DESCRIPTION)
+  option(WITH_DANG_${FEATURE_NAME} ${FEATURE_DESCRIPTION} ON)
+  if(WITH_DANG_${FEATURE_NAME})
+    list(APPEND VCPKG_MANIFEST_FEATURES ${ARGN})
+  endif()
+endmacro()
+
+dang_feature_option(DOC "Include documentation.")
+dang_feature_option(EXAMPLE "Include examples.")
+dang_feature_option(GL "Include OpenGL library." gl)
+dang_feature_option(GLFW "Include GLFW wrapper library." glfw)
+dang_feature_option(LUA "Include Lua wrapper library." lua)
+dang_feature_option(MATH "Include math library." math)
+dang_feature_option(UTILS "Include utility library." utils)
+
+# Cannot include(CTest) before project, but VCPKG_MANIFEST_FEATURES must be filled before.
+option(BUILD_TESTING "" ON)
+if(BUILD_TESTING)
+  list(APPEND VCPKG_MANIFEST_FEATURES tests)
+endif()
 
 project(dang-lib VERSION 0.1.0 LANGUAGES CXX)
 
@@ -32,14 +55,48 @@ else()
 endif()
 
 include(CTest)
-include(FindLua)
 include(FindVLD)
 
-add_subdirectory(dang-example)
-add_subdirectory(dang-gl)
-add_subdirectory(dang-glfw)
-add_subdirectory(dang-lua)
-add_subdirectory(dang-math)
-add_subdirectory(dang-utils)
+include(dang_add_feature_subdirectory)
+include(dang_check_dependency)
+include(dang_find_package)
+include(dang_include_finder)
 
-add_subdirectory(doc)
+dang_add_feature_subdirectory(UTILS dang-utils)
+dang_add_feature_subdirectory(MATH dang-math)
+dang_add_feature_subdirectory(GL dang-gl)
+dang_add_feature_subdirectory(GLFW dang-glfw)
+dang_add_feature_subdirectory(LUA dang-lua)
+dang_add_feature_subdirectory(EXAMPLE dang-example)
+dang_add_feature_subdirectory(DOC doc)
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(
+  EXPORT ${PROJECT_NAME}-targets
+  FILE ${PROJECT_NAME}-targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
+)
+
+string(REPLACE ";" "\n" PACKAGE_FINDERS "${DANG_FINDERS}")
+string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${DANG_DEPENDENCIES}")
+configure_package_config_file(
+  cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION "share/${PROJECT_NAME}"
+)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/dang-lib-config-version.cmake"
+  COMPATIBILITY ExactVersion
+)
+
+install(
+  FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  DESTINATION
+    ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}
+)

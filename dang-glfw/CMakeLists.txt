@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-glfw CXX)
 
-find_package(glfw3 CONFIG REQUIRED)
+dang_check_dependency(GL MATH UTILS)
+
+dang_find_package(glfw3 CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
     src/GLFW.cpp
@@ -38,6 +40,8 @@ endif()
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     dang-gl
+    dang-math
+    dang-utils
     glfw
 )
 
@@ -45,5 +49,16 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE
     include/dang-glfw
   PUBLIC
-    include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT dang-lib-targets
 )

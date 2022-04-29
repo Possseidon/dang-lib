@@ -1,14 +1,41 @@
 {
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "dang-lib",
-  "version-string": "0.0.1",
-  "dependencies": [
-    "catch2",
-    "glad",
-    "glfw3",
-    "libpng",
-    {
-      "name": "lua",
-      "features": [ "cpp" ]
+  "version-semver": "0.1.0",
+  "features": {
+    "gl": {
+      "description": "Include OpenGL library.",
+      "dependencies": [
+        "glad",
+        "libpng"
+      ]
+    },
+    "glfw": {
+      "description": "Include GLFW wrapper library.",
+      "dependencies": [
+        "glfw3"
+      ]
+    },
+    "lua": {
+      "description": "Include Lua wrapper library.",
+      "dependencies": [
+        {
+          "name": "lua",
+          "features": [ "cpp" ]
+        }
+      ]
+    },
+    "math": {
+      "description": "Include math library."
+    },
+    "tests": {
+      "description": "Include tests.",
+      "dependencies": [
+        "catch2"
+      ]
+    },
+    "utils": {
+      "description": "Include utility library."
     }
-  ]
+  }
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-lua-stl CXX)
 
-find_package(Lua REQUIRED)
+dang_find_package(Lua REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 

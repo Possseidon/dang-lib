@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-gl CXX)
 
-find_package(glad CONFIG REQUIRED)
-find_package(libpng CONFIG REQUIRED)
+dang_check_dependency(MATH UTILS)
+
+dang_find_package(glad CONFIG REQUIRED)
+dang_find_package(libpng CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
     src/Context/Context.cpp
@@ -96,9 +98,20 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE
     include/dang-gl
   PUBLIC
-    include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+install(
+  DIRECTORY "include/"
+  TYPE INCLUDE
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT dang-lib-targets
+)

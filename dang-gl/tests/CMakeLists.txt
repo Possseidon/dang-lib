@@ -35,30 +35,8 @@ target_link_libraries(${PROJECT_NAME}
 catch_discover_tests(${PROJECT_NAME}
   PROPERTIES
     LABELS dang-gl
-)
-
-add_executable(${PROJECT_NAME}-opengl
-  main.cpp
-  Texturing/test-MultiTextureAtlas.cpp
-  Texturing/test-TextureAtlas.cpp
-  Texturing/test-TextureAtlasUtils.cpp
-)
-
-target_precompile_headers(${PROJECT_NAME}-opengl
-  PRIVATE
-    <stdexcept>
-)
-
-target_link_libraries(${PROJECT_NAME}-opengl
-  PRIVATE
-    dang-gl
-    dang-glfw
-    Catch2::Catch2
-)
-
-catch_discover_tests(${PROJECT_NAME}-opengl
-  PROPERTIES
-    LABELS opengl dang-gl
+  WORKING_DIRECTORY
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
@@ -66,7 +44,38 @@ if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
   file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip ${CMAKE_BINARY_DIR}/PngSuite.zip)
 endif()
 
-file(ARCHIVE_EXTRACT
-  INPUT ${CMAKE_BINARY_DIR}/PngSuite.zip
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/PngSuite
+add_custom_command(
+  TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${PROJECT_NAME}>/PngSuite
+  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:${PROJECT_NAME}>/PngSuite
+    ${CMAKE_COMMAND} -E tar x ${CMAKE_BINARY_DIR}/PngSuite.zip
 )
+
+# OpenGL Tests require an OpenGL context using an invisible GLFW window.
+if(WITH_DANG_GLFW)
+
+  add_executable(${PROJECT_NAME}-opengl
+    main.cpp
+    Texturing/test-MultiTextureAtlas.cpp
+    Texturing/test-TextureAtlas.cpp
+    Texturing/test-TextureAtlasUtils.cpp
+  )
+
+  target_precompile_headers(${PROJECT_NAME}-opengl
+    PRIVATE
+      <stdexcept>
+  )
+
+  target_link_libraries(${PROJECT_NAME}-opengl
+    PRIVATE
+      dang-gl
+      dang-glfw
+      Catch2::Catch2
+  )
+
+  catch_discover_tests(${PROJECT_NAME}-opengl
+    PROPERTIES
+      LABELS opengl dang-gl
+  )
+
+endif()
