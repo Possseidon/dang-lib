@@ -93,8 +93,14 @@ configure_package_config_file(
   INSTALL_DESTINATION "share/cmake/${PROJECT_NAME}"
 )
 
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/dang-lib-config-version.cmake"
+  COMPATIBILITY ExactVersion
+)
+
 install(
   FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
   DESTINATION
     ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
