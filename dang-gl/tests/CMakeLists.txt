@@ -37,6 +37,18 @@ catch_discover_tests(${PROJECT_NAME}
     LABELS dang-gl
 )
 
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
+  message("-- Downloading PngSuite")
+  file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip ${CMAKE_BINARY_DIR}/PngSuite.zip)
+endif()
+
+add_custom_command(
+  TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${PROJECT_NAME}>/PngSuite
+  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:${PROJECT_NAME}>/PngSuite
+    ${CMAKE_COMMAND} -E tar x ${CMAKE_BINARY_DIR}/PngSuite.zip
+)
+
 add_executable(${PROJECT_NAME}-opengl
   main.cpp
   Texturing/test-MultiTextureAtlas.cpp
@@ -59,14 +71,4 @@ target_link_libraries(${PROJECT_NAME}-opengl
 catch_discover_tests(${PROJECT_NAME}-opengl
   PROPERTIES
     LABELS opengl dang-gl
-)
-
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
-  message("-- Downloading PngSuite")
-  file(DOWNLOAD http://www.schaik.com/pngsuite/PngSuite-2017jul19.zip ${CMAKE_BINARY_DIR}/PngSuite.zip)
-endif()
-
-file(ARCHIVE_EXTRACT
-  INPUT ${CMAKE_BINARY_DIR}/PngSuite.zip
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/PngSuite
 )
