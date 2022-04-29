@@ -96,7 +96,8 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE
     include/dang-gl
   PUBLIC
-    include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 if(BUILD_TESTING)
@@ -104,11 +105,11 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  TARGETS ${PROJECT_NAME}
-  DESTINATION "${CMAKE_INSTALL_DATADIR}"
+  DIRECTORY "include/"
+  TYPE INCLUDE
 )
 
 install(
-  DIRECTORY "include/"
-  TYPE INCLUDE
+  TARGETS ${PROJECT_NAME}
+  EXPORT dang-lib-targets
 )

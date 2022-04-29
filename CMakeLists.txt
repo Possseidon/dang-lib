@@ -74,3 +74,11 @@ dang_add_feature(
   DOC doc
   "Include documentation."
 )
+
+include(GNUInstallDirs)
+install(
+  EXPORT dang-lib-targets
+  FILE dang-lib-config.cmake
+  NAMESPACE dang-lib::
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dang-lib"
+)

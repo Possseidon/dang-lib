@@ -5,7 +5,8 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME}
   INTERFACE
-    include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 add_subdirectory(catch2)
@@ -17,4 +18,9 @@ endif()
 install(
   DIRECTORY "include/"
   TYPE INCLUDE
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT dang-lib-targets
 )

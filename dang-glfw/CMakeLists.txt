@@ -45,15 +45,16 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE
     include/dang-glfw
   PUBLIC
-    include
-)
-
-install(
-  TARGETS ${PROJECT_NAME}
-  DESTINATION "${CMAKE_INSTALL_DATADIR}"
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 install(
   DIRECTORY "include/"
   TYPE INCLUDE
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT dang-lib-targets
 )
