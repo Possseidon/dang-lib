@@ -2,7 +2,9 @@
 
 #include "dang-utils/global.h"
 
-#include "lua.hpp"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 
 namespace dang::lua {
 

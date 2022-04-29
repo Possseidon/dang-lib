@@ -6,6 +6,9 @@
     "glad",
     "glfw3",
     "libpng",
-    "lua"
+    {
+      "name": "lua",
+      "features": [ "cpp" ]
+    }
   ]
 }

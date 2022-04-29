@@ -3758,9 +3758,6 @@ inline int wrap(lua_State* state)
     catch (const std::exception& e) {
         detail::noreturn_luaL_error(state, e.what());
     }
-    catch (...) {
-        detail::noreturn_luaL_error(state, "unknown error");
-    }
 }
 
 template <auto v_func, typename TCovariantClass>
@@ -3772,11 +3769,6 @@ inline int wrapReturnException(lua_State* state)
     catch (const std::exception& e) {
         luaL_pushfail(state);
         lua_pushstring(state, e.what());
-        return 2;
-    }
-    catch (...) {
-        luaL_pushfail(state);
-        lua_pushstring(state, "unknown error");
         return 2;
     }
 }
