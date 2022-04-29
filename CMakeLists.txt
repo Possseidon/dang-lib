@@ -33,8 +33,10 @@ endif()
 
 include(CTest)
 include(FindVLD)
+
 include(dang_add_feature)
 include(dang_find_package)
+include(dang_include_finder)
 
 dang_add_feature(
   UTILS dang-utils
@@ -86,6 +88,7 @@ install(
   DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
 )
 
+string(REPLACE ";" "\n" PACKAGE_FINDERS "${DANG_FINDERS}")
 string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${DANG_DEPENDENCIES}")
 configure_package_config_file(
   cmake/${PROJECT_NAME}-config.cmake.in

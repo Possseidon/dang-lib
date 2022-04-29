@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-lua CXX)
 
-include(FindLua)
+dang_include_finder(FindLua)
 
 dang_find_package(Lua REQUIRED)
 

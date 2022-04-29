@@ -1,7 +1,6 @@
 @PACKAGE_INIT@
 
-# TODO: Replace with actual logic if it works.
-include(FindLua)
+@PACKAGE_FINDERS@
 
 include(CMakeFindDependencyMacro)
 @PACKAGE_DEPENDENCIES@
