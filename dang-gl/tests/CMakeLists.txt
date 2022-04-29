@@ -35,6 +35,8 @@ target_link_libraries(${PROJECT_NAME}
 catch_discover_tests(${PROJECT_NAME}
   PROPERTIES
     LABELS dang-gl
+  WORKING_DIRECTORY
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/PngSuite.zip)
