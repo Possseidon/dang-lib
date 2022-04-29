@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-math CXX)
 
+dang_check_dependency(UTILS)
+
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_link_libraries(${PROJECT_NAME}

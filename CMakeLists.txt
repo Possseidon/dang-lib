@@ -1,7 +1,28 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-  CACHE STRING "Vcpkg toolchain file")
+set(
+  CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  CACHE STRING "Vcpkg toolchain file"
+)
+
+macro(dang_feature_option FEATURE_NAME FEATURE_DESCRIPTION)
+  option(WITH_DANG_${FEATURE_NAME} ${FEATURE_DESCRIPTION} ON)
+  if (WITH_DANG_${FEATURE_NAME})
+    list(APPEND VCPKG_MANIFEST_FEATURES ${ARGN})
+  endif()
+endmacro()
+
+dang_feature_option(DOC "Include documentation.")
+dang_feature_option(EXAMPLE "Include examples.")
+dang_feature_option(GL "Include OpenGL library." gl)
+dang_feature_option(GLFW "Include GLFW wrapper library." glfw)
+dang_feature_option(LUA "Include Lua wrapper library." lua)
+dang_feature_option(MATH "Include math library." math)
+dang_feature_option(UTILS "Include utility library." utils)
+
+if (BUILD_TESTING)
+  list(APPEND VCPKG_MANIFEST_FEATURES tests)
+endif()
 
 project(dang-lib VERSION 0.1.0 LANGUAGES CXX)
 
@@ -34,49 +55,18 @@ endif()
 include(CTest)
 include(FindVLD)
 
-include(dang_add_feature)
+include(dang_add_feature_subdirectory)
+include(dang_check_dependency)
 include(dang_find_package)
 include(dang_include_finder)
 
-dang_add_feature(
-  UTILS dang-utils
-  "Include utility library."
-)
-
-dang_add_feature(
-  MATH dang-math
-  "Include math library."
-  UTILS
-)
-
-dang_add_feature(
-  GL dang-gl
-  "Include OpenGL library."
-  UTILS MATH
-)
-
-dang_add_feature(
-  GLFW dang-glfw
-  "Include GLFW wrapper library."
-  UTILS MATH GL
-)
-
-dang_add_feature(
-  LUA dang-lua
-  "Include Lua wrapper library."
-  UTILS
-)
-
-dang_add_feature(
-  EXAMPLE dang-example
-  "Include examples."
-  UTILS MATH GL GLFW LUA
-)
-
-dang_add_feature(
-  DOC doc
-  "Include documentation."
-)
+dang_add_feature_subdirectory(UTILS dang-utils)
+dang_add_feature_subdirectory(MATH dang-math UTILS)
+dang_add_feature_subdirectory(GL dang-gl UTILS MATH)
+dang_add_feature_subdirectory(GLFW dang-glfw UTILS MATH GL)
+dang_add_feature_subdirectory(LUA dang-lua UTILS)
+dang_add_feature_subdirectory(EXAMPLE dang-example UTILS MATH GL GLFW LUA)
+dang_add_feature_subdirectory(DOC doc)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

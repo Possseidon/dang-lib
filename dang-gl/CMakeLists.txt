@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-gl CXX)
 
+dang_check_dependency(MATH UTILS)
+
 dang_find_package(glad CONFIG REQUIRED)
 dang_find_package(libpng CONFIG REQUIRED)
 

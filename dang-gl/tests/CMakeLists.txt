@@ -49,26 +49,31 @@ add_custom_command(
     ${CMAKE_COMMAND} -E tar x ${CMAKE_BINARY_DIR}/PngSuite.zip
 )
 
-add_executable(${PROJECT_NAME}-opengl
-  main.cpp
-  Texturing/test-MultiTextureAtlas.cpp
-  Texturing/test-TextureAtlas.cpp
-  Texturing/test-TextureAtlasUtils.cpp
-)
+# OpenGL Tests require an OpenGL context using an invisible GLFW window.
+if(WITH_DANG_GLFW)
 
-target_precompile_headers(${PROJECT_NAME}-opengl
-  PRIVATE
-    <stdexcept>
-)
+  add_executable(${PROJECT_NAME}-opengl
+    main.cpp
+    Texturing/test-MultiTextureAtlas.cpp
+    Texturing/test-TextureAtlas.cpp
+    Texturing/test-TextureAtlasUtils.cpp
+  )
 
-target_link_libraries(${PROJECT_NAME}-opengl
-  PRIVATE
-    dang-gl
-    dang-glfw
-    Catch2::Catch2
-)
+  target_precompile_headers(${PROJECT_NAME}-opengl
+    PRIVATE
+      <stdexcept>
+  )
 
-catch_discover_tests(${PROJECT_NAME}-opengl
-  PROPERTIES
-    LABELS opengl dang-gl
-)
+  target_link_libraries(${PROJECT_NAME}-opengl
+    PRIVATE
+      dang-gl
+      dang-glfw
+      Catch2::Catch2
+  )
+
+  catch_discover_tests(${PROJECT_NAME}-opengl
+    PROPERTIES
+      LABELS opengl dang-gl
+  )
+
+endif()

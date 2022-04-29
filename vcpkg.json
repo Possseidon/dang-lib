@@ -1,14 +1,40 @@
 {
   "name": "dang-lib",
   "version-semver": "0.1.0",
-  "dependencies": [
-    "catch2",
-    "glad",
-    "glfw3",
-    "libpng",
-    {
-      "name": "lua",
-      "features": [ "cpp" ]
+  "features": {
+    "tests": {
+      "description": "Include tests.",
+      "dependencies": [
+        "catch2"
+      ]
+    },
+    "gl": {
+      "description": "Include OpenGL library.",
+      "dependencies": [
+        "glad",
+        "libpng"
+      ]
+    },
+    "glfw": {
+      "description": "Include GLFW wrapper library.",
+      "dependencies": [
+        "glfw3"
+      ]
+    },
+    "lua": {
+      "description": "Include Lua wrapper library.",
+      "dependencies": [
+        {
+          "name": "lua",
+          "features": [ "cpp" ]
+        }
+      ]
+    },
+    "math": {
+      "description": "Include math library."
+    },
+    "utils": {
+      "description": "Include utility library."
     }
-  ]
+  }
 }

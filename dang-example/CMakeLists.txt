@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-example CXX)
 
+dang_check_dependency(GL GLFW LUA MATH UTILS)
+
 add_executable(${PROJECT_NAME}
     src/dang-example.cpp
 )

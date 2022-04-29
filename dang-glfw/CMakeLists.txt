@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 project(dang-glfw CXX)
 
+dang_check_dependency(GL MATH UTILS)
+
 dang_find_package(glfw3 CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
@@ -38,6 +40,8 @@ endif()
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     dang-gl
+    dang-math
+    dang-utils
     glfw
 )
 
