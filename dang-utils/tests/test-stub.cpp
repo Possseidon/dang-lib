@@ -103,7 +103,7 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
     }
     SECTION("The \"CalledWith\" matcher can be used to check the arguments.")
     {
-        SECTION("The simple form of \"CalledWith\" expects a single invocation.")
+        SECTION("The simple form of \"CalledWith\" expects any invocation.")
         {
             auto stub = dutils::Stub<void(int)>();
 
@@ -115,8 +115,8 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 
             stub(256);
 
-            CHECK_THAT(stub, !CalledWith(stub, 42));
-            CHECK_THAT(stub, !CalledWith(stub, 256));
+            CHECK_THAT(stub, CalledWith(stub, 42));
+            CHECK_THAT(stub, CalledWith(stub, 256));
         }
         SECTION("Specific invocations can be checked by index.")
         {
