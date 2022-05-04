@@ -36,6 +36,14 @@ struct DANG_MSVC_FORCE_EBO Overloaded : TFunctions... {
 template <typename... TFunctions>
 Overloaded(TFunctions...) -> Overloaded<TFunctions...>;
 
+/// @brief Copies constness from TFrom to T.
+/// @remarks If T is already const, it is not changed.
+template <typename T, typename TFrom>
+struct copy_const : std::conditional<std::is_const_v<TFrom>, const T, T> {};
+
+template <typename T, typename TFrom>
+using copy_const_t = typename copy_const<T, TFrom>::type;
+
 template <typename T>
 struct member_pointer_class {};
 
