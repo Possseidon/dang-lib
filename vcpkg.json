@@ -3,6 +3,12 @@
   "name": "dang-lib",
   "version-semver": "0.1.0",
   "features": {
+    "box2d": {
+      "description": "Include Box2D wrapper library.",
+      "dependencies": [
+        "box2d"
+      ]
+    },
     "gl": {
       "description": "Include OpenGL library.",
       "dependencies": [
