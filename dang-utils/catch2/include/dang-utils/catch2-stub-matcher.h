@@ -53,7 +53,7 @@ template <typename T>
 using CalledWithArg = std::variant<std::monostate, T, T*>;
 
 struct Invocation {
-    std::size_t index;
+    std::optional<std::size_t> index;
 };
 
 } // namespace detail
@@ -88,8 +88,7 @@ private:
 };
 
 constexpr std::monostate ignored;
-
-detail::Invocation invocation(std::size_t index) { return detail::Invocation{index}; }
+detail::Invocation invocation(std::size_t index) { return {index}; }
 
 template <typename TRet, typename... TArgs>
 class CalledWith : public Catch::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
@@ -110,7 +109,9 @@ public:
 
     bool match(const dang::utils::Stub<TRet(TArgs...)>& stub) const override
     {
-        return calledWith(stub, std::index_sequence_for<TArgs...>());
+        if (invocation_.index)
+            return calledWith(*invocation_.index, stub, std::index_sequence_for<TArgs...>());
+        return calledWith(stub);
     }
 
     std::string describe() const override
@@ -119,10 +120,9 @@ public:
 
         std::string additional = " with:\n\t"s + detail::formatTuple(args_) + '\n';
 
-        if (invocation_)
-            return "expected to be called on invocation #"s + std::to_string(invocation_->index + 1) + additional;
-        else
-            return "expected to be called once"s + additional;
+        if (!invocation_.index)
+            return "expected to be called"s + additional;
+        return "expected to be called on invocation #"s + std::to_string(*invocation_.index + 1) + additional;
     }
 
 private:
@@ -131,15 +131,15 @@ private:
         using ArgType = std::tuple_element_t<v_index, std::tuple<TArgs...>>;
         using CleanArgType = RemoveCVRef<ArgType>;
 
-        std::optional<detail::Invocation>& maybe_invocation;
+        detail::Invocation& maybe_invocation;
         const std::string& name;
         const CleanArgType& invocation_arg;
 
         void info(const std::string& msg) const
         {
-            if (maybe_invocation) {
-                UNSCOPED_INFO("invocation #" << (maybe_invocation->index + 1));
-                maybe_invocation = {};
+            if (maybe_invocation.index) {
+                UNSCOPED_INFO("invocation #" << (*maybe_invocation.index + 1));
+                maybe_invocation.index = {};
             }
             if (name.empty())
                 UNSCOPED_INFO("  arg #" << (v_index + 1) << ":\t" << msg);
@@ -196,13 +196,14 @@ private:
     };
 
     template <std::size_t... v_indices>
-    bool calledWith(const dang::utils::Stub<TRet(TArgs...)>& stub, std::index_sequence<v_indices...>) const
+    bool calledWith(std::size_t invocation_index,
+                    const dang::utils::Stub<TRet(TArgs...)>& stub,
+                    std::index_sequence<v_indices...>) const
     {
-        // Use & to avoid short circuiting and show all mismatches.
-        auto invocation_index = invocation_.value_or(invocation(0)).index;
         // Checker keeps track if invocation has already been printed by clearing this.
-        auto checker_invocation = invocation_;
-        return (invocation_ || stub.invocations().size() == 1) && invocation_index < stub.invocations().size() &&
+        auto checker_invocation = detail::Invocation{invocation_index};
+        // Use & to avoid short circuiting and show all mismatches.
+        return invocation_index < stub.invocations().size() &&
                (std::visit(Checker<v_indices>{checker_invocation,
                                               stub.info().parameters[v_indices],
                                               std::get<v_indices>(stub.invocations()[invocation_index])},
@@ -210,7 +211,16 @@ private:
                 ...);
     }
 
-    std::optional<detail::Invocation> invocation_;
+    bool calledWith(const dang::utils::Stub<TRet(TArgs...)>& stub) const
+    {
+        for (std::size_t i = 0; i < stub.invocations().size(); i++) {
+            if (calledWith(i, stub, std::index_sequence_for<TArgs...>()))
+                return true;
+        }
+        return false;
+    }
+
+    detail::Invocation invocation_;
     std::tuple<detail::CalledWithArg<RemoveCVRef<TArgs>>...> args_;
 };
 
