@@ -33,7 +33,7 @@ jobs:
             preset: windows-clang-x64
 
     env:
-      CMAKE_BUILD_DIR: ${{github.workspace}}/build/
+      CMAKE_BUILD_DIR: ${{github.workspace}}/build
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
 
     steps:
@@ -48,15 +48,12 @@ jobs:
       - name: Restore vcpkg and its artifacts
         uses: actions/cache@v2
         env:
-          vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{runner.preset}}
+          vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.runs.preset}}
         with:
           path: |
-            ${{env.CMAKE_BUILD_DIR}}/vcpkg_installed/
-            ${{env.VCPKG_ROOT}}
-            !${{env.VCPKG_ROOT}}/buildtrees
-            !${{env.VCPKG_ROOT}}/packages
-            !${{env.VCPKG_ROOT}}/downloads
-            !${{env.VCPKG_ROOT}}/installed
+            ${{env.CMAKE_BUILD_DIR}}/vcpkg_installed
+            ${{env.VCPKG_ROOT}}/packages
+            ${{env.VCPKG_ROOT}}/downloads
           key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
           restore-keys: |
             ${{env.vcpkg-cache-base}}-
