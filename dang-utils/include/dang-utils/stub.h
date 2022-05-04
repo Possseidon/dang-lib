@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "dang-utils/utils.h"
+
 namespace dang::utils {
 
 template <typename TSignature>
@@ -31,7 +33,7 @@ public:
 
     Stub() = default;
 
-    template <typename T, typename = std::enable_if_t<std::is_same_v<T, TRet>>>
+    template <typename T, typename = std::enable_if_t<std::is_same_v<remove_cvref_t<T>, TRet>>>
     Stub(T&& ret)
         : data_(std::make_shared<Data>([ret = std::move(ret)](...) { return ret; }))
     {}
