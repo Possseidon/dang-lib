@@ -138,27 +138,31 @@ using DebugInfoTypes = dutils::EnumSet<DebugInfoType>;
 
 inline constexpr dutils::EnumArray<DebugInfoType, char> debug_info_type_chars = {'n', 'S', 'l', 't', 'u'};
 
-inline const dutils::EnumArray<StandardLibrary, lua_CFunction> library_functions = {luaopen_base,
-                                                                                    luaopen_coroutine,
-                                                                                    luaopen_table,
-                                                                                    luaopen_io,
-                                                                                    luaopen_os,
-                                                                                    luaopen_string,
-                                                                                    luaopen_utf8,
-                                                                                    luaopen_math,
-                                                                                    luaopen_debug,
-                                                                                    luaopen_package};
+inline const dutils::EnumArray<StandardLibrary, lua_CFunction> library_functions = {
+    luaopen_base,
+    luaopen_coroutine,
+    luaopen_table,
+    luaopen_io,
+    luaopen_os,
+    luaopen_string,
+    luaopen_utf8,
+    luaopen_math,
+    luaopen_debug,
+    luaopen_package,
+};
 
-inline constexpr dutils::EnumArray<StandardLibrary, const char*> library_names = {"_G",
-                                                                                  LUA_COLIBNAME,
-                                                                                  LUA_TABLIBNAME,
-                                                                                  LUA_IOLIBNAME,
-                                                                                  LUA_OSLIBNAME,
-                                                                                  LUA_STRLIBNAME,
-                                                                                  LUA_UTF8LIBNAME,
-                                                                                  LUA_MATHLIBNAME,
-                                                                                  LUA_DBLIBNAME,
-                                                                                  LUA_LOADLIBNAME};
+inline constexpr dutils::EnumArray<StandardLibrary, const char*> library_names = {
+    "_G",
+    LUA_COLIBNAME,
+    LUA_TABLIBNAME,
+    LUA_IOLIBNAME,
+    LUA_OSLIBNAME,
+    LUA_STRLIBNAME,
+    LUA_UTF8LIBNAME,
+    LUA_MATHLIBNAME,
+    LUA_DBLIBNAME,
+    LUA_LOADLIBNAME,
+};
 
 inline constexpr dutils::EnumArray<LoadMode, const char*> load_mode_names = {nullptr, "b", "t", "bt"};
 

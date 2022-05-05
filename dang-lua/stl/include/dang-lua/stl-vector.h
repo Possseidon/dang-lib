@@ -63,12 +63,14 @@ struct ClassInfo<std::vector<T, TAllocator>> : DefaultClassInfo {
     static auto metatable()
     {
         constexpr auto index = +[](const vector& vec, std::variant<std::size_t, const char*> index) {
-            return std::visit(dutils::Overloaded{[&](std::size_t index) -> std::optional<T> {
-                                                     if (index < 1 || index > vec.size())
-                                                         return std::nullopt;
-                                                     return vec[index - 1];
-                                                 },
-                                                 [](...) { return std::optional<T>(); }},
+            return std::visit(dutils::Overloaded{
+                                  [&](std::size_t index) -> std::optional<T> {
+                                      if (index < 1 || index > vec.size())
+                                          return std::nullopt;
+                                      return vec[index - 1];
+                                  },
+                                  [](...) { return std::optional<T>(); },
+                              },
                               index);
         };
         constexpr auto newindex = +[](State& lua, vector& vec, std::size_t index, const T& value) {

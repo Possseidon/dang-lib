@@ -204,10 +204,13 @@ private:
         auto checker_invocation = detail::Invocation{invocation_index};
         // Use & to avoid short circuiting and show all mismatches.
         return invocation_index < stub.invocations().size() &&
-               (std::visit(Checker<v_indices>{checker_invocation,
-                                              stub.info().parameters[v_indices],
-                                              std::get<v_indices>(stub.invocations()[invocation_index])},
-                           std::get<v_indices>(args_)) &
+               (std::visit(
+                    Checker<v_indices>{
+                        checker_invocation,
+                        stub.info().parameters[v_indices],
+                        std::get<v_indices>(stub.invocations()[invocation_index]),
+                    },
+                    std::get<v_indices>(args_)) &
                 ...);
     }
 
@@ -284,9 +287,11 @@ struct StringMaker<dang::utils::Matchers::detail::CalledWithArg<T>> {
     {
         using namespace std::literals;
 
-        return std::visit(dang::utils::Overloaded{[](std::monostate) { return "_"s; },
-                                                  [](const T& value) { return StringMaker<T>::convert(value); },
-                                                  [](const T* ptr) { return "&"s + StringMaker<T>::convert(*ptr); }},
+        return std::visit(dang::utils::Overloaded{
+                              [](std::monostate) { return "_"s; },
+                              [](const T& value) { return StringMaker<T>::convert(value); },
+                              [](const T* ptr) { return "&"s + StringMaker<T>::convert(*ptr); },
+                          },
                           arg);
     }
 };

@@ -39,20 +39,24 @@ namespace dang::gl {
 
 /// @brief A mapping to the GL-Constants for each shader stage.
 template <>
-inline constexpr dutils::EnumArray<ShaderType, GLenum> gl_constants<ShaderType> = {GL_VERTEX_SHADER,
-                                                                                   GL_FRAGMENT_SHADER,
-                                                                                   GL_GEOMETRY_SHADER,
-                                                                                   GL_TESS_CONTROL_SHADER,
-                                                                                   GL_TESS_EVALUATION_SHADER,
-                                                                                   GL_COMPUTE_SHADER};
+inline constexpr dutils::EnumArray<ShaderType, GLenum> gl_constants<ShaderType> = {
+    GL_VERTEX_SHADER,
+    GL_FRAGMENT_SHADER,
+    GL_GEOMETRY_SHADER,
+    GL_TESS_CONTROL_SHADER,
+    GL_TESS_EVALUATION_SHADER,
+    GL_COMPUTE_SHADER,
+};
 
 /// @brief Human-readable names for each shader stage.
-const dutils::EnumArray<ShaderType, std::string> shader_type_names{"Vertex-Shader",
-                                                                   "Fragment-Shader",
-                                                                   "Geometry-Shader",
-                                                                   "Tesselation-Control-Shader",
-                                                                   "Tesselation-Evaluation-Shader",
-                                                                   "Compute-Shader"};
+const dutils::EnumArray<ShaderType, std::string> shader_type_names = {
+    "Vertex-Shader",
+    "Fragment-Shader",
+    "Geometry-Shader",
+    "Tesselation-Control-Shader",
+    "Tesselation-Evaluation-Shader",
+    "Compute-Shader",
+};
 
 /// @brief Base class for shader errors with an info log.
 class ShaderError : public std::runtime_error {

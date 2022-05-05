@@ -24,31 +24,35 @@ template <>
 inline constexpr const char* enum_values<dang::math::Corner2>[5] = {"leftBottom", "rightBottom", "leftTop", "rightTop"};
 
 template <>
-inline constexpr const char* enum_values<dang::math::Corner3>[9] = {"leftBottomBack",
-                                                                    "rightBottomBack",
-                                                                    "leftTopBack",
-                                                                    "rightTopBack",
-                                                                    "leftBottomFront",
-                                                                    "rightBottomFront",
-                                                                    "leftTopFront",
-                                                                    "rightTopFront"};
+inline constexpr const char* enum_values<dang::math::Corner3>[9] = {
+    "leftBottomBack",
+    "rightBottomBack",
+    "leftTopBack",
+    "rightTopBack",
+    "leftBottomFront",
+    "rightBottomFront",
+    "leftTopFront",
+    "rightTopFront",
+};
 
 template <>
 inline constexpr const char* enum_values<dang::math::Edge2>[5] = {"left", "right", "bottom", "top"};
 
 template <>
-inline constexpr const char* enum_values<dang::math::Edge3>[13] = {"leftBottom",
-                                                                   "rightBottom",
-                                                                   "leftTop",
-                                                                   "rightTop",
-                                                                   "bottomBack",
-                                                                   "topBack",
-                                                                   "bottomFront",
-                                                                   "topFront",
-                                                                   "leftFront",
-                                                                   "rightFront",
-                                                                   "leftBack",
-                                                                   "rightBack"};
+inline constexpr const char* enum_values<dang::math::Edge3>[13] = {
+    "leftBottom",
+    "rightBottom",
+    "leftTop",
+    "rightTop",
+    "bottomBack",
+    "topBack",
+    "bottomFront",
+    "topFront",
+    "leftFront",
+    "rightFront",
+    "leftBack",
+    "rightBack",
+};
 
 template <>
 inline constexpr const char* enum_values<dang::math::Facing1>[3] = {"left", "right"};

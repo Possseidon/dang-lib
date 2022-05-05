@@ -1474,8 +1474,10 @@ struct Expected : std::variant<TResult, Error> {
     template <typename TOkFunc, typename TErrFunc>
     auto then(TOkFunc&& ok_func, TErrFunc&& err_func) const
     {
-        return std::visit(dutils::Overloaded{[&](TResult result) { return std::forward<TOkFunc>(ok_func)(result); },
-                                             [&](Error error) { return std::forward<TErrFunc>(err_func)(error); }},
+        return std::visit(dutils::Overloaded{
+                              [&](TResult result) { return std::forward<TOkFunc>(ok_func)(result); },
+                              [&](Error error) { return std::forward<TErrFunc>(err_func)(error); },
+                          },
                           *this);
     }
 };
@@ -4418,7 +4420,13 @@ public:
 
     bool operator==(const iterator_variant& other) const
     {
-        return std::visit(dutils::Overloaded{std::equal_to<TIterators>()..., [](...) { return false; }}, *this, other);
+        return std::visit(
+            dutils::Overloaded{
+                std::equal_to<TIterators>()...,
+                [](...) { return false; },
+            },
+            *this,
+            other);
     }
 
     bool operator!=(const iterator_variant& other) const { return !(*this == other); }
