@@ -85,8 +85,10 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metatable()
 {
     constexpr auto index = +[](const Line& line, std::variant<T, const char*> factor) {
-        return std::visit(dutils::Overloaded{[&](T factor) { return std::optional(line[factor]); },
-                                             [](...) { return std::optional<Point>(); }},
+        return std::visit(dutils::Overloaded{
+                              [&](T factor) { return std::optional(line[factor]); },
+                              [](...) { return std::optional<Point>(); },
+                          },
                           factor);
     };
     constexpr auto eq = +[](const Line& lhs, const Line& rhs) { return lhs == rhs; };
@@ -245,8 +247,10 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metatable()
 {
     constexpr auto index = +[](const Plane& plane, std::variant<Factors, const char*> factor) {
-        return std::visit(dutils::Overloaded{[&](const Factors& factor) { return std::optional(plane[factor]); },
-                                             [](...) { return std::optional<Point>(); }},
+        return std::visit(dutils::Overloaded{
+                              [&](const Factors& factor) { return std::optional(plane[factor]); },
+                              [](...) { return std::optional<Point>(); },
+                          },
                           factor);
     };
     constexpr auto eq = +[](const Plane& lhs, const Plane& rhs) { return lhs == rhs; };
@@ -368,10 +372,11 @@ template <typename T, std::size_t v_dim>
 std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metatable()
 {
     constexpr auto index = +[](const Spat& spat, std::variant<dang::math::Vector<T, 3>, const char*> factor) {
-        return std::visit(
-            dutils::Overloaded{[&](dang::math::Vector<T, 3> factor) { return std::optional(spat[factor]); },
-                               [](...) { return std::optional<Point>(); }},
-            factor);
+        return std::visit(dutils::Overloaded{
+                              [&](dang::math::Vector<T, 3> factor) { return std::optional(spat[factor]); },
+                              [](...) { return std::optional<Point>(); },
+                          },
+                          factor);
     };
     constexpr auto eq = +[](const Spat& lhs, const Spat& rhs) { return lhs == rhs; };
 

@@ -77,12 +77,13 @@ class EnumSet {
 public:
     static constexpr std::size_t enum_count = enum_count_v<T>;
 
-    using Word =
-        std::conditional_t<enum_count <= 8,
-                           std::uint8_t,
-                           std::conditional_t<enum_count <= 16,
-                                              std::uint16_t,
-                                              std::conditional_t<enum_count <= 32, std::uint32_t, std::uint64_t>>>;
+    using Word = std::conditional_t< //
+        enum_count <= 8,
+        std::uint8_t,
+        std::conditional_t< //
+            enum_count <= 16,
+            std::uint16_t,
+            std::conditional_t<enum_count <= 32, std::uint32_t, std::uint64_t>>>;
 
     static constexpr std::size_t word_bits = sizeof(Word) * CHAR_BIT;
     static constexpr std::size_t word_count = (enum_count + word_bits - 1) / word_bits;

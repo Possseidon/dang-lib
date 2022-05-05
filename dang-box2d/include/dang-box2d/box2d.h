@@ -1063,18 +1063,20 @@ public:
 
     void set(const EdgeShape& edge_shape) const
     {
-        std::visit(dutils::Overloaded{[&](const OneSidedEdgeShape& one_sided_edge_shape) {
-                                          setOneSided(true);
-                                          setFromVertex(one_sided_edge_shape.from_vertex);
-                                          setToVertex(one_sided_edge_shape.to_vertex);
-                                          setPrevVertex(one_sided_edge_shape.prev_vertex);
-                                          setNextVertex(one_sided_edge_shape.next_vertex);
-                                      },
-                                      [&](const TwoSidedEdgeShape& two_sided_edge_shape) {
-                                          setOneSided(false);
-                                          setFromVertex(two_sided_edge_shape.from_vertex);
-                                          setToVertex(two_sided_edge_shape.to_vertex);
-                                      }},
+        std::visit(dutils::Overloaded{
+                       [&](const OneSidedEdgeShape& one_sided_edge_shape) {
+                           setOneSided(true);
+                           setFromVertex(one_sided_edge_shape.from_vertex);
+                           setToVertex(one_sided_edge_shape.to_vertex);
+                           setPrevVertex(one_sided_edge_shape.prev_vertex);
+                           setNextVertex(one_sided_edge_shape.next_vertex);
+                       },
+                       [&](const TwoSidedEdgeShape& two_sided_edge_shape) {
+                           setOneSided(false);
+                           setFromVertex(two_sided_edge_shape.from_vertex);
+                           setToVertex(two_sided_edge_shape.to_vertex);
+                       },
+                   },
                    edge_shape);
     }
 };

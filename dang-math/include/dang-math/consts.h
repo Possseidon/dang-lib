@@ -58,14 +58,16 @@ inline constexpr dutils::EnumArray<Corner2, ivec2> corner_vector<2> = {
     ivec2(0, 0), ivec2(1, 0), ivec2(0, 1), ivec2(1, 1)};
 
 template <>
-inline constexpr dutils::EnumArray<Corner3, ivec3> corner_vector<3> = {ivec3(0, 0, 0),
-                                                                       ivec3(1, 0, 0),
-                                                                       ivec3(0, 1, 0),
-                                                                       ivec3(1, 1, 0),
-                                                                       ivec3(0, 0, 1),
-                                                                       ivec3(1, 0, 1),
-                                                                       ivec3(0, 1, 1),
-                                                                       ivec3(1, 1, 1)};
+inline constexpr dutils::EnumArray<Corner3, ivec3> corner_vector<3> = {
+    ivec3(0, 0, 0),
+    ivec3(1, 0, 0),
+    ivec3(0, 1, 0),
+    ivec3(1, 1, 0),
+    ivec3(0, 0, 1),
+    ivec3(1, 0, 1),
+    ivec3(0, 1, 1),
+    ivec3(1, 1, 1),
+};
 
 inline constexpr auto corner_vector_1 = corner_vector<1>;
 inline constexpr auto corner_vector_2 = corner_vector<2>;

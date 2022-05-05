@@ -37,15 +37,17 @@ namespace dang::gl {
 
 /// @brief Maps the various buffer usage hints to their GL-Constants.
 template <>
-inline constexpr dutils::EnumArray<BufferUsageHint, GLenum> gl_constants<BufferUsageHint> = {GL_STREAM_DRAW,
-                                                                                             GL_STREAM_READ,
-                                                                                             GL_STREAM_COPY,
-                                                                                             GL_STATIC_DRAW,
-                                                                                             GL_STATIC_READ,
-                                                                                             GL_STATIC_COPY,
-                                                                                             GL_DYNAMIC_DRAW,
-                                                                                             GL_DYNAMIC_READ,
-                                                                                             GL_DYNAMIC_COPY};
+inline constexpr dutils::EnumArray<BufferUsageHint, GLenum> gl_constants<BufferUsageHint> = {
+    GL_STREAM_DRAW,
+    GL_STREAM_READ,
+    GL_STREAM_COPY,
+    GL_STATIC_DRAW,
+    GL_STATIC_READ,
+    GL_STATIC_COPY,
+    GL_DYNAMIC_DRAW,
+    GL_DYNAMIC_READ,
+    GL_DYNAMIC_COPY,
+};
 
 /// @brief Thrown, when a VBO is locked (e.g. it is mapped) and cannot be rebound.
 class VBOBindError : public std::runtime_error {

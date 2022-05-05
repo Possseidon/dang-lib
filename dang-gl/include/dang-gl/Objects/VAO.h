@@ -43,18 +43,20 @@ namespace dang::gl {
 
 /// @brief Maps the different begin modes to their GL-Constants.
 template <>
-inline constexpr dutils::EnumArray<BeginMode, GLenum> gl_constants<BeginMode> = {GL_POINTS,
-                                                                                 GL_LINES,
-                                                                                 GL_LINE_LOOP,
-                                                                                 GL_LINE_STRIP,
-                                                                                 GL_TRIANGLES,
-                                                                                 GL_TRIANGLE_STRIP,
-                                                                                 GL_TRIANGLE_FAN,
-                                                                                 GL_LINES_ADJACENCY,
-                                                                                 GL_LINE_STRIP_ADJACENCY,
-                                                                                 GL_TRIANGLES_ADJACENCY,
-                                                                                 GL_TRIANGLE_STRIP_ADJACENCY,
-                                                                                 GL_PATCHES};
+inline constexpr dutils::EnumArray<BeginMode, GLenum> gl_constants<BeginMode> = {
+    GL_POINTS,
+    GL_LINES,
+    GL_LINE_LOOP,
+    GL_LINE_STRIP,
+    GL_TRIANGLES,
+    GL_TRIANGLE_STRIP,
+    GL_TRIANGLE_FAN,
+    GL_LINES_ADJACENCY,
+    GL_LINE_STRIP_ADJACENCY,
+    GL_TRIANGLES_ADJACENCY,
+    GL_TRIANGLE_STRIP_ADJACENCY,
+    GL_PATCHES,
+};
 
 /// @brief A base class for all vertex array objects, which is not templated yet.
 class VAOBase : public ObjectBindable<ObjectType::VertexArray> {
