@@ -1,9 +1,7 @@
 #pragma once
 
 #include "dang-gl/global.h"
-
 #include "dang-math/global.h"
-
 #include "dang-utils/global.h"
 
 #include "GLFW/glfw3.h"

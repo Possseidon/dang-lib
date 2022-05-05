@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-lua/State.h"
-
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 

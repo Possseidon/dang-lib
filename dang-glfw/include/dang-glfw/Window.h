@@ -2,14 +2,11 @@
 
 #include "dang-gl/Context/Context.h"
 #include "dang-gl/Objects/BufferMask.h"
-
 #include "dang-glfw/Input.h"
 #include "dang-glfw/Monitor.h"
 #include "dang-glfw/global.h"
-
 #include "dang-math/bounds.h"
 #include "dang-math/vector.h"
-
 #include "dang-utils/event.h"
 
 namespace dang::glfw {

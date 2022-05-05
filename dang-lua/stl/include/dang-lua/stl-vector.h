@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-lua/State.h"
-
 #include "dang-utils/utils.h"
 
 namespace dang::lua {

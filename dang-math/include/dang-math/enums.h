@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-math/global.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::math {

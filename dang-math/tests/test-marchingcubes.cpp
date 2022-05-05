@@ -5,7 +5,6 @@
 #include "dang-math/enums.h"
 #include "dang-math/marchingcubes.h"
 #include "dang-math/vector.h"
-
 #include "dang-utils/enum.h"
 
 #include "catch2/catch.hpp"

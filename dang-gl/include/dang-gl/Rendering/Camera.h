@@ -5,7 +5,6 @@
 #include "dang-gl/Math/Transform.h"
 #include "dang-gl/Objects/Program.h"
 #include "dang-gl/global.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::gl {

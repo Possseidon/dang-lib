@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-lua/global.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::lua {

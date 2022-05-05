@@ -1,7 +1,5 @@
 #include "dang-gl/Texturing/TextureAtlasTiles.h"
-
 #include "dang-math/vector.h"
-
 #include "dang-utils/catch2-stub-matcher.h"
 #include "dang-utils/stub.h"
 #include "dang-utils/utils.h"

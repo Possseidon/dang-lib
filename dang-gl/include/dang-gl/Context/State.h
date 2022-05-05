@@ -3,7 +3,6 @@
 #include "dang-gl/Context/StateTypes.h"
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
-
 #include "dang-math/vector.h"
 
 // TODO: Consider using template specialization instead of polymorphism for properties, which should be sufficient.

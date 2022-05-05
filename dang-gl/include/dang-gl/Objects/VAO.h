@@ -8,7 +8,6 @@
 #include "dang-gl/Objects/VBO.h"
 #include "dang-gl/Objects/VertexArrayContext.h"
 #include "dang-gl/global.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::gl {
