@@ -3,7 +3,6 @@
 #include "dang-gl/General/GLConstants.h"
 #include "dang-gl/Image/PixelInternalFormat.h"
 #include "dang-gl/global.h"
-
 #include "dang-utils/enum.h"
 #include "dang-utils/utils.h"
 

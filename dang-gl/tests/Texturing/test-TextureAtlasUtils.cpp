@@ -1,5 +1,4 @@
 #include "dang-gl/Texturing/TextureAtlasUtils.h"
-
 #include "dang-glfw/GLFW.h"
 #include "dang-glfw/Window.h"
 

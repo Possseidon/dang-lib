@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "dang-math/vector.h"
-
 #include "dang-utils/event.h"
 #include "dang-utils/utils.h"
 

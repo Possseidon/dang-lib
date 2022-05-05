@@ -2,7 +2,6 @@
 
 #include "dang-glfw/Monitor.h"
 #include "dang-glfw/global.h"
-
 #include "dang-utils/event.h"
 
 namespace dang::glfw {

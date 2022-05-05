@@ -1,7 +1,6 @@
 #include "dang-math/lua-vector-matrix.h"
 
 #include "dang-math/lua-enums.h"
-
 #include "dang-utils/utils.h"
 
 namespace dang::lua {

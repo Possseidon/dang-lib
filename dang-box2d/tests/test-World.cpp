@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "dang-box2d/box2d.h"
-
 #include "dang-utils/catch2-stub-matcher.h"
 
 #include "shared/World.h"

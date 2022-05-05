@@ -63,28 +63,14 @@ FixNamespaceComments: true
 ForEachMacros: []
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '"pch\.h"'
-    Priority: -1
-  - Regex: '"utils\.h"'
-    Priority: 1
   - Regex: "<[[:alnum:]._]+>"
-    Priority: 2
+    Priority: 0
   - Regex: '"glad/glad\.h"'
-    Priority: 3
-  - Regex: '"dang-box2d/'
-    Priority: 4
-  - Regex: '"dang-gl/'
-    Priority: 5
-  - Regex: '"dang-glfw/'
-    Priority: 6
-  - Regex: '"dang-lua/'
-    Priority: 7
-  - Regex: '"dang-math/'
-    Priority: 8
-  - Regex: '"dang-utils/'
-    Priority: 9
+    Priority: 1
+  - Regex: '"dang-'
+    Priority: 2
   - Regex: ".*"
-    Priority: 10
+    Priority: 3
 IncludeIsMainRegex: ""
 IncludeIsMainSourceRegex: ""
 IndentCaseLabels: false

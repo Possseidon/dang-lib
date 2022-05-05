@@ -1,12 +1,10 @@
 #pragma once
 
 #include "dang-gl/global.h"
-
 #include "dang-math/enums.h"
 #include "dang-math/geometry.h"
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::gl {

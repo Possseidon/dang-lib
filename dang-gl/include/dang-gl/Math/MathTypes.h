@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-gl/global.h"
-
 #include "dang-math/bounds.h"
 #include "dang-math/matrix.h"
 #include "dang-math/quaternion.h"

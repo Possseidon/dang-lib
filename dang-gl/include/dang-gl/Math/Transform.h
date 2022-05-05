@@ -2,7 +2,6 @@
 
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
-
 #include "dang-utils/event.h"
 
 namespace dang::gl {

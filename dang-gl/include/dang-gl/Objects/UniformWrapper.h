@@ -4,7 +4,6 @@
 #include "dang-gl/Objects/ObjectHandle.h"
 #include "dang-gl/Objects/ObjectType.h"
 #include "dang-gl/global.h"
-
 #include "dang-math/matrix.h"
 #include "dang-math/vector.h"
 

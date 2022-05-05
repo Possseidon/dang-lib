@@ -7,7 +7,6 @@
 #include "dang-gl/Texturing/TextureAtlasBase.h"
 #include "dang-gl/Texturing/TextureAtlasUtils.h"
 #include "dang-gl/global.h"
-
 #include "dang-utils/enum.h"
 
 namespace dang::gl {
