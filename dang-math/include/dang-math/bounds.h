@@ -326,6 +326,13 @@ struct Bounds {
         return this->facing(static_cast<std::size_t>(facing), clip, width);
     }
 
+    /// @brief Remaps a point from the bounds to the target bounds.
+    /// @remarks For the inverse operation, simply swap the bounds.
+    constexpr Point map(const Point& point, const Bounds& target) const
+    {
+        return target.low + (point - low) * target.size() / size();
+    }
+
 private:
     template <std::size_t... v_axes>
     constexpr Bounds facingHelper(std::size_t facing,
