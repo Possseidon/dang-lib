@@ -338,6 +338,17 @@ public:
     /// @brief Maps the buffer and returns a container-like wrapper to the mapping.
     VBOMapping<T> map() { return VBOMapping<T>(*this); }
 
+    /// @brief Updates the entire buffer with the given elements and to_data function.
+    template <typename TElements, typename TToData>
+    void update(const TElements& elements, TToData&& to_data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        using std::begin, std::end;
+        auto size = std::size(elements);
+        assert(size <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(size), usage);
+        std::transform(begin(elements), end(elements), map().begin(), std::forward<TToData>(to_data));
+    }
+
 private:
     GLsizei count_ = 0;
 };
