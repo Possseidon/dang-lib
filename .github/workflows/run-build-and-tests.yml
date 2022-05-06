@@ -35,6 +35,8 @@ jobs:
     env:
       CMAKE_BUILD_DIR: ${{github.workspace}}/build
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
+      BINARY_CACHE: ${{github.workspace}}/.vcpkg-archives
+      VCPKG_BINARY_SOURCES: clear;files,${{env.BINARY_CACHE}},readwrite
 
     steps:
       - name: Checkout repository
@@ -51,8 +53,7 @@ jobs:
           vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.runs.preset}}
         with:
           path: |
-            ${{env.CMAKE_BUILD_DIR}}/vcpkg_installed
-            ${{env.VCPKG_ROOT}}/packages
+            ${{env.BINARY_CACHE}}
             ${{env.VCPKG_ROOT}}/downloads
           key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
           restore-keys: |
