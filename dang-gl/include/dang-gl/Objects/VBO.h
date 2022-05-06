@@ -137,15 +137,15 @@ public:
 
     /// @brief Maps and locks the given VBO to stay bound, as only one VBO can be mapped at any given time.
     VBOMapping(VBO<T>& vbo)
-        : data_(empty() ? nullptr : static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)))
-        , size_(vbo.count())
+        : size_(vbo.count())
+        , data_(empty() ? nullptr : static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)))
     {}
 
     VBOMapping(const VBOMapping&) = delete;
 
     VBOMapping(VBOMapping&& other)
-        : data_(std::exchange(other.data_, nullptr))
-        , size_(other.size_)
+        : size_(other.size_)
+        , data_(std::exchange(other.data_, nullptr))
     {}
 
     VBOMapping& operator=(const VBOMapping&) = delete;
@@ -153,8 +153,8 @@ public:
     VBOMapping& operator=(VBOMapping&& other)
     {
         unmap();
-        data_ = std::exchange(other.data_, nullptr);
         size_ = other.size_;
+        data_ = std::exchange(other.data_, nullptr);
         return *this;
     }
 
@@ -182,8 +182,8 @@ public:
     iterator end() noexcept { return iterator(data_ + size()); }
 
 private:
-    T* data_;
     std::size_t size_;
+    T* data_;
     // TODO: VBOLock<T> lock_{ vbo_ };
 };
 
