@@ -37,7 +37,7 @@ auto bind_n(TArgs&&... args)
 /// Handlers can be added by:
 /// - By simply appending/prepending a handler, which cannot be undone.
 /// - By subscribing, which is automatically undone, when the subscription goes out of scope.
-/// @remark To create an event, simply declare a public member variable, e.g. onWindowResize.
+/// @remark To create an event, simply declare a public member variable, e.g. on_window_resize.
 /// @remark To subscribe to an event, declare a member variable of type Event::Subscription.
 /// @remark Events are movable without having to worry about subscriptions.
 /// @remark Copying however, will simply do nothing, as this would be hard to "get right" in regards to subscriptions.

@@ -28,7 +28,7 @@ public:
 
     /// @brief The own transformation, without any parent transform.
     const dquat& ownTransform() const;
-    /// @brief Sets the own transform to the given quaternion, triggering the onChange event.
+    /// @brief Sets the own transform to the given quaternion, triggering the on_change event.
     void setOwnTransform(const dquat& transform);
 
     /// @brief The full transformation, including all parent transformations.
@@ -53,9 +53,9 @@ public:
 
     /// @brief Triggered, when the full transformation changes, because either the own transformation or that of any
     /// parent changed.
-    Event onChange;
+    Event on_change;
     /// @brief Triggered, when the parent of this transform changed.
-    Event onParentChange;
+    Event on_parent_change;
 
 private:
     dquat own_transform_;

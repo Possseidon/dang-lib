@@ -404,10 +404,10 @@ public:
     /// @brief Activates the OpenGL context of the window.
     void activate();
 
-    /// @brief Activates and updates the window, also triggering the onUpdate event.
+    /// @brief Activates and updates the window, also triggering the on_update event.
     void update();
     /// @brief Activates and renders the window using the default framebuffer, which is first cleared, and then drawn by
-    /// the onRender event.
+    /// the on_render event.
     void render();
     /// @brief Polls window events and clears/updates the text input.
     void pollEvents();
@@ -430,52 +430,52 @@ public:
     bool supportsAdaptiveVSync();
 
     /// @brief Called in the update method.
-    WindowEvent onUpdate;
+    WindowEvent on_update;
     /// @brief Called by the render method in between clear and buffer swapping.
-    WindowEvent onRender;
+    WindowEvent on_render;
 
     /// @brief Triggered, when the user attempts to close the window.
-    WindowEvent onClose;
+    WindowEvent on_close;
     /// @brief Triggered, when the content scale of the window changes.
-    WindowEvent onContentScale;
+    WindowEvent on_content_scale;
     /// @brief Triggered, when the window receives focus.
-    WindowEvent onFocus;
+    WindowEvent on_focus;
     /// @brief Triggered, when the window loses focus.
-    WindowEvent onUnfocus;
+    WindowEvent on_unfocus;
     /// @brief Triggered, when the window is iconified/minimized.
-    WindowEvent onIconify;
+    WindowEvent on_iconify;
     /// @brief Triggered, when the window is restored from an iconified/minimized state.
-    WindowEvent onUniconify;
+    WindowEvent on_uniconify;
     /// @brief Triggered, when the window is maximized.
-    WindowEvent onMaximize;
+    WindowEvent on_maximize;
     /// @brief Triggered, when the window is restored from being maximized.
-    WindowEvent onUnmaximize;
+    WindowEvent on_unmaximize;
     /// @brief Triggered, when the window is restored from being iconified or maximized.
-    WindowEvent onRestore;
+    WindowEvent on_restore;
     /// @brief Triggered, when the window is moved.
-    WindowEvent onMove;
+    WindowEvent on_move;
     /// @brief Triggered, when the window is resized.
-    WindowEvent onResize;
+    WindowEvent on_resize;
     /// @brief Triggered, when the window framebuffer is resized.
-    WindowEvent onFramebufferResize;
+    WindowEvent on_framebuffer_resize;
 
     /// @brief Triggered, when the user types something on the keyboard, which can be queried using the textInput
     /// method.
-    WindowEvent onType;
+    WindowEvent on_type;
     /// @brief Triggered, when the user presses, holds or releases a key on the keyboard.
-    KeyEvent onKey;
+    KeyEvent on_key;
     /// @brief Triggered, when the mouse cursor enters the content area of the window.
-    WindowEvent onCursorEnter;
+    WindowEvent on_cursor_enter;
     /// @brief Triggered, when the mouse cursor leaves the content area of the window.
-    WindowEvent onCursorLeave;
+    WindowEvent on_cursor_leave;
     /// @brief Triggered, when the mouse cursor moves across the content area of the window.
-    CursorMoveEvent onCursorMove;
+    CursorMoveEvent on_cursor_move;
     /// @brief Triggered, when the user drops files on the window.
-    DropPathsEvent onDropPaths;
+    DropPathsEvent on_drop_paths;
     /// @brief Triggered, when the user presses or releases a mouse button.
-    ButtonEvent onButton;
+    ButtonEvent on_button;
     /// @brief Triggered, when the user scrolls the mouse wheel.
-    ScrollEvent onScroll;
+    ScrollEvent on_scroll;
 
 private:
     /// @brief Registers all GLFW callbacks.

@@ -8,7 +8,7 @@ ProjectionProvider::ProjectionProvider(float aspect)
 
 ProjectionProvider::ProjectionProvider(Context& context)
     : aspect_(context.aspect())
-    , context_resize_(context.onResize, [&] { setAspect(context.aspect()); })
+    , context_resize_(context.on_resize, [&] { setAspect(context.aspect()); })
 {}
 
 ProjectionProvider::~ProjectionProvider() {}

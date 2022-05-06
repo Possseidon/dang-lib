@@ -92,14 +92,14 @@ public:
         if (size_ == size)
             return;
         size_ = size;
-        onResize(*this);
+        on_resize(*this);
     }
 
-    Event onResize;
+    Event on_resize;
 
     /// @brief Triggered, if OpenGL debug output is enabled in the state.
     /// @remark Enabling synchronous debug output is very useful for debugging.
-    DebugMessageEvent onGLDebugMessage;
+    DebugMessageEvent on_gl_debug_message;
 
 private:
     /// @brief Initializes the contexts for the different GL-Object types.

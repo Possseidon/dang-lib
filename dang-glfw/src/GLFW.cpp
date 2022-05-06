@@ -128,10 +128,10 @@ void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
 {
     if (event == GLFW_CONNECTED) {
         instance().monitors_.emplace_back(monitor);
-        instance().onConnectMonitor(monitor);
+        instance().on_connect_monitor(monitor);
     }
     else if (event == GLFW_DISCONNECTED) {
-        instance().onDisconnectMonitor(monitor);
+        instance().on_disconnect_monitor(monitor);
         auto pos = std::find(instance().monitors_.begin(), instance().monitors_.end(), monitor);
         if (pos != instance().monitors_.end())
             instance().monitors_.erase(pos);
@@ -139,7 +139,7 @@ void GLFW::monitorCallback(GLFWmonitor* monitor, int event)
 
     if (instance().primary_monitor_ != monitor) {
         instance().primary_monitor_ = monitor;
-        instance().onPrimaryMonitorChange(monitor);
+        instance().on_primary_monitor_change(monitor);
     }
 }
 
