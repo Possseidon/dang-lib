@@ -350,25 +350,19 @@ dmath::dvec2 Window::cursorPos() const
 
 void Window::setCursorPos(dmath::dvec2 cursor_pos) { glfwSetCursorPos(handle_, cursor_pos.x(), cursor_pos.y()); }
 
-dmath::vec2 Window::normalizePos(dmath::dvec2 window_pos) const
+dmath::bounds2 Window::windowBounds()
 {
-    dmath::dvec2 window_size = dmath::dvec2(framebufferSize());
-    dmath::dvec2 normalized_pos = window_pos * 2 / window_size.y() - dmath::dvec2(aspect(), 1);
-    normalized_pos.y() = -normalized_pos.y();
-    return dmath::vec2(normalized_pos);
+    auto [width, height] = dmath::vec2(framebufferSize());
+    return dmath::bounds2(dmath::vec2(0.0f, height), dmath::vec2(width, 0.0f));
 }
 
-dmath::dvec2 Window::denormalizePos(dmath::vec2 normalized_pos) const
+dmath::bounds2 Window::viewBounds() { return dmath::bounds2(dmath::vec2(-1), dmath::vec2(1)); }
+
+dmath::bounds2 Window::normalizedBounds()
 {
-    dmath::dvec2 window_size = dmath::dvec2(framebufferSize());
-    dmath::dvec2 window_pos = dmath::dvec2(normalized_pos);
-    window_pos.y() = -window_pos.y();
-    return (window_pos + dmath::dvec2(aspect(), 1) * 2) * window_size.y() / 2;
+    auto current_aspect = this->aspect();
+    return dmath::bounds2(dmath::vec2(-current_aspect, -1), dmath::vec2(current_aspect, 1));
 }
-
-dmath::vec2 Window::normalizedCursorPos() const { return normalizePos(cursorPos()); }
-
-void Window::setNormalizedCursorPos(dmath::vec2 cursor_pos) { setCursorPos(denormalizePos(cursor_pos)); }
 
 CursorMode Window::cursorMode() const { return static_cast<CursorMode>(glfwGetInputMode(handle_, GLFW_CURSOR)); }
 
@@ -443,6 +437,8 @@ void Window::run()
     while (!shouldClose())
         step();
 }
+
+void Window::setShouldClose(bool should_close) { glfwSetWindowShouldClose(handle_, should_close); }
 
 bool Window::shouldClose() const { return glfwWindowShouldClose(handle_); }
 

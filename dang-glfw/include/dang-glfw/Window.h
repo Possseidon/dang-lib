@@ -364,15 +364,16 @@ public:
     /// @brief Sets the cursor position to the given value, using the top left of the window as origin.
     void setCursorPos(dmath::dvec2 cursor_pos);
 
-    /// @brief Normalizes the given window position to `-aspect` to `+aspect` for x and `-1` to `+1` (flipped) for y.
-    dmath::vec2 normalizePos(dmath::dvec2 window_pos) const;
-    /// @brief Inverse operation to normalizePos.
-    dmath::dvec2 denormalizePos(dmath::vec2 normalized_pos) const;
-
-    /// @brief Returns the normalized cursor position using normalizePos.
-    dmath::vec2 normalizedCursorPos() const;
-    /// @brief Sets cursor position using denormalizePos.
-    void setNormalizedCursorPos(dmath::vec2 cursor_pos);
+    /// @brief Returns the bounds of the window in screen coordinates.
+    /// @remark I.e. [(0, height), (width, 0)]
+    /// @remark The y value is flipped.
+    dmath::bounds2 windowBounds();
+    /// @brief Returns the bounds of the window in view coordinated.
+    /// @remark I.e. [(-1, -1), (1, 1)]
+    dmath::bounds2 viewBounds();
+    /// @brief Returns the bounds of the window in normalized coordinates.
+    /// @remark I.e. [(-aspect, -1), (aspect, 1)]
+    dmath::bounds2 normalizedBounds();
 
     /// @brief Whether the cursor is normal, hidden or disabled.
     CursorMode cursorMode() const;
@@ -417,6 +418,8 @@ public:
     /// @brief Runs update-render-poll steps until the window should close.
     void run();
 
+    /// @brief Sets whether the window should close.
+    void setShouldClose(bool should_close);
     /// @brief Whether the window should close.
     bool shouldClose() const;
 
