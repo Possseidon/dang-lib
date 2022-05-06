@@ -410,14 +410,14 @@ void Window::update()
 {
     activate();
     updateDeltaTime();
-    onUpdate(*this);
+    on_update(*this);
 }
 
 void Window::render()
 {
     activate();
     dgl::FBO::clearDefault(context_, clear_mask_);
-    onRender(*this);
+    on_render(*this);
     glfwSwapBuffers(handle_);
     if (finish_after_swap_)
         glFinish();
@@ -428,7 +428,7 @@ void Window::pollEvents()
     text_input_.clear();
     glfwPollEvents();
     if (!text_input_.empty())
-        onType(*this);
+        on_type(*this);
 }
 
 void Window::step()
@@ -495,25 +495,25 @@ void Window::cursorEnterCallback(GLFWwindow* window_handle, int entered)
 {
     Window& window = Window::fromUserPointer(window_handle);
     if (entered)
-        window.onCursorEnter(window);
+        window.on_cursor_enter(window);
     else
-        window.onCursorLeave(window);
+        window.on_cursor_leave(window);
 }
 
 void Window::cursorPosCallback(GLFWwindow* window_handle, double xpos, double ypos)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onCursorMove({window, {xpos, ypos}});
+    window.on_cursor_move({window, {xpos, ypos}});
 }
 
 void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char* path_array[])
 {
     Window& window = Window::fromUserPointer(window_handle);
-    if (!window.onDropPaths)
+    if (!window.on_drop_paths)
         return;
     std::vector<fs::path> paths(path_count);
     std::transform(path_array, path_array + path_count, paths.begin(), [](auto path) { return fs::u8path(path); });
-    window.onDropPaths({window, paths});
+    window.on_drop_paths({window, paths});
 }
 
 void Window::framebufferSizeCallback(GLFWwindow* window_handle, int, int)
@@ -521,60 +521,60 @@ void Window::framebufferSizeCallback(GLFWwindow* window_handle, int, int)
     Window& window = Window::fromUserPointer(window_handle);
     if (window.auto_adjust_viewport_)
         window.adjustViewport();
-    window.onFramebufferResize(window);
+    window.on_framebuffer_resize(window);
 }
 
 void Window::keyCallback(GLFWwindow* window_handle, int key, int scancode, int action, int mods)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onKey({window,
-                  static_cast<KeyAction>(action),
-                  KeyData(static_cast<Key>(key), scancode),
-                  ModifierKeys::fromBits(mods)});
+    window.on_key({window,
+                   static_cast<KeyAction>(action),
+                   KeyData(static_cast<Key>(key), scancode),
+                   ModifierKeys::fromBits(mods)});
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window_handle, int button, int action, int mods)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onButton(
+    window.on_button(
         {window, static_cast<ButtonAction>(action), static_cast<Button>(button), ModifierKeys::fromBits(mods)});
 }
 
 void Window::scrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onScroll({window, dmath::dvec2(xoffset, yoffset)});
+    window.on_scroll({window, dmath::dvec2(xoffset, yoffset)});
 }
 
 void Window::windowCloseCallback(GLFWwindow* window_handle)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onClose(window);
+    window.on_close(window);
 }
 
 void Window::windowContentScaleCallback(GLFWwindow* window_handle, float, float)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onContentScale(window);
+    window.on_content_scale(window);
 }
 
 void Window::windowFocusCallback(GLFWwindow* window_handle, int focused)
 {
     Window& window = Window::fromUserPointer(window_handle);
     if (focused)
-        window.onFocus(window);
+        window.on_focus(window);
     else
-        window.onUnfocus(window);
+        window.on_unfocus(window);
 }
 
 void Window::windowIconifyCallback(GLFWwindow* window_handle, int iconified)
 {
     Window& window = Window::fromUserPointer(window_handle);
     if (iconified)
-        window.onIconify(window);
+        window.on_iconify(window);
     else {
-        window.onUniconify(window);
-        window.onRestore(window);
+        window.on_uniconify(window);
+        window.on_restore(window);
     }
 }
 
@@ -582,17 +582,17 @@ void Window::windowMaximizeCallback(GLFWwindow* window_handle, int maximized)
 {
     Window& window = Window::fromUserPointer(window_handle);
     if (maximized)
-        window.onMaximize(window);
+        window.on_maximize(window);
     else {
-        window.onUnmaximize(window);
-        window.onRestore(window);
+        window.on_unmaximize(window);
+        window.on_restore(window);
     }
 }
 
 void Window::windowPosCallback(GLFWwindow* window_handle, int, int)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onMove(window);
+    window.on_move(window);
 }
 
 void Window::windowRefreshCallback(GLFWwindow* window_handle)
@@ -604,7 +604,7 @@ void Window::windowRefreshCallback(GLFWwindow* window_handle)
 void Window::windowSizeCallback(GLFWwindow* window_handle, int, int)
 {
     Window& window = Window::fromUserPointer(window_handle);
-    window.onResize(window);
+    window.on_resize(window);
 }
 
 void Window::updateDeltaTime()

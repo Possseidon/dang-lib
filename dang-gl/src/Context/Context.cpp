@@ -37,12 +37,12 @@ void Context::debugMessageCallback(GLenum source,
                                    const void* user_param)
 {
     Context& context = *static_cast<Context*>(const_cast<void*>(user_param));
-    context.onGLDebugMessage({context,
-                              static_cast<DebugSource>(source),
-                              static_cast<DebugType>(type),
-                              id,
-                              static_cast<DebugSeverity>(severity),
-                              std::string(message, message + length)});
+    context.on_gl_debug_message({context,
+                                 static_cast<DebugSource>(source),
+                                 static_cast<DebugType>(type),
+                                 id,
+                                 static_cast<DebugSeverity>(severity),
+                                 std::string(message, message + length)});
 }
 
 void setContext(Context* context) { Context::current_ = context; }

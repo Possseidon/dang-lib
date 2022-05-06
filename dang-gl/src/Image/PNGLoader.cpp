@@ -66,7 +66,7 @@ void PNGLoader::errorCallback(png_structp, png_const_charp message) { throw PNGE
 void PNGLoader::warningCallback(png_structp png_ptr, png_const_charp message)
 {
     auto& png_image = *static_cast<PNGLoader*>(png_get_error_ptr(png_ptr));
-    png_image.onWarning({png_image, message});
+    png_image.on_warning({png_image, message});
 }
 
 void PNGLoader::readCallback(png_structp png_ptr, png_bytep bytes, png_size_t size)

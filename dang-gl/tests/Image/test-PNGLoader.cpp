@@ -26,7 +26,7 @@ void loadImages()
 
         dgl::PNGLoader png_loader;
 
-        png_loader.onWarning.append([&](const dgl::PNGWarningInfo& info) {
+        png_loader.on_warning.append([&](const dgl::PNGWarningInfo& info) {
             CHECK(&info.image == &png_loader);
             if (should_fail)
                 UNSCOPED_INFO(info.message);

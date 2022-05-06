@@ -10,7 +10,7 @@ void Transform::setOwnTransform(const dquat& transform)
 {
     own_transform_ = transform;
     full_transform_.reset();
-    onChange(*this);
+    on_change(*this);
 }
 
 const dquat& Transform::fullTransform()
@@ -45,16 +45,16 @@ void Transform::forceParent(const SharedTransform& parent)
     if (parent) {
         auto parent_change = [&] {
             full_transform_.reset();
-            onChange(*this);
+            on_change(*this);
         };
-        parent_change_ = parent->onChange.subscribe(parent_change);
+        parent_change_ = parent->on_change.subscribe(parent_change);
     }
     else {
         parent_change_.remove();
     }
     full_transform_.reset();
-    onParentChange(*this);
-    onChange(*this);
+    on_parent_change(*this);
+    on_change(*this);
 }
 
 bool Transform::trySetParent(const SharedTransform& parent)

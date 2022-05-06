@@ -58,7 +58,7 @@ public:
     std::unique_ptr<std::byte[]> read(bool flip = false, dmath::svec2 pad_low = {}, dmath::svec2 pad_high = {});
 
     /// @brief While errors throw an exception, warnings simply trigger this event.
-    PNGWarningEvent onWarning;
+    PNGWarningEvent on_warning;
 
 private:
     /// @brief Expands or strips the bit depth to exactly 8 bit, potentially disabling palette or adding an alpha

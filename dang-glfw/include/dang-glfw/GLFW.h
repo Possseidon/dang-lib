@@ -62,11 +62,11 @@ public:
     const std::vector<Monitor>& monitors() const;
 
     /// @brief Triggered when a new monitor has been connected.
-    MonitorEvent onConnectMonitor;
+    MonitorEvent on_connect_monitor;
     /// @brief Triggered when an existing monitor is disconnected.
-    MonitorEvent onDisconnectMonitor;
+    MonitorEvent on_disconnect_monitor;
     /// @brief Triggered when the primary monitor changes.
-    MonitorEvent onPrimaryMonitorChange;
+    MonitorEvent on_primary_monitor_change;
 
 private:
     /// @brief Initializes glad if it is not initialized yet and can only be called once a window/context has been
