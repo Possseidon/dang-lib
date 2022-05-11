@@ -49,7 +49,7 @@ TEST_CASE("Box2D worlds can have a contact filter.")
     auto fixture2 = world.createBody(b2::BodyType::Dynamic).createFixture(fixture2_def, circle_shape);
 
     // Register the contact filter.
-    auto filter_stub = dutils::Stub<bool(World::Fixture, World::Fixture)>();
+    auto filter_stub = dutils::Stub<bool(World::FixtureRef, World::FixtureRef)>();
     world.setContactFilter(filter_stub);
 
     stepWorld(world);
@@ -168,7 +168,7 @@ TEST_CASE("Box2D worlds can query fixtures.")
         aabb.lowerBound.Set(-1.0f, -1.0f);
         aabb.upperBound.Set(1.0f, 1.0f);
 
-        auto query_callback = dutils::Stub<bool(World::Fixture)>(true);
+        auto query_callback = dutils::Stub<bool(World::FixtureRef)>(true);
         query_callback.setInfo({"query_callback", {"fixture"}});
         world.queryAABB(query_callback, aabb);
 
@@ -386,8 +386,8 @@ TEST_CASE("Box2D worlds have events for when fixtures and joints are destroyed i
     joint_def.body_b = world.createBody();
     auto created_joint = world.createJoint(joint_def);
 
-    World::Fixture destroyed_fixture;
-    world.on_destroy_fixture.append([&](World::Fixture fixture) { destroyed_fixture = fixture; });
+    World::FixtureRef destroyed_fixture;
+    world.on_destroy_fixture.append([&](World::FixtureRef fixture) { destroyed_fixture = fixture; });
 
     World::JointRef destroyed_joint;
     world.on_destroy_joint.append([&](World::JointRef joint) { destroyed_joint = joint; });
@@ -422,7 +422,7 @@ TEST_CASE("Box2D worlds have contact events.")
 
     stepWorld(world);
 
-    auto expected_fixtures = std::vector<World::Fixture>{fixture1, fixture2};
+    auto expected_fixtures = std::vector<World::FixtureRef>{fixture1, fixture2};
 
     CHECKED_IF(begin_contact)
     {

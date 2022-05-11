@@ -673,41 +673,41 @@ template <typename TConstAs>
 using ChainShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2ChainShape, TConstAs>>;
 
 template <typename TUserData>
-using Fixture = detail::FixtureWrapper<TUserData, b2Fixture, b2Shape>;
+using FixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2Shape>;
 template <typename TUserData>
-using ConstFixture = detail::FixtureWrapper<TUserData, const b2Fixture, b2Shape>;
+using ConstFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2Shape>;
 template <typename TUserData, typename TConstAs>
-using FixtureConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2Shape>;
+using FixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2Shape>;
 
 template <typename TUserData>
-using CircleFixture = detail::FixtureWrapper<TUserData, b2Fixture, b2CircleShape>;
+using CircleFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2CircleShape>;
 template <typename TUserData>
-using ConstCircleFixture = detail::FixtureWrapper<TUserData, const b2Fixture, b2CircleShape>;
+using ConstCircleFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2CircleShape>;
 template <typename TUserData, typename TConstAs>
-using CircleFixtureConstAs =
+using CircleFixtureRefConstAs =
     detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2CircleShape>;
 
 template <typename TUserData>
-using EdgeFixture = detail::FixtureWrapper<TUserData, b2Fixture, b2EdgeShape>;
+using EdgeFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2EdgeShape>;
 template <typename TUserData>
-using ConstEdgeFixture = detail::FixtureWrapper<TUserData, const b2Fixture, b2EdgeShape>;
+using ConstEdgeFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2EdgeShape>;
 template <typename TUserData, typename TConstAs>
-using EdgeFixtureConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2EdgeShape>;
+using EdgeFixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2EdgeShape>;
 
 template <typename TUserData>
-using PolygonFixture = detail::FixtureWrapper<TUserData, b2Fixture, b2PolygonShape>;
+using PolygonFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2PolygonShape>;
 template <typename TUserData>
-using ConstPolygonFixture = detail::FixtureWrapper<TUserData, const b2Fixture, b2PolygonShape>;
+using ConstPolygonFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2PolygonShape>;
 template <typename TUserData, typename TConstAs>
-using PolygonFixtureConstAs =
+using PolygonFixtureRefConstAs =
     detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2PolygonShape>;
 
 template <typename TUserData>
-using ChainFixture = detail::FixtureWrapper<TUserData, b2Fixture, b2ChainShape>;
+using ChainFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2ChainShape>;
 template <typename TUserData>
-using ConstChainFixture = detail::FixtureWrapper<TUserData, const b2Fixture, b2ChainShape>;
+using ConstChainFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2ChainShape>;
 template <typename TUserData, typename TConstAs>
-using ChainFixtureConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
+using ChainFixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
 
 template <typename TUserData>
 using BodyRef = detail::BodyWrapper<TUserData, b2Body>;
@@ -1189,7 +1189,7 @@ public:
 
     BodyRefConstAs<TUserData, TFixture> getBody() const { return this->handle()->GetBody(); }
 
-    FixtureConstAs<TUserData, TFixture> getNext() const { return this->handle()->GetNext(); }
+    FixtureRefConstAs<TUserData, TFixture> getNext() const { return this->handle()->GetNext(); }
 
     void setUserData(typename TUserData::Fixture* user_data) const
     {
@@ -1353,10 +1353,10 @@ public:
                                                                            this->handle()->CreateFixture(&def));
     }
 
-    Fixture<TUserData> createFixture(const FixtureDef<TUserData>& fixture, const Shape& shape) const
+    FixtureRef<TUserData> createFixture(const FixtureDef<TUserData>& fixture, const Shape& shape) const
     {
         return std::visit(
-            [&](const auto& concrete_shape) -> Fixture<TUserData> {
+            [&](const auto& concrete_shape) -> FixtureRef<TUserData> {
                 return this->createFixture(fixture, concrete_shape);
             },
             shape);
@@ -1371,10 +1371,10 @@ public:
             ForceFixture{}, this->handle()->CreateFixture(&shape_data, density));
     }
 
-    Fixture<TUserData> createFixture(const Shape& shape, float density = 1.0f) const
+    FixtureRef<TUserData> createFixture(const Shape& shape, float density = 1.0f) const
     {
         return std::visit(
-            [&](const auto& concrete_shape) -> Fixture<TUserData> {
+            [&](const auto& concrete_shape) -> FixtureRef<TUserData> {
                 return this->createFixture(concrete_shape, density);
             },
             shape);
@@ -1465,7 +1465,7 @@ public:
     void setFixedRotation(bool flag) const { this->handle()->SetFixedRotation(flag); }
     bool isFixedRotation() const { return this->handle()->IsFixedRotation(); }
 
-    ForwardIterable<FixtureConstAs<TUserData, TBody>> fixtures() const { return {this->handle()->GetFixtureList()}; }
+    ForwardIterable<FixtureRefConstAs<TUserData, TBody>> fixtures() const { return {this->handle()->GetFixtureList()}; }
     BidirectionalIterable<JointEdgeConstAs<TUserData, TBody>> joints() const
     {
         return {this->handle()->GetJointList()};
@@ -2201,9 +2201,9 @@ public:
 
     ContactConstAs<TUserData, TContact> getNext() const { return this->handle()->GetNext(); }
 
-    FixtureConstAs<TUserData, TContact> getFixtureA() const { return this->handle()->GetFixtureA(); }
+    FixtureRefConstAs<TUserData, TContact> getFixtureA() const { return this->handle()->GetFixtureA(); }
     int32 getChildIndexA() const { return this->handle()->GetChildIndexA(); }
-    FixtureConstAs<TUserData, TContact> getFixtureB() const { return this->handle()->GetFixtureB(); }
+    FixtureRefConstAs<TUserData, TContact> getFixtureB() const { return this->handle()->GetFixtureB(); }
     int32 getChildIndexB() const { return this->handle()->GetChildIndexB(); }
 
     void setFriction(float friction) const { this->handle()->SetFriction(friction); }
@@ -2234,11 +2234,11 @@ public:
 namespace detail {
 
 template <typename TUserData>
-using QueryCallback = std::function<bool(Fixture<TUserData>)>;
+using QueryCallback = std::function<bool(FixtureRef<TUserData>)>;
 
 template <typename TUserData>
 struct RayCastData {
-    Fixture<TUserData> fixture;
+    FixtureRef<TUserData> fixture;
     vec2 point;
     vec2 normal;
     float fraction;
@@ -2423,30 +2423,30 @@ public:
 
     using JointDef = detail::JointDef<UserData>;
 
-    using Fixture = detail::Fixture<UserData>;
-    using ConstFixture = detail::ConstFixture<UserData>;
+    using FixtureRef = detail::FixtureRef<UserData>;
+    using ConstFixtureRef = detail::ConstFixtureRef<UserData>;
     template <typename TConstAs>
-    using FixtureConstAs = detail::FixtureConstAs<UserData, TConstAs>;
+    using FixtureRefConstAs = detail::FixtureRefConstAs<UserData, TConstAs>;
 
-    using CircleFixture = detail::CircleFixture<UserData>;
-    using ConstCircleFixture = detail::ConstCircleFixture<UserData>;
+    using CircleFixtureRef = detail::CircleFixtureRef<UserData>;
+    using ConstCircleFixtureRef = detail::ConstCircleFixtureRef<UserData>;
     template <typename TConstAs>
-    using CircleFixtureConstAs = detail::CircleFixtureConstAs<UserData, TConstAs>;
+    using CircleFixtureRefConstAs = detail::CircleFixtureRefConstAs<UserData, TConstAs>;
 
-    using EdgeFixture = detail::EdgeFixture<UserData>;
-    using ConstEdgeFixture = detail::ConstEdgeFixture<UserData>;
+    using EdgeFixtureRef = detail::EdgeFixtureRef<UserData>;
+    using ConstEdgeFixtureRef = detail::ConstEdgeFixtureRef<UserData>;
     template <typename TConstAs>
-    using EdgeFixtureConstAs = detail::EdgeFixtureConstAs<UserData, TConstAs>;
+    using EdgeFixtureRefConstAs = detail::EdgeFixtureRefConstAs<UserData, TConstAs>;
 
-    using PolygonFixture = detail::PolygonFixture<UserData>;
-    using ConstPolygonFixture = detail::ConstPolygonFixture<UserData>;
+    using PolygonFixtureRef = detail::PolygonFixtureRef<UserData>;
+    using ConstPolygonFixtureRef = detail::ConstPolygonFixtureRef<UserData>;
     template <typename TConstAs>
-    using PolygonFixtureConstAs = detail::PolygonFixtureConstAs<UserData, TConstAs>;
+    using PolygonFixtureRefConstAs = detail::PolygonFixtureRefConstAs<UserData, TConstAs>;
 
-    using ChainFixture = detail::ChainFixture<UserData>;
-    using ConstChainFixture = detail::ConstChainFixture<UserData>;
+    using ChainFixtureRef = detail::ChainFixtureRef<UserData>;
+    using ConstChainFixtureRef = detail::ConstChainFixtureRef<UserData>;
     template <typename TConstAs>
-    using ChainFixtureConstAs = detail::ChainFixtureConstAs<UserData, TConstAs>;
+    using ChainFixtureRefConstAs = detail::ChainFixtureRefConstAs<UserData, TConstAs>;
 
     using BodyRef = detail::BodyRef<UserData>;
     using ConstBodyRef = detail::ConstBodyRef<UserData>;
@@ -2528,7 +2528,7 @@ public:
     using RayCastData = detail::RayCastData<UserData>;
     using RayCastCallback = detail::RayCastCallback<UserData>;
 
-    using ContactFilter = std::function<bool(Fixture, Fixture)>;
+    using ContactFilter = std::function<bool(FixtureRef, FixtureRef)>;
 
     explicit World(vec2 gravity = {})
         : world_(cast(gravity))
@@ -2627,7 +2627,7 @@ public:
 
     void dump() { world_.Dump(); }
 
-    dutils::Event<Fixture> on_destroy_fixture;
+    dutils::Event<FixtureRef> on_destroy_fixture;
     dutils::Event<JointRef> on_destroy_joint;
 
     dutils::Event<Contact> on_begin_contact;

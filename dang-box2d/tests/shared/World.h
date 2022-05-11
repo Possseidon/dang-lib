@@ -17,8 +17,8 @@ using World = dang::box2d::World<Data>;
 namespace Catch {
 
 template <>
-struct StringMaker<World::Fixture> {
-    static std::string convert(World::Fixture fixture)
+struct StringMaker<World::FixtureRef> {
+    static std::string convert(World::FixtureRef fixture)
     {
         using namespace std::literals;
         if (fixture)
@@ -50,7 +50,7 @@ struct StringMaker<World::RayCastData> {
     static std::string convert(const World::RayCastData& data)
     {
         using namespace std::literals;
-        return "RayCastData("s + StringMaker<World::Fixture>::convert(data.fixture) + " "s + data.point.format() +
+        return "RayCastData("s + StringMaker<World::FixtureRef>::convert(data.fixture) + " "s + data.point.format() +
                " normal: " + data.normal.format() + " fraction: " + std::to_string(data.fraction) + ")"s;
     }
 };
