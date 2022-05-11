@@ -710,11 +710,11 @@ template <typename TUserData, typename TConstAs>
 using ChainFixtureConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
 
 template <typename TUserData>
-using Body = detail::BodyWrapper<TUserData, b2Body>;
+using BodyRef = detail::BodyWrapper<TUserData, b2Body>;
 template <typename TUserData>
-using ConstBody = detail::BodyWrapper<TUserData, const b2Body>;
+using ConstBodyRef = detail::BodyWrapper<TUserData, const b2Body>;
 template <typename TUserData, typename TConstAs>
-using BodyConstAs = detail::BodyWrapper<TUserData, dutils::copy_const_t<b2Body, TConstAs>>;
+using BodyRefConstAs = detail::BodyWrapper<TUserData, dutils::copy_const_t<b2Body, TConstAs>>;
 
 template <typename TUserData>
 using WorldRef = detail::WorldRefWrapper<TUserData, b2World>;
@@ -1187,7 +1187,7 @@ public:
     const Filter& getFilterData() const { return this->handle()->GetFilterData(); }
     void refilter() const { this->handle()->Refilter(); }
 
-    BodyConstAs<TUserData, TFixture> getBody() const { return this->handle()->GetBody(); }
+    BodyRefConstAs<TUserData, TFixture> getBody() const { return this->handle()->GetBody(); }
 
     FixtureConstAs<TUserData, TFixture> getNext() const { return this->handle()->GetNext(); }
 
@@ -1472,7 +1472,7 @@ public:
     }
     ForwardIterable<ContactConstAs<TUserData, TBody>> contacts() const { return {this->handle()->GetContactList()}; }
 
-    BodyConstAs<TUserData, TBody> getNext() const { return this->handle()->GetNext(); }
+    BodyRefConstAs<TUserData, TBody> getNext() const { return this->handle()->GetNext(); }
 
     void setUserData(typename TUserData::Body* user_data) const
     {
@@ -1513,8 +1513,8 @@ public:
             return cast(this->handle()->GetType());
     }
 
-    BodyConstAs<TUserData, TJoint> getBodyA() const { return this->handle()->GetBodyA(); }
-    BodyConstAs<TUserData, TJoint> getBodyB() const { return this->handle()->GetBodyB(); }
+    BodyRefConstAs<TUserData, TJoint> getBodyA() const { return this->handle()->GetBodyA(); }
+    BodyRefConstAs<TUserData, TJoint> getBodyB() const { return this->handle()->GetBodyB(); }
 
     vec2 getAnchorA() const
     {
@@ -1816,8 +1816,8 @@ public:
 template <typename TUserData>
 struct JointDefBase {
     typename TUserData::Joint* user_data;
-    Body<TUserData> body_a;
-    Body<TUserData> body_b;
+    BodyRef<TUserData> body_a;
+    BodyRef<TUserData> body_b;
 
 protected:
     void build(b2JointDef& def) const
@@ -2172,7 +2172,7 @@ class JointEdgeWrapper : public HandleWrapper<TJointEdge> {
 public:
     using HandleWrapper<TJointEdge>::HandleWrapper;
 
-    BodyConstAs<TUserData, TJointEdge> other() const { return this->handle()->other; }
+    BodyRefConstAs<TUserData, TJointEdge> other() const { return this->handle()->other; }
     JointRefConstAs<TUserData, TJointEdge> joint() const { return this->handle()->joint; }
     JointEdgeWrapper getPrev() const { return this->handle()->prev; }
     JointEdgeWrapper getNext() const { return this->handle()->next; }
@@ -2297,20 +2297,20 @@ public:
     void setDebugDraw(Draw* debug_draw) { this->handle()->SetDebugDraw(debug_draw); }
     void debugDraw() const { this->handle()->DebugDraw(); }
 
-    Body<TUserData> createBody(const BodyDef<TUserData>& body) const
+    BodyRef<TUserData> createBody(const BodyDef<TUserData>& body) const
     {
         auto def = body.build();
         return this->handle()->CreateBody(&def);
     }
 
-    Body<TUserData> createBody(BodyType body_type = BodyType::Static) const
+    BodyRef<TUserData> createBody(BodyType body_type = BodyType::Static) const
     {
         auto def = BodyDef<TUserData>{};
         def.type = body_type;
         return createBody(def);
     }
 
-    void destroyBody(Body<TUserData>&& body) const
+    void destroyBody(BodyRef<TUserData>&& body) const
     {
         this->handle()->DestroyBody(body.handle());
         body = nullptr;
@@ -2357,7 +2357,7 @@ public:
         this->handle()->RayCast(&wrapper, cast(point1), cast(point2));
     }
 
-    ForwardIterable<BodyConstAs<TUserData, TWorld>> bodies() const { return {this->handle()->GetBodyList()}; }
+    ForwardIterable<BodyRefConstAs<TUserData, TWorld>> bodies() const { return {this->handle()->GetBodyList()}; }
     ForwardIterable<JointRefConstAs<TUserData, TWorld>> joints() const { return {this->handle()->GetJointList()}; }
     ForwardIterable<ContactConstAs<TUserData, TWorld>> contacts() const { return {this->handle()->GetContactList()}; }
 
@@ -2448,10 +2448,10 @@ public:
     template <typename TConstAs>
     using ChainFixtureConstAs = detail::ChainFixtureConstAs<UserData, TConstAs>;
 
-    using Body = detail::Body<UserData>;
-    using ConstBody = detail::ConstBody<UserData>;
+    using BodyRef = detail::BodyRef<UserData>;
+    using ConstBodyRef = detail::ConstBodyRef<UserData>;
     template <typename TConstAs>
-    using BodyConstAs = detail::BodyConstAs<UserData, TConstAs>;
+    using BodyRefConstAs = detail::BodyRefConstAs<UserData, TConstAs>;
 
     using JointRef = detail::JointRef<UserData>;
     using ConstJointRef = detail::ConstJointRef<UserData>;
@@ -2546,9 +2546,9 @@ public:
     void setDebugDraw(Draw* debug_draw) { world_.SetDebugDraw(debug_draw); }
     void debugDraw() { world_.DebugDraw(); }
 
-    Body createBody(const BodyDef& body) { return WorldRef{&world_}.createBody(body); }
-    Body createBody(BodyType body_type = BodyType::Static) { return WorldRef{&world_}.createBody(body_type); }
-    void destroyBody(Body&& body) { WorldRef{&world_}.destroyBody(std::move(body)); }
+    BodyRef createBody(const BodyDef& body) { return WorldRef{&world_}.createBody(body); }
+    BodyRef createBody(BodyType body_type = BodyType::Static) { return WorldRef{&world_}.createBody(body_type); }
+    void destroyBody(BodyRef&& body) { WorldRef{&world_}.destroyBody(std::move(body)); }
 
     template <typename TJointDef>
     auto createJoint(const TJointDef& joint)
@@ -2581,8 +2581,8 @@ public:
         ConstWorldRef{&world_}.rayCast(std::move(callback), point1, point2);
     }
 
-    ForwardIterable<Body> bodies() { return {world_.GetBodyList()}; }
-    ForwardIterable<ConstBody> bodies() const { return {world_.GetBodyList()}; }
+    ForwardIterable<BodyRef> bodies() { return {world_.GetBodyList()}; }
+    ForwardIterable<ConstBodyRef> bodies() const { return {world_.GetBodyList()}; }
 
     ForwardIterable<JointRef> joints() { return {world_.GetJointList()}; }
     ForwardIterable<ConstJointRef> joints() const { return {world_.GetJointList()}; }

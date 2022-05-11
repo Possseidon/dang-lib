@@ -28,8 +28,8 @@ struct StringMaker<World::Fixture> {
 };
 
 template <>
-struct StringMaker<World::Body> {
-    static std::string convert(World::Body body)
+struct StringMaker<World::BodyRef> {
+    static std::string convert(World::BodyRef body)
     {
         using namespace std::literals;
         return body ? "Body("s + (body.getUserData() ? body.getUserData() : ""s) + ")"s : "Body(null)";

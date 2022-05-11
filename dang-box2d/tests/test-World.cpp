@@ -67,7 +67,7 @@ TEST_CASE("Box2D worlds can create and destroy bodies.")
 {
     auto world = World();
 
-    auto body = World::Body();
+    auto body = World::BodyRef();
 
     SECTION("Using default values.") { body = world.createBody(); }
     SECTION("Only specifying the body type.") { body = world.createBody(b2::BodyType::Static); }
