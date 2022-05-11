@@ -707,7 +707,8 @@ using ChainFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2ChainShap
 template <typename TUserData>
 using ConstChainFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2ChainShape>;
 template <typename TUserData, typename TConstAs>
-using ChainFixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
+using ChainFixtureRefConstAs =
+    detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
 
 template <typename TUserData>
 using BodyRef = detail::BodyWrapper<TUserData, b2Body>;
