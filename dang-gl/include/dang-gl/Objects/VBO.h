@@ -75,22 +75,6 @@ public:
             : position_(position)
         {}
 
-        reference operator*() { return *position_; }
-
-        pointer operator->() { return position_; }
-
-        friend bool operator==(iterator lhs, iterator rhs) { return lhs.position_ == rhs.position_; }
-
-        friend bool operator!=(iterator lhs, iterator rhs) { return lhs.position_ != rhs.position_; }
-
-        friend bool operator<(iterator lhs, iterator rhs) { return lhs.position_ < rhs.position_; }
-
-        friend bool operator<=(iterator lhs, iterator rhs) { return lhs.position_ <= rhs.position_; }
-
-        friend bool operator>(iterator lhs, iterator rhs) { return lhs.position_ > rhs.position_; }
-
-        friend bool operator>=(iterator lhs, iterator rhs) { return lhs.position_ >= rhs.position_; }
-
         iterator& operator++()
         {
             position_++;
@@ -99,9 +83,9 @@ public:
 
         iterator operator++(int)
         {
-            auto old = *this;
-            position_++;
-            return old;
+            auto temp = *this;
+            ++*this;
+            return temp;
         }
 
         iterator& operator--()
@@ -112,28 +96,40 @@ public:
 
         iterator operator--(int)
         {
-            auto old = *this;
-            position_--;
-            return old;
+            auto temp = *this;
+            --*this;
+            return temp;
         }
 
-        iterator& operator+=(std::ptrdiff_t offset)
+        iterator& operator+=(difference_type diff)
         {
-            position_ += offset;
+            position_ += diff;
             return *this;
         }
 
-        iterator operator+(std::ptrdiff_t offset) const { return *this += offset; }
-
-        iterator& operator-=(std::ptrdiff_t offset)
+        iterator& operator-=(difference_type diff)
         {
-            position_ -= offset;
+            position_ -= diff;
             return *this;
         }
 
-        iterator operator-(std::ptrdiff_t offset) const { return *this -= offset; }
+        iterator operator+(difference_type diff) const { return position_ + diff; }
+        friend iterator operator+(difference_type diff, iterator iter) { return iter + diff; }
+        iterator operator-(difference_type diff) const { return position_ - diff; }
 
-        reference operator[](std::ptrdiff_t offset) const { return position_[offset]; }
+        difference_type operator-(iterator other) const { return position_ - other.position_; }
+
+        reference operator[](difference_type diff) const { return position_ + diff; }
+
+        bool operator==(iterator other) const { return position_ == other.position_; }
+        bool operator!=(iterator other) const { return !(*this == other); }
+        bool operator<(iterator other) const { return position_ < other.position_; }
+        bool operator<=(iterator other) const { return !(*this > other); }
+        bool operator>(iterator other) const { return other < *this; }
+        bool operator>=(iterator other) const { return !(*this < other); }
+
+        reference operator*() const { return *position_; }
+        pointer operator->() const { return position_; }
 
     private:
         T* position_ = nullptr;
@@ -141,35 +137,54 @@ public:
 
     /// @brief Maps and locks the given VBO to stay bound, as only one VBO can be mapped at any given time.
     VBOMapping(VBO<T>& vbo)
-        : vbo_(vbo)
-    {
-        data_ = static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
-    }
-
-    /// @brief Unmaps and unlocks the VBO again.
-    ~VBOMapping() { glUnmapBuffer(GL_ARRAY_BUFFER); }
+        : size_(vbo.count())
+        , data_(empty() ? nullptr : static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE)))
+    {}
 
     VBOMapping(const VBOMapping&) = delete;
-    VBOMapping(VBOMapping&&) = delete;
+
+    VBOMapping(VBOMapping&& other)
+        : size_(other.size_)
+        , data_(std::exchange(other.data_, nullptr))
+    {}
+
     VBOMapping& operator=(const VBOMapping&) = delete;
-    VBOMapping& operator=(VBOMapping&&) = delete;
+
+    VBOMapping& operator=(VBOMapping&& other)
+    {
+        unmap();
+        size_ = other.size_;
+        data_ = std::exchange(other.data_, nullptr);
+        return *this;
+    }
+
+    ~VBOMapping() { unmap(); }
+
+    /// @brief Unmaps and unlocks the VBO again.
+    void unmap()
+    {
+        if (data_) {
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            data_ = nullptr;
+        }
+    }
 
     /// @brief Returns the element count of the VBO.
-    std::size_t size() const { return vbo_.count(); }
-
+    std::size_t size() const { return size_; }
     /// @brief Returns the element count of the VBO.
-    std::size_t max_size() const { return vbo_.count(); }
+    std::size_t max_size() const { return size(); }
+    /// @brief Whether the VBO is empty.
+    bool empty() const { return size() == 0; }
 
     /// @brief Returns an iterator to the first element of the mapped data.
     iterator begin() noexcept { return iterator(data_); }
-
     /// @brief Returns an iterator to one after the last element of the mapped data.
     iterator end() noexcept { return iterator(data_ + size()); }
 
 private:
-    VBO<T>& vbo_;
-    // TODO: VBOLock<T> lock_{ vbo_ };
+    std::size_t size_;
     T* data_;
+    // TODO: VBOLock<T> lock_{ vbo_ };
 };
 
 /// @brief A vertex buffer object for a given data struct.
@@ -322,6 +337,17 @@ public:
 
     /// @brief Maps the buffer and returns a container-like wrapper to the mapping.
     VBOMapping<T> map() { return VBOMapping<T>(*this); }
+
+    /// @brief Updates the entire buffer with the given elements and to_data function.
+    template <typename TElements, typename TToData>
+    void update(const TElements& elements, TToData&& to_data, BufferUsageHint usage = BufferUsageHint::DynamicDraw)
+    {
+        using std::begin, std::end;
+        auto size = std::size(elements);
+        assert(size <= static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()));
+        generate(static_cast<GLsizei>(size), usage);
+        std::transform(begin(elements), end(elements), map().begin(), std::forward<TToData>(to_data));
+    }
 
 private:
     GLsizei count_ = 0;
