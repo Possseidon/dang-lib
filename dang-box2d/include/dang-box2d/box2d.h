@@ -564,81 +564,81 @@ template <typename TUserData, typename TContact>
 class ContactWrapper;
 
 template <typename TUserData>
-using Joint = detail::JointWrapper<TUserData, b2Joint>;
+using JointRef = detail::JointWrapper<TUserData, b2Joint>;
 template <typename TUserData>
-using ConstJoint = detail::JointWrapper<TUserData, const b2Joint>;
+using ConstJointRef = detail::JointWrapper<TUserData, const b2Joint>;
 template <typename TUserData, typename TConstAs>
-using JointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2Joint, TConstAs>>;
+using JointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2Joint, TConstAs>>;
 
 template <typename TUserData>
-using RevoluteJoint = detail::JointWrapper<TUserData, b2RevoluteJoint>;
+using RevoluteJointRef = detail::JointWrapper<TUserData, b2RevoluteJoint>;
 template <typename TUserData>
-using ConstRevoluteJoint = detail::JointWrapper<TUserData, const b2RevoluteJoint>;
+using ConstRevoluteJointRef = detail::JointWrapper<TUserData, const b2RevoluteJoint>;
 template <typename TUserData, typename TConstAs>
-using RevoluteJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
+using RevoluteJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
 
 template <typename TUserData>
-using PrismaticJoint = detail::JointWrapper<TUserData, b2PrismaticJoint>;
+using PrismaticJointRef = detail::JointWrapper<TUserData, b2PrismaticJoint>;
 template <typename TUserData>
-using ConstPrismaticJoint = detail::JointWrapper<TUserData, const b2PrismaticJoint>;
+using ConstPrismaticJointRef = detail::JointWrapper<TUserData, const b2PrismaticJoint>;
 template <typename TUserData, typename TConstAs>
-using PrismaticJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
+using PrismaticJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
 
 template <typename TUserData>
-using DistanceJoint = detail::JointWrapper<TUserData, b2DistanceJoint>;
+using DistanceJointRef = detail::JointWrapper<TUserData, b2DistanceJoint>;
 template <typename TUserData>
-using ConstDistanceJoint = detail::JointWrapper<TUserData, const b2DistanceJoint>;
+using ConstDistanceJointRef = detail::JointWrapper<TUserData, const b2DistanceJoint>;
 template <typename TUserData, typename TConstAs>
-using DistanceJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
+using DistanceJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
 
 template <typename TUserData>
-using PulleyJoint = detail::JointWrapper<TUserData, b2PulleyJoint>;
+using PulleyJointRef = detail::JointWrapper<TUserData, b2PulleyJoint>;
 template <typename TUserData>
-using ConstPulleyJoint = detail::JointWrapper<TUserData, const b2PulleyJoint>;
+using ConstPulleyJointRef = detail::JointWrapper<TUserData, const b2PulleyJoint>;
 template <typename TUserData, typename TConstAs>
-using PulleyJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
+using PulleyJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
 
 template <typename TUserData>
-using MouseJoint = detail::JointWrapper<TUserData, b2MouseJoint>;
+using MouseJointRef = detail::JointWrapper<TUserData, b2MouseJoint>;
 template <typename TUserData>
-using ConstMouseJoint = detail::JointWrapper<TUserData, const b2MouseJoint>;
+using ConstMouseJointRef = detail::JointWrapper<TUserData, const b2MouseJoint>;
 template <typename TUserData, typename TConstAs>
-using MouseJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
+using MouseJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
 
 template <typename TUserData>
-using GearJoint = detail::JointWrapper<TUserData, b2GearJoint>;
+using GearJointRef = detail::JointWrapper<TUserData, b2GearJoint>;
 template <typename TUserData>
-using ConstGearJoint = detail::JointWrapper<TUserData, const b2GearJoint>;
+using ConstGearJointRef = detail::JointWrapper<TUserData, const b2GearJoint>;
 template <typename TUserData, typename TConstAs>
-using GearJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2GearJoint, TConstAs>>;
+using GearJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2GearJoint, TConstAs>>;
 
 template <typename TUserData>
-using WheelJoint = detail::JointWrapper<TUserData, b2WheelJoint>;
+using WheelJointRef = detail::JointWrapper<TUserData, b2WheelJoint>;
 template <typename TUserData>
-using ConstWheelJoint = detail::JointWrapper<TUserData, const b2WheelJoint>;
+using ConstWheelJointRef = detail::JointWrapper<TUserData, const b2WheelJoint>;
 template <typename TUserData, typename TConstAs>
-using WheelJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
+using WheelJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
 
 template <typename TUserData>
-using WeldJoint = detail::JointWrapper<TUserData, b2WeldJoint>;
+using WeldJointRef = detail::JointWrapper<TUserData, b2WeldJoint>;
 template <typename TUserData>
-using ConstWeldJoint = detail::JointWrapper<TUserData, const b2WeldJoint>;
+using ConstWeldJointRef = detail::JointWrapper<TUserData, const b2WeldJoint>;
 template <typename TUserData, typename TConstAs>
-using WeldJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
+using WeldJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
 
 template <typename TUserData>
-using FrictionJoint = detail::JointWrapper<TUserData, b2FrictionJoint>;
+using FrictionJointRef = detail::JointWrapper<TUserData, b2FrictionJoint>;
 template <typename TUserData>
-using ConstFrictionJoint = detail::JointWrapper<TUserData, const b2FrictionJoint>;
+using ConstFrictionJointRef = detail::JointWrapper<TUserData, const b2FrictionJoint>;
 template <typename TUserData, typename TConstAs>
-using FrictionJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
+using FrictionJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
 
 template <typename TUserData>
-using MotorJoint = detail::JointWrapper<TUserData, b2MotorJoint>;
+using MotorJointRef = detail::JointWrapper<TUserData, b2MotorJoint>;
 template <typename TUserData>
-using ConstMotorJoint = detail::JointWrapper<TUserData, const b2MotorJoint>;
+using ConstMotorJointRef = detail::JointWrapper<TUserData, const b2MotorJoint>;
 template <typename TUserData, typename TConstAs>
-using MotorJointConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
+using MotorJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
 
 template <typename TUserData>
 using JointEdge = detail::JointEdgeWrapper<TUserData, b2JointEdge>;
@@ -779,19 +779,6 @@ public:
 
 private:
     THandle* handle_ = nullptr;
-};
-
-// --- JointEdge
-
-template <typename TUserData, typename TJointEdge>
-class JointEdgeWrapper : public HandleWrapper<TJointEdge> {
-public:
-    using HandleWrapper<TJointEdge>::HandleWrapper;
-
-    BodyConstAs<TUserData, TJointEdge> other() const { return this->handle()->other; }
-    JointConstAs<TUserData, TJointEdge> joint() const { return this->handle()->joint; }
-    JointEdgeWrapper getPrev() const { return this->handle()->prev; }
-    JointEdgeWrapper getNext() const { return this->handle()->next; }
 };
 
 } // namespace detail
@@ -1516,7 +1503,7 @@ private:
 public:
     using HandleWrapper<TJoint>::HandleWrapper;
 
-    operator JointConstAs<TUserData, TJoint>() const { return this->handle(); }
+    operator JointRefConstAs<TUserData, TJoint>() const { return this->handle(); }
 
     constexpr JointType getType() const
     {
@@ -1561,7 +1548,7 @@ public:
             return this->handle()->GetReactionTorque(inv_dt);
     }
 
-    JointConstAs<TUserData, TJoint> getNext() const { return this->handle()->GetNext(); }
+    JointRefConstAs<TUserData, TJoint> getNext() const { return this->handle()->GetNext(); }
 
     void setUserData(typename TUserData::Joint* user_data) const
     {
@@ -1733,8 +1720,8 @@ class JointWrapper<TUserData, TJoint, JointType::Gear> : public JointWrapper<TUs
 public:
     using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
 
-    JointConstAs<TUserData, TJoint> GetJoint1() const { return this->handle()->GetJoint1(); }
-    JointConstAs<TUserData, TJoint> GetJoint2() const { return this->handle()->GetJoint2(); }
+    JointRefConstAs<TUserData, TJoint> GetJoint1() const { return this->handle()->GetJoint1(); }
+    JointRefConstAs<TUserData, TJoint> GetJoint2() const { return this->handle()->GetJoint2(); }
 
     void setRatio(float ratio) const { this->handle()->SetRatio(ratio); }
     float getRatio() const { return this->handle()->GetRatio(); }
@@ -2022,8 +2009,8 @@ private:
 
 template <typename TUserData>
 struct GearJointDef : JointDefNoCollideDefault<TUserData> {
-    Joint<TUserData> joint1;
-    Joint<TUserData> joint2;
+    JointRef<TUserData> joint1;
+    JointRef<TUserData> joint2;
     float ratio;
 
 private:
@@ -2178,6 +2165,19 @@ using JointDef = std::variant<RevoluteJointDef<TUserData>,
                               FrictionJointDef<TUserData>,
                               MotorJointDef<TUserData>>;
 
+// --- JointEdge
+
+template <typename TUserData, typename TJointEdge>
+class JointEdgeWrapper : public HandleWrapper<TJointEdge> {
+public:
+    using HandleWrapper<TJointEdge>::HandleWrapper;
+
+    BodyConstAs<TUserData, TJointEdge> other() const { return this->handle()->other; }
+    JointRefConstAs<TUserData, TJointEdge> joint() const { return this->handle()->joint; }
+    JointEdgeWrapper getPrev() const { return this->handle()->prev; }
+    JointEdgeWrapper getNext() const { return this->handle()->next; }
+};
+
 // --- Contact
 
 template <typename TUserData, typename TContact>
@@ -2229,7 +2229,7 @@ public:
 
 } // namespace detail
 
-// --- WorldRef
+// --- World
 
 namespace detail {
 
@@ -2324,10 +2324,11 @@ public:
         return detail::JointWrapper<TUserData, ResultType>(static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
     }
 
-    Joint<TUserData> createJoint(const JointDef<TUserData>& joint) const
+    JointRef<TUserData> createJoint(const JointDef<TUserData>& joint) const
     {
         return std::visit(
-            [&](const auto& concrete_joint) -> Joint<TUserData> { return this->createJoint(concrete_joint); }, joint);
+            [&](const auto& concrete_joint) -> JointRef<TUserData> { return this->createJoint(concrete_joint); },
+            joint);
     }
 
     template <typename TJoint>
@@ -2357,7 +2358,7 @@ public:
     }
 
     ForwardIterable<BodyConstAs<TUserData, TWorld>> bodies() const { return {this->handle()->GetBodyList()}; }
-    ForwardIterable<JointConstAs<TUserData, TWorld>> joints() const { return {this->handle()->GetJointList()}; }
+    ForwardIterable<JointRefConstAs<TUserData, TWorld>> joints() const { return {this->handle()->GetJointList()}; }
     ForwardIterable<ContactConstAs<TUserData, TWorld>> contacts() const { return {this->handle()->GetContactList()}; }
 
     void setAllowSleeping(bool flag) const { this->handle()->SetAllowSleeping(flag); }
@@ -2399,8 +2400,6 @@ public:
 };
 
 } // namespace detail
-
-// --- World
 
 template <typename TUserData>
 class World {
@@ -2454,60 +2453,60 @@ public:
     template <typename TConstAs>
     using BodyConstAs = detail::BodyConstAs<UserData, TConstAs>;
 
-    using Joint = detail::Joint<UserData>;
-    using ConstJoint = detail::ConstJoint<UserData>;
+    using JointRef = detail::JointRef<UserData>;
+    using ConstJointRef = detail::ConstJointRef<UserData>;
     template <typename TConstAs>
-    using JointConstAs = detail::JointConstAs<UserData, TConstAs>;
+    using JointRefConstAs = detail::JointRefConstAs<UserData, TConstAs>;
 
-    using RevoluteJoint = detail::RevoluteJoint<UserData>;
-    using ConstRevoluteJoint = detail::ConstRevoluteJoint<UserData>;
+    using RevoluteJointRef = detail::RevoluteJointRef<UserData>;
+    using ConstRevoluteJointRef = detail::ConstRevoluteJointRef<UserData>;
     template <typename TConstAs>
-    using RevoluteJointConstAs = detail::RevoluteJointConstAs<UserData, TConstAs>;
+    using RevoluteJointRefConstAs = detail::RevoluteJointRefConstAs<UserData, TConstAs>;
 
-    using PrismaticJoint = detail::PrismaticJoint<UserData>;
-    using ConstPrismaticJoint = detail::ConstPrismaticJoint<UserData>;
+    using PrismaticJointRef = detail::PrismaticJointRef<UserData>;
+    using ConstPrismaticJointRef = detail::ConstPrismaticJointRef<UserData>;
     template <typename TConstAs>
-    using PrismaticJointConstAs = detail::PrismaticJointConstAs<UserData, TConstAs>;
+    using PrismaticJointRefConstAs = detail::PrismaticJointRefConstAs<UserData, TConstAs>;
 
-    using DistanceJoint = detail::DistanceJoint<UserData>;
-    using ConstDistanceJoint = detail::ConstDistanceJoint<UserData>;
+    using DistanceJointRef = detail::DistanceJointRef<UserData>;
+    using ConstDistanceJointRef = detail::ConstDistanceJointRef<UserData>;
     template <typename TConstAs>
-    using DistanceJointConstAs = detail::DistanceJointConstAs<UserData, TConstAs>;
+    using DistanceJointRefConstAs = detail::DistanceJointRefConstAs<UserData, TConstAs>;
 
-    using PulleyJoint = detail::PulleyJoint<UserData>;
-    using ConstPulleyJoint = detail::ConstPulleyJoint<UserData>;
+    using PulleyJointRef = detail::PulleyJointRef<UserData>;
+    using ConstPulleyJointRef = detail::ConstPulleyJointRef<UserData>;
     template <typename TConstAs>
-    using PulleyJointConstAs = detail::PulleyJointConstAs<UserData, TConstAs>;
+    using PulleyJointRefConstAs = detail::PulleyJointRefConstAs<UserData, TConstAs>;
 
-    using MouseJoint = detail::MouseJoint<UserData>;
-    using ConstMouseJoint = detail::ConstMouseJoint<UserData>;
+    using MouseJointRef = detail::MouseJointRef<UserData>;
+    using ConstMouseJointRef = detail::ConstMouseJointRef<UserData>;
     template <typename TConstAs>
-    using MouseJointConstAs = detail::MouseJointConstAs<UserData, TConstAs>;
+    using MouseJointRefConstAs = detail::MouseJointRefConstAs<UserData, TConstAs>;
 
-    using GearJoint = detail::GearJoint<UserData>;
-    using ConstGearJoint = detail::ConstGearJoint<UserData>;
+    using GearJointRef = detail::GearJointRef<UserData>;
+    using ConstGearJointRef = detail::ConstGearJointRef<UserData>;
     template <typename TConstAs>
-    using GearJointConstAs = detail::GearJointConstAs<UserData, TConstAs>;
+    using GearJointRefConstAs = detail::GearJointRefConstAs<UserData, TConstAs>;
 
-    using WheelJoint = detail::WheelJoint<UserData>;
-    using ConstWheelJoint = detail::ConstWheelJoint<UserData>;
+    using WheelJointRef = detail::WheelJointRef<UserData>;
+    using ConstWheelJointRef = detail::ConstWheelJointRef<UserData>;
     template <typename TConstAs>
-    using WheelJointConstAs = detail::WheelJointConstAs<UserData, TConstAs>;
+    using WheelJointRefConstAs = detail::WheelJointRefConstAs<UserData, TConstAs>;
 
-    using WeldJoint = detail::WeldJoint<UserData>;
-    using ConstWeldJoint = detail::ConstWeldJoint<UserData>;
+    using WeldJointRef = detail::WeldJointRef<UserData>;
+    using ConstWeldJointRef = detail::ConstWeldJointRef<UserData>;
     template <typename TConstAs>
-    using WeldJointConstAs = detail::WeldJointConstAs<UserData, TConstAs>;
+    using WeldJointRefConstAs = detail::WeldJointRefConstAs<UserData, TConstAs>;
 
-    using FrictionJoint = detail::FrictionJoint<UserData>;
-    using ConstFrictionJoint = detail::ConstFrictionJoint<UserData>;
+    using FrictionJointRef = detail::FrictionJointRef<UserData>;
+    using ConstFrictionJointRef = detail::ConstFrictionJointRef<UserData>;
     template <typename TConstAs>
-    using FrictionJointConstAs = detail::FrictionJointConstAs<UserData, TConstAs>;
+    using FrictionJointRefConstAs = detail::FrictionJointRefConstAs<UserData, TConstAs>;
 
-    using MotorJoint = detail::MotorJoint<UserData>;
-    using ConstMotorJoint = detail::ConstMotorJoint<UserData>;
+    using MotorJointRef = detail::MotorJointRef<UserData>;
+    using ConstMotorJointRef = detail::ConstMotorJointRef<UserData>;
     template <typename TConstAs>
-    using MotorJointConstAs = detail::MotorJointConstAs<UserData, TConstAs>;
+    using MotorJointRefConstAs = detail::MotorJointRefConstAs<UserData, TConstAs>;
 
     using JointEdge = detail::JointEdge<UserData>;
     using ConstJointEdge = detail::ConstJointEdge<UserData>;
@@ -2557,7 +2556,7 @@ public:
         return WorldRef{&world_}.createJoint(joint);
     }
 
-    Joint createJoint(const JointDef& joint) { return WorldRef{&world_}.createJoint(joint); }
+    JointRef createJoint(const JointDef& joint) { return WorldRef{&world_}.createJoint(joint); }
 
     template <typename TJoint>
     void destroyJoint(detail::JointWrapper<UserData, TJoint>&& joint)
@@ -2585,8 +2584,8 @@ public:
     ForwardIterable<Body> bodies() { return {world_.GetBodyList()}; }
     ForwardIterable<ConstBody> bodies() const { return {world_.GetBodyList()}; }
 
-    ForwardIterable<Joint> joints() { return {world_.GetJointList()}; }
-    ForwardIterable<ConstJoint> joints() const { return {world_.GetJointList()}; }
+    ForwardIterable<JointRef> joints() { return {world_.GetJointList()}; }
+    ForwardIterable<ConstJointRef> joints() const { return {world_.GetJointList()}; }
 
     ForwardIterable<Contact> contacts() { return {world_.GetContactList()}; }
     ForwardIterable<ConstContact> contacts() const { return {world_.GetContactList()}; }
@@ -2629,7 +2628,7 @@ public:
     void dump() { world_.Dump(); }
 
     dutils::Event<Fixture> on_destroy_fixture;
-    dutils::Event<Joint> on_destroy_joint;
+    dutils::Event<JointRef> on_destroy_joint;
 
     dutils::Event<Contact> on_begin_contact;
     dutils::Event<Contact> on_end_contact;

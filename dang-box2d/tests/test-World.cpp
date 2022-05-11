@@ -213,7 +213,7 @@ TEST_CASE("Box2D can iterate over all bodies, joints and contacts.")
         auto joint3 = world.createJoint(joint_def);
 
         auto actual_joints = std::vector(world.joints().begin(), world.joints().end());
-        auto expected_joints = std::vector<World::Joint>{joint1, joint2, joint3};
+        auto expected_joints = std::vector<World::JointRef>{joint1, joint2, joint3};
 
         CHECK_THAT(actual_joints, UnorderedEquals(expected_joints));
     }
@@ -389,8 +389,8 @@ TEST_CASE("Box2D worlds have events for when fixtures and joints are destroyed i
     World::Fixture destroyed_fixture;
     world.on_destroy_fixture.append([&](World::Fixture fixture) { destroyed_fixture = fixture; });
 
-    World::Joint destroyed_joint;
-    world.on_destroy_joint.append([&](World::Joint joint) { destroyed_joint = joint; });
+    World::JointRef destroyed_joint;
+    world.on_destroy_joint.append([&](World::JointRef joint) { destroyed_joint = joint; });
 
     world.destroyBody(std::move(body));
 

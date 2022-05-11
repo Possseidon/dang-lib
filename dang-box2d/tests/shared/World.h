@@ -37,8 +37,8 @@ struct StringMaker<World::Body> {
 };
 
 template <>
-struct StringMaker<World::Joint> {
-    static std::string convert(World::Joint joint)
+struct StringMaker<World::JointRef> {
+    static std::string convert(World::JointRef joint)
     {
         using namespace std::literals;
         return joint ? "Joint("s + (joint.getUserData() ? joint.getUserData() : ""s) + ")"s : "Joint(null)";
