@@ -35,7 +35,7 @@ public:
 
     template <typename T, typename = std::enable_if_t<std::is_same_v<remove_cvref_t<T>, TRet>>>
     Stub(T&& ret)
-        : data_(std::make_shared<Data>([ret = std::move(ret)](...) { return ret; }))
+        : data_(std::make_shared<Data>([ret = std::move(ret)](const auto&...) { return ret; }))
     {}
 
     Stub(std::function<Signature> implementation)
@@ -64,7 +64,7 @@ private:
 
         Info info;
         Invocations invocations;
-        std::function<Signature> implementation = [](...) { return TRet(); };
+        std::function<Signature> implementation = [](const auto&...) { return TRet(); };
     };
 
     std::shared_ptr<Data> data_ = std::make_shared<Data>();

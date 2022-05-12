@@ -169,5 +169,38 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
                 CHECK_THAT(stub, CalledWith(stub, other_param));
             }
         }
+        SECTION("When checking for reference identity, a subclass can be provided.")
+        {
+            struct Base {};
+            struct Derived : Base {};
+
+            auto stub = dutils::Stub<void(const Base&)>();
+
+            Derived derived;
+            Base& base = derived;
+
+            stub(derived);
+
+            CHECK_THAT(stub, CalledWith(stub, &base));
+            CHECK_THAT(stub, CalledWith(stub, &derived));
+        }
+        SECTION("A type does not have to be copyable (or movable) when checking for reference identity.")
+        {
+            struct NoCopy {
+                NoCopy() = default;
+                NoCopy(const NoCopy&) = delete;
+                NoCopy(NoCopy&&) = delete;
+                NoCopy& operator=(const NoCopy&) = delete;
+                NoCopy& operator=(NoCopy&&) = delete;
+            };
+
+            auto stub = dutils::Stub<void(const NoCopy&)>();
+
+            NoCopy no_copy;
+
+            stub(no_copy);
+
+            CHECK_THAT(stub, CalledWith(stub, &no_copy));
+        }
     }
 }
