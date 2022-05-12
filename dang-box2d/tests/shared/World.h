@@ -9,7 +9,7 @@
 struct Data {
     using Fixture = std::string;
     using Body = std::string;
-    using Joint = const char;
+    using Joint = std::string;
 };
 
 using World = dang::box2d::World<Data>;
@@ -52,13 +52,23 @@ template <>
 struct StringMaker<const World::Body*> : StringMaker<World::Body*> {};
 
 template <>
-struct StringMaker<World::JointRef> {
-    static std::string convert(World::JointRef joint)
+struct StringMaker<World::Joint> {
+    static std::string convert(const World::Joint& joint)
     {
-        using namespace std::literals;
-        return joint ? "Joint("s + (joint.getUserData() ? joint.getUserData() : ""s) + ")"s : "Joint(null)";
+        return joint ? "Joint(" + joint.user_data + ")" : "Joint(null)";
     }
 };
+
+template <>
+struct StringMaker<World::Joint*> {
+    static std::string convert(const World::Joint* joint)
+    {
+        return joint ? "Joint*(" + joint->user_data + ")" : "Joint*(null)";
+    }
+};
+
+template <>
+struct StringMaker<const World::Joint*> : StringMaker<World::Joint*> {};
 
 template <>
 struct StringMaker<World::RayCastData> {

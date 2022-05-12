@@ -104,7 +104,7 @@ TEST_CASE("Box2D worlds can create and destroy joints.")
         CHECK(joint.getBodyA() == body1);
         CHECK(joint.getBodyB() == body2);
 
-        world.destroyJoint(std::move(joint));
+        std::move(joint).destroy();
         CHECK_FALSE(joint);
         CHECK(world.getJointCount() == 0);
     }
@@ -215,11 +215,14 @@ TEST_CASE("Box2D can iterate over all bodies, joints and contacts.")
         joint_def.body_a = &body1;
         joint_def.body_b = &body2;
         auto joint1 = world.createJoint(joint_def);
+        joint1.user_data = "1";
         auto joint2 = world.createJoint(joint_def);
+        joint2.user_data = "2";
         auto joint3 = world.createJoint(joint_def);
+        joint3.user_data = "3";
 
         auto actual_joints = std::vector(world.joints().begin(), world.joints().end());
-        auto expected_joints = std::vector<World::JointRef>{joint1, joint2, joint3};
+        auto expected_joints = std::vector<World::Joint*>{&joint1, &joint2, &joint3};
 
         CHECK_THAT(actual_joints, UnorderedEquals(expected_joints));
     }
@@ -293,9 +296,9 @@ TEST_CASE("Box2D worlds can query the total number of proxies, bodies, joints an
         auto joint_def = World::RevoluteJointDef();
         joint_def.body_a = &body1;
         joint_def.body_b = &body2;
-        world.createJoint(joint_def);
-        world.createJoint(joint_def);
-        world.createJoint(joint_def);
+        auto joint1 = world.createJoint(joint_def);
+        auto joint2 = world.createJoint(joint_def);
+        auto joint3 = world.createJoint(joint_def);
 
         CHECK(world.getJointCount() == 3);
     }
@@ -386,27 +389,6 @@ TEST_CASE("Box2D worlds can dump their contents to a file.")
 {
     World().dump();
     CHECK(fs::remove("box2d_dump.inl"));
-}
-
-TEST_CASE("Box2D worlds have events for when joints are destroyed implicitly.")
-{
-    auto world = World();
-
-    auto body1 = world.createBody();
-    auto body2 = world.createBody();
-    auto created_fixture = body1.createFixture(b2::CircleShape());
-
-    auto joint_def = World::RevoluteJointDef();
-    joint_def.body_a = &body1;
-    joint_def.body_b = &body2;
-    auto created_joint = world.createJoint(joint_def);
-
-    World::JointRef destroyed_joint;
-    world.on_destroy_joint.append([&](World::JointRef joint) { destroyed_joint = joint; });
-
-    std::move(body1).destroy();
-
-    CHECK(destroyed_joint == created_joint);
 }
 
 TEST_CASE("Box2D worlds have contact events.")
