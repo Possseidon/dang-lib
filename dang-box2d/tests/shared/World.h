@@ -8,7 +8,7 @@
 
 struct Data {
     using Fixture = const char;
-    using Body = const char;
+    using Body = std::string;
     using Joint = const char;
 };
 
@@ -28,11 +28,10 @@ struct StringMaker<World::FixtureRef> {
 };
 
 template <>
-struct StringMaker<World::BodyRef> {
-    static std::string convert(World::BodyRef body)
+struct StringMaker<const World::Body*> {
+    static std::string convert(const World::Body* body)
     {
-        using namespace std::literals;
-        return body ? "Body("s + (body.getUserData() ? body.getUserData() : ""s) + ")"s : "Body(null)";
+        return body ? "Body(" + body->user_data + ")" : "Body(null)";
     }
 };
 

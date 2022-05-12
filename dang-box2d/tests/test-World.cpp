@@ -40,13 +40,15 @@ TEST_CASE("Box2D worlds can have a contact filter.")
     auto circle_shape = b2::CircleShape();
     circle_shape.radius = 1.0f;
 
+    auto body1 = world.createBody(b2::BodyType::Dynamic);
     auto fixture1_def = World::FixtureDef();
     fixture1_def.user_data = "1";
-    auto fixture1 = world.createBody(b2::BodyType::Dynamic).createFixture(fixture1_def, circle_shape);
+    auto fixture1 = body1.createFixture(fixture1_def, circle_shape);
 
+    auto body2 = world.createBody(b2::BodyType::Dynamic);
     auto fixture2_def = World::FixtureDef();
     fixture2_def.user_data = "2";
-    auto fixture2 = world.createBody(b2::BodyType::Dynamic).createFixture(fixture2_def, circle_shape);
+    auto fixture2 = body2.createFixture(fixture2_def, circle_shape);
 
     // Register the contact filter.
     auto filter_stub = dutils::Stub<bool(World::FixtureRef, World::FixtureRef)>();
@@ -67,7 +69,7 @@ TEST_CASE("Box2D worlds can create and destroy bodies.")
 {
     auto world = World();
 
-    auto body = World::BodyRef();
+    World::Body body;
 
     SECTION("Using default values.") { body = world.createBody(); }
     SECTION("Only specifying the body type.") { body = world.createBody(b2::BodyType::Static); }
@@ -77,7 +79,7 @@ TEST_CASE("Box2D worlds can create and destroy bodies.")
     {
         CHECK(body.getType() == b2::BodyType::Static);
 
-        world.destroyBody(std::move(body));
+        std::move(body).destroy();
         CHECK_FALSE(body);
         CHECK(world.getBodyCount() == 0);
     }
@@ -88,17 +90,19 @@ TEST_CASE("Box2D worlds can create and destroy joints.")
     auto world = World();
 
     auto body1 = world.createBody();
+    body1.user_data = "1";
     auto body2 = world.createBody();
+    body2.user_data = "2";
 
     auto joint_def = World::RevoluteJointDef();
-    joint_def.body_a = body1;
-    joint_def.body_b = body2;
+    joint_def.body_a = &body1;
+    joint_def.body_b = &body2;
     auto joint = world.createJoint(joint_def);
 
     CHECKED_IF(joint)
     {
-        CHECK(joint.getBodyA() == body1);
-        CHECK(joint.getBodyB() == body2);
+        CHECK(joint.getBodyA() == &body1);
+        CHECK(joint.getBodyB() == &body1);
 
         world.destroyJoint(std::move(joint));
         CHECK_FALSE(joint);
@@ -195,19 +199,25 @@ TEST_CASE("Box2D can iterate over all bodies, joints and contacts.")
     SECTION("Iterating over bodies.")
     {
         auto body1 = world.createBody();
+        body1.user_data = "1";
         auto body2 = world.createBody();
+        body2.user_data = "2";
         auto body3 = world.createBody();
+        body3.user_data = "3";
 
         auto actual_bodies = std::vector(world.bodies().begin(), world.bodies().end());
-        auto expected_bodies = std::vector{body1, body2, body3};
+        auto expected_bodies = std::vector{&body1, &body2, &body3};
 
         CHECK_THAT(actual_bodies, UnorderedEquals(expected_bodies));
     }
     SECTION("Iterating over joints.")
     {
+        auto body1 = world.createBody();
+        auto body2 = world.createBody();
+
         auto joint_def = World::RevoluteJointDef();
-        joint_def.body_a = world.createBody();
-        joint_def.body_b = world.createBody();
+        joint_def.body_a = &body1;
+        joint_def.body_b = &body2;
         auto joint1 = world.createJoint(joint_def);
         auto joint2 = world.createJoint(joint_def);
         auto joint3 = world.createJoint(joint_def);
@@ -222,8 +232,10 @@ TEST_CASE("Box2D can iterate over all bodies, joints and contacts.")
         auto circle_shape = b2::CircleShape();
         circle_shape.radius = 1.0f;
 
-        world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
-        world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
+        auto body1 = world.createBody(b2::BodyType::Dynamic);
+        body1.createFixture(circle_shape);
+        auto body2 = world.createBody(b2::BodyType::Dynamic);
+        body2.createFixture(circle_shape);
 
         stepWorld(world);
         auto contacts = std::vector(world.contacts().begin(), world.contacts().end());
@@ -269,9 +281,9 @@ TEST_CASE("Box2D worlds can query the total number of proxies, bodies, joints an
     {
         CHECK(world.getBodyCount() == 0);
 
-        world.createBody();
-        world.createBody();
-        world.createBody();
+        auto body1 = world.createBody();
+        auto body2 = world.createBody();
+        auto body3 = world.createBody();
 
         CHECK(world.getBodyCount() == 3);
     }
@@ -279,9 +291,12 @@ TEST_CASE("Box2D worlds can query the total number of proxies, bodies, joints an
     {
         CHECK(world.getJointCount() == 0);
 
+        auto body1 = world.createBody();
+        auto body2 = world.createBody();
+
         auto joint_def = World::RevoluteJointDef();
-        joint_def.body_a = world.createBody();
-        joint_def.body_b = world.createBody();
+        joint_def.body_a = &body1;
+        joint_def.body_b = &body2;
         world.createJoint(joint_def);
         world.createJoint(joint_def);
         world.createJoint(joint_def);
@@ -295,8 +310,10 @@ TEST_CASE("Box2D worlds can query the total number of proxies, bodies, joints an
         auto circle_shape = b2::CircleShape();
         circle_shape.radius = 1.0f;
 
-        world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
-        world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
+        auto body1 = world.createBody(b2::BodyType::Dynamic);
+        body1.createFixture(circle_shape);
+        auto body2 = world.createBody(b2::BodyType::Dynamic);
+        body2.createFixture(circle_shape);
 
         stepWorld(world);
         CHECK(world.getContactCount() == 1);
@@ -327,8 +344,10 @@ TEST_CASE("Box2D worlds can check if the simulation is currently being stepped."
     auto circle_shape = b2::CircleShape();
     circle_shape.radius = 1.0f;
 
-    world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
-    world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
+    auto body1 = world.createBody(b2::BodyType::Dynamic);
+    body1.createFixture(circle_shape);
+    auto body2 = world.createBody(b2::BodyType::Dynamic);
+    body2.createFixture(circle_shape);
 
     std::optional<bool> locked_during_contact;
     world.on_begin_contact.append([&] { locked_during_contact = world.isLocked(); });
@@ -378,12 +397,13 @@ TEST_CASE("Box2D worlds have events for when fixtures and joints are destroyed i
 {
     auto world = World();
 
-    auto body = world.createBody();
-    auto created_fixture = body.createFixture(b2::CircleShape());
+    auto body1 = world.createBody();
+    auto body2 = world.createBody();
+    auto created_fixture = body1.createFixture(b2::CircleShape());
 
     auto joint_def = World::RevoluteJointDef();
-    joint_def.body_a = body;
-    joint_def.body_b = world.createBody();
+    joint_def.body_a = &body1;
+    joint_def.body_b = &body2;
     auto created_joint = world.createJoint(joint_def);
 
     World::FixtureRef destroyed_fixture;
@@ -392,7 +412,7 @@ TEST_CASE("Box2D worlds have events for when fixtures and joints are destroyed i
     World::JointRef destroyed_joint;
     world.on_destroy_joint.append([&](World::JointRef joint) { destroyed_joint = joint; });
 
-    world.destroyBody(std::move(body));
+    std::move(body1).destroy();
 
     CHECK(destroyed_fixture == created_fixture);
     CHECK(destroyed_joint == created_joint);
@@ -405,8 +425,10 @@ TEST_CASE("Box2D worlds have contact events.")
     auto circle_shape = b2::CircleShape();
     circle_shape.radius = 1.0f;
 
-    auto fixture1 = world.createBody(b2::BodyType::Static).createFixture(circle_shape);
-    auto fixture2 = world.createBody(b2::BodyType::Dynamic).createFixture(circle_shape);
+    auto body1 = world.createBody(b2::BodyType::Static);
+    auto fixture1 = body1.createFixture(circle_shape);
+    auto body2 = world.createBody(b2::BodyType::Dynamic);
+    auto fixture2 = body2.createFixture(circle_shape);
 
     std::optional<World::Contact> begin_contact;
     world.on_begin_contact.append([&](World::Contact contact) { begin_contact = contact; });

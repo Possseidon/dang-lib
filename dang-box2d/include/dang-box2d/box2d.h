@@ -262,7 +262,11 @@ public:
 
     ForwardIterator& operator++()
     {
-        current_ = current_.getNext();
+        // TODO: Remove this once all types are updated
+        if constexpr (std::is_pointer_v<decltype(current_)>)
+            current_ = current_->getNext();
+        else
+            current_ = current_.getNext();
         return *this;
     }
 
@@ -542,110 +546,116 @@ using ConstVectors = detail::VectorsHelper<const b2Vec2>;
 
 namespace detail {
 
-template <typename TUserData, typename TJoint, JointType v_type = joint_type_v<std::remove_const_t<TJoint>>>
+template <typename THandle>
+class HandleWrapper;
+
+template <typename TUserData, typename THandle>
+class OwnedHandle;
+
+template <typename TUserTypes, typename TJoint, JointType v_type = joint_type_v<std::remove_const_t<TJoint>>>
 class JointWrapper;
 
-template <typename TUserData, typename TJointEdge>
+template <typename TUserTypes, typename TJointEdge>
 class JointEdgeWrapper;
 
 template <typename TShape, ShapeType v_type = shape_type_v<std::remove_const_t<TShape>>>
 class ShapeRefWrapper;
 
-template <typename TUserData, typename TFixture, typename TShape>
+template <typename TUserTypes, typename TFixture, typename TShape>
 class FixtureWrapper;
 
-template <typename TUserData, typename TBody>
+template <typename TUserTypes>
 class BodyWrapper;
 
-template <typename TUserData, typename TWorld>
+template <typename TUserTypes, typename TWorld>
 class WorldRefWrapper;
 
-template <typename TUserData, typename TContact>
+template <typename TUserTypes, typename TContact>
 class ContactWrapper;
 
-template <typename TUserData>
-using JointRef = detail::JointWrapper<TUserData, b2Joint>;
-template <typename TUserData>
-using ConstJointRef = detail::JointWrapper<TUserData, const b2Joint>;
-template <typename TUserData, typename TConstAs>
-using JointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2Joint, TConstAs>>;
+template <typename TUserTypes>
+using JointRef = detail::JointWrapper<TUserTypes, b2Joint>;
+template <typename TUserTypes>
+using ConstJointRef = detail::JointWrapper<TUserTypes, const b2Joint>;
+template <typename TUserTypes, typename TConstAs>
+using JointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2Joint, TConstAs>>;
 
-template <typename TUserData>
-using RevoluteJointRef = detail::JointWrapper<TUserData, b2RevoluteJoint>;
-template <typename TUserData>
-using ConstRevoluteJointRef = detail::JointWrapper<TUserData, const b2RevoluteJoint>;
-template <typename TUserData, typename TConstAs>
-using RevoluteJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
+template <typename TUserTypes>
+using RevoluteJointRef = detail::JointWrapper<TUserTypes, b2RevoluteJoint>;
+template <typename TUserTypes>
+using ConstRevoluteJointRef = detail::JointWrapper<TUserTypes, const b2RevoluteJoint>;
+template <typename TUserTypes, typename TConstAs>
+using RevoluteJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
 
-template <typename TUserData>
-using PrismaticJointRef = detail::JointWrapper<TUserData, b2PrismaticJoint>;
-template <typename TUserData>
-using ConstPrismaticJointRef = detail::JointWrapper<TUserData, const b2PrismaticJoint>;
-template <typename TUserData, typename TConstAs>
-using PrismaticJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
+template <typename TUserTypes>
+using PrismaticJointRef = detail::JointWrapper<TUserTypes, b2PrismaticJoint>;
+template <typename TUserTypes>
+using ConstPrismaticJointRef = detail::JointWrapper<TUserTypes, const b2PrismaticJoint>;
+template <typename TUserTypes, typename TConstAs>
+using PrismaticJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
 
-template <typename TUserData>
-using DistanceJointRef = detail::JointWrapper<TUserData, b2DistanceJoint>;
-template <typename TUserData>
-using ConstDistanceJointRef = detail::JointWrapper<TUserData, const b2DistanceJoint>;
-template <typename TUserData, typename TConstAs>
-using DistanceJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
+template <typename TUserTypes>
+using DistanceJointRef = detail::JointWrapper<TUserTypes, b2DistanceJoint>;
+template <typename TUserTypes>
+using ConstDistanceJointRef = detail::JointWrapper<TUserTypes, const b2DistanceJoint>;
+template <typename TUserTypes, typename TConstAs>
+using DistanceJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
 
-template <typename TUserData>
-using PulleyJointRef = detail::JointWrapper<TUserData, b2PulleyJoint>;
-template <typename TUserData>
-using ConstPulleyJointRef = detail::JointWrapper<TUserData, const b2PulleyJoint>;
-template <typename TUserData, typename TConstAs>
-using PulleyJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
+template <typename TUserTypes>
+using PulleyJointRef = detail::JointWrapper<TUserTypes, b2PulleyJoint>;
+template <typename TUserTypes>
+using ConstPulleyJointRef = detail::JointWrapper<TUserTypes, const b2PulleyJoint>;
+template <typename TUserTypes, typename TConstAs>
+using PulleyJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
 
-template <typename TUserData>
-using MouseJointRef = detail::JointWrapper<TUserData, b2MouseJoint>;
-template <typename TUserData>
-using ConstMouseJointRef = detail::JointWrapper<TUserData, const b2MouseJoint>;
-template <typename TUserData, typename TConstAs>
-using MouseJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
+template <typename TUserTypes>
+using MouseJointRef = detail::JointWrapper<TUserTypes, b2MouseJoint>;
+template <typename TUserTypes>
+using ConstMouseJointRef = detail::JointWrapper<TUserTypes, const b2MouseJoint>;
+template <typename TUserTypes, typename TConstAs>
+using MouseJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
 
-template <typename TUserData>
-using GearJointRef = detail::JointWrapper<TUserData, b2GearJoint>;
-template <typename TUserData>
-using ConstGearJointRef = detail::JointWrapper<TUserData, const b2GearJoint>;
-template <typename TUserData, typename TConstAs>
-using GearJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2GearJoint, TConstAs>>;
+template <typename TUserTypes>
+using GearJointRef = detail::JointWrapper<TUserTypes, b2GearJoint>;
+template <typename TUserTypes>
+using ConstGearJointRef = detail::JointWrapper<TUserTypes, const b2GearJoint>;
+template <typename TUserTypes, typename TConstAs>
+using GearJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2GearJoint, TConstAs>>;
 
-template <typename TUserData>
-using WheelJointRef = detail::JointWrapper<TUserData, b2WheelJoint>;
-template <typename TUserData>
-using ConstWheelJointRef = detail::JointWrapper<TUserData, const b2WheelJoint>;
-template <typename TUserData, typename TConstAs>
-using WheelJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
+template <typename TUserTypes>
+using WheelJointRef = detail::JointWrapper<TUserTypes, b2WheelJoint>;
+template <typename TUserTypes>
+using ConstWheelJointRef = detail::JointWrapper<TUserTypes, const b2WheelJoint>;
+template <typename TUserTypes, typename TConstAs>
+using WheelJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
 
-template <typename TUserData>
-using WeldJointRef = detail::JointWrapper<TUserData, b2WeldJoint>;
-template <typename TUserData>
-using ConstWeldJointRef = detail::JointWrapper<TUserData, const b2WeldJoint>;
-template <typename TUserData, typename TConstAs>
-using WeldJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
+template <typename TUserTypes>
+using WeldJointRef = detail::JointWrapper<TUserTypes, b2WeldJoint>;
+template <typename TUserTypes>
+using ConstWeldJointRef = detail::JointWrapper<TUserTypes, const b2WeldJoint>;
+template <typename TUserTypes, typename TConstAs>
+using WeldJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
 
-template <typename TUserData>
-using FrictionJointRef = detail::JointWrapper<TUserData, b2FrictionJoint>;
-template <typename TUserData>
-using ConstFrictionJointRef = detail::JointWrapper<TUserData, const b2FrictionJoint>;
-template <typename TUserData, typename TConstAs>
-using FrictionJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
+template <typename TUserTypes>
+using FrictionJointRef = detail::JointWrapper<TUserTypes, b2FrictionJoint>;
+template <typename TUserTypes>
+using ConstFrictionJointRef = detail::JointWrapper<TUserTypes, const b2FrictionJoint>;
+template <typename TUserTypes, typename TConstAs>
+using FrictionJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
 
-template <typename TUserData>
-using MotorJointRef = detail::JointWrapper<TUserData, b2MotorJoint>;
-template <typename TUserData>
-using ConstMotorJointRef = detail::JointWrapper<TUserData, const b2MotorJoint>;
-template <typename TUserData, typename TConstAs>
-using MotorJointRefConstAs = detail::JointWrapper<TUserData, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
+template <typename TUserTypes>
+using MotorJointRef = detail::JointWrapper<TUserTypes, b2MotorJoint>;
+template <typename TUserTypes>
+using ConstMotorJointRef = detail::JointWrapper<TUserTypes, const b2MotorJoint>;
+template <typename TUserTypes, typename TConstAs>
+using MotorJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
 
-template <typename TUserData>
-using JointEdge = detail::JointEdgeWrapper<TUserData, b2JointEdge>;
-template <typename TUserData>
-using ConstJointEdge = detail::JointEdgeWrapper<TUserData, const b2JointEdge>;
-template <typename TUserData, typename TConstAs>
-using JointEdgeConstAs = detail::JointEdgeWrapper<TUserData, dutils::copy_const_t<b2JointEdge, TConstAs>>;
+template <typename TUserTypes>
+using JointEdge = detail::JointEdgeWrapper<TUserTypes, b2JointEdge>;
+template <typename TUserTypes>
+using ConstJointEdge = detail::JointEdgeWrapper<TUserTypes, const b2JointEdge>;
+template <typename TUserTypes, typename TConstAs>
+using JointEdgeConstAs = detail::JointEdgeWrapper<TUserTypes, dutils::copy_const_t<b2JointEdge, TConstAs>>;
 
 using ShapeRef = detail::ShapeRefWrapper<b2Shape>;
 using ConstShapeRef = detail::ShapeRefWrapper<const b2Shape>;
@@ -672,64 +682,61 @@ using ConstChainShapeRef = detail::ShapeRefWrapper<const b2ChainShape>;
 template <typename TConstAs>
 using ChainShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2ChainShape, TConstAs>>;
 
-template <typename TUserData>
-using FixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2Shape>;
-template <typename TUserData>
-using ConstFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2Shape>;
-template <typename TUserData, typename TConstAs>
-using FixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2Shape>;
+template <typename TUserTypes>
+using FixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2Shape>;
+template <typename TUserTypes>
+using ConstFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2Shape>;
+template <typename TUserTypes, typename TConstAs>
+using FixtureRefConstAs = detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2Shape>;
 
-template <typename TUserData>
-using CircleFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2CircleShape>;
-template <typename TUserData>
-using ConstCircleFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2CircleShape>;
-template <typename TUserData, typename TConstAs>
+template <typename TUserTypes>
+using CircleFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2CircleShape>;
+template <typename TUserTypes>
+using ConstCircleFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2CircleShape>;
+template <typename TUserTypes, typename TConstAs>
 using CircleFixtureRefConstAs =
-    detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2CircleShape>;
+    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2CircleShape>;
 
-template <typename TUserData>
-using EdgeFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2EdgeShape>;
-template <typename TUserData>
-using ConstEdgeFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2EdgeShape>;
-template <typename TUserData, typename TConstAs>
-using EdgeFixtureRefConstAs = detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2EdgeShape>;
+template <typename TUserTypes>
+using EdgeFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2EdgeShape>;
+template <typename TUserTypes>
+using ConstEdgeFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2EdgeShape>;
+template <typename TUserTypes, typename TConstAs>
+using EdgeFixtureRefConstAs =
+    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2EdgeShape>;
 
-template <typename TUserData>
-using PolygonFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2PolygonShape>;
-template <typename TUserData>
-using ConstPolygonFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2PolygonShape>;
-template <typename TUserData, typename TConstAs>
+template <typename TUserTypes>
+using PolygonFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2PolygonShape>;
+template <typename TUserTypes>
+using ConstPolygonFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2PolygonShape>;
+template <typename TUserTypes, typename TConstAs>
 using PolygonFixtureRefConstAs =
-    detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2PolygonShape>;
+    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2PolygonShape>;
 
-template <typename TUserData>
-using ChainFixtureRef = detail::FixtureWrapper<TUserData, b2Fixture, b2ChainShape>;
-template <typename TUserData>
-using ConstChainFixtureRef = detail::FixtureWrapper<TUserData, const b2Fixture, b2ChainShape>;
-template <typename TUserData, typename TConstAs>
+template <typename TUserTypes>
+using ChainFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2ChainShape>;
+template <typename TUserTypes>
+using ConstChainFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2ChainShape>;
+template <typename TUserTypes, typename TConstAs>
 using ChainFixtureRefConstAs =
-    detail::FixtureWrapper<TUserData, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
+    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
 
-template <typename TUserData>
-using BodyRef = detail::BodyWrapper<TUserData, b2Body>;
-template <typename TUserData>
-using ConstBodyRef = detail::BodyWrapper<TUserData, const b2Body>;
-template <typename TUserData, typename TConstAs>
-using BodyRefConstAs = detail::BodyWrapper<TUserData, dutils::copy_const_t<b2Body, TConstAs>>;
+template <typename TUserTypes>
+using Body = detail::BodyWrapper<TUserTypes>;
 
-template <typename TUserData>
-using WorldRef = detail::WorldRefWrapper<TUserData, b2World>;
-template <typename TUserData>
-using ConstWorldRef = detail::WorldRefWrapper<TUserData, const b2World>;
-template <typename TUserData, typename TConstAs>
-using WorldRefConstAs = detail::WorldRefWrapper<TUserData, dutils::copy_const_t<b2World, TConstAs>>;
+template <typename TUserTypes>
+using WorldRef = detail::WorldRefWrapper<TUserTypes, b2World>;
+template <typename TUserTypes>
+using ConstWorldRef = detail::WorldRefWrapper<TUserTypes, const b2World>;
+template <typename TUserTypes, typename TConstAs>
+using WorldRefConstAs = detail::WorldRefWrapper<TUserTypes, dutils::copy_const_t<b2World, TConstAs>>;
 
-template <typename TUserData>
-using Contact = detail::ContactWrapper<TUserData, b2Contact>;
-template <typename TUserData>
-using ConstContact = detail::ContactWrapper<TUserData, const b2Contact>;
-template <typename TUserData, typename TConstAs>
-using ContactConstAs = detail::ContactWrapper<TUserData, dutils::copy_const_t<b2Contact, TConstAs>>;
+template <typename TUserTypes>
+using Contact = detail::ContactWrapper<TUserTypes, b2Contact>;
+template <typename TUserTypes>
+using ConstContact = detail::ContactWrapper<TUserTypes, const b2Contact>;
+template <typename TUserTypes, typename TConstAs>
+using ContactConstAs = detail::ContactWrapper<TUserTypes, dutils::copy_const_t<b2Contact, TConstAs>>;
 
 } // namespace detail
 
@@ -739,8 +746,81 @@ struct DefaultUserData {
     using Joint = void;
 };
 
-template <typename TUserData = DefaultUserData>
+template <typename TUserTypes = DefaultUserData>
 class World;
+
+// --- Lifetime
+
+namespace detail {
+
+void destroy(b2Body* body) { body->GetWorld()->DestroyBody(body); }
+void destroy(b2Fixture* fixture) { fixture->GetBody()->DestroyFixture(fixture); }
+void destroy(b2Joint* joint) { joint->GetBodyA()->GetWorld()->DestroyJoint(joint); }
+
+// --- Owners
+
+// TODO: C++20 use std::bit_cast
+
+template <typename TUserTypes>
+Body<TUserTypes>& getOwner(b2Body* body)
+{
+    Body<TUserTypes>* result;
+    std::memcpy(&result, &body->GetUserData().pointer, sizeof result);
+    return *result;
+}
+
+template <typename TUserData>
+void setOwner(b2Body* body, OwnedHandle<TUserData, b2Body>& owner)
+{
+    auto ptr = &owner;
+    std::memcpy(&body->GetUserData().pointer, &ptr, sizeof ptr);
+}
+
+/*
+
+template <typename TUserTypes>
+Fixture<TUserTypes>& getOwner(b2Fixture* fixture)
+{
+    Fixture<TUserTypes>* result;
+    std::memcpy(&result, &fixture->GetUserData().pointer, sizeof result);
+    return *result;
+}
+
+template <typename TUserTypes>
+void setOwner(b2Fixture* fixture, Fixture<TUserTypes>& owner)
+{
+    auto ptr = &owner;
+    std::memcpy(&fixture->GetUserData().pointer, &ptr, sizeof ptr);
+}
+
+template <typename TUserTypes>
+Joint<TUserTypes>& getOwner(b2Joint* joint)
+{
+    Joint* result;
+    std::memcpy(&result, &joint->GetUserData().pointer, sizeof result);
+    return *result;
+}
+
+template <typename TUserTypes>
+void setOwner(b2Joint* joint, Joint<TUserTypes>& owner)
+{
+    auto ptr = &owner;
+    std::memcpy(&joint->GetUserData().pointer, &ptr, sizeof ptr);
+}
+
+*/
+
+// --- UserData
+
+template <typename TUserData>
+struct WithUserData {
+    TUserData user_data = {};
+};
+
+template <>
+struct WithUserData<void> {};
+
+} // namespace detail
 
 // --- TODO
 
@@ -782,6 +862,68 @@ private:
     THandle* handle_ = nullptr;
 };
 
+template <typename TUserData, typename THandle>
+class OwnedHandle : public WithUserData<TUserData> {
+public:
+    OwnedHandle() = default;
+
+    OwnedHandle(const OwnedHandle&) = delete;
+
+    OwnedHandle(OwnedHandle&& other)
+        : handle_(std::exchange(other.handle_, nullptr))
+    {
+        if (handle_)
+            setOwner(handle_, *this);
+    }
+
+    OwnedHandle& operator=(const OwnedHandle&) = delete;
+
+    OwnedHandle& operator=(OwnedHandle&& other)
+    {
+        if (handle_)
+            detail::destroy(handle_);
+        handle_ = std::exchange(other.handle_, nullptr);
+        if (handle_)
+            setOwner(handle_, *this);
+        return *this;
+    }
+
+    ~OwnedHandle()
+    {
+        if (handle_)
+            detail::destroy(handle_);
+    }
+
+    void destroy() &&
+    {
+        if (handle_) {
+            detail::destroy(handle_);
+            handle_ = nullptr;
+        }
+    }
+
+    // TODO: swap
+
+    explicit operator bool() const { return handle_ != nullptr; }
+
+    friend bool operator==(OwnedHandle lhs, OwnedHandle rhs) { return lhs.handle_ == rhs.handle_; }
+    friend bool operator!=(OwnedHandle lhs, OwnedHandle rhs) { return !(lhs == rhs); }
+
+private:
+    template <typename>
+    friend class BodyWrapper;
+
+    template <typename>
+    friend class JointDefBase;
+
+    template <typename, typename>
+    friend class WorldRefWrapper;
+
+    void initialize(THandle* handle) { handle_ = handle; }
+
+    THandle* handle_ = nullptr;
+};
+
 } // namespace detail
 
 // --- Shape
@@ -791,7 +933,7 @@ struct CircleShape {
     vec2 position;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2CircleShape;
@@ -810,7 +952,7 @@ struct OneSidedEdgeShape {
     vec2 next_vertex;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2EdgeShape;
@@ -826,7 +968,7 @@ struct TwoSidedEdgeShape {
     vec2 to_vertex;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2EdgeShape;
@@ -852,7 +994,7 @@ public:
     }
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2PolygonShape;
@@ -867,7 +1009,7 @@ struct BoxShape {
     vec2 size;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2PolygonShape;
@@ -881,7 +1023,7 @@ struct OrientedBoxShape {
     float angle = 0.0f;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2PolygonShape;
@@ -893,7 +1035,7 @@ struct LoopShape {
     std::vector<vec2> vertices;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2ChainShape;
@@ -913,7 +1055,7 @@ struct ChainShape {
     vec2 next_vertex;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     using Data = b2ChainShape;
@@ -1103,9 +1245,9 @@ public:
 
 // --- Fixture
 
-template <typename TUserData>
+template <typename TUserTypes>
 struct FixtureDef {
-    typename TUserData::Fixture* user_data = nullptr;
+    typename TUserTypes::Fixture* user_data = nullptr;
     float friction = 0.2f;
     float restitution = 0.0f;
     float restitution_threshold = 1.0f * b2_lengthUnitsPerMeter;
@@ -1114,7 +1256,7 @@ struct FixtureDef {
     Filter filter;
 
 private:
-    template <typename, typename>
+    template <typename>
     friend class detail::BodyWrapper;
 
     b2FixtureDef build(const b2Shape* shape) const
@@ -1135,13 +1277,13 @@ private:
 
 struct ForceFixture {};
 
-template <typename TUserData, typename TFixture, typename TShape>
+template <typename TUserTypes, typename TFixture, typename TShape>
 class FixtureWrapper : public HandleWrapper<TFixture> {
 private:
     template <typename, typename, typename>
     friend class FixtureWrapper;
 
-    template <typename, typename>
+    template <typename>
     friend class BodyWrapper;
 
     FixtureWrapper(ForceFixture, TFixture* handle)
@@ -1166,7 +1308,7 @@ public:
     }
 
     template <ShapeType v_shape_type>
-    FixtureWrapper<TUserData, TFixture, shape_b2type_t<v_shape_type>> shaped() const
+    FixtureWrapper<TUserTypes, TFixture, shape_b2type_t<v_shape_type>> shaped() const
     {
         static_assert(std::is_same_v<TShape, b2Shape>, "fixture shape type already statically known");
         if constexpr (v_shape_type != ShapeType::Unknown) {
@@ -1179,7 +1321,7 @@ public:
         }
     }
 
-    constexpr operator FixtureWrapper<TUserData, TFixture, b2Shape>() const { return this->handle(); }
+    constexpr operator FixtureWrapper<TUserTypes, TFixture, b2Shape>() const { return this->handle(); }
 
     void setSensor(bool sensor) const { this->handle()->SetSensor(sensor); }
     bool isSensor() const { return this->handle()->IsSensor(); }
@@ -1188,20 +1330,20 @@ public:
     const Filter& getFilterData() const { return this->handle()->GetFilterData(); }
     void refilter() const { this->handle()->Refilter(); }
 
-    BodyRefConstAs<TUserData, TFixture> getBody() const { return this->handle()->GetBody(); }
+    dutils::copy_const_t<Body<TUserTypes>, TFixture>* getBody() const { return this->handle()->GetBody(); }
 
-    FixtureRefConstAs<TUserData, TFixture> getNext() const { return this->handle()->GetNext(); }
+    FixtureRefConstAs<TUserTypes, TFixture> getNext() const { return this->handle()->GetNext(); }
 
-    void setUserData(typename TUserData::Fixture* user_data) const
+    void setUserData(typename TUserTypes::Fixture* user_data) const
     {
         // TODO: C++20 use std::bit_cast
         std::memcpy(&this->handle()->GetUserData().pointer, &user_data, sizeof user_data);
     }
 
-    typename TUserData::Fixture* getUserData() const
+    typename TUserTypes::Fixture* getUserData() const
     {
         // TODO: C++20 use std::bit_cast
-        typename TUserData::Fixture* result;
+        typename TUserTypes::Fixture* result;
         std::memcpy(&result, &this->handle()->GetUserData().pointer, sizeof result);
         return result;
     }
@@ -1293,8 +1435,8 @@ struct Applier {
 
 // --- Body
 
-template <typename TUserData>
-struct BodyDef {
+template <typename TUserTypes>
+struct BodyDef : detail::WithUserData<typename TUserTypes::Body> {
     BodyType type = BodyType::Static;
     vec2 position;
     float angle = 0.0f;
@@ -1307,7 +1449,6 @@ struct BodyDef {
     bool fixed_rotation = false;
     bool bullet = false;
     bool enabled = true;
-    typename TUserData::Body* user_data = nullptr;
     float gravity_scale = 1.0f;
 
 private:
@@ -1317,7 +1458,7 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2BodyDef build() const
+    b2BodyDef build(const Body<TUserTypes>* owner) const
     {
         b2BodyDef result;
         result.type = cast(type);
@@ -1333,178 +1474,172 @@ private:
         result.bullet = bullet;
         result.enabled = enabled;
         // TODO: C++20 use bit_cast
-        std::memcpy(&result.userData.pointer, &user_data, sizeof user_data);
+        std::memcpy(&result.userData.pointer, &owner, sizeof owner);
         result.gravityScale = gravity_scale;
         return result;
     }
 };
 
-template <typename TUserData, typename TBody>
-class BodyWrapper : public HandleWrapper<TBody> {
+template <typename TUserTypes>
+class BodyWrapper : public OwnedHandle<typename TUserTypes::Body, b2Body> {
 public:
-    using HandleWrapper<TBody>::HandleWrapper;
+    using OwnedHandle<typename TUserTypes::Body, b2Body>::OwnedHandle;
 
     template <typename TShape>
-    auto createFixture(const FixtureDef<TUserData>& fixture, const TShape& shape) const
+    auto createFixture(const FixtureDef<TUserTypes>& fixture, const TShape& shape)
     {
         typename TShape::Data shape_data;
         shape.build(shape_data);
         auto def = fixture.build(&shape_data);
-        return FixtureWrapper<TUserData, b2Fixture, typename TShape::Data>(ForceFixture{},
-                                                                           this->handle()->CreateFixture(&def));
+        return FixtureWrapper<TUserTypes, b2Fixture, typename TShape::Data>(ForceFixture{},
+                                                                            this->handle_->CreateFixture(&def));
     }
 
-    FixtureRef<TUserData> createFixture(const FixtureDef<TUserData>& fixture, const Shape& shape) const
+    FixtureRef<TUserTypes> createFixture(const FixtureDef<TUserTypes>& fixture, const Shape& shape)
     {
         return std::visit(
-            [&](const auto& concrete_shape) -> FixtureRef<TUserData> {
+            [&](const auto& concrete_shape) -> FixtureRef<TUserTypes> {
                 return this->createFixture(fixture, concrete_shape);
             },
             shape);
     }
 
     template <typename TShape>
-    auto createFixture(const TShape& shape, float density = 1.0f) const
+    auto createFixture(const TShape& shape, float density = 1.0f)
     {
         typename TShape::Data shape_data;
         shape.build(shape_data);
-        return FixtureWrapper<TUserData, b2Fixture, typename TShape::Data>(
-            ForceFixture{}, this->handle()->CreateFixture(&shape_data, density));
+        return FixtureWrapper<TUserTypes, b2Fixture, typename TShape::Data>(
+            ForceFixture{}, this->handle_->CreateFixture(&shape_data, density));
     }
 
-    FixtureRef<TUserData> createFixture(const Shape& shape, float density = 1.0f) const
+    FixtureRef<TUserTypes> createFixture(const Shape& shape, float density = 1.0f)
     {
         return std::visit(
-            [&](const auto& concrete_shape) -> FixtureRef<TUserData> {
+            [&](const auto& concrete_shape) -> FixtureRef<TUserTypes> {
                 return this->createFixture(concrete_shape, density);
             },
             shape);
     }
 
     template <typename TShape>
-    void destroyFixture(FixtureWrapper<TUserData, b2Fixture, TShape>&& fixture) const
+    void destroyFixture(FixtureWrapper<TUserTypes, b2Fixture, TShape>&& fixture)
     {
-        this->handle()->DestroyFixture(fixture.handle());
+        this->handle_->DestroyFixture(fixture.handle());
         fixture = nullptr;
     }
 
-    void setTransform(vec2 position, float angle) const { this->handle()->SetTransform(cast(position), angle); }
-    const Transform& getTransform() const { return this->handle()->GetTransform(); }
-    vec2 getPosition() const { return cast(this->handle()->GetPosition()); }
-    float getAngle() const { return this->handle()->GetAngle(); }
-    vec2 getWorldCenter() const { return cast(this->handle()->GetWorldCenter()); }
-    vec2 getLocalCenter() const { return cast(this->handle()->GetLocalCenter()); }
+    void setTransform(vec2 position, float angle) { this->handle_->SetTransform(cast(position), angle); }
+    const Transform& getTransform() const { return this->handle_->GetTransform(); }
+    vec2 getPosition() const { return cast(this->handle_->GetPosition()); }
+    float getAngle() const { return this->handle_->GetAngle(); }
+    vec2 getWorldCenter() const { return cast(this->handle_->GetWorldCenter()); }
+    vec2 getLocalCenter() const { return cast(this->handle_->GetLocalCenter()); }
 
-    void setLinearVelocity(vec2 velocity) const { this->handle()->SetLinearVelocity(cast(velocity)); }
-    vec2 getLinearVelocity() const { return cast(this->handle()->GetLinearVelocity()); }
-    void setAngularVelocity(float omega) const { this->handle()->SetAngularVelocity(omega); }
-    float getAngularVelocity() const { return this->handle()->GetAngularVelocity(); }
+    void setLinearVelocity(vec2 velocity) { this->handle_->SetLinearVelocity(cast(velocity)); }
+    vec2 getLinearVelocity() const { return cast(this->handle_->GetLinearVelocity()); }
+    void setAngularVelocity(float omega) { this->handle_->SetAngularVelocity(omega); }
+    float getAngularVelocity() const { return this->handle_->GetAngularVelocity(); }
 
     template <typename TApplicable>
-    void apply(const TApplicable& applicable, bool wake = true) const
+    void apply(const TApplicable& applicable, bool wake = true)
     {
-        Applier{this->handle(), wake}(applicable);
+        Applier{this->handle_, wake}(applicable);
     }
 
-    void apply(const Applicable& applicable, bool wake = true) const
-    {
-        std::visit(Applier{this->handle(), wake}, applicable);
-    }
+    void apply(const Applicable& applicable, bool wake = true) { std::visit(Applier{this->handle_, wake}, applicable); }
 
-    float getMass() const { return this->handle()->GetMass(); }
-    float getInertia() const { return this->handle()->GetInertia(); }
+    float getMass() const { return this->handle_->GetMass(); }
+    float getInertia() const { return this->handle_->GetInertia(); }
 
     MassData getMassData() const
     {
         MassData result;
-        this->handle()->GetMassData(&result);
+        this->handle_->GetMassData(&result);
         return result;
     }
 
-    void setMassData(const MassData& mass_data) const { this->handle()->SetMassData(&mass_data); }
+    void setMassData(const MassData& mass_data) { this->handle_->SetMassData(&mass_data); }
 
-    void resetMassData() const { this->handle()->ResetMassData(); }
+    void resetMassData() { this->handle_->ResetMassData(); }
 
-    vec2 getWorldPoint(vec2 local_point) const { return cast(this->handle()->GetWorldPoint(cast(local_point))); }
-    vec2 getWorldVector(vec2 local_vector) const { return cast(this->handle()->GetWorldVector(cast(local_vector))); }
-    vec2 getLocalPoint(vec2 world_point) const { return cast(this->handle()->GetLocalPoint(cast(world_point))); }
-    vec2 getLocalVector(vec2 world_vector) const { return cast(this->handle()->GetLocalVector(cast(world_vector))); }
+    vec2 getWorldPoint(vec2 local_point) const { return cast(this->handle_->GetWorldPoint(cast(local_point))); }
+    vec2 getWorldVector(vec2 local_vector) const { return cast(this->handle_->GetWorldVector(cast(local_vector))); }
+    vec2 getLocalPoint(vec2 world_point) const { return cast(this->handle_->GetLocalPoint(cast(world_point))); }
+    vec2 getLocalVector(vec2 world_vector) const { return cast(this->handle_->GetLocalVector(cast(world_vector))); }
 
     vec2 getLinearVelocityFromWorldPoint(vec2 world_point) const
     {
-        return cast(this->handle()->GetLinearVelocityFromWorldPoint(cast(world_point)));
+        return cast(this->handle_->GetLinearVelocityFromWorldPoint(cast(world_point)));
     }
 
     vec2 getLinearVelocityFromLocalPoint(vec2 local_point) const
     {
-        return cast(this->handle()->GetLinearVelocityFromLocalPoint(cast(local_point)));
+        return cast(this->handle_->GetLinearVelocityFromLocalPoint(cast(local_point)));
     }
 
-    float getLinearDamping() const { return this->handle()->GetLinearDamping(); }
-    void setLinearDamping(float linear_damping) const { this->handle()->SetLinearDamping(linear_damping); }
-    float getAngularDamping() const { return this->handle()->GetAngularDamping(); }
-    void setAngularDamping(float angular_damping) const { this->handle()->SetAngularDamping(angular_damping); }
+    float getLinearDamping() const { return this->handle_->GetLinearDamping(); }
+    void setLinearDamping(float linear_damping) { this->handle_->SetLinearDamping(linear_damping); }
+    float getAngularDamping() const { return this->handle_->GetAngularDamping(); }
+    void setAngularDamping(float angular_damping) { this->handle_->SetAngularDamping(angular_damping); }
 
-    float getGravityScale() const { return this->handle()->GetGravityScale(); }
-    void setGravityScale(float scale) const { this->handle()->SetGravityScale(scale); }
+    float getGravityScale() const { return this->handle_->GetGravityScale(); }
+    void setGravityScale(float scale) { this->handle_->SetGravityScale(scale); }
 
-    void setType(BodyType type) const { this->handle()->SetType(cast(type)); }
-    BodyType getType() const { return cast(this->handle()->GetType()); }
+    void setType(BodyType type) { this->handle_->SetType(cast(type)); }
+    BodyType getType() const { return cast(this->handle_->GetType()); }
 
-    void setBullet(bool flag) const { this->handle()->SetBullet(flag); }
-    bool isBullet() const { return this->handle()->IsBullet(); }
+    void setBullet(bool flag) { this->handle_->SetBullet(flag); }
+    bool isBullet() const { return this->handle_->IsBullet(); }
 
-    void setSleepingAllowed(bool flag) const { this->handle()->SetSleepingAllowed(flag); }
-    bool isSleepingAllowed() const { return this->handle()->IsSleepingAllowed(); }
+    void setSleepingAllowed(bool flag) { this->handle_->SetSleepingAllowed(flag); }
+    bool isSleepingAllowed() const { return this->handle_->IsSleepingAllowed(); }
 
-    void setAwake(bool flag) const { this->handle()->SetAwake(flag); }
-    bool isAwake() const { return this->handle()->IsAwake(); }
+    void setAwake(bool flag) { this->handle_->SetAwake(flag); }
+    bool isAwake() const { return this->handle_->IsAwake(); }
 
-    void setEnabled(bool flag) const { this->handle()->SetEnabled(flag); }
-    bool isEnabled() const { return this->handle()->IsEnabled(); }
+    void setEnabled(bool flag) { this->handle_->SetEnabled(flag); }
+    bool isEnabled() const { return this->handle_->IsEnabled(); }
 
-    void setFixedRotation(bool flag) const { this->handle()->SetFixedRotation(flag); }
-    bool isFixedRotation() const { return this->handle()->IsFixedRotation(); }
+    void setFixedRotation(bool flag) { this->handle_->SetFixedRotation(flag); }
+    bool isFixedRotation() const { return this->handle_->IsFixedRotation(); }
 
-    ForwardIterable<FixtureRefConstAs<TUserData, TBody>> fixtures() const { return {this->handle()->GetFixtureList()}; }
-    BidirectionalIterable<JointEdgeConstAs<TUserData, TBody>> joints() const
+    ForwardIterable<FixtureRef<TUserTypes>> fixtures() { return {this->handle_->GetFixtureList()}; }
+    ForwardIterable<ConstFixtureRef<TUserTypes>> fixtures() const { return {this->handle_->GetFixtureList()}; }
+    BidirectionalIterable<JointEdge<TUserTypes>> joints() { return {this->handle_->GetJointList()}; }
+    BidirectionalIterable<ConstJointEdge<TUserTypes>> joints() const { return {this->handle_->GetJointList()}; }
+    ForwardIterable<Contact<TUserTypes>> contacts() { return {this->handle_->GetContactList()}; }
+    ForwardIterable<ConstContact<TUserTypes>> contacts() const { return {this->handle_->GetContactList()}; }
+
+    Body<TUserTypes>* getNext()
     {
-        return {this->handle()->GetJointList()};
+        auto next = this->handle_->GetNext();
+        return next ? &getOwner<TUserTypes>(next) : nullptr;
     }
-    ForwardIterable<ContactConstAs<TUserData, TBody>> contacts() const { return {this->handle()->GetContactList()}; }
 
-    BodyRefConstAs<TUserData, TBody> getNext() const { return this->handle()->GetNext(); }
-
-    void setUserData(typename TUserData::Body* user_data) const
+    const Body<TUserTypes>* getNext() const
     {
-        // TODO: C++20 use std::bit_cast
-        std::memcpy(&this->handle()->GetUserData().pointer, &user_data, sizeof user_data);
+        auto next = this->handle_->GetNext();
+        return next ? &getOwner<TUserTypes>(this->handle_->GetNext()) : nullptr;
     }
 
-    typename TUserData::Body* getUserData() const
-    {
-        // TODO: C++20 use std::bit_cast
-        typename TUserData::Body* result;
-        std::memcpy(&result, &this->handle()->GetUserData().pointer, sizeof result);
-        return result;
-    }
+    WorldRef<TUserTypes> getWorld() { this->handle_->GetWorld(); }
+    ConstWorldRef<TUserTypes> getWorld() const { this->handle_->GetWorld(); }
 
-    WorldRefConstAs<TUserData, TBody> getWorld() const { this->handle()->GetWorld(); }
-
-    void dump() const { this->handle()->Dump(); }
+    void dump() { this->handle_->Dump(); }
 };
 
 // --- Joint
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Unknown> : public HandleWrapper<TJoint> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Unknown> : public HandleWrapper<TJoint> {
 private:
     static constexpr auto can_devirtualize = !std::is_same_v<std::remove_const_t<TJoint>, b2Joint>;
 
 public:
     using HandleWrapper<TJoint>::HandleWrapper;
 
-    operator JointRefConstAs<TUserData, TJoint>() const { return this->handle(); }
+    operator JointRefConstAs<TUserTypes, TJoint>() const { return this->handle(); }
 
     constexpr JointType getType() const
     {
@@ -1514,8 +1649,15 @@ public:
             return cast(this->handle()->GetType());
     }
 
-    BodyRefConstAs<TUserData, TJoint> getBodyA() const { return this->handle()->GetBodyA(); }
-    BodyRefConstAs<TUserData, TJoint> getBodyB() const { return this->handle()->GetBodyB(); }
+    dutils::copy_const_t<Body<TUserTypes>, TJoint>* getBodyA() const
+    {
+        return &getOwner<TUserTypes>(this->handle()->GetBodyA());
+    }
+
+    dutils::copy_const_t<Body<TUserTypes>, TJoint>* getBodyB() const
+    {
+        return &getOwner<TUserTypes>(this->handle()->GetBodyB());
+    }
 
     vec2 getAnchorA() const
     {
@@ -1549,18 +1691,18 @@ public:
             return this->handle()->GetReactionTorque(inv_dt);
     }
 
-    JointRefConstAs<TUserData, TJoint> getNext() const { return this->handle()->GetNext(); }
+    JointRefConstAs<TUserTypes, TJoint> getNext() const { return this->handle()->GetNext(); }
 
-    void setUserData(typename TUserData::Joint* user_data) const
+    void setUserData(typename TUserTypes::Joint* user_data) const
     {
         // TODO: C++20 use std::bit_cast
         std::memcpy(&this->handle()->GetUserData().pointer, &user_data, sizeof user_data);
     }
 
-    typename TUserData::Joint* getUserData() const
+    typename TUserTypes::Joint* getUserData() const
     {
         // TODO: C++20 use std::bit_cast
-        typename TUserData::Joint* result;
+        typename TUserTypes::Joint* result;
         std::memcpy(&result, &this->handle()->GetUserData().pointer, sizeof result);
         return result;
     }
@@ -1596,11 +1738,11 @@ public:
 
 // If overridden methods were marked as final, reimplementing them here would avoid virtual calls entirely.
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Revolute>
-    : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Revolute>
+    : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1625,11 +1767,11 @@ public:
     float getMotorTorque(float inv_dt) const { return this->handle()->GetMotorTorque(inv_dt); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Prismatic>
-    : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Prismatic>
+    : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1655,11 +1797,11 @@ public:
     float getMotorForce(float inv_dt) const { return this->handle()->GetMotorForce(inv_dt); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Distance>
-    : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Distance>
+    : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1681,10 +1823,11 @@ public:
     float getDamping() const { return this->handle()->GetDamping(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Pulley> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Pulley>
+    : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 GetGroundAnchorA() const { return cast(this->handle()->GetGroundAnchorA()); }
     vec2 GetGroundAnchorB() const { return cast(this->handle()->GetGroundAnchorB()); }
@@ -1698,10 +1841,10 @@ public:
     float getCurrentLengthB() const { return this->handle()->GetCurrentLengthB(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Mouse> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Mouse> : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     void setTarget(vec2 target) const { this->handle()->SetTarget(cast(target)); }
     vec2 getTarget() const { return cast(this->handle()->GetTarget()); }
@@ -1716,22 +1859,22 @@ public:
     float getDamping() const { return this->handle()->GetDamping(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Gear> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Gear> : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
-    JointRefConstAs<TUserData, TJoint> GetJoint1() const { return this->handle()->GetJoint1(); }
-    JointRefConstAs<TUserData, TJoint> GetJoint2() const { return this->handle()->GetJoint2(); }
+    JointRefConstAs<TUserTypes, TJoint> GetJoint1() const { return this->handle()->GetJoint1(); }
+    JointRefConstAs<TUserTypes, TJoint> GetJoint2() const { return this->handle()->GetJoint2(); }
 
     void setRatio(float ratio) const { this->handle()->SetRatio(ratio); }
     float getRatio() const { return this->handle()->GetRatio(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Wheel> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Wheel> : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1763,10 +1906,10 @@ public:
     float getDamping() const { return this->handle()->GetDamping(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Weld> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Weld> : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1779,11 +1922,11 @@ public:
     float getDamping() const { return this->handle()->GetDamping(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Friction>
-    : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Friction>
+    : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     vec2 getLocalAnchorA() const { return cast(this->handle()->GetLocalAnchorA()); }
     vec2 getLocalAnchorB() const { return cast(this->handle()->GetLocalAnchorB()); }
@@ -1795,10 +1938,10 @@ public:
     float getMaxTorque() const { return this->handle()->GetMaxTorque(); }
 };
 
-template <typename TUserData, typename TJoint>
-class JointWrapper<TUserData, TJoint, JointType::Motor> : public JointWrapper<TUserData, TJoint, JointType::Unknown> {
+template <typename TUserTypes, typename TJoint>
+class JointWrapper<TUserTypes, TJoint, JointType::Motor> : public JointWrapper<TUserTypes, TJoint, JointType::Unknown> {
 public:
-    using JointWrapper<TUserData, TJoint, JointType::Unknown>::JointWrapper;
+    using JointWrapper<TUserTypes, TJoint, JointType::Unknown>::JointWrapper;
 
     void setLinearOffset(vec2 linearOffset) const { this->handle()->SetLinearOffset(cast(linearOffset)); }
     vec2 getLinearOffset() const { return cast(this->handle()->GetLinearOffset()); }
@@ -1814,36 +1957,36 @@ public:
     float getCorrectionFactor() const { return this->handle()->GetCorrectionFactor(); }
 };
 
-template <typename TUserData>
+template <typename TUserTypes>
 struct JointDefBase {
-    typename TUserData::Joint* user_data;
-    BodyRef<TUserData> body_a;
-    BodyRef<TUserData> body_b;
+    typename TUserTypes::Joint* user_data;
+    Body<TUserTypes>* body_a = nullptr;
+    Body<TUserTypes>* body_b = nullptr;
 
 protected:
     void build(b2JointDef& def) const
     {
         // TODO: C++20 use std::bit_cast
         std::memcpy(&def.userData.pointer, &user_data, sizeof user_data);
-        def.bodyA = body_a.handle();
-        def.bodyB = body_b.handle();
+        def.bodyA = body_a->handle_;
+        def.bodyB = body_b->handle_;
     }
 };
 
-template <typename TUserData>
-struct JointDefNoCollideDefault : JointDefBase<TUserData> {
+template <typename TUserTypes>
+struct JointDefNoCollideDefault : JointDefBase<TUserTypes> {
     bool collide_connected = false;
 
 protected:
     void build(b2JointDef& def) const
     {
-        JointDefBase<TUserData>::build(def);
+        JointDefBase<TUserTypes>::build(def);
         def.collideConnected = collide_connected;
     }
 };
 
-template <typename TUserData>
-struct RevoluteJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct RevoluteJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float reference_angle = 0.0f;
@@ -1864,7 +2007,7 @@ private:
     b2RevoluteJointDef build() const
     {
         b2RevoluteJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.referenceAngle = reference_angle;
@@ -1878,8 +2021,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct PrismaticJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct PrismaticJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     vec2 local_axis_a = {1.0f, 0.0f};
@@ -1901,7 +2044,7 @@ private:
     b2PrismaticJointDef build() const
     {
         b2PrismaticJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.localAxisA = cast(local_axis_a);
@@ -1916,8 +2059,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct DistanceJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct DistanceJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float length = 1.0f;
@@ -1936,7 +2079,7 @@ private:
     b2DistanceJointDef build() const
     {
         b2DistanceJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.length = length;
@@ -1948,8 +2091,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct PulleyJointDef : JointDefBase<TUserData> {
+template <typename TUserTypes>
+struct PulleyJointDef : JointDefBase<TUserTypes> {
     bool collide_connected = true;
     vec2 ground_anchor_a = {-1.0f, 1.0f};
     vec2 ground_anchor_b = {1.0f, 1.0f};
@@ -1969,7 +2112,7 @@ private:
     b2PulleyJointDef build() const
     {
         b2PulleyJointDef def;
-        JointDefBase<TUserData>::build(def);
+        JointDefBase<TUserTypes>::build(def);
         def.collideConnected = collide_connected;
         def.groundAnchorA = cast(ground_anchor_a);
         def.groundAnchorB = cast(ground_anchor_b);
@@ -1982,8 +2125,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct MouseJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct MouseJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 target;
     float max_force = 0.0f;
     float stiffness = 0.0f;
@@ -1999,7 +2142,7 @@ private:
     b2MouseJointDef build() const
     {
         b2MouseJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.target = cast(target);
         def.maxForce = max_force;
         def.stiffness = stiffness;
@@ -2008,10 +2151,10 @@ private:
     }
 };
 
-template <typename TUserData>
-struct GearJointDef : JointDefNoCollideDefault<TUserData> {
-    JointRef<TUserData> joint1;
-    JointRef<TUserData> joint2;
+template <typename TUserTypes>
+struct GearJointDef : JointDefNoCollideDefault<TUserTypes> {
+    JointRef<TUserTypes> joint1;
+    JointRef<TUserTypes> joint2;
     float ratio;
 
 private:
@@ -2024,7 +2167,7 @@ private:
     b2GearJointDef build() const
     {
         b2GearJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.joint1 = joint1;
         def.joint2 = joint2;
         def.ratio = ratio;
@@ -2032,8 +2175,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct WheelJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct WheelJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     vec2 local_axis_a;
@@ -2056,7 +2199,7 @@ private:
     b2WheelJointDef build() const
     {
         b2WheelJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.localAxisA = cast(local_axis_a);
@@ -2072,8 +2215,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct WeldJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct WeldJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float reference_angle;
@@ -2090,7 +2233,7 @@ private:
     b2WeldJointDef build() const
     {
         b2WeldJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.referenceAngle = reference_angle;
@@ -2100,8 +2243,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct FrictionJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct FrictionJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float max_force;
@@ -2117,7 +2260,7 @@ private:
     b2FrictionJointDef build() const
     {
         b2FrictionJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.maxForce = max_force;
@@ -2126,8 +2269,8 @@ private:
     }
 };
 
-template <typename TUserData>
-struct MotorJointDef : JointDefNoCollideDefault<TUserData> {
+template <typename TUserTypes>
+struct MotorJointDef : JointDefNoCollideDefault<TUserTypes> {
     vec2 linear_offset;
     float angular_offset;
     float max_force;
@@ -2144,7 +2287,7 @@ private:
     b2MotorJointDef build() const
     {
         b2MotorJointDef def;
-        JointDefNoCollideDefault<TUserData>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def);
         def.linearOffset = cast(linear_offset);
         def.angularOffset = angular_offset;
         def.maxForce = max_force;
@@ -2154,34 +2297,34 @@ private:
     }
 };
 
-template <typename TUserData>
-using JointDef = std::variant<RevoluteJointDef<TUserData>,
-                              PrismaticJointDef<TUserData>,
-                              DistanceJointDef<TUserData>,
-                              PulleyJointDef<TUserData>,
-                              MouseJointDef<TUserData>,
-                              GearJointDef<TUserData>,
-                              WheelJointDef<TUserData>,
-                              WeldJointDef<TUserData>,
-                              FrictionJointDef<TUserData>,
-                              MotorJointDef<TUserData>>;
+template <typename TUserTypes>
+using JointDef = std::variant<RevoluteJointDef<TUserTypes>,
+                              PrismaticJointDef<TUserTypes>,
+                              DistanceJointDef<TUserTypes>,
+                              PulleyJointDef<TUserTypes>,
+                              MouseJointDef<TUserTypes>,
+                              GearJointDef<TUserTypes>,
+                              WheelJointDef<TUserTypes>,
+                              WeldJointDef<TUserTypes>,
+                              FrictionJointDef<TUserTypes>,
+                              MotorJointDef<TUserTypes>>;
 
 // --- JointEdge
 
-template <typename TUserData, typename TJointEdge>
+template <typename TUserTypes, typename TJointEdge>
 class JointEdgeWrapper : public HandleWrapper<TJointEdge> {
 public:
     using HandleWrapper<TJointEdge>::HandleWrapper;
 
-    BodyRefConstAs<TUserData, TJointEdge> other() const { return this->handle()->other; }
-    JointRefConstAs<TUserData, TJointEdge> joint() const { return this->handle()->joint; }
+    dutils::copy_const_t<Body<TUserTypes>, TJointEdge>* other() const { return this->handle()->other; }
+    JointRefConstAs<TUserTypes, TJointEdge> joint() const { return this->handle()->joint; }
     JointEdgeWrapper getPrev() const { return this->handle()->prev; }
     JointEdgeWrapper getNext() const { return this->handle()->next; }
 };
 
 // --- Contact
 
-template <typename TUserData, typename TContact>
+template <typename TUserTypes, typename TContact>
 class ContactWrapper : public HandleWrapper<TContact> {
 public:
     using HandleWrapper<TContact>::HandleWrapper;
@@ -2200,11 +2343,11 @@ public:
     void setEnabled(bool flag) const { this->handle()->SetEnabled(flag); }
     bool isEnabled() const { return this->handle()->IsEnabled(); }
 
-    ContactConstAs<TUserData, TContact> getNext() const { return this->handle()->GetNext(); }
+    ContactConstAs<TUserTypes, TContact> getNext() const { return this->handle()->GetNext(); }
 
-    FixtureRefConstAs<TUserData, TContact> getFixtureA() const { return this->handle()->GetFixtureA(); }
+    FixtureRefConstAs<TUserTypes, TContact> getFixtureA() const { return this->handle()->GetFixtureA(); }
     int32 getChildIndexA() const { return this->handle()->GetChildIndexA(); }
-    FixtureRefConstAs<TUserData, TContact> getFixtureB() const { return this->handle()->GetFixtureB(); }
+    FixtureRefConstAs<TUserTypes, TContact> getFixtureB() const { return this->handle()->GetFixtureB(); }
     int32 getChildIndexB() const { return this->handle()->GetChildIndexB(); }
 
     void setFriction(float friction) const { this->handle()->SetFriction(friction); }
@@ -2234,12 +2377,12 @@ public:
 
 namespace detail {
 
-template <typename TUserData>
-using QueryCallback = std::function<bool(FixtureRef<TUserData>)>;
+template <typename TUserTypes>
+using QueryCallback = std::function<bool(FixtureRef<TUserTypes>)>;
 
-template <typename TUserData>
+template <typename TUserTypes>
 struct RayCastData {
-    FixtureRef<TUserData> fixture;
+    FixtureRef<TUserTypes> fixture;
     vec2 point;
     vec2 normal;
     float fraction;
@@ -2258,26 +2401,26 @@ struct RayCastData {
     static constexpr float next = 1.0f;
 };
 
-template <typename TUserData>
-using RayCastCallback = std::function<float(const RayCastData<TUserData>&)>;
+template <typename TUserTypes>
+using RayCastCallback = std::function<float(const RayCastData<TUserTypes>&)>;
 
-template <typename TUserData>
+template <typename TUserTypes>
 class QueryCallbackWrapper : public b2QueryCallback {
 public:
-    QueryCallbackWrapper(QueryCallback<TUserData> callback)
+    QueryCallbackWrapper(QueryCallback<TUserTypes> callback)
         : callback_(std::move(callback))
     {}
 
     bool ReportFixture(b2Fixture* fixture) override { return callback_(fixture); }
 
 private:
-    QueryCallback<TUserData> callback_;
+    QueryCallback<TUserTypes> callback_;
 };
 
-template <typename TUserData>
+template <typename TUserTypes>
 class RayCastCallbackWrapper : public b2RayCastCallback {
 public:
-    RayCastCallbackWrapper(RayCastCallback<TUserData> callback)
+    RayCastCallbackWrapper(RayCastCallback<TUserTypes> callback)
         : callback_(std::move(callback))
     {}
 
@@ -2287,10 +2430,10 @@ public:
     }
 
 private:
-    RayCastCallback<TUserData> callback_;
+    RayCastCallback<TUserTypes> callback_;
 };
 
-template <typename TUserData, typename TWorld>
+template <typename TUserTypes, typename TWorld>
 class WorldRefWrapper : public HandleWrapper<TWorld> {
 public:
     using HandleWrapper<TWorld>::HandleWrapper;
@@ -2298,23 +2441,19 @@ public:
     void setDebugDraw(Draw* debug_draw) { this->handle()->SetDebugDraw(debug_draw); }
     void debugDraw() const { this->handle()->DebugDraw(); }
 
-    BodyRef<TUserData> createBody(const BodyDef<TUserData>& body) const
+    Body<TUserTypes> createBody(const BodyDef<TUserTypes>& body) const
     {
-        auto def = body.build();
-        return this->handle()->CreateBody(&def);
+        Body<TUserTypes> result;
+        auto def = body.build(&result);
+        result.initialize(this->handle()->CreateBody(&def));
+        return result;
     }
 
-    BodyRef<TUserData> createBody(BodyType body_type = BodyType::Static) const
+    Body<TUserTypes> createBody(BodyType body_type = BodyType::Static) const
     {
-        auto def = BodyDef<TUserData>{};
+        auto def = BodyDef<TUserTypes>{};
         def.type = body_type;
         return createBody(def);
-    }
-
-    void destroyBody(BodyRef<TUserData>&& body) const
-    {
-        this->handle()->DestroyBody(body.handle());
-        body = nullptr;
     }
 
     template <typename TJointDef>
@@ -2322,18 +2461,19 @@ public:
     {
         auto def = joint.build();
         using ResultType = detail::joint_def_result_type_t<decltype(def)>;
-        return detail::JointWrapper<TUserData, ResultType>(static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
+        return detail::JointWrapper<TUserTypes, ResultType>(
+            static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
     }
 
-    JointRef<TUserData> createJoint(const JointDef<TUserData>& joint) const
+    JointRef<TUserTypes> createJoint(const JointDef<TUserTypes>& joint) const
     {
         return std::visit(
-            [&](const auto& concrete_joint) -> JointRef<TUserData> { return this->createJoint(concrete_joint); },
+            [&](const auto& concrete_joint) -> JointRef<TUserTypes> { return this->createJoint(concrete_joint); },
             joint);
     }
 
     template <typename TJoint>
-    void destroyJoint(JointWrapper<TUserData, TJoint>&& joint) const
+    void destroyJoint(JointWrapper<TUserTypes, TJoint>&& joint) const
     {
         this->handle()->DestroyJoint(joint.handle());
         joint = nullptr;
@@ -2346,21 +2486,26 @@ public:
 
     void clearForces() const { this->handle()->ClearForces(); }
 
-    void queryAABB(QueryCallback<TUserData> callback, AABB aabb) const
+    void queryAABB(QueryCallback<TUserTypes> callback, AABB aabb) const
     {
-        QueryCallbackWrapper<TUserData> wrapper{std::move(callback)};
+        QueryCallbackWrapper<TUserTypes> wrapper{std::move(callback)};
         this->handle()->QueryAABB(&wrapper, aabb);
     }
 
-    void rayCast(RayCastCallback<TUserData> callback, vec2 point1, vec2 point2) const
+    void rayCast(RayCastCallback<TUserTypes> callback, vec2 point1, vec2 point2) const
     {
-        RayCastCallbackWrapper<TUserData> wrapper{std::move(callback)};
+        RayCastCallbackWrapper<TUserTypes> wrapper{std::move(callback)};
         this->handle()->RayCast(&wrapper, cast(point1), cast(point2));
     }
 
-    ForwardIterable<BodyRefConstAs<TUserData, TWorld>> bodies() const { return {this->handle()->GetBodyList()}; }
-    ForwardIterable<JointRefConstAs<TUserData, TWorld>> joints() const { return {this->handle()->GetJointList()}; }
-    ForwardIterable<ContactConstAs<TUserData, TWorld>> contacts() const { return {this->handle()->GetContactList()}; }
+    ForwardIterable<dutils::copy_const_t<Body<TUserTypes>, TWorld>*> bodies() const
+    {
+        return {this->handle()->GetBodyList()};
+    }
+
+    ForwardIterable<JointRefConstAs<TUserTypes, TWorld>> joints() const { return {this->handle()->GetJointList()}; }
+
+    ForwardIterable<ContactConstAs<TUserTypes, TWorld>> contacts() const { return {this->handle()->GetContactList()}; }
 
     void setAllowSleeping(bool flag) const { this->handle()->SetAllowSleeping(flag); }
     bool getAllowSleeping() const { return this->handle()->GetAllowSleeping(); }
@@ -2402,132 +2547,129 @@ public:
 
 } // namespace detail
 
-template <typename TUserData>
+template <typename TUserTypes>
 class World {
 public:
-    using UserData = TUserData;
+    using UserTypes = TUserTypes;
 
-    using FixtureDef = detail::FixtureDef<UserData>;
+    using FixtureDef = detail::FixtureDef<UserTypes>;
 
-    using BodyDef = detail::BodyDef<UserData>;
+    using BodyDef = detail::BodyDef<UserTypes>;
 
-    using RevoluteJointDef = detail::RevoluteJointDef<UserData>;
-    using PrismaticJointDef = detail::PrismaticJointDef<UserData>;
-    using DistanceJointDef = detail::DistanceJointDef<UserData>;
-    using PulleyJointDef = detail::PulleyJointDef<UserData>;
-    using MouseJointDef = detail::MouseJointDef<UserData>;
-    using GearJointDef = detail::GearJointDef<UserData>;
-    using WheelJointDef = detail::WheelJointDef<UserData>;
-    using WeldJointDef = detail::WeldJointDef<UserData>;
-    using FrictionJointDef = detail::FrictionJointDef<UserData>;
-    using MotorJointDef = detail::MotorJointDef<UserData>;
+    using RevoluteJointDef = detail::RevoluteJointDef<UserTypes>;
+    using PrismaticJointDef = detail::PrismaticJointDef<UserTypes>;
+    using DistanceJointDef = detail::DistanceJointDef<UserTypes>;
+    using PulleyJointDef = detail::PulleyJointDef<UserTypes>;
+    using MouseJointDef = detail::MouseJointDef<UserTypes>;
+    using GearJointDef = detail::GearJointDef<UserTypes>;
+    using WheelJointDef = detail::WheelJointDef<UserTypes>;
+    using WeldJointDef = detail::WeldJointDef<UserTypes>;
+    using FrictionJointDef = detail::FrictionJointDef<UserTypes>;
+    using MotorJointDef = detail::MotorJointDef<UserTypes>;
 
-    using JointDef = detail::JointDef<UserData>;
+    using JointDef = detail::JointDef<UserTypes>;
 
-    using FixtureRef = detail::FixtureRef<UserData>;
-    using ConstFixtureRef = detail::ConstFixtureRef<UserData>;
+    using FixtureRef = detail::FixtureRef<UserTypes>;
+    using ConstFixtureRef = detail::ConstFixtureRef<UserTypes>;
     template <typename TConstAs>
-    using FixtureRefConstAs = detail::FixtureRefConstAs<UserData, TConstAs>;
+    using FixtureRefConstAs = detail::FixtureRefConstAs<UserTypes, TConstAs>;
 
-    using CircleFixtureRef = detail::CircleFixtureRef<UserData>;
-    using ConstCircleFixtureRef = detail::ConstCircleFixtureRef<UserData>;
+    using CircleFixtureRef = detail::CircleFixtureRef<UserTypes>;
+    using ConstCircleFixtureRef = detail::ConstCircleFixtureRef<UserTypes>;
     template <typename TConstAs>
-    using CircleFixtureRefConstAs = detail::CircleFixtureRefConstAs<UserData, TConstAs>;
+    using CircleFixtureRefConstAs = detail::CircleFixtureRefConstAs<UserTypes, TConstAs>;
 
-    using EdgeFixtureRef = detail::EdgeFixtureRef<UserData>;
-    using ConstEdgeFixtureRef = detail::ConstEdgeFixtureRef<UserData>;
+    using EdgeFixtureRef = detail::EdgeFixtureRef<UserTypes>;
+    using ConstEdgeFixtureRef = detail::ConstEdgeFixtureRef<UserTypes>;
     template <typename TConstAs>
-    using EdgeFixtureRefConstAs = detail::EdgeFixtureRefConstAs<UserData, TConstAs>;
+    using EdgeFixtureRefConstAs = detail::EdgeFixtureRefConstAs<UserTypes, TConstAs>;
 
-    using PolygonFixtureRef = detail::PolygonFixtureRef<UserData>;
-    using ConstPolygonFixtureRef = detail::ConstPolygonFixtureRef<UserData>;
+    using PolygonFixtureRef = detail::PolygonFixtureRef<UserTypes>;
+    using ConstPolygonFixtureRef = detail::ConstPolygonFixtureRef<UserTypes>;
     template <typename TConstAs>
-    using PolygonFixtureRefConstAs = detail::PolygonFixtureRefConstAs<UserData, TConstAs>;
+    using PolygonFixtureRefConstAs = detail::PolygonFixtureRefConstAs<UserTypes, TConstAs>;
 
-    using ChainFixtureRef = detail::ChainFixtureRef<UserData>;
-    using ConstChainFixtureRef = detail::ConstChainFixtureRef<UserData>;
+    using ChainFixtureRef = detail::ChainFixtureRef<UserTypes>;
+    using ConstChainFixtureRef = detail::ConstChainFixtureRef<UserTypes>;
     template <typename TConstAs>
-    using ChainFixtureRefConstAs = detail::ChainFixtureRefConstAs<UserData, TConstAs>;
+    using ChainFixtureRefConstAs = detail::ChainFixtureRefConstAs<UserTypes, TConstAs>;
 
-    using BodyRef = detail::BodyRef<UserData>;
-    using ConstBodyRef = detail::ConstBodyRef<UserData>;
+    using Body = detail::Body<UserTypes>;
+
+    using JointRef = detail::JointRef<UserTypes>;
+    using ConstJointRef = detail::ConstJointRef<UserTypes>;
     template <typename TConstAs>
-    using BodyRefConstAs = detail::BodyRefConstAs<UserData, TConstAs>;
+    using JointRefConstAs = detail::JointRefConstAs<UserTypes, TConstAs>;
 
-    using JointRef = detail::JointRef<UserData>;
-    using ConstJointRef = detail::ConstJointRef<UserData>;
+    using RevoluteJointRef = detail::RevoluteJointRef<UserTypes>;
+    using ConstRevoluteJointRef = detail::ConstRevoluteJointRef<UserTypes>;
     template <typename TConstAs>
-    using JointRefConstAs = detail::JointRefConstAs<UserData, TConstAs>;
+    using RevoluteJointRefConstAs = detail::RevoluteJointRefConstAs<UserTypes, TConstAs>;
 
-    using RevoluteJointRef = detail::RevoluteJointRef<UserData>;
-    using ConstRevoluteJointRef = detail::ConstRevoluteJointRef<UserData>;
+    using PrismaticJointRef = detail::PrismaticJointRef<UserTypes>;
+    using ConstPrismaticJointRef = detail::ConstPrismaticJointRef<UserTypes>;
     template <typename TConstAs>
-    using RevoluteJointRefConstAs = detail::RevoluteJointRefConstAs<UserData, TConstAs>;
+    using PrismaticJointRefConstAs = detail::PrismaticJointRefConstAs<UserTypes, TConstAs>;
 
-    using PrismaticJointRef = detail::PrismaticJointRef<UserData>;
-    using ConstPrismaticJointRef = detail::ConstPrismaticJointRef<UserData>;
+    using DistanceJointRef = detail::DistanceJointRef<UserTypes>;
+    using ConstDistanceJointRef = detail::ConstDistanceJointRef<UserTypes>;
     template <typename TConstAs>
-    using PrismaticJointRefConstAs = detail::PrismaticJointRefConstAs<UserData, TConstAs>;
+    using DistanceJointRefConstAs = detail::DistanceJointRefConstAs<UserTypes, TConstAs>;
 
-    using DistanceJointRef = detail::DistanceJointRef<UserData>;
-    using ConstDistanceJointRef = detail::ConstDistanceJointRef<UserData>;
+    using PulleyJointRef = detail::PulleyJointRef<UserTypes>;
+    using ConstPulleyJointRef = detail::ConstPulleyJointRef<UserTypes>;
     template <typename TConstAs>
-    using DistanceJointRefConstAs = detail::DistanceJointRefConstAs<UserData, TConstAs>;
+    using PulleyJointRefConstAs = detail::PulleyJointRefConstAs<UserTypes, TConstAs>;
 
-    using PulleyJointRef = detail::PulleyJointRef<UserData>;
-    using ConstPulleyJointRef = detail::ConstPulleyJointRef<UserData>;
+    using MouseJointRef = detail::MouseJointRef<UserTypes>;
+    using ConstMouseJointRef = detail::ConstMouseJointRef<UserTypes>;
     template <typename TConstAs>
-    using PulleyJointRefConstAs = detail::PulleyJointRefConstAs<UserData, TConstAs>;
+    using MouseJointRefConstAs = detail::MouseJointRefConstAs<UserTypes, TConstAs>;
 
-    using MouseJointRef = detail::MouseJointRef<UserData>;
-    using ConstMouseJointRef = detail::ConstMouseJointRef<UserData>;
+    using GearJointRef = detail::GearJointRef<UserTypes>;
+    using ConstGearJointRef = detail::ConstGearJointRef<UserTypes>;
     template <typename TConstAs>
-    using MouseJointRefConstAs = detail::MouseJointRefConstAs<UserData, TConstAs>;
+    using GearJointRefConstAs = detail::GearJointRefConstAs<UserTypes, TConstAs>;
 
-    using GearJointRef = detail::GearJointRef<UserData>;
-    using ConstGearJointRef = detail::ConstGearJointRef<UserData>;
+    using WheelJointRef = detail::WheelJointRef<UserTypes>;
+    using ConstWheelJointRef = detail::ConstWheelJointRef<UserTypes>;
     template <typename TConstAs>
-    using GearJointRefConstAs = detail::GearJointRefConstAs<UserData, TConstAs>;
+    using WheelJointRefConstAs = detail::WheelJointRefConstAs<UserTypes, TConstAs>;
 
-    using WheelJointRef = detail::WheelJointRef<UserData>;
-    using ConstWheelJointRef = detail::ConstWheelJointRef<UserData>;
+    using WeldJointRef = detail::WeldJointRef<UserTypes>;
+    using ConstWeldJointRef = detail::ConstWeldJointRef<UserTypes>;
     template <typename TConstAs>
-    using WheelJointRefConstAs = detail::WheelJointRefConstAs<UserData, TConstAs>;
+    using WeldJointRefConstAs = detail::WeldJointRefConstAs<UserTypes, TConstAs>;
 
-    using WeldJointRef = detail::WeldJointRef<UserData>;
-    using ConstWeldJointRef = detail::ConstWeldJointRef<UserData>;
+    using FrictionJointRef = detail::FrictionJointRef<UserTypes>;
+    using ConstFrictionJointRef = detail::ConstFrictionJointRef<UserTypes>;
     template <typename TConstAs>
-    using WeldJointRefConstAs = detail::WeldJointRefConstAs<UserData, TConstAs>;
+    using FrictionJointRefConstAs = detail::FrictionJointRefConstAs<UserTypes, TConstAs>;
 
-    using FrictionJointRef = detail::FrictionJointRef<UserData>;
-    using ConstFrictionJointRef = detail::ConstFrictionJointRef<UserData>;
+    using MotorJointRef = detail::MotorJointRef<UserTypes>;
+    using ConstMotorJointRef = detail::ConstMotorJointRef<UserTypes>;
     template <typename TConstAs>
-    using FrictionJointRefConstAs = detail::FrictionJointRefConstAs<UserData, TConstAs>;
+    using MotorJointRefConstAs = detail::MotorJointRefConstAs<UserTypes, TConstAs>;
 
-    using MotorJointRef = detail::MotorJointRef<UserData>;
-    using ConstMotorJointRef = detail::ConstMotorJointRef<UserData>;
+    using JointEdge = detail::JointEdge<UserTypes>;
+    using ConstJointEdge = detail::ConstJointEdge<UserTypes>;
     template <typename TConstAs>
-    using MotorJointRefConstAs = detail::MotorJointRefConstAs<UserData, TConstAs>;
+    using JointEdgeConstAs = detail::JointEdgeConstAs<UserTypes, TConstAs>;
 
-    using JointEdge = detail::JointEdge<UserData>;
-    using ConstJointEdge = detail::ConstJointEdge<UserData>;
+    using Contact = detail::Contact<UserTypes>;
+    using ConstContact = detail::ConstContact<UserTypes>;
     template <typename TConstAs>
-    using JointEdgeConstAs = detail::JointEdgeConstAs<UserData, TConstAs>;
+    using ContactConstAs = detail::ContactConstAs<UserTypes, TConstAs>;
 
-    using Contact = detail::Contact<UserData>;
-    using ConstContact = detail::ConstContact<UserData>;
+    using WorldRef = detail::WorldRef<UserTypes>;
+    using ConstWorldRef = detail::ConstWorldRef<UserTypes>;
     template <typename TConstAs>
-    using ContactConstAs = detail::ContactConstAs<UserData, TConstAs>;
+    using WorldRefConstAs = detail::WorldRefConstAs<UserTypes, TConstAs>;
 
-    using WorldRef = detail::WorldRef<UserData>;
-    using ConstWorldRef = detail::ConstWorldRef<UserData>;
-    template <typename TConstAs>
-    using WorldRefConstAs = detail::WorldRefConstAs<UserData, TConstAs>;
+    using QueryCallback = detail::QueryCallback<UserTypes>;
 
-    using QueryCallback = detail::QueryCallback<UserData>;
-
-    using RayCastData = detail::RayCastData<UserData>;
-    using RayCastCallback = detail::RayCastCallback<UserData>;
+    using RayCastData = detail::RayCastData<UserTypes>;
+    using RayCastCallback = detail::RayCastCallback<UserTypes>;
 
     using ContactFilter = std::function<bool(FixtureRef, FixtureRef)>;
 
@@ -2547,9 +2689,8 @@ public:
     void setDebugDraw(Draw* debug_draw) { world_.SetDebugDraw(debug_draw); }
     void debugDraw() { world_.DebugDraw(); }
 
-    BodyRef createBody(const BodyDef& body) { return WorldRef{&world_}.createBody(body); }
-    BodyRef createBody(BodyType body_type = BodyType::Static) { return WorldRef{&world_}.createBody(body_type); }
-    void destroyBody(BodyRef&& body) { WorldRef{&world_}.destroyBody(std::move(body)); }
+    Body createBody(const BodyDef& body) { return WorldRef{&world_}.createBody(body); }
+    Body createBody(BodyType body_type = BodyType::Static) { return WorldRef{&world_}.createBody(body_type); }
 
     template <typename TJointDef>
     auto createJoint(const TJointDef& joint)
@@ -2560,7 +2701,7 @@ public:
     JointRef createJoint(const JointDef& joint) { return WorldRef{&world_}.createJoint(joint); }
 
     template <typename TJoint>
-    void destroyJoint(detail::JointWrapper<UserData, TJoint>&& joint)
+    void destroyJoint(detail::JointWrapper<UserTypes, TJoint>&& joint)
     {
         WorldRef{&world_}.destroyJoint(std::move(joint));
     }
@@ -2582,8 +2723,8 @@ public:
         ConstWorldRef{&world_}.rayCast(std::move(callback), point1, point2);
     }
 
-    ForwardIterable<BodyRef> bodies() { return {world_.GetBodyList()}; }
-    ForwardIterable<ConstBodyRef> bodies() const { return {world_.GetBodyList()}; }
+    ForwardIterable<Body*> bodies() { return &detail::getOwner<UserTypes>(world_.GetBodyList()); }
+    ForwardIterable<const Body*> bodies() const { return &detail::getOwner<UserTypes>(world_.GetBodyList()); }
 
     ForwardIterable<JointRef> joints() { return {world_.GetJointList()}; }
     ForwardIterable<ConstJointRef> joints() const { return {world_.GetJointList()}; }
