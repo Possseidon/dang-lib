@@ -810,6 +810,12 @@ void setOwner(b2Joint* joint, Joint<TUserTypes>& owner)
 
 */
 
+template <typename TUserTypes, typename TObject>
+auto getOptionalOwner(TObject object)
+{
+    return object ? &getOwner<TUserTypes>(object) : nullptr;
+}
+
 // --- UserData
 
 template <typename TUserData>
@@ -906,8 +912,8 @@ public:
 
     explicit operator bool() const { return handle_ != nullptr; }
 
-    friend bool operator==(OwnedHandle lhs, OwnedHandle rhs) { return lhs.handle_ == rhs.handle_; }
-    friend bool operator!=(OwnedHandle lhs, OwnedHandle rhs) { return !(lhs == rhs); }
+    friend bool operator==(const OwnedHandle& lhs, const OwnedHandle& rhs) { return lhs.handle_ == rhs.handle_; }
+    friend bool operator!=(const OwnedHandle& lhs, const OwnedHandle& rhs) { return !(lhs == rhs); }
 
 private:
     template <typename>
@@ -919,7 +925,10 @@ private:
     template <typename, typename>
     friend class WorldRefWrapper;
 
-    void initialize(THandle* handle) { handle_ = handle; }
+    template <typename>
+    friend class dang::box2d::World;
+
+    void forceHandle(THandle* handle) { handle_ = handle; }
 
     THandle* handle_ = nullptr;
 };
@@ -1611,17 +1620,8 @@ public:
     ForwardIterable<Contact<TUserTypes>> contacts() { return {this->handle_->GetContactList()}; }
     ForwardIterable<ConstContact<TUserTypes>> contacts() const { return {this->handle_->GetContactList()}; }
 
-    Body<TUserTypes>* getNext()
-    {
-        auto next = this->handle_->GetNext();
-        return next ? &getOwner<TUserTypes>(next) : nullptr;
-    }
-
-    const Body<TUserTypes>* getNext() const
-    {
-        auto next = this->handle_->GetNext();
-        return next ? &getOwner<TUserTypes>(this->handle_->GetNext()) : nullptr;
-    }
+    Body<TUserTypes>* getNext() { return getOptionalOwner<TUserTypes>(this->handle_->GetNext()); }
+    const Body<TUserTypes>* getNext() const { return getOptionalOwner<TUserTypes>(this->handle_->GetNext()); }
 
     WorldRef<TUserTypes> getWorld() { this->handle_->GetWorld(); }
     ConstWorldRef<TUserTypes> getWorld() const { this->handle_->GetWorld(); }
@@ -1649,14 +1649,14 @@ public:
             return cast(this->handle()->GetType());
     }
 
-    dutils::copy_const_t<Body<TUserTypes>, TJoint>* getBodyA() const
+    dutils::copy_const_t<Body<TUserTypes>, TJoint>& getBodyA() const
     {
-        return &getOwner<TUserTypes>(this->handle()->GetBodyA());
+        return getOwner<TUserTypes>(this->handle()->GetBodyA());
     }
 
-    dutils::copy_const_t<Body<TUserTypes>, TJoint>* getBodyB() const
+    dutils::copy_const_t<Body<TUserTypes>, TJoint>& getBodyB() const
     {
-        return &getOwner<TUserTypes>(this->handle()->GetBodyB());
+        return getOwner<TUserTypes>(this->handle()->GetBodyB());
     }
 
     vec2 getAnchorA() const
@@ -2445,7 +2445,7 @@ public:
     {
         Body<TUserTypes> result;
         auto def = body.build(&result);
-        result.initialize(this->handle()->CreateBody(&def));
+        result.forceHandle(this->handle()->CreateBody(&def));
         return result;
     }
 
@@ -2680,6 +2680,13 @@ public:
         world_.SetContactListener(&contact_listener_);
     }
 
+    ~World()
+    {
+        // Manual loop because forcing the handles to null breaks the iterator.
+        for (auto body = world_.GetBodyList(); body; body = body->GetNext())
+            detail::getOwner<TUserTypes>(body).forceHandle(nullptr);
+    }
+
     void setContactFilter(ContactFilter should_collide)
     {
         world_.SetContactFilter(should_collide ? &contact_filter_wrapper_ : nullptr);
@@ -2723,8 +2730,8 @@ public:
         ConstWorldRef{&world_}.rayCast(std::move(callback), point1, point2);
     }
 
-    ForwardIterable<Body*> bodies() { return &detail::getOwner<UserTypes>(world_.GetBodyList()); }
-    ForwardIterable<const Body*> bodies() const { return &detail::getOwner<UserTypes>(world_.GetBodyList()); }
+    ForwardIterable<Body*> bodies() { return detail::getOptionalOwner<UserTypes>(world_.GetBodyList()); }
+    ForwardIterable<const Body*> bodies() const { return detail::getOptionalOwner<UserTypes>(world_.GetBodyList()); }
 
     ForwardIterable<JointRef> joints() { return {world_.GetJointList()}; }
     ForwardIterable<ConstJointRef> joints() const { return {world_.GetJointList()}; }

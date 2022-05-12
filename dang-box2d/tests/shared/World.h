@@ -28,12 +28,20 @@ struct StringMaker<World::FixtureRef> {
 };
 
 template <>
-struct StringMaker<const World::Body*> {
+struct StringMaker<World::Body> {
+    static std::string convert(const World::Body& body) { return body ? "Body(" + body.user_data + ")" : "Body(null)"; }
+};
+
+template <>
+struct StringMaker<World::Body*> {
     static std::string convert(const World::Body* body)
     {
-        return body ? "Body(" + body->user_data + ")" : "Body(null)";
+        return body ? "Body*(" + body->user_data + ")" : "Body*(null)";
     }
 };
+
+template <>
+struct StringMaker<const World::Body*> : StringMaker<World::Body*> {};
 
 template <>
 struct StringMaker<World::JointRef> {

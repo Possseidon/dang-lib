@@ -101,8 +101,8 @@ TEST_CASE("Box2D worlds can create and destroy joints.")
 
     CHECKED_IF(joint)
     {
-        CHECK(joint.getBodyA() == &body1);
-        CHECK(joint.getBodyB() == &body1);
+        CHECK(joint.getBodyA() == body1);
+        CHECK(joint.getBodyB() == body2);
 
         world.destroyJoint(std::move(joint));
         CHECK_FALSE(joint);
