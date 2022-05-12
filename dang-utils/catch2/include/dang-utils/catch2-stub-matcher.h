@@ -49,8 +49,25 @@ std::string formatTuple(std::tuple<TArgs...> args)
     return std::apply(formatArgs<TArgs...>, args);
 }
 
+template <typename T, typename = void>
+struct CalledWithArg {
+    std::variant<std::monostate, T*> value;
+
+    template <typename TValue>
+    CalledWithArg(TValue&& value)
+        : value(std::forward<TValue>(value))
+    {}
+};
+
 template <typename T>
-using CalledWithArg = std::variant<std::monostate, T, T*>;
+struct CalledWithArg<T, std::enable_if_t<std::is_copy_constructible_v<T>>> {
+    std::variant<std::monostate, T, T*> value;
+
+    template <typename TValue>
+    CalledWithArg(TValue&& value)
+        : value(std::forward<TValue>(value))
+    {}
+};
 
 struct Invocation {
     std::optional<std::size_t> index;
@@ -210,7 +227,7 @@ private:
                         stub.info().parameters[v_indices],
                         std::get<v_indices>(stub.invocations()[invocation_index]),
                     },
-                    std::get<v_indices>(args_)) &
+                    std::get<v_indices>(args_).value) &
                 ...);
     }
 
@@ -292,7 +309,7 @@ struct StringMaker<dang::utils::Matchers::detail::CalledWithArg<T>> {
                               [](const T& value) { return StringMaker<T>::convert(value); },
                               [](const T* ptr) { return "&"s + StringMaker<T>::convert(*ptr); },
                           },
-                          arg);
+                          arg.value);
     }
 };
 
