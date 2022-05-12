@@ -132,9 +132,6 @@ TEST_CASE("Box2D worlds can clear all forces.")
 {
     auto world = World();
 
-    auto circle_shape = b2::CircleShape();
-    circle_shape.radius = 1.0f;
-
     auto body = world.createBody(b2::BodyType::Dynamic);
 
     auto force = b2::Force();
