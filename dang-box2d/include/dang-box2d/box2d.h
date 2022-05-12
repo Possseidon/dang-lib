@@ -239,62 +239,6 @@ struct joint_b2type<JointType::Motor> {
     using type = b2MotorJoint;
 };
 
-template <typename TJoint>
-struct joint_def_result_type;
-
-template <typename TJoint>
-using joint_def_result_type_t = typename joint_def_result_type<TJoint>::type;
-
-template <>
-struct joint_def_result_type<b2RevoluteJointDef> {
-    using type = b2RevoluteJoint;
-};
-
-template <>
-struct joint_def_result_type<b2PrismaticJointDef> {
-    using type = b2PrismaticJoint;
-};
-
-template <>
-struct joint_def_result_type<b2DistanceJointDef> {
-    using type = b2DistanceJoint;
-};
-
-template <>
-struct joint_def_result_type<b2PulleyJointDef> {
-    using type = b2PulleyJoint;
-};
-
-template <>
-struct joint_def_result_type<b2MouseJointDef> {
-    using type = b2MouseJoint;
-};
-
-template <>
-struct joint_def_result_type<b2GearJointDef> {
-    using type = b2GearJoint;
-};
-
-template <>
-struct joint_def_result_type<b2WheelJointDef> {
-    using type = b2WheelJoint;
-};
-
-template <>
-struct joint_def_result_type<b2WeldJointDef> {
-    using type = b2WeldJoint;
-};
-
-template <>
-struct joint_def_result_type<b2FrictionJointDef> {
-    using type = b2FrictionJoint;
-};
-
-template <>
-struct joint_def_result_type<b2MotorJointDef> {
-    using type = b2MotorJoint;
-};
-
 } // namespace detail
 
 constexpr auto cast(b2Shape::Type type) { return static_cast<ShapeType>(type); }
@@ -1258,7 +1202,7 @@ private:
     template <typename>
     friend class BodyWrapper;
 
-    b2FixtureDef build(const Fixture<TUserTypes>* owner, const b2Shape* shape) const
+    b2FixtureDef build(Fixture<TUserTypes>* owner, const b2Shape* shape) const
     {
         b2FixtureDef result;
         result.shape = shape;
@@ -1414,7 +1358,7 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2BodyDef build(const Body<TUserTypes>* owner) const
+    b2BodyDef build(Body<TUserTypes>* owner) const
     {
         b2BodyDef result;
         result.type = cast(type);
@@ -1857,16 +1801,16 @@ public:
 };
 
 template <typename TUserTypes>
-struct JointDefBase {
+struct JointDefBase : WithUserData<typename TUserTypes::Joint> {
     typename TUserTypes::Joint* user_data;
     const Body<TUserTypes>* body_a = nullptr;
     const Body<TUserTypes>* body_b = nullptr;
 
 protected:
-    void build(b2JointDef& def) const
+    void build(b2JointDef& def, Joint<TUserTypes>* owner) const
     {
         // TODO: C++20 use std::bit_cast
-        std::memcpy(&def.userData.pointer, &user_data, sizeof user_data);
+        std::memcpy(&def.userData.pointer, &owner, sizeof owner);
         def.bodyA = body_a->handle_;
         def.bodyB = body_b->handle_;
     }
@@ -1877,15 +1821,17 @@ struct JointDefNoCollideDefault : JointDefBase<TUserTypes> {
     bool collide_connected = false;
 
 protected:
-    void build(b2JointDef& def) const
+    void build(b2JointDef& def, Joint<TUserTypes>* owner) const
     {
-        JointDefBase<TUserTypes>::build(def);
+        JointDefBase<TUserTypes>::build(def, owner);
         def.collideConnected = collide_connected;
     }
 };
 
 template <typename TUserTypes>
 struct RevoluteJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Revolute;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float reference_angle = 0.0f;
@@ -1903,10 +1849,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2RevoluteJointDef build() const
+    b2RevoluteJointDef build(Joint<TUserTypes>* owner) const
     {
         b2RevoluteJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.referenceAngle = reference_angle;
@@ -1922,6 +1868,8 @@ private:
 
 template <typename TUserTypes>
 struct PrismaticJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Prismatic;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     vec2 local_axis_a = {1.0f, 0.0f};
@@ -1940,10 +1888,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2PrismaticJointDef build() const
+    b2PrismaticJointDef build(PrismaticJoint<TUserTypes>* owner) const
     {
         b2PrismaticJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.localAxisA = cast(local_axis_a);
@@ -1960,6 +1908,8 @@ private:
 
 template <typename TUserTypes>
 struct DistanceJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Distance;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float length = 1.0f;
@@ -1975,10 +1925,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2DistanceJointDef build() const
+    b2DistanceJointDef build(DistanceJoint<TUserTypes>* owner) const
     {
         b2DistanceJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.length = length;
@@ -1992,6 +1942,8 @@ private:
 
 template <typename TUserTypes>
 struct PulleyJointDef : JointDefBase<TUserTypes> {
+    static constexpr JointType type = JointType::Pulley;
+
     bool collide_connected = true;
     vec2 ground_anchor_a = {-1.0f, 1.0f};
     vec2 ground_anchor_b = {1.0f, 1.0f};
@@ -2008,10 +1960,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2PulleyJointDef build() const
+    b2PulleyJointDef build(PulleyJoint<TUserTypes>* owner) const
     {
         b2PulleyJointDef def;
-        JointDefBase<TUserTypes>::build(def);
+        JointDefBase<TUserTypes>::build(def, owner);
         def.collideConnected = collide_connected;
         def.groundAnchorA = cast(ground_anchor_a);
         def.groundAnchorB = cast(ground_anchor_b);
@@ -2026,6 +1978,8 @@ private:
 
 template <typename TUserTypes>
 struct MouseJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Mouse;
+
     vec2 target;
     float max_force = 0.0f;
     float stiffness = 0.0f;
@@ -2038,10 +1992,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2MouseJointDef build() const
+    b2MouseJointDef build(MouseJoint<TUserTypes>* owner) const
     {
         b2MouseJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.target = cast(target);
         def.maxForce = max_force;
         def.stiffness = stiffness;
@@ -2052,6 +2006,8 @@ private:
 
 template <typename TUserTypes>
 struct GearJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Gear;
+
     const Joint<TUserTypes>* joint1;
     const Joint<TUserTypes>* joint2;
     float ratio;
@@ -2063,10 +2019,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2GearJointDef build() const
+    b2GearJointDef build(GearJoint<TUserTypes>* owner) const
     {
         b2GearJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.joint1 = joint1;
         def.joint2 = joint2;
         def.ratio = ratio;
@@ -2076,6 +2032,8 @@ private:
 
 template <typename TUserTypes>
 struct WheelJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Wheel;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     vec2 local_axis_a;
@@ -2095,10 +2053,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2WheelJointDef build() const
+    b2WheelJointDef build(WheelJoint<TUserTypes>* owner) const
     {
         b2WheelJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.localAxisA = cast(local_axis_a);
@@ -2116,6 +2074,8 @@ private:
 
 template <typename TUserTypes>
 struct WeldJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Weld;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float reference_angle;
@@ -2129,10 +2089,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2WeldJointDef build() const
+    b2WeldJointDef build(WeldJoint<TUserTypes>* owner) const
     {
         b2WeldJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.referenceAngle = reference_angle;
@@ -2144,6 +2104,8 @@ private:
 
 template <typename TUserTypes>
 struct FrictionJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Friction;
+
     vec2 local_anchor_a;
     vec2 local_anchor_b;
     float max_force;
@@ -2156,10 +2118,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2FrictionJointDef build() const
+    b2FrictionJointDef build(FrictionJoint<TUserTypes>* owner) const
     {
         b2FrictionJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
         def.maxForce = max_force;
@@ -2170,6 +2132,8 @@ private:
 
 template <typename TUserTypes>
 struct MotorJointDef : JointDefNoCollideDefault<TUserTypes> {
+    static constexpr JointType type = JointType::Motor;
+
     vec2 linear_offset;
     float angular_offset;
     float max_force;
@@ -2183,10 +2147,10 @@ private:
     template <typename>
     friend class dang::box2d::World;
 
-    b2MotorJointDef build() const
+    b2MotorJointDef build(MotorJoint<TUserTypes>* owner) const
     {
         b2MotorJointDef def;
-        JointDefNoCollideDefault<TUserTypes>::build(def);
+        JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.linearOffset = cast(linear_offset);
         def.angularOffset = angular_offset;
         def.maxForce = max_force;
@@ -2367,7 +2331,7 @@ public:
 
     [[nodiscard]] Body<TUserTypes> createBody(BodyType body_type = BodyType::Static) const
     {
-        auto def = BodyDef<TUserTypes>{};
+        BodyDef<TUserTypes> def;
         def.type = body_type;
         return createBody(def);
     }
@@ -2375,10 +2339,9 @@ public:
     template <typename TJointDef>
     [[nodiscard]] auto createJoint(const TJointDef& joint) const
     {
-        auto def = joint.build();
-        using ResultType = joint_def_result_type_t<decltype(def)>;
-        JointWrapper<TUserTypes, joint_type_v<ResultType>> result;
-        result.forceHandle(static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
+        JointWrapper<TUserTypes, TJointDef::type> result;
+        auto def = joint.build(&result);
+        result.forceHandle(this->handle()->CreateJoint(&def));
         return result;
     }
 
