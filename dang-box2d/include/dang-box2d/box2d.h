@@ -892,7 +892,7 @@ private:
     friend class BodyWrapper;
 
     template <typename>
-    friend class JointDefBase;
+    friend struct JointDefBase;
 
     template <typename, typename>
     friend class WorldRefWrapper;
