@@ -561,7 +561,7 @@ class JointEdgeWrapper;
 template <typename TShape, ShapeType v_type = shape_type_v<std::remove_const_t<TShape>>>
 class ShapeRefWrapper;
 
-template <typename TUserTypes, typename TFixture, typename TShape>
+template <typename TUserTypes, typename TShape>
 class FixtureWrapper;
 
 template <typename TUserTypes>
@@ -574,169 +574,141 @@ template <typename TUserTypes, typename TContact>
 class ContactWrapper;
 
 template <typename TUserTypes>
-using JointRef = detail::JointWrapper<TUserTypes, b2Joint>;
+using JointRef = JointWrapper<TUserTypes, b2Joint>;
 template <typename TUserTypes>
-using ConstJointRef = detail::JointWrapper<TUserTypes, const b2Joint>;
+using ConstJointRef = JointWrapper<TUserTypes, const b2Joint>;
 template <typename TUserTypes, typename TConstAs>
-using JointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2Joint, TConstAs>>;
+using JointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2Joint, TConstAs>>;
 
 template <typename TUserTypes>
-using RevoluteJointRef = detail::JointWrapper<TUserTypes, b2RevoluteJoint>;
+using RevoluteJointRef = JointWrapper<TUserTypes, b2RevoluteJoint>;
 template <typename TUserTypes>
-using ConstRevoluteJointRef = detail::JointWrapper<TUserTypes, const b2RevoluteJoint>;
+using ConstRevoluteJointRef = JointWrapper<TUserTypes, const b2RevoluteJoint>;
 template <typename TUserTypes, typename TConstAs>
-using RevoluteJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
+using RevoluteJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2RevoluteJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using PrismaticJointRef = detail::JointWrapper<TUserTypes, b2PrismaticJoint>;
+using PrismaticJointRef = JointWrapper<TUserTypes, b2PrismaticJoint>;
 template <typename TUserTypes>
-using ConstPrismaticJointRef = detail::JointWrapper<TUserTypes, const b2PrismaticJoint>;
+using ConstPrismaticJointRef = JointWrapper<TUserTypes, const b2PrismaticJoint>;
 template <typename TUserTypes, typename TConstAs>
-using PrismaticJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
+using PrismaticJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2PrismaticJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using DistanceJointRef = detail::JointWrapper<TUserTypes, b2DistanceJoint>;
+using DistanceJointRef = JointWrapper<TUserTypes, b2DistanceJoint>;
 template <typename TUserTypes>
-using ConstDistanceJointRef = detail::JointWrapper<TUserTypes, const b2DistanceJoint>;
+using ConstDistanceJointRef = JointWrapper<TUserTypes, const b2DistanceJoint>;
 template <typename TUserTypes, typename TConstAs>
-using DistanceJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
+using DistanceJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2DistanceJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using PulleyJointRef = detail::JointWrapper<TUserTypes, b2PulleyJoint>;
+using PulleyJointRef = JointWrapper<TUserTypes, b2PulleyJoint>;
 template <typename TUserTypes>
-using ConstPulleyJointRef = detail::JointWrapper<TUserTypes, const b2PulleyJoint>;
+using ConstPulleyJointRef = JointWrapper<TUserTypes, const b2PulleyJoint>;
 template <typename TUserTypes, typename TConstAs>
-using PulleyJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
+using PulleyJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2PulleyJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using MouseJointRef = detail::JointWrapper<TUserTypes, b2MouseJoint>;
+using MouseJointRef = JointWrapper<TUserTypes, b2MouseJoint>;
 template <typename TUserTypes>
-using ConstMouseJointRef = detail::JointWrapper<TUserTypes, const b2MouseJoint>;
+using ConstMouseJointRef = JointWrapper<TUserTypes, const b2MouseJoint>;
 template <typename TUserTypes, typename TConstAs>
-using MouseJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
+using MouseJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2MouseJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using GearJointRef = detail::JointWrapper<TUserTypes, b2GearJoint>;
+using GearJointRef = JointWrapper<TUserTypes, b2GearJoint>;
 template <typename TUserTypes>
-using ConstGearJointRef = detail::JointWrapper<TUserTypes, const b2GearJoint>;
+using ConstGearJointRef = JointWrapper<TUserTypes, const b2GearJoint>;
 template <typename TUserTypes, typename TConstAs>
-using GearJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2GearJoint, TConstAs>>;
+using GearJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2GearJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using WheelJointRef = detail::JointWrapper<TUserTypes, b2WheelJoint>;
+using WheelJointRef = JointWrapper<TUserTypes, b2WheelJoint>;
 template <typename TUserTypes>
-using ConstWheelJointRef = detail::JointWrapper<TUserTypes, const b2WheelJoint>;
+using ConstWheelJointRef = JointWrapper<TUserTypes, const b2WheelJoint>;
 template <typename TUserTypes, typename TConstAs>
-using WheelJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
+using WheelJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2WheelJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using WeldJointRef = detail::JointWrapper<TUserTypes, b2WeldJoint>;
+using WeldJointRef = JointWrapper<TUserTypes, b2WeldJoint>;
 template <typename TUserTypes>
-using ConstWeldJointRef = detail::JointWrapper<TUserTypes, const b2WeldJoint>;
+using ConstWeldJointRef = JointWrapper<TUserTypes, const b2WeldJoint>;
 template <typename TUserTypes, typename TConstAs>
-using WeldJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
+using WeldJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2WeldJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using FrictionJointRef = detail::JointWrapper<TUserTypes, b2FrictionJoint>;
+using FrictionJointRef = JointWrapper<TUserTypes, b2FrictionJoint>;
 template <typename TUserTypes>
-using ConstFrictionJointRef = detail::JointWrapper<TUserTypes, const b2FrictionJoint>;
+using ConstFrictionJointRef = JointWrapper<TUserTypes, const b2FrictionJoint>;
 template <typename TUserTypes, typename TConstAs>
-using FrictionJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
+using FrictionJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2FrictionJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using MotorJointRef = detail::JointWrapper<TUserTypes, b2MotorJoint>;
+using MotorJointRef = JointWrapper<TUserTypes, b2MotorJoint>;
 template <typename TUserTypes>
-using ConstMotorJointRef = detail::JointWrapper<TUserTypes, const b2MotorJoint>;
+using ConstMotorJointRef = JointWrapper<TUserTypes, const b2MotorJoint>;
 template <typename TUserTypes, typename TConstAs>
-using MotorJointRefConstAs = detail::JointWrapper<TUserTypes, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
+using MotorJointRefConstAs = JointWrapper<TUserTypes, dutils::copy_const_t<b2MotorJoint, TConstAs>>;
 
 template <typename TUserTypes>
-using JointEdge = detail::JointEdgeWrapper<TUserTypes, b2JointEdge>;
+using JointEdge = JointEdgeWrapper<TUserTypes, b2JointEdge>;
 template <typename TUserTypes>
-using ConstJointEdge = detail::JointEdgeWrapper<TUserTypes, const b2JointEdge>;
+using ConstJointEdge = JointEdgeWrapper<TUserTypes, const b2JointEdge>;
 template <typename TUserTypes, typename TConstAs>
-using JointEdgeConstAs = detail::JointEdgeWrapper<TUserTypes, dutils::copy_const_t<b2JointEdge, TConstAs>>;
+using JointEdgeConstAs = JointEdgeWrapper<TUserTypes, dutils::copy_const_t<b2JointEdge, TConstAs>>;
 
-using ShapeRef = detail::ShapeRefWrapper<b2Shape>;
-using ConstShapeRef = detail::ShapeRefWrapper<const b2Shape>;
+using ShapeRef = ShapeRefWrapper<b2Shape>;
+using ConstShapeRef = ShapeRefWrapper<const b2Shape>;
 template <typename TConstAs>
-using ShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2Shape, TConstAs>>;
+using ShapeRefConstAs = ShapeRefWrapper<dutils::copy_const_t<b2Shape, TConstAs>>;
 
-using CircleShapeRef = detail::ShapeRefWrapper<b2CircleShape>;
-using ConstCircleShapeRef = detail::ShapeRefWrapper<const b2CircleShape>;
+using CircleShapeRef = ShapeRefWrapper<b2CircleShape>;
+using ConstCircleShapeRef = ShapeRefWrapper<const b2CircleShape>;
 template <typename TConstAs>
-using CircleShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2CircleShape, TConstAs>>;
+using CircleShapeRefConstAs = ShapeRefWrapper<dutils::copy_const_t<b2CircleShape, TConstAs>>;
 
-using EdgeShapeRef = detail::ShapeRefWrapper<b2EdgeShape>;
-using ConstEdgeShapeRef = detail::ShapeRefWrapper<const b2EdgeShape>;
+using EdgeShapeRef = ShapeRefWrapper<b2EdgeShape>;
+using ConstEdgeShapeRef = ShapeRefWrapper<const b2EdgeShape>;
 template <typename TConstAs>
-using EdgeShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2EdgeShape, TConstAs>>;
+using EdgeShapeRefConstAs = ShapeRefWrapper<dutils::copy_const_t<b2EdgeShape, TConstAs>>;
 
-using PolygonShapeRef = detail::ShapeRefWrapper<b2PolygonShape>;
-using ConstPolygonShapeRef = detail::ShapeRefWrapper<const b2PolygonShape>;
+using PolygonShapeRef = ShapeRefWrapper<b2PolygonShape>;
+using ConstPolygonShapeRef = ShapeRefWrapper<const b2PolygonShape>;
 template <typename TConstAs>
-using PolygonShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2PolygonShape, TConstAs>>;
+using PolygonShapeRefConstAs = ShapeRefWrapper<dutils::copy_const_t<b2PolygonShape, TConstAs>>;
 
-using ChainShapeRef = detail::ShapeRefWrapper<b2ChainShape>;
-using ConstChainShapeRef = detail::ShapeRefWrapper<const b2ChainShape>;
+using ChainShapeRef = ShapeRefWrapper<b2ChainShape>;
+using ConstChainShapeRef = ShapeRefWrapper<const b2ChainShape>;
 template <typename TConstAs>
-using ChainShapeRefConstAs = detail::ShapeRefWrapper<dutils::copy_const_t<b2ChainShape, TConstAs>>;
+using ChainShapeRefConstAs = ShapeRefWrapper<dutils::copy_const_t<b2ChainShape, TConstAs>>;
 
 template <typename TUserTypes>
-using FixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2Shape>;
+using Fixture = FixtureWrapper<TUserTypes, b2Shape>;
 template <typename TUserTypes>
-using ConstFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2Shape>;
+using CircleFixture = FixtureWrapper<TUserTypes, b2CircleShape>;
+template <typename TUserTypes>
+using EdgeFixture = FixtureWrapper<TUserTypes, b2EdgeShape>;
+template <typename TUserTypes>
+using PolygonFixture = FixtureWrapper<TUserTypes, b2PolygonShape>;
+template <typename TUserTypes>
+using ChainFixture = FixtureWrapper<TUserTypes, b2ChainShape>;
+
+template <typename TUserTypes>
+using Body = BodyWrapper<TUserTypes>;
+
+template <typename TUserTypes>
+using WorldRef = WorldRefWrapper<TUserTypes, b2World>;
+template <typename TUserTypes>
+using ConstWorldRef = WorldRefWrapper<TUserTypes, const b2World>;
 template <typename TUserTypes, typename TConstAs>
-using FixtureRefConstAs = detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2Shape>;
+using WorldRefConstAs = WorldRefWrapper<TUserTypes, dutils::copy_const_t<b2World, TConstAs>>;
 
 template <typename TUserTypes>
-using CircleFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2CircleShape>;
+using Contact = ContactWrapper<TUserTypes, b2Contact>;
 template <typename TUserTypes>
-using ConstCircleFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2CircleShape>;
+using ConstContact = ContactWrapper<TUserTypes, const b2Contact>;
 template <typename TUserTypes, typename TConstAs>
-using CircleFixtureRefConstAs =
-    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2CircleShape>;
-
-template <typename TUserTypes>
-using EdgeFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2EdgeShape>;
-template <typename TUserTypes>
-using ConstEdgeFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2EdgeShape>;
-template <typename TUserTypes, typename TConstAs>
-using EdgeFixtureRefConstAs =
-    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2EdgeShape>;
-
-template <typename TUserTypes>
-using PolygonFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2PolygonShape>;
-template <typename TUserTypes>
-using ConstPolygonFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2PolygonShape>;
-template <typename TUserTypes, typename TConstAs>
-using PolygonFixtureRefConstAs =
-    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2PolygonShape>;
-
-template <typename TUserTypes>
-using ChainFixtureRef = detail::FixtureWrapper<TUserTypes, b2Fixture, b2ChainShape>;
-template <typename TUserTypes>
-using ConstChainFixtureRef = detail::FixtureWrapper<TUserTypes, const b2Fixture, b2ChainShape>;
-template <typename TUserTypes, typename TConstAs>
-using ChainFixtureRefConstAs =
-    detail::FixtureWrapper<TUserTypes, dutils::copy_const_t<b2Fixture, TConstAs>, b2ChainShape>;
-
-template <typename TUserTypes>
-using Body = detail::BodyWrapper<TUserTypes>;
-
-template <typename TUserTypes>
-using WorldRef = detail::WorldRefWrapper<TUserTypes, b2World>;
-template <typename TUserTypes>
-using ConstWorldRef = detail::WorldRefWrapper<TUserTypes, const b2World>;
-template <typename TUserTypes, typename TConstAs>
-using WorldRefConstAs = detail::WorldRefWrapper<TUserTypes, dutils::copy_const_t<b2World, TConstAs>>;
-
-template <typename TUserTypes>
-using Contact = detail::ContactWrapper<TUserTypes, b2Contact>;
-template <typename TUserTypes>
-using ConstContact = detail::ContactWrapper<TUserTypes, const b2Contact>;
-template <typename TUserTypes, typename TConstAs>
-using ContactConstAs = detail::ContactWrapper<TUserTypes, dutils::copy_const_t<b2Contact, TConstAs>>;
+using ContactConstAs = ContactWrapper<TUserTypes, dutils::copy_const_t<b2Contact, TConstAs>>;
 
 } // namespace detail
 
@@ -776,8 +748,6 @@ void setOwner(b2Body* body, OwnedHandle<TUserData, b2Body>& owner)
     std::memcpy(&body->GetUserData().pointer, &ptr, sizeof ptr);
 }
 
-/*
-
 template <typename TUserTypes>
 Fixture<TUserTypes>& getOwner(b2Fixture* fixture)
 {
@@ -787,11 +757,13 @@ Fixture<TUserTypes>& getOwner(b2Fixture* fixture)
 }
 
 template <typename TUserTypes>
-void setOwner(b2Fixture* fixture, Fixture<TUserTypes>& owner)
+void setOwner(b2Fixture* fixture, OwnedHandle<TUserTypes, b2Fixture>& owner)
 {
     auto ptr = &owner;
     std::memcpy(&fixture->GetUserData().pointer, &ptr, sizeof ptr);
 }
+
+/*
 
 template <typename TUserTypes>
 Joint<TUserTypes>& getOwner(b2Joint* joint)
@@ -1104,6 +1076,16 @@ public:
 
     operator ShapeRefConstAs<TShape>() const { return this->handle(); }
 
+    template <ShapeType v_shape_type>
+    ShapeRefWrapper<shape_b2type_t<v_shape_type>> as() const
+    {
+        if constexpr (v_shape_type != ShapeType::Unknown) {
+            if (getType() != v_shape_type)
+                return nullptr;
+        }
+        return this->handle();
+    }
+
     constexpr ShapeType getType() const
     {
         if constexpr (can_devirtualize)
@@ -1255,8 +1237,7 @@ public:
 // --- Fixture
 
 template <typename TUserTypes>
-struct FixtureDef {
-    typename TUserTypes::Fixture* user_data = nullptr;
+struct FixtureDef : WithUserData<typename TUserTypes::Fixture> {
     float friction = 0.2f;
     float restitution = 0.0f;
     float restitution_threshold = 1.0f * b2_lengthUnitsPerMeter;
@@ -1266,14 +1247,14 @@ struct FixtureDef {
 
 private:
     template <typename>
-    friend class detail::BodyWrapper;
+    friend class BodyWrapper;
 
-    b2FixtureDef build(const b2Shape* shape) const
+    b2FixtureDef build(const Fixture<TUserTypes>* owner, const b2Shape* shape) const
     {
         b2FixtureDef result;
         result.shape = shape;
         // TODO: C++20 use std::bit_cast
-        std::memcpy(&result.userData.pointer, &user_data, sizeof user_data);
+        std::memcpy(&result.userData.pointer, &owner, sizeof owner);
         result.friction = friction;
         result.restitution = restitution;
         result.restitutionThreshold = restitution_threshold;
@@ -1284,102 +1265,59 @@ private:
     }
 };
 
-struct ForceFixture {};
-
-template <typename TUserTypes, typename TFixture, typename TShape>
-class FixtureWrapper : public HandleWrapper<TFixture> {
-private:
-    template <typename, typename, typename>
-    friend class FixtureWrapper;
-
-    template <typename>
-    friend class BodyWrapper;
-
-    FixtureWrapper(ForceFixture, TFixture* handle)
-        : HandleWrapper<TFixture>(handle)
-    {}
-
+template <typename TUserTypes, typename TShape>
+class FixtureWrapper : public FixtureWrapper<TUserTypes, b2Shape> {
 public:
-    FixtureWrapper(std::nullptr_t = {})
-        : HandleWrapper<TFixture>(nullptr)
-    {}
+    using FixtureWrapper<TUserTypes, b2Shape>::FixtureWrapper;
 
-    FixtureWrapper(TFixture* handle)
-        : HandleWrapper<TFixture>(handle)
-    {
-        static_assert(std::is_same_v<std::remove_const_t<TShape>, b2Shape>,
-                      "only fixtures of an unknown shape can be initialized from a b2Fixture*");
-    }
+    ShapeRefWrapper<TShape> getShape() { return static_cast<TShape*>(this->handle_->GetShape()); }
+    ShapeRefWrapper<const TShape> getShape() const { return static_cast<const TShape*>(this->handle_->GetShape()); }
+};
 
-    detail::ShapeRefWrapper<dutils::copy_const_t<TShape, TFixture>> getShape() const
-    {
-        return static_cast<dutils::copy_const_t<TShape, TFixture>*>(this->handle()->GetShape());
-    }
+template <typename TUserTypes>
+class FixtureWrapper<TUserTypes, b2Shape> : public OwnedHandle<typename TUserTypes::Fixture, b2Fixture> {
+public:
+    using OwnedHandle<typename TUserTypes::Fixture, b2Fixture>::OwnedHandle;
 
-    template <ShapeType v_shape_type>
-    FixtureWrapper<TUserTypes, TFixture, shape_b2type_t<v_shape_type>> shaped() const
-    {
-        static_assert(std::is_same_v<TShape, b2Shape>, "fixture shape type already statically known");
-        if constexpr (v_shape_type != ShapeType::Unknown) {
-            if (v_shape_type != getShape().getType())
-                return nullptr;
-            return {ForceFixture{}, this->handle()};
-        }
-        else {
-            return this->handle();
-        }
-    }
+    ShapeRef getShape() { return this->handle_->GetShape(); }
+    ConstShapeRef getShape() const { return this->handle_->GetShape(); }
 
-    constexpr operator FixtureWrapper<TUserTypes, TFixture, b2Shape>() const { return this->handle(); }
+    void setSensor(bool sensor) { this->handle_->SetSensor(sensor); }
+    bool isSensor() const { return this->handle_->IsSensor(); }
 
-    void setSensor(bool sensor) const { this->handle()->SetSensor(sensor); }
-    bool isSensor() const { return this->handle()->IsSensor(); }
+    void setFilterData(const Filter& filter) { this->handle_->SetFilterData(filter); }
+    const Filter& getFilterData() const { return this->handle_->GetFilterData(); }
+    void refilter() { this->handle_->Refilter(); }
 
-    void setFilterData(const Filter& filter) const { this->handle()->SetFilterData(filter); }
-    const Filter& getFilterData() const { return this->handle()->GetFilterData(); }
-    void refilter() const { this->handle()->Refilter(); }
+    Body<TUserTypes>& getBody() { return getOwner<TUserTypes>(this->handle_->GetBody()); }
+    const Body<TUserTypes>& getBody() const { return getOwner<TUserTypes>(this->handle_->GetBody()); }
 
-    dutils::copy_const_t<Body<TUserTypes>, TFixture>* getBody() const { return this->handle()->GetBody(); }
+    Fixture<TUserTypes>* getNext() { return getOptionalOwner(this->handle_->GetNext()); }
+    const Fixture<TUserTypes>* getNext() const { return getOptionalOwner(this->handle_->GetNext()); }
 
-    FixtureRefConstAs<TUserTypes, TFixture> getNext() const { return this->handle()->GetNext(); }
-
-    void setUserData(typename TUserTypes::Fixture* user_data) const
-    {
-        // TODO: C++20 use std::bit_cast
-        std::memcpy(&this->handle()->GetUserData().pointer, &user_data, sizeof user_data);
-    }
-
-    typename TUserTypes::Fixture* getUserData() const
-    {
-        // TODO: C++20 use std::bit_cast
-        typename TUserTypes::Fixture* result;
-        std::memcpy(&result, &this->handle()->GetUserData().pointer, sizeof result);
-        return result;
-    }
-
-    bool testPoint(vec2 p) const { return this->handle()->TestPoint(cast(p)); }
+    bool testPoint(vec2 p) const { return this->handle_->TestPoint(cast(p)); }
     std::optional<RayCastOutput> rayCast(const RayCastInput& input, int32 childIndex) const
     {
         RayCastOutput output;
-        if (!this->handle()->RayCast(&output, input, childIndex))
+        if (!this->handle_->RayCast(&output, input, childIndex))
             return std::nullopt;
         return output;
     }
 
-    MassData getMassData() const { return this->handle()->GetMassData(); }
-    void setDensity(float density) const { this->handle()->SetDensity(density); }
-    float getDensity() const { return this->handle()->GetDensity(); }
+    MassData getMassData() const { return this->handle_->GetMassData(); }
+    void setDensity(float density) { this->handle_->SetDensity(density); }
+    float getDensity() const { return this->handle_->GetDensity(); }
 
-    float getFriction() const { return this->handle()->GetFriction(); }
-    void setFriction(float friction) const { this->handle()->SetFriction(friction); }
-    float getRestitution() const { return this->handle()->GetRestitution(); }
-    void setRestitution(float restitution) const { this->handle()->SetRestitution(restitution); }
-    float getRestitutionThreshold() const { return this->handle()->GetRestitutionThreshold(); }
-    void setRestitutionThreshold(float threshold) const { this->handle()->SetRestitutionThreshold(threshold); }
+    float getFriction() const { return this->handle_->GetFriction(); }
+    void setFriction(float friction) { this->handle_->SetFriction(friction); }
+    float getRestitution() const { return this->handle_->GetRestitution(); }
+    void setRestitution(float restitution) { this->handle_->SetRestitution(restitution); }
+    float getRestitutionThreshold() const { return this->handle_->GetRestitutionThreshold(); }
+    void setRestitutionThreshold(float threshold) { this->handle_->SetRestitutionThreshold(threshold); }
 
-    const AABB& getAABB(int32 child_index) const { return this->handle()->GetAABB(child_index); }
+    const AABB& getAABB(int32 child_index) const { return this->handle_->GetAABB(child_index); }
 
-    void dump(int32 body_index) const { this->handle()->Dump(body_index); }
+    void dump(int32 body_index) { this->handle_->Dump(body_index); }
 };
 
 } // namespace detail
@@ -1445,7 +1383,7 @@ struct Applier {
 // --- Body
 
 template <typename TUserTypes>
-struct BodyDef : detail::WithUserData<typename TUserTypes::Body> {
+struct BodyDef : WithUserData<typename TUserTypes::Body> {
     BodyType type = BodyType::Static;
     vec2 position;
     float angle = 0.0f;
@@ -1462,7 +1400,7 @@ struct BodyDef : detail::WithUserData<typename TUserTypes::Body> {
 
 private:
     template <typename, typename>
-    friend class detail::WorldRefWrapper;
+    friend class WorldRefWrapper;
 
     template <typename>
     friend class dang::box2d::World;
@@ -1499,43 +1437,40 @@ public:
     {
         typename TShape::Data shape_data;
         shape.build(shape_data);
-        auto def = fixture.build(&shape_data);
-        return FixtureWrapper<TUserTypes, b2Fixture, typename TShape::Data>(ForceFixture{},
-                                                                            this->handle_->CreateFixture(&def));
+        FixtureWrapper<TUserTypes, typename TShape::Data> result;
+        auto def = fixture.build(&result, &shape_data);
+        result.forceHandle(this->handle_->CreateFixture(&def));
+        return result;
     }
 
-    FixtureRef<TUserTypes> createFixture(const FixtureDef<TUserTypes>& fixture, const Shape& shape)
+    Fixture<TUserTypes> createFixture(const FixtureDef<TUserTypes>& fixture, const Shape& shape)
     {
-        return std::visit(
-            [&](const auto& concrete_shape) -> FixtureRef<TUserTypes> {
-                return this->createFixture(fixture, concrete_shape);
+        auto shape_data = std::visit(
+            [](auto concrete_shape) {
+                typename decltype(concrete_shape)::Data shape_data;
+                concrete_shape.build(shape_data);
+                return shape_data;
             },
             shape);
+        Fixture<TUserTypes> result;
+        auto def = fixture.build(&result, &shape_data);
+        result.forceHandle(this->handle_->CreateFixture(&def));
+        return result;
     }
 
     template <typename TShape>
     auto createFixture(const TShape& shape, float density = 1.0f)
     {
-        typename TShape::Data shape_data;
-        shape.build(shape_data);
-        return FixtureWrapper<TUserTypes, b2Fixture, typename TShape::Data>(
-            ForceFixture{}, this->handle_->CreateFixture(&shape_data, density));
+        FixtureDef<TUserTypes> def;
+        def.density = density;
+        return createFixture(def, shape);
     }
 
-    FixtureRef<TUserTypes> createFixture(const Shape& shape, float density = 1.0f)
+    Fixture<TUserTypes> createFixture(const Shape& shape, float density = 1.0f)
     {
-        return std::visit(
-            [&](const auto& concrete_shape) -> FixtureRef<TUserTypes> {
-                return this->createFixture(concrete_shape, density);
-            },
-            shape);
-    }
-
-    template <typename TShape>
-    void destroyFixture(FixtureWrapper<TUserTypes, b2Fixture, TShape>&& fixture)
-    {
-        this->handle_->DestroyFixture(fixture.handle());
-        fixture = nullptr;
+        FixtureDef<TUserTypes> def;
+        def.density = density;
+        return createFixture(def, shape);
     }
 
     void setTransform(vec2 position, float angle) { this->handle_->SetTransform(cast(position), angle); }
@@ -1613,8 +1548,8 @@ public:
     void setFixedRotation(bool flag) { this->handle_->SetFixedRotation(flag); }
     bool isFixedRotation() const { return this->handle_->IsFixedRotation(); }
 
-    ForwardIterable<FixtureRef<TUserTypes>> fixtures() { return {this->handle_->GetFixtureList()}; }
-    ForwardIterable<ConstFixtureRef<TUserTypes>> fixtures() const { return {this->handle_->GetFixtureList()}; }
+    ForwardIterable<Fixture<TUserTypes>*> fixtures() { return {this->handle_->GetFixtureList()}; }
+    ForwardIterable<const Fixture<TUserTypes>*> fixtures() const { return {this->handle_->GetFixtureList()}; }
     BidirectionalIterable<JointEdge<TUserTypes>> joints() { return {this->handle_->GetJointList()}; }
     BidirectionalIterable<ConstJointEdge<TUserTypes>> joints() const { return {this->handle_->GetJointList()}; }
     ForwardIterable<Contact<TUserTypes>> contacts() { return {this->handle_->GetContactList()}; }
@@ -2345,9 +2280,18 @@ public:
 
     ContactConstAs<TUserTypes, TContact> getNext() const { return this->handle()->GetNext(); }
 
-    FixtureRefConstAs<TUserTypes, TContact> getFixtureA() const { return this->handle()->GetFixtureA(); }
+    dutils::copy_const_t<Fixture<TUserTypes>, TContact>& getFixtureA() const
+    {
+        return getOwner<TUserTypes>(this->handle()->GetFixtureA());
+    }
+
     int32 getChildIndexA() const { return this->handle()->GetChildIndexA(); }
-    FixtureRefConstAs<TUserTypes, TContact> getFixtureB() const { return this->handle()->GetFixtureB(); }
+
+    dutils::copy_const_t<Fixture<TUserTypes>, TContact>& getFixtureB() const
+    {
+        return getOwner<TUserTypes>(this->handle()->GetFixtureB());
+    }
+
     int32 getChildIndexB() const { return this->handle()->GetChildIndexB(); }
 
     void setFriction(float friction) const { this->handle()->SetFriction(friction); }
@@ -2378,11 +2322,11 @@ public:
 namespace detail {
 
 template <typename TUserTypes>
-using QueryCallback = std::function<bool(FixtureRef<TUserTypes>)>;
+using QueryCallback = std::function<bool(Fixture<TUserTypes>&)>;
 
 template <typename TUserTypes>
 struct RayCastData {
-    FixtureRef<TUserTypes> fixture;
+    Fixture<TUserTypes>* fixture;
     vec2 point;
     vec2 normal;
     float fraction;
@@ -2411,7 +2355,7 @@ public:
         : callback_(std::move(callback))
     {}
 
-    bool ReportFixture(b2Fixture* fixture) override { return callback_(fixture); }
+    bool ReportFixture(b2Fixture* fixture) override { return callback_(getOwner<TUserTypes>(fixture)); }
 
 private:
     QueryCallback<TUserTypes> callback_;
@@ -2426,7 +2370,7 @@ public:
 
     float ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float fraction) override
     {
-        return callback_({fixture, cast(point), cast(normal), fraction});
+        return callback_({&getOwner<TUserTypes>(fixture), cast(point), cast(normal), fraction});
     }
 
 private:
@@ -2460,9 +2404,8 @@ public:
     auto createJoint(const TJointDef& joint) const
     {
         auto def = joint.build();
-        using ResultType = detail::joint_def_result_type_t<decltype(def)>;
-        return detail::JointWrapper<TUserTypes, ResultType>(
-            static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
+        using ResultType = joint_def_result_type_t<decltype(def)>;
+        return JointWrapper<TUserTypes, ResultType>(static_cast<ResultType*>(this->handle()->CreateJoint(&def)));
     }
 
     JointRef<TUserTypes> createJoint(const JointDef<TUserTypes>& joint) const
@@ -2569,30 +2512,11 @@ public:
 
     using JointDef = detail::JointDef<UserTypes>;
 
-    using FixtureRef = detail::FixtureRef<UserTypes>;
-    using ConstFixtureRef = detail::ConstFixtureRef<UserTypes>;
-    template <typename TConstAs>
-    using FixtureRefConstAs = detail::FixtureRefConstAs<UserTypes, TConstAs>;
-
-    using CircleFixtureRef = detail::CircleFixtureRef<UserTypes>;
-    using ConstCircleFixtureRef = detail::ConstCircleFixtureRef<UserTypes>;
-    template <typename TConstAs>
-    using CircleFixtureRefConstAs = detail::CircleFixtureRefConstAs<UserTypes, TConstAs>;
-
-    using EdgeFixtureRef = detail::EdgeFixtureRef<UserTypes>;
-    using ConstEdgeFixtureRef = detail::ConstEdgeFixtureRef<UserTypes>;
-    template <typename TConstAs>
-    using EdgeFixtureRefConstAs = detail::EdgeFixtureRefConstAs<UserTypes, TConstAs>;
-
-    using PolygonFixtureRef = detail::PolygonFixtureRef<UserTypes>;
-    using ConstPolygonFixtureRef = detail::ConstPolygonFixtureRef<UserTypes>;
-    template <typename TConstAs>
-    using PolygonFixtureRefConstAs = detail::PolygonFixtureRefConstAs<UserTypes, TConstAs>;
-
-    using ChainFixtureRef = detail::ChainFixtureRef<UserTypes>;
-    using ConstChainFixtureRef = detail::ConstChainFixtureRef<UserTypes>;
-    template <typename TConstAs>
-    using ChainFixtureRefConstAs = detail::ChainFixtureRefConstAs<UserTypes, TConstAs>;
+    using Fixture = detail::Fixture<UserTypes>;
+    using CircleFixture = detail::CircleFixture<UserTypes>;
+    using EdgeFixture = detail::EdgeFixture<UserTypes>;
+    using PolygonFixture = detail::PolygonFixture<UserTypes>;
+    using ChainFixture = detail::ChainFixture<UserTypes>;
 
     using Body = detail::Body<UserTypes>;
 
@@ -2671,7 +2595,7 @@ public:
     using RayCastData = detail::RayCastData<UserTypes>;
     using RayCastCallback = detail::RayCastCallback<UserTypes>;
 
-    using ContactFilter = std::function<bool(FixtureRef, FixtureRef)>;
+    using ContactFilter = std::function<bool(Fixture&, Fixture&)>;
 
     explicit World(vec2 gravity = {})
         : world_(cast(gravity))
@@ -2680,11 +2604,21 @@ public:
         world_.SetContactListener(&contact_listener_);
     }
 
+    // b2World is neither copyable nor movable.
+    // Use std::optional or std::unique_ptr for movability.
+    World(const World&) = delete;
+    World(World&&) = delete;
+    World& operator=(const World&) = delete;
+    World& operator=(World&&) = delete;
+
     ~World()
     {
-        // Manual loop because forcing the handles to null breaks the iterator.
-        for (auto body = world_.GetBodyList(); body; body = body->GetNext())
-            detail::getOwner<TUserTypes>(body).forceHandle(nullptr);
+        // Manual loops because forcing the handles to null breaks the iterator.
+        for (auto body = world_.GetBodyList(); body; body = body->GetNext()) {
+            for (auto fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext())
+                detail::getOwner<UserTypes>(fixture).forceHandle(nullptr);
+            detail::getOwner<UserTypes>(body).forceHandle(nullptr);
+        }
     }
 
     void setContactFilter(ContactFilter should_collide)
@@ -2776,7 +2710,6 @@ public:
 
     void dump() { world_.Dump(); }
 
-    dutils::Event<FixtureRef> on_destroy_fixture;
     dutils::Event<JointRef> on_destroy_joint;
 
     dutils::Event<Contact> on_begin_contact;
@@ -2792,7 +2725,7 @@ private:
         {}
 
         void SayGoodbye(b2Joint* joint) override { world_->on_destroy_joint(joint); }
-        void SayGoodbye(b2Fixture* fixture) override { world_->on_destroy_fixture(fixture); }
+        void SayGoodbye(b2Fixture* fixture) override { detail::getOwner<UserTypes>(fixture).forceHandle(nullptr); }
 
     private:
         World* world_;
@@ -2830,7 +2763,7 @@ private:
 
         bool ShouldCollide(b2Fixture* fixture_a, b2Fixture* fixture_b) override
         {
-            return callback_(fixture_a, fixture_b);
+            return callback_(detail::getOwner<UserTypes>(fixture_a), detail::getOwner<UserTypes>(fixture_b));
         }
 
     private:

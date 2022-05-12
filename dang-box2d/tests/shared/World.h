@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 struct Data {
-    using Fixture = const char;
+    using Fixture = std::string;
     using Body = std::string;
     using Joint = const char;
 };
@@ -17,15 +17,23 @@ using World = dang::box2d::World<Data>;
 namespace Catch {
 
 template <>
-struct StringMaker<World::FixtureRef> {
-    static std::string convert(World::FixtureRef fixture)
+struct StringMaker<World::Fixture> {
+    static std::string convert(const World::Fixture& fixture)
     {
-        using namespace std::literals;
-        if (fixture)
-            return "Fixture("s + (fixture.getUserData() ? fixture.getUserData() : ""s) + ")"s;
-        return "Fixture(null)"s;
+        return fixture ? "Fixture(" + fixture.user_data + ")" : "Fixture(null)";
     }
 };
+
+template <>
+struct StringMaker<World::Fixture*> {
+    static std::string convert(const World::Fixture* fixture)
+    {
+        return fixture ? "Fixture*(" + fixture->user_data + ")" : "Fixture*(null)";
+    }
+};
+
+template <>
+struct StringMaker<const World::Fixture*> : StringMaker<World::Fixture*> {};
 
 template <>
 struct StringMaker<World::Body> {
@@ -57,7 +65,7 @@ struct StringMaker<World::RayCastData> {
     static std::string convert(const World::RayCastData& data)
     {
         using namespace std::literals;
-        return "RayCastData("s + StringMaker<World::FixtureRef>::convert(data.fixture) + " "s + data.point.format() +
+        return "RayCastData("s + StringMaker<World::Fixture*>::convert(data.fixture) + " "s + data.point.format() +
                " normal: " + data.normal.format() + " fraction: " + std::to_string(data.fraction) + ")"s;
     }
 };
