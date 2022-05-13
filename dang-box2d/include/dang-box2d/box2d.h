@@ -1187,10 +1187,11 @@ public:
     vec2 getNextVertex() const { return cast(this->handle()->m_nextVertex); }
 };
 
+} // namespace detail
+
 // --- Fixture
 
-template <typename TUserTypes>
-struct FixtureDef : WithUserData<typename TUserTypes::Fixture> {
+struct FixtureDef {
     float friction = 0.2f;
     float restitution = 0.0f;
     float restitution_threshold = 1.0f * b2_lengthUnitsPerMeter;
@@ -1200,9 +1201,10 @@ struct FixtureDef : WithUserData<typename TUserTypes::Fixture> {
 
 private:
     template <typename>
-    friend class BodyWrapper;
+    friend class detail::BodyWrapper;
 
-    b2FixtureDef build(Fixture<TUserTypes>* owner, const b2Shape* shape) const
+    template <typename TUserTypes>
+    b2FixtureDef build(detail::Fixture<TUserTypes>* owner, const b2Shape* shape) const
     {
         b2FixtureDef result;
         result.shape = shape;
@@ -1217,6 +1219,8 @@ private:
         return result;
     }
 };
+
+namespace detail {
 
 template <typename TUserTypes, typename TShape>
 class FixtureWrapper : public FixtureWrapper<TUserTypes, b2Shape> {
@@ -1333,10 +1337,11 @@ struct Applier {
     void operator()(const AngularImpulse& applicable) const { body->ApplyAngularImpulse(applicable.impulse, wake); }
 };
 
+} // namespace detail
+
 // --- Body
 
-template <typename TUserTypes>
-struct BodyDef : WithUserData<typename TUserTypes::Body> {
+struct BodyDef {
     BodyType type = BodyType::Static;
     vec2 position;
     float angle = 0.0f;
@@ -1353,12 +1358,13 @@ struct BodyDef : WithUserData<typename TUserTypes::Body> {
 
 private:
     template <typename, typename>
-    friend class WorldRefWrapper;
+    friend class detail::WorldRefWrapper;
 
     template <typename>
-    friend class dang::box2d::World;
+    friend class World;
 
-    b2BodyDef build(Body<TUserTypes>* owner) const
+    template <typename TUserTypes>
+    b2BodyDef build(detail::Body<TUserTypes>* owner) const
     {
         b2BodyDef result;
         result.type = cast(type);
@@ -1380,13 +1386,15 @@ private:
     }
 };
 
+namespace detail {
+
 template <typename TUserTypes>
 class BodyWrapper : public OwnedHandle<typename TUserTypes::Body, b2Body> {
 public:
     using OwnedHandle<typename TUserTypes::Body, b2Body>::OwnedHandle;
 
     template <typename TShape>
-    [[nodiscard]] auto createFixture(const FixtureDef<TUserTypes>& fixture, const TShape& shape)
+    [[nodiscard]] auto createFixture(const FixtureDef& fixture, const TShape& shape)
     {
         typename TShape::Data shape_data;
         shape.build(shape_data);
@@ -1396,7 +1404,7 @@ public:
         return result;
     }
 
-    [[nodiscard]] Fixture<TUserTypes> createFixture(const FixtureDef<TUserTypes>& fixture, const Shape& shape)
+    [[nodiscard]] Fixture<TUserTypes> createFixture(const FixtureDef& fixture, const Shape& shape)
     {
         auto shape_data = std::visit(
             [](auto concrete_shape) {
@@ -1414,7 +1422,7 @@ public:
     template <typename TShape>
     [[nodiscard]] auto createFixture(const TShape& shape, float density = 1.0f)
     {
-        FixtureDef<TUserTypes> def;
+        FixtureDef def;
         def.density = density;
         return createFixture(def, shape);
     }
@@ -1801,8 +1809,7 @@ public:
 };
 
 template <typename TUserTypes>
-struct JointDefBase : WithUserData<typename TUserTypes::Joint> {
-    typename TUserTypes::Joint* user_data;
+struct JointDefBase {
     const Body<TUserTypes>* body_a = nullptr;
     const Body<TUserTypes>* body_b = nullptr;
 
@@ -2321,7 +2328,7 @@ public:
     void setDebugDraw(Draw* debug_draw) { this->handle()->SetDebugDraw(debug_draw); }
     void debugDraw() const { this->handle()->DebugDraw(); }
 
-    [[nodiscard]] Body<TUserTypes> createBody(const BodyDef<TUserTypes>& body) const
+    [[nodiscard]] Body<TUserTypes> createBody(const BodyDef& body) const
     {
         Body<TUserTypes> result;
         auto def = body.build(&result);
@@ -2331,7 +2338,7 @@ public:
 
     [[nodiscard]] Body<TUserTypes> createBody(BodyType body_type = BodyType::Static) const
     {
-        BodyDef<TUserTypes> def;
+        BodyDef def;
         def.type = body_type;
         return createBody(def);
     }
@@ -2420,10 +2427,6 @@ template <typename TUserTypes>
 class World {
 public:
     using UserTypes = TUserTypes;
-
-    using FixtureDef = detail::FixtureDef<UserTypes>;
-
-    using BodyDef = detail::BodyDef<UserTypes>;
 
     using RevoluteJointDef = detail::RevoluteJointDef<UserTypes>;
     using PrismaticJointDef = detail::PrismaticJointDef<UserTypes>;

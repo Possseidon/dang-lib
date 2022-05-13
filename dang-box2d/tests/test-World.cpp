@@ -41,14 +41,12 @@ TEST_CASE("Box2D worlds can have a contact filter.")
     circle_shape.radius = 1.0f;
 
     auto body1 = world.createBody(b2::BodyType::Dynamic);
-    auto fixture1_def = World::FixtureDef();
-    fixture1_def.user_data = "1";
-    auto fixture1 = body1.createFixture(fixture1_def, circle_shape);
+    auto fixture1 = body1.createFixture(circle_shape);
+    fixture1.user_data = "1";
 
     auto body2 = world.createBody(b2::BodyType::Dynamic);
-    auto fixture2_def = World::FixtureDef();
-    fixture2_def.user_data = "2";
-    auto fixture2 = body2.createFixture(fixture2_def, circle_shape);
+    auto fixture2 = body2.createFixture(circle_shape);
+    fixture2.user_data = "2";
 
     // Register the contact filter.
     auto filter_stub = dutils::Stub<bool(World::Fixture&, World::Fixture&)>();
@@ -73,7 +71,7 @@ TEST_CASE("Box2D worlds can create and destroy bodies.")
 
     SECTION("Using default values.") { body = world.createBody(); }
     SECTION("Only specifying the body type.") { body = world.createBody(b2::BodyType::Static); }
-    SECTION("Using a full body definition.") { body = world.createBody(World::BodyDef()); }
+    SECTION("Using a full body definition.") { body = world.createBody(b2::BodyDef()); }
 
     CHECKED_IF(body)
     {
@@ -154,13 +152,11 @@ TEST_CASE("Box2D worlds can query fixtures.")
 
     auto body = world.createBody();
 
-    auto fixture1_def = World::FixtureDef();
-    fixture1_def.user_data = "1";
-    auto fixture1 = body.createFixture(fixture1_def, circle_shape);
+    auto fixture1 = body.createFixture(circle_shape);
+    fixture1.user_data = "1";
 
-    auto fixture2_def = World::FixtureDef();
-    fixture2_def.user_data = "2";
-    auto fixture2 = body.createFixture(fixture2_def, circle_shape);
+    auto fixture2 = body.createFixture(circle_shape);
+    fixture2.user_data = "2";
 
     SECTION("Using an AABB.")
     {
