@@ -63,7 +63,7 @@ TEST_CASE("Box2D worlds can have a debug draw callback.")
     SUCCEED();
 }
 
-TEST_CASE("Box2D worlds can create and destroy bodies.")
+TEST_CASE("Box2D worlds can create bodies.")
 {
     auto world = World();
 
@@ -73,17 +73,10 @@ TEST_CASE("Box2D worlds can create and destroy bodies.")
     SECTION("Only specifying the body type.") { body = world.createBody(b2::BodyType::Static); }
     SECTION("Using a full body definition.") { body = world.createBody(b2::BodyDef()); }
 
-    CHECKED_IF(body)
-    {
-        CHECK(body.getType() == b2::BodyType::Static);
-
-        std::move(body).destroy();
-        CHECK_FALSE(body);
-        CHECK(world.getBodyCount() == 0);
-    }
+    CHECKED_IF(body) { CHECK(body.getType() == b2::BodyType::Static); }
 }
 
-TEST_CASE("Box2D worlds can create and destroy joints.")
+TEST_CASE("Box2D worlds can create joints.")
 {
     auto world = World();
 
@@ -101,10 +94,6 @@ TEST_CASE("Box2D worlds can create and destroy joints.")
     {
         CHECK(joint.getBodyA() == body1);
         CHECK(joint.getBodyB() == body2);
-
-        std::move(joint).destroy();
-        CHECK_FALSE(joint);
-        CHECK(world.getJointCount() == 0);
     }
 }
 
