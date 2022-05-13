@@ -437,57 +437,57 @@ TEST_CASE("World, bodies and fixtures can be destroyed in any order.")
 {
     SECTION("World <- Body <- Fixture")
     {
-        World w;
-        World::Body b;
-        World::Fixture f;
+        World world;
+        World::Body body;
+        World::Fixture fixture;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("World <- Fixture <- Body")
     {
-        World w;
-        World::Fixture f;
-        World::Body b;
+        World world;
+        World::Fixture fixture;
+        World::Body body;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Body <- World <- Fixture")
     {
-        World::Body b;
-        World w;
-        World::Fixture f;
+        World::Body body;
+        World world;
+        World::Fixture fixture;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Body <- Fixture <- World")
     {
-        World::Body b;
-        World::Fixture f;
-        World w;
+        World::Body body;
+        World::Fixture fixture;
+        World world;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Fixture <- World <- Body")
     {
-        World::Fixture f;
-        World w;
-        World::Body b;
+        World::Fixture fixture;
+        World world;
+        World::Body body;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Fixture <- Body <- World")
     {
-        World::Fixture f;
-        World::Body b;
-        World w;
+        World::Fixture fixture;
+        World::Body body;
+        World world;
 
-        b = w.createBody();
-        f = b.createFixture(b2::CircleShape());
+        body = world.createBody();
+        fixture = body.createFixture(b2::CircleShape());
     }
 
     SUCCEED();
