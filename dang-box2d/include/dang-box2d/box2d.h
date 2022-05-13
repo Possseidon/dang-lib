@@ -41,7 +41,7 @@ inline b2Vec3 cast(vec3 vec) { return {vec.x(), vec.y(), vec.z()}; }
 
 inline std::vector<b2Vec2> cast(const std::vector<vec2>& vertices)
 {
-    std::vector<b2Vec2> vertices_data;
+    auto vertices_data = std::vector<b2Vec2>();
     vertices_data.reserve(vertices.size());
     std::transform(
         vertices.begin(), vertices.end(), std::back_inserter(vertices_data), [](const vec2& vec) { return cast(vec); });
@@ -1068,7 +1068,7 @@ public:
 
     std::optional<RayCastOutput> rayCast(const RayCastInput& input, const Transform& transform, int32 child_index) const
     {
-        RayCastOutput result;
+        auto result = RayCastOutput();
         if constexpr (can_devirtualize) {
             if (!this->handle()->TShape::RayCast(&result, input, transform, child_index))
                 return std::nullopt;
@@ -1082,7 +1082,7 @@ public:
 
     AABB computeAABB(const Transform& xf, int32 child_index) const
     {
-        AABB result;
+        auto result = AABB();
         if constexpr (can_devirtualize)
             return this->handle()->TShape::ComputeAABB(&result, xf, child_index);
         else
@@ -1092,7 +1092,7 @@ public:
 
     MassData computeMass(float density) const
     {
-        MassData result;
+        auto result = MassData();
         if constexpr (can_devirtualize)
             this->handle()->TShape::ComputeMass(&result, density);
         else
@@ -1176,7 +1176,7 @@ public:
 
     EdgeShape getChildEdge(int32 index) const
     {
-        b2EdgeShape edge_shape_data;
+        auto edge_shape_data = b2EdgeShape();
         this->handle()->GetChildEdge(&edge_shape_data, index);
         return EdgeShapeRef{&edge_shape_data}.toEdgeShape();
     }
@@ -1206,7 +1206,7 @@ private:
     template <typename TUserTypes>
     b2FixtureDef build(detail::Fixture<TUserTypes>* owner, const b2Shape* shape) const
     {
-        b2FixtureDef result;
+        auto result = b2FixtureDef();
         result.shape = shape;
         // TODO: C++20 use std::bit_cast
         std::memcpy(&result.userData.pointer, &owner, sizeof owner);
@@ -1255,7 +1255,7 @@ public:
     bool testPoint(vec2 p) const { return this->handle_->TestPoint(cast(p)); }
     std::optional<RayCastOutput> rayCast(const RayCastInput& input, int32 childIndex) const
     {
-        RayCastOutput output;
+        auto output = RayCastOutput();
         if (!this->handle_->RayCast(&output, input, childIndex))
             return std::nullopt;
         return output;
@@ -1366,7 +1366,7 @@ private:
     template <typename TUserTypes>
     b2BodyDef build(detail::Body<TUserTypes>* owner) const
     {
-        b2BodyDef result;
+        auto result = b2BodyDef();
         result.type = cast(type);
         result.position = cast(position);
         result.angle = angle;
@@ -1396,9 +1396,9 @@ public:
     template <typename TShape>
     [[nodiscard]] auto createFixture(const FixtureDef& fixture, const TShape& shape)
     {
-        typename TShape::Data shape_data;
+        auto shape_data = typename TShape::Data();
         shape.build(shape_data);
-        FixtureWrapper<TUserTypes, typename TShape::Data> result;
+        auto result = FixtureWrapper<TUserTypes, typename TShape::Data>();
         auto def = fixture.build(&result, &shape_data);
         result.forceHandle(this->handle_->CreateFixture(&def));
         return result;
@@ -1408,12 +1408,12 @@ public:
     {
         auto shape_data = std::visit(
             [](auto concrete_shape) {
-                typename decltype(concrete_shape)::Data shape_data;
+                auto shape_data = typename decltype(concrete_shape)::Data();
                 concrete_shape.build(shape_data);
                 return shape_data;
             },
             shape);
-        Fixture<TUserTypes> result;
+        auto result = Fixture<TUserTypes>();
         auto def = fixture.build(&result, &shape_data);
         result.forceHandle(this->handle_->CreateFixture(&def));
         return result;
@@ -1422,14 +1422,14 @@ public:
     template <typename TShape>
     [[nodiscard]] auto createFixture(const TShape& shape, float density = 1.0f)
     {
-        FixtureDef def;
+        auto def = FixtureDef();
         def.density = density;
         return createFixture(def, shape);
     }
 
     [[nodiscard]] Fixture<TUserTypes> createFixture(const Shape& shape, float density = 1.0f)
     {
-        FixtureDef def;
+        auto def = FixtureDef();
         def.density = density;
         return createFixture(def, shape);
     }
@@ -1459,7 +1459,7 @@ public:
 
     MassData getMassData() const
     {
-        MassData result;
+        auto result = MassData();
         this->handle_->GetMassData(&result);
         return result;
     }
@@ -1858,7 +1858,7 @@ private:
 
     b2RevoluteJointDef build(Joint<TUserTypes>* owner) const
     {
-        b2RevoluteJointDef def;
+        auto def = b2RevoluteJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -1897,7 +1897,7 @@ private:
 
     b2PrismaticJointDef build(PrismaticJoint<TUserTypes>* owner) const
     {
-        b2PrismaticJointDef def;
+        auto def = b2PrismaticJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -1934,7 +1934,7 @@ private:
 
     b2DistanceJointDef build(DistanceJoint<TUserTypes>* owner) const
     {
-        b2DistanceJointDef def;
+        auto def = b2DistanceJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -1969,7 +1969,7 @@ private:
 
     b2PulleyJointDef build(PulleyJoint<TUserTypes>* owner) const
     {
-        b2PulleyJointDef def;
+        auto def = b2PulleyJointDef();
         JointDefBase<TUserTypes>::build(def, owner);
         def.collideConnected = collide_connected;
         def.groundAnchorA = cast(ground_anchor_a);
@@ -2001,7 +2001,7 @@ private:
 
     b2MouseJointDef build(MouseJoint<TUserTypes>* owner) const
     {
-        b2MouseJointDef def;
+        auto def = b2MouseJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.target = cast(target);
         def.maxForce = max_force;
@@ -2028,7 +2028,7 @@ private:
 
     b2GearJointDef build(GearJoint<TUserTypes>* owner) const
     {
-        b2GearJointDef def;
+        auto def = b2GearJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.joint1 = joint1;
         def.joint2 = joint2;
@@ -2062,7 +2062,7 @@ private:
 
     b2WheelJointDef build(WheelJoint<TUserTypes>* owner) const
     {
-        b2WheelJointDef def;
+        auto def = b2WheelJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -2098,7 +2098,7 @@ private:
 
     b2WeldJointDef build(WeldJoint<TUserTypes>* owner) const
     {
-        b2WeldJointDef def;
+        auto def = b2WeldJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -2127,7 +2127,7 @@ private:
 
     b2FrictionJointDef build(FrictionJoint<TUserTypes>* owner) const
     {
-        b2FrictionJointDef def;
+        auto def = b2FrictionJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.localAnchorA = cast(local_anchor_a);
         def.localAnchorB = cast(local_anchor_b);
@@ -2156,7 +2156,7 @@ private:
 
     b2MotorJointDef build(MotorJoint<TUserTypes>* owner) const
     {
-        b2MotorJointDef def;
+        auto def = b2MotorJointDef();
         JointDefNoCollideDefault<TUserTypes>::build(def, owner);
         def.linearOffset = cast(linear_offset);
         def.angularOffset = angular_offset;
@@ -2211,7 +2211,7 @@ public:
 
     WorldManifold getWorldManifold() const
     {
-        WorldManifold result;
+        auto result = WorldManifold();
         this->handle()->GetWorldManifold(&result);
         return result;
     }
@@ -2330,7 +2330,7 @@ public:
 
     [[nodiscard]] Body<TUserTypes> createBody(const BodyDef& body) const
     {
-        Body<TUserTypes> result;
+        auto result = Body<TUserTypes>();
         auto def = body.build(&result);
         result.forceHandle(this->handle()->CreateBody(&def));
         return result;
@@ -2338,7 +2338,7 @@ public:
 
     [[nodiscard]] Body<TUserTypes> createBody(BodyType body_type = BodyType::Static) const
     {
-        BodyDef def;
+        auto def = BodyDef();
         def.type = body_type;
         return createBody(def);
     }
@@ -2346,7 +2346,7 @@ public:
     template <typename TJointDef>
     [[nodiscard]] auto createJoint(const TJointDef& joint) const
     {
-        JointWrapper<TUserTypes, TJointDef::type> result;
+        auto result = JointWrapper<TUserTypes, TJointDef::type>();
         auto def = joint.build(&result);
         result.forceHandle(this->handle()->CreateJoint(&def));
         return result;

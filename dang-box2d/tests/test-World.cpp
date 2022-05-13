@@ -67,7 +67,7 @@ TEST_CASE("Box2D worlds can create bodies.")
 {
     auto world = World();
 
-    World::Body body;
+    auto body = World::Body();
 
     SECTION("Using default values.") { body = world.createBody(); }
     SECTION("Only specifying the body type.") { body = world.createBody(b2::BodyType::Static); }
@@ -333,7 +333,7 @@ TEST_CASE("Box2D worlds can check if the simulation is currently being stepped."
     auto body2 = world.createBody(b2::BodyType::Dynamic);
     auto fixture2 = body2.createFixture(circle_shape);
 
-    std::optional<bool> locked_during_contact;
+    auto locked_during_contact = std::optional<bool>();
     world.on_begin_contact.append([&] { locked_during_contact = world.isLocked(); });
 
     CHECK_FALSE(world.isLocked());
@@ -390,16 +390,16 @@ TEST_CASE("Box2D worlds have contact events.")
     auto fixture2 = body2.createFixture(circle_shape);
     fixture2.user_data = "2";
 
-    std::optional<World::Contact> begin_contact;
+    auto begin_contact = std::optional<World::Contact>();
     world.on_begin_contact.append([&](World::Contact contact) { begin_contact = contact; });
 
-    std::optional<World::Contact> end_contact;
+    auto end_contact = std::optional<World::Contact>();
     world.on_end_contact.append([&](World::Contact contact) { end_contact = contact; });
 
-    std::optional<World::Contact> pre_solve;
+    auto pre_solve = std::optional<World::Contact>();
     world.on_pre_solve.append([&](World::Contact contact, const b2::Manifold*) { pre_solve = contact; });
 
-    std::optional<World::Contact> post_solve;
+    auto post_solve = std::optional<World::Contact>();
     world.on_post_solve.append([&](World::Contact contact, const b2::ContactImpulse*) { post_solve = contact; });
 
     stepWorld(world);
@@ -437,54 +437,54 @@ TEST_CASE("World, bodies and fixtures can be destroyed in any order.")
 {
     SECTION("World <- Body <- Fixture")
     {
-        World world;
-        World::Body body;
-        World::Fixture fixture;
+        auto world = World();
+        auto body = World::Body();
+        auto fixture = World::Fixture();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("World <- Fixture <- Body")
     {
-        World world;
-        World::Fixture fixture;
-        World::Body body;
+        auto world = World();
+        auto fixture = World::Fixture();
+        auto body = World::Body();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Body <- World <- Fixture")
     {
-        World::Body body;
-        World world;
-        World::Fixture fixture;
+        auto body = World::Body();
+        auto world = World();
+        auto fixture = World::Fixture();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Body <- Fixture <- World")
     {
-        World::Body body;
-        World::Fixture fixture;
-        World world;
+        auto body = World::Body();
+        auto fixture = World::Fixture();
+        auto world = World();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Fixture <- World <- Body")
     {
-        World::Fixture fixture;
-        World world;
-        World::Body body;
+        auto fixture = World::Fixture();
+        auto world = World();
+        auto body = World::Body();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
     }
     SECTION("Fixture <- Body <- World")
     {
-        World::Fixture fixture;
-        World::Body body;
-        World world;
+        auto fixture = World::Fixture();
+        auto body = World::Body();
+        auto world = World();
 
         body = world.createBody();
         fixture = body.createFixture(b2::CircleShape());
