@@ -1429,7 +1429,7 @@ public:
 
     [[nodiscard]] Fixture<TUserTypes> createFixture(const Shape& shape, float density = 1.0f)
     {
-        FixtureDef<TUserTypes> def;
+        FixtureDef def;
         def.density = density;
         return createFixture(def, shape);
     }
