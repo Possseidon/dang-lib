@@ -32,110 +32,45 @@ auto bind_n(TArgs&&... args)
 
 } // namespace detail
 
+namespace detail {
+
+/// @brief How an event stores its handlers internally.
+template <typename... TArgs>
+using EventHandler = std::function<void(const TArgs&...)>;
+
+template <typename... TArgs>
+struct EventData {
+    using Handler = EventHandler<TArgs...>;
+    using Handlers = std::list<Handler>;
+
+    Handlers handlers;
+};
+
+} // namespace detail
+
+template <typename... TArgs>
+class EventSubscription;
+
 /// @brief Represents an event, for which handlers can be registered.
 /// @remark
 /// Handlers can be added by:
 /// - By simply appending/prepending a handler, which cannot be undone.
 /// - By subscribing, which is automatically undone, when the subscription goes out of scope.
 /// @remark To create an event, simply declare a public member variable, e.g. on_window_resize.
-/// @remark To subscribe to an event, declare a member variable of type Event::Subscription.
+/// @remark To subscribe to an event, declare a member variable of type EventSubscription.
 /// @remark Events are movable without having to worry about subscriptions.
 /// @remark Copying however, will simply do nothing, as this would be hard to "get right" in regards to subscriptions.
 template <typename... TArgs>
 class Event {
+public:
+    friend class EventSubscription<TArgs...>;
+    using Subscription = EventSubscription<TArgs...>;
+
 private:
-    /// @brief How the event stores its handlers internally.
-    using Handler = std::function<void(const TArgs&...)>;
+    using Data = detail::EventData<TArgs...>;
+    using Handler = detail::EventHandler<TArgs...>;
 
 public:
-    /// @brief Allows subscribing to events using either a lambda or a pointer to a member function.
-    /// @remark The subscription is automatically removed from the event, once the subscription object itself is
-    /// destroyed.
-    class Subscription {
-    private:
-        /// @brief Hidden/different to allow for a working parameter deduction of handler.
-        Subscription(Handler&& handler, Event& event)
-            : handlers_(&event.handlers())
-            , handler_(handlers_->insert(handlers_->end(), std::move(handler)))
-        {}
-
-    public:
-        /// @brief Subscriptions can be empty.
-        Subscription() = default;
-
-        /// @brief Subscribes to an event using any invocable.
-        template <typename THandler>
-        Subscription(Event& event, THandler&& handler)
-            : Subscription(makeHandler(std::forward<THandler>(handler)), event)
-        {}
-
-        /// @brief Subscribes to an event using a member function.
-        template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, T& instance, void (T::*method)(TOtherArgs...))
-            : Subscription(makeHandler(instance, method), event)
-        {}
-
-        /// @brief Subscribes to an event using a member function.
-        template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, const T& instance, void (T::*method)(TOtherArgs...) const)
-            : Subscription(makeHandler(instance, method), event)
-        {}
-
-        /// @brief Subscribes to an event using a member function.
-        template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, T* instance, void (T::*method)(TOtherArgs...))
-            : Subscription(makeHandler(*instance, method), event)
-        {}
-
-        /// @brief Subscribes to an event using a member function.
-        template <typename T, typename... TOtherArgs>
-        Subscription(Event& event, const T* instance, void (T::*method)(TOtherArgs...) const)
-            : Subscription(makeHandler(*instance, method), event)
-        {}
-
-        /// @brief Automatically unsubscribes the handler from the event.
-        ~Subscription()
-        {
-            if (handlers_)
-                handlers_->erase(handler_);
-        }
-
-        Subscription(const Subscription&) = delete;
-
-        Subscription(Subscription&& other) noexcept
-            : Subscription()
-        {
-            swap(other);
-        }
-
-        Subscription& operator=(const Subscription&) = delete;
-
-        Subscription& operator=(Subscription&& other) noexcept
-        {
-            swap(other);
-            return *this;
-        }
-
-        void swap(Subscription& other) noexcept
-        {
-            using std::swap;
-            swap(handlers_, other.handlers_);
-            swap(handler_, other.handler_);
-        }
-
-        friend void swap(Subscription& lhs, Subscription& rhs) { lhs.swap(rhs); }
-
-        /// @brief Whether the subscription is currently subscribed to an event.
-        explicit operator bool() const { return handlers_; }
-
-        /// @brief Removes an existing subscription prematurely, if there is one.
-        void remove() { *this = {}; }
-
-    private:
-        std::list<Handler>* handlers_ = nullptr;
-        typename std::list<Handler>::iterator handler_;
-    };
-
     Event() = default;
 
     Event(const Event&)
@@ -193,91 +128,85 @@ public:
     template <typename THandler>
     void append(THandler&& handler)
     {
-        handlers().emplace_back(makeHandler(std::forward<THandler>(handler)));
+        ensureData()->handlers.emplace_back(makeHandler(std::forward<THandler>(handler)));
     }
 
     /// @brief Appends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void append(T& instance, void (T::*method)(TOtherArgs...))
     {
-        handlers().emplace_back(makeHandler(instance, method));
+        ensureData()->handlers.emplace_back(makeHandler(instance, method));
     }
 
     /// @brief Appends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void append(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
-        handlers().emplace_back(makeHandler(instance, method));
+        ensureData()->handlers.emplace_back(makeHandler(instance, method));
     }
 
     /// @brief Appends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void append(T* instance, void (T::*method)(TOtherArgs...))
     {
-        handlers().emplace_back(makeHandler(*instance, method));
+        ensureData()->handlers.emplace_back(makeHandler(*instance, method));
     }
 
     /// @brief Appends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void append(const T* instance, void (T::*method)(TOtherArgs...) const)
     {
-        handlers().emplace_back(makeHandler(*instance, method));
+        ensureData()->handlers.emplace_back(makeHandler(*instance, method));
     }
 
     /// @brief Prepends an event handler which cannot be removed.
     template <typename THandler>
     void prepend(THandler&& handler)
     {
-        handlers().emplace_front(makeHandler(std::forward<THandler>(handler)));
+        ensureData()->handlers.emplace_front(makeHandler(std::forward<THandler>(handler)));
     }
 
     /// @brief Prepends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void prepend(T& instance, void (T::*method)(TOtherArgs...))
     {
-        handlers().emplace_front(makeHandler(instance, method));
+        ensureData()->handlers.emplace_front(makeHandler(instance, method));
     }
 
     /// @brief Prepends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void prepend(const T& instance, void (T::*method)(TOtherArgs...) const)
     {
-        handlers().emplace_front(makeHandler(instance, method));
+        ensureData()->handlers.emplace_front(makeHandler(instance, method));
     }
 
     /// @brief Prepends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void prepend(T* instance, void (T::*method)(TOtherArgs...))
     {
-        handlers().emplace_front(makeHandler(*instance, method));
+        ensureData()->handlers.emplace_front(makeHandler(*instance, method));
     }
 
     /// @brief Prepends an event handler which cannot be removed.
     template <typename T, typename... TOtherArgs>
     void prepend(const T* instance, void (T::*method)(TOtherArgs...) const)
     {
-        handlers().emplace_front(makeHandler(*instance, method));
+        ensureData()->handlers.emplace_front(makeHandler(*instance, method));
     }
 
     /// @brief Returns true, if the event has at least one handler.
-    explicit operator bool() const { return handlers_ && !handlers_->empty(); }
+    explicit operator bool() const { return data_ && !data_->handlers.empty(); }
 
     /// @brief Triggers the event with the given parameters, notifying all subscribers.
     void operator()(const TArgs&... args) const
     {
-        if (!handlers_)
+        if (!data_)
             return;
-        for (auto& handler : *handlers_)
+        for (auto& handler : data_->handlers)
             handler(args...);
     }
 
 private:
-    /// @brief Returns a reference to the handler list, creating it, if it didn't exist yet.
-    std::list<Handler>& handlers()
-    {
-        return handlers_ ? *handlers_ : *(handlers_ = std::make_unique<std::list<Handler>>());
-    }
-
     /// @brief Allows for handlers to have less arguments than the event.
     template <typename... TOtherArgs>
     static Handler makeHandler(std::function<void(TOtherArgs...)>&& handler)
@@ -306,10 +235,97 @@ private:
         return detail::bind_n<sizeof...(TOtherArgs)>(method, &instance);
     }
 
-    // Wrapping the list in a unique_ptr has the advantages of:
-    // - Only taking up 1 pointer when no handlers are required, which can be quite common
-    // - Allows events to be movable without having to worry about subscriptions
-    std::unique_ptr<std::list<Handler>> handlers_;
+    /// @brief Returns a reference to the event data, creating it, if it didn't exist yet.
+    const std::shared_ptr<Data>& ensureData() { return data_ ? data_ : (data_ = std::make_shared<Data>()); }
+
+    std::shared_ptr<Data> data_;
+};
+
+/// @brief Allows subscribing to events using either a lambda or a pointer to a member function.
+/// @remark The subscription is automatically removed from the event, once the subscription object itself is
+/// destroyed. Likewise the subscription is cleared automatically when the event itself is destroyed.
+template <typename... TArgs>
+class EventSubscription {
+public:
+    friend class Event<TArgs...>;
+    using Event = dang::utils::Event<TArgs...>;
+
+private:
+    using Handler = detail::EventHandler<TArgs...>;
+    using EventData = detail::EventData<TArgs...>;
+
+    /// @brief Hidden/different to allow for a working parameter deduction of handler.
+    EventSubscription(Handler&& handler, Event& event)
+        : event_data_(event.ensureData())
+        , handler_(event.data_->handlers.insert(event.data_->handlers.end(), std::move(handler)))
+    {}
+
+public:
+    /// @brief Subscriptions can be empty.
+    EventSubscription() = default;
+
+    /// @brief Subscribes to an event using any invocable.
+    template <typename THandler>
+    EventSubscription(Event& event, THandler&& handler)
+        : EventSubscription(Event::makeHandler(std::forward<THandler>(handler)), event)
+    {}
+
+    /// @brief Subscribes to an event using a member function.
+    template <typename T, typename... TOtherArgs>
+    EventSubscription(Event& event, T& instance, void (T::*method)(TOtherArgs...))
+        : EventSubscription(Event::makeHandler(instance, method), event)
+    {}
+
+    /// @brief Subscribes to an event using a member function.
+    template <typename T, typename... TOtherArgs>
+    EventSubscription(Event& event, const T& instance, void (T::*method)(TOtherArgs...) const)
+        : EventSubscription(Event::makeHandler(instance, method), event)
+    {}
+
+    /// @brief Subscribes to an event using a member function.
+    template <typename T, typename... TOtherArgs>
+    EventSubscription(Event& event, T* instance, void (T::*method)(TOtherArgs...))
+        : EventSubscription(Event::makeHandler(*instance, method), event)
+    {}
+
+    /// @brief Subscribes to an event using a member function.
+    template <typename T, typename... TOtherArgs>
+    EventSubscription(Event& event, const T* instance, void (T::*method)(TOtherArgs...) const)
+        : EventSubscription(Event::makeHandler(*instance, method), event)
+    {}
+
+    /// @brief Automatically unsubscribes the handler from the event.
+    ~EventSubscription() { remove(); }
+
+    EventSubscription(const EventSubscription&) = delete;
+    EventSubscription(EventSubscription&&) = default;
+    EventSubscription& operator=(const EventSubscription&) = delete;
+    EventSubscription& operator=(EventSubscription&&) = default;
+
+    void swap(EventSubscription& other) noexcept
+    {
+        using std::swap;
+        swap(event_data_, other.event_data_);
+        swap(handler_, other.handler_);
+    }
+
+    friend void swap(EventSubscription& lhs, EventSubscription& rhs) { lhs.swap(rhs); }
+
+    /// @brief Whether the subscription is currently subscribed to an event.
+    explicit operator bool() const { return !event_data_.expired(); }
+
+    /// @brief Removes an existing subscription prematurely, if there is one.
+    void remove()
+    {
+        if (auto event_data = event_data_.lock()) {
+            event_data->handlers.erase(handler_);
+            event_data_.reset();
+        }
+    }
+
+private:
+    std::weak_ptr<EventData> event_data_;
+    typename EventData::Handlers::iterator handler_;
 };
 
 } // namespace dang::utils

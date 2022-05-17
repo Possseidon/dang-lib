@@ -161,6 +161,20 @@ TEST_CASE("Events can have handlers that get called once triggered.", "[event]")
     }
 }
 
+TEST_CASE("Events that are destroyed reset any subscriptions to it.")
+{
+    using Event = dutils::Event<>;
+
+    Event::Subscription subscription;
+    {
+        Event event;
+        CHECK(!subscription);
+        subscription = event.subscribe([] {});
+        CHECK(subscription);
+    }
+    CHECK(!subscription);
+}
+
 TEST_CASE("Event handlers can have less parameters than the event itself.", "[event]")
 {
     using Event = dutils::Event<int, int, int>;
