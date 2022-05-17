@@ -54,8 +54,9 @@ jobs:
           path: |
             ${{github.workspace}}/.vcpkg-archives
             ${{env.VCPKG_ROOT}}/downloads
-          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
+          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}-${{github.run_id}}-${{github.run_attempt}}
           restore-keys: |
+            ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}-
             ${{env.vcpkg-cache-base}}-
 
       - name: (Linux) Install required tools for glfw
