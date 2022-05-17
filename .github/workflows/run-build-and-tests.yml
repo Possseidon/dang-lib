@@ -49,14 +49,13 @@ jobs:
       - name: Restore vcpkg and its artifacts
         uses: actions/cache@v2
         env:
-          vcpkg-cache-base: vcpkg-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.runs.preset}}
+          vcpkg-cache-base: vcpkg-${{secrets.VCPKG_CACHE_ID}}-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.runs.preset}}
         with:
           path: |
             ${{github.workspace}}/.vcpkg-archives
             ${{env.VCPKG_ROOT}}/downloads
-          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}-${{github.run_id}}-${{github.run_attempt}}
+          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
           restore-keys: |
-            ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}-
             ${{env.vcpkg-cache-base}}-
 
       - name: (Linux) Install required tools for glfw
