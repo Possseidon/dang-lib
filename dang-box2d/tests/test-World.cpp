@@ -433,6 +433,30 @@ TEST_CASE("Box2D worlds have contact events.")
     }
 }
 
+TEST_CASE("Destroying a world sets all bodies, fixtures and joints to null.")
+{
+    auto maybe_world = std::optional<World>(std::in_place);
+    auto& world = maybe_world.value();
+
+    auto body1 = world.createBody();
+    auto body2 = world.createBody();
+
+    auto fixture = body1.createFixture(b2::CircleShape());
+
+    auto joint_def = World::RevoluteJointDef();
+    joint_def.body_a = &body1;
+    joint_def.body_b = &body2;
+
+    auto joint = world.createJoint(joint_def);
+
+    maybe_world.reset();
+
+    CHECK_FALSE(body1);
+    CHECK_FALSE(body2);
+    CHECK_FALSE(fixture);
+    CHECK_FALSE(joint);
+}
+
 TEST_CASE("World, bodies and fixtures can be destroyed in any order.")
 {
     SECTION("World <- Body <- Fixture")
