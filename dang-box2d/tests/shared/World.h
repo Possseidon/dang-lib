@@ -7,9 +7,9 @@
 #include "catch2/catch.hpp"
 
 struct Data {
-    using Fixture = const char;
-    using Body = const char;
-    using Joint = const char;
+    using Fixture = std::string;
+    using Body = std::string;
+    using Joint = std::string;
 };
 
 using World = dang::box2d::World<Data>;
@@ -18,39 +18,64 @@ namespace Catch {
 
 template <>
 struct StringMaker<World::Fixture> {
-    static std::string convert(World::Fixture fixture)
+    static std::string convert(const World::Fixture& fixture)
     {
-        using namespace std::literals;
-        if (fixture)
-            return "Fixture("s + (fixture.getUserData() ? fixture.getUserData() : ""s) + ")"s;
-        return "Fixture(null)"s;
+        return fixture ? "Fixture(" + fixture.user_data + ")" : "Fixture(null)";
     }
 };
+
+template <>
+struct StringMaker<World::Fixture*> {
+    static std::string convert(const World::Fixture* fixture)
+    {
+        return fixture ? "Fixture*(" + fixture->user_data + ")" : "Fixture*(null)";
+    }
+};
+
+template <>
+struct StringMaker<const World::Fixture*> : StringMaker<World::Fixture*> {};
 
 template <>
 struct StringMaker<World::Body> {
-    static std::string convert(World::Body body)
+    static std::string convert(const World::Body& body) { return body ? "Body(" + body.user_data + ")" : "Body(null)"; }
+};
+
+template <>
+struct StringMaker<World::Body*> {
+    static std::string convert(const World::Body* body)
     {
-        using namespace std::literals;
-        return body ? "Body("s + (body.getUserData() ? body.getUserData() : ""s) + ")"s : "Body(null)";
+        return body ? "Body*(" + body->user_data + ")" : "Body*(null)";
     }
 };
 
 template <>
+struct StringMaker<const World::Body*> : StringMaker<World::Body*> {};
+
+template <>
 struct StringMaker<World::Joint> {
-    static std::string convert(World::Joint joint)
+    static std::string convert(const World::Joint& joint)
     {
-        using namespace std::literals;
-        return joint ? "Joint("s + (joint.getUserData() ? joint.getUserData() : ""s) + ")"s : "Joint(null)";
+        return joint ? "Joint(" + joint.user_data + ")" : "Joint(null)";
     }
 };
+
+template <>
+struct StringMaker<World::Joint*> {
+    static std::string convert(const World::Joint* joint)
+    {
+        return joint ? "Joint*(" + joint->user_data + ")" : "Joint*(null)";
+    }
+};
+
+template <>
+struct StringMaker<const World::Joint*> : StringMaker<World::Joint*> {};
 
 template <>
 struct StringMaker<World::RayCastData> {
     static std::string convert(const World::RayCastData& data)
     {
         using namespace std::literals;
-        return "RayCastData("s + StringMaker<World::Fixture>::convert(data.fixture) + " "s + data.point.format() +
+        return "RayCastData("s + StringMaker<World::Fixture*>::convert(data.fixture) + " "s + data.point.format() +
                " normal: " + data.normal.format() + " fraction: " + std::to_string(data.fraction) + ")"s;
     }
 };
