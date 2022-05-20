@@ -443,7 +443,7 @@ public:
 
     difference_type operator-(VectorIteratorHelper other) const { return current_.vec_ - other.current_.vec_; }
 
-    reference operator[](difference_type diff) const { return current_.vec_ + diff; }
+    reference operator[](difference_type diff) const { return *(*this + diff); }
 
     bool operator==(VectorIteratorHelper other) const { return current_.vec_ == other.current_.vec_; }
     bool operator!=(VectorIteratorHelper other) const { return !(*this == other); }
@@ -840,6 +840,9 @@ public:
 private:
     template <typename>
     friend class BodyWrapper;
+
+    template <typename, typename>
+    friend class FixtureWrapper;
 
     template <typename>
     friend struct JointDefBase;
