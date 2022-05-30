@@ -19,6 +19,7 @@ dang_feature_option(GL "Include OpenGL library." gl)
 dang_feature_option(GLFW "Include GLFW wrapper library." glfw)
 dang_feature_option(LUA "Include Lua wrapper library." lua)
 dang_feature_option(MATH "Include math library." math)
+dang_feature_option(UI "Include UI library." ui)
 dang_feature_option(UTILS "Include utility library." utils)
 
 # Cannot include(CTest) before project, but VCPKG_MANIFEST_FEATURES must be filled before.
@@ -74,6 +75,7 @@ dang_add_feature_subdirectory(GL dang-gl)
 dang_add_feature_subdirectory(GLFW dang-glfw)
 dang_add_feature_subdirectory(LUA dang-lua)
 dang_add_feature_subdirectory(MATH dang-math)
+dang_add_feature_subdirectory(UI dang-ui)
 dang_add_feature_subdirectory(UTILS dang-utils)
 
 include(GNUInstallDirs)

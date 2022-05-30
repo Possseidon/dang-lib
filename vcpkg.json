@@ -42,6 +42,9 @@
         "catch2"
       ]
     },
+    "ui": {
+      "description": "Include UI library."
+    },
     "utils": {
       "description": "Include utility library."
     }
