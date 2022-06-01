@@ -5,25 +5,10 @@ find_package(Catch2 CONFIG REQUIRED)
 
 include(Catch)
 
-add_executable(${PROJECT_NAME}
-  main.cpp
-  test-vector.cpp
-  test-marchingcubes.cpp
-)
+add_executable(${PROJECT_NAME} main.cpp test-marchingcubes.cpp test-vector.cpp)
 
-target_precompile_headers(${PROJECT_NAME}
-  PRIVATE
-    <optional>
-    <cmath>
-)
+target_precompile_headers(${PROJECT_NAME} PRIVATE <optional> <cmath>)
 
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    dang-math
-    Catch2::Catch2
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE dang-math Catch2::Catch2)
 
-catch_discover_tests(${PROJECT_NAME}
-  PROPERTIES
-    LABELS dang-math
-)
+catch_discover_tests(${PROJECT_NAME} PROPERTIES LABELS dang-math)
