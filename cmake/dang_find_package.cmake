@@ -2,7 +2,9 @@
 function(dang_find_package)
   find_package(${ARGN})
   string(REPLACE ";" " " DEPENDENCY_INFO "find_dependency(${ARGN})")
-  if(NOT ${DEPENDENCY_INFO} IN_LIST DANG_DEPENDENCIES)
-    set(DANG_DEPENDENCIES ${DANG_DEPENDENCIES} ${DEPENDENCY_INFO} CACHE INTERNAL "dependencies")
+  if(NOT ${DEPENDENCY_INFO} IN_LIST _DANG_DEPENDENCIES)
+    set(_DANG_DEPENDENCIES
+        ${_DANG_DEPENDENCIES} ${DEPENDENCY_INFO}
+        CACHE INTERNAL "dependencies")
   endif()
 endfunction()

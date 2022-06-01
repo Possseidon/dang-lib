@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(
-  CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-  CACHE STRING "Vcpkg toolchain file"
-)
+set(CMAKE_TOOLCHAIN_FILE
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+    CACHE STRING "Vcpkg toolchain file")
 
-macro(dang_feature_option FEATURE_NAME FEATURE_DESCRIPTION)
-  option(WITH_DANG_${FEATURE_NAME} ${FEATURE_DESCRIPTION} ON)
-  if(WITH_DANG_${FEATURE_NAME})
+# Adds a `WITH_DANG_<FEATURE>` option and, if enabled, adds it to the vcpkg features to get dependencies for.
+macro(DANG_FEATURE_OPTION feature_name feature_description)
+  option(WITH_DANG_${feature_name} ${feature_description} ON)
+  if(WITH_DANG_${feature_name})
     list(APPEND VCPKG_MANIFEST_FEATURES ${ARGN})
   endif()
 endmacro()
@@ -27,7 +27,10 @@ if(BUILD_TESTING)
   list(APPEND VCPKG_MANIFEST_FEATURES tests)
 endif()
 
-project(dang-lib VERSION 0.1.0 LANGUAGES CXX)
+project(
+  dang-lib
+  VERSION 0.1.0
+  LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,18 +43,12 @@ option(DANG_WERROR "Whether to treat warnings as errors.")
 if(MSVC)
   add_compile_options(/W4 /utf-8 /bigobj $<$<BOOL:${DANG_WERROR}>:/WX>)
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    add_compile_options(
-      "SHELL:-Xclang -Wno-missing-braces"
-      "SHELL:-Xclang -Wno-logical-op-parentheses"
-    )
+    add_compile_options("SHELL:-Xclang -Wno-missing-braces" "SHELL:-Xclang -Wno-logical-op-parentheses")
   endif()
   add_compile_definitions("DANG_DLLEXPORT=__declspec(dllexport)")
 else()
   add_compile_options(-Wall -Wextra -pedantic $<$<BOOL:${DANG_WERROR}>:-Werror>)
-  add_compile_options(
-    -Wno-missing-braces
-    -Wno-logical-op-parentheses
-  )
+  add_compile_options(-Wno-missing-braces -Wno-logical-op-parentheses)
   add_compile_definitions("DANG_DLLEXPORT=__attribute__((visibility(\"default\")))")
 endif()
 
@@ -59,7 +56,7 @@ include(CTest)
 include(FindVLD)
 
 include(dang_add_feature_subdirectory)
-include(dang_check_dependency)
+include(dang_check_dependencies)
 include(dang_find_package)
 include(dang_include_finder)
 
@@ -79,26 +76,15 @@ install(
   EXPORT ${PROJECT_NAME}-targets
   FILE ${PROJECT_NAME}-targets.cmake
   NAMESPACE ${PROJECT_NAME}::
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
-)
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")
 
-string(REPLACE ";" "\n" PACKAGE_FINDERS "${DANG_FINDERS}")
-string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${DANG_DEPENDENCIES}")
+string(REPLACE ";" "\n" PACKAGE_FINDERS "${_DANG_FINDERS}")
+string(REPLACE ";" "\n" PACKAGE_DEPENDENCIES "${_DANG_DEPENDENCIES}")
 configure_package_config_file(
-  cmake/${PROJECT_NAME}-config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-  INSTALL_DESTINATION "share/${PROJECT_NAME}"
-)
+  cmake/${PROJECT_NAME}-config.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION "share/${PROJECT_NAME}")
 
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/dang-lib-config-version.cmake"
-  COMPATIBILITY ExactVersion
-)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/dang-lib-config-version.cmake" COMPATIBILITY ExactVersion)
 
-install(
-  FILES
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-  DESTINATION
-    ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}
-)
+install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+              "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake" DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})

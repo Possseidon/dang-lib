@@ -3,6 +3,7 @@
 !/.github/
 
 !.clang-format
+!.cmake-format.py
 !.editorconfig
 !.gitattributes
 !.gitignore
