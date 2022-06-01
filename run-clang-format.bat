@@ -6,6 +6,6 @@ exit
 
 :format_directory
 <NUL set /p =Formatting %1...
-for /R "%1" %%f in (*.cpp, *.h) do clang-format -i "%%f"
+for /R "%1" %%f in (*.cpp *.h) do clang-format -i "%%f"
 echo  Done
 goto :eof
