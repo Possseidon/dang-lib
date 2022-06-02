@@ -88,10 +88,8 @@ target_precompile_headers(
 
 target_link_libraries(${PROJECT_NAME} PUBLIC dang-math dang-utils glad::glad png)
 
-target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE include/dang-gl
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                                                  $<INSTALL_INTERFACE:include>)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

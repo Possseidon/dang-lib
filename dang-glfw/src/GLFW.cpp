@@ -1,8 +1,7 @@
-#include "GLFW.h"
+#include "dang-glfw/GLFW.h"
 
 #include "dang-gl/Context/Context.h"
-
-#include "Window.h"
+#include "dang-glfw/Window.h"
 
 namespace dang::glfw {
 

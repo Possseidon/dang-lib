@@ -1,7 +1,6 @@
+#include "dang-example/global.h"
 #include "dang-glfw/GLFW.h"
 #include "dang-glfw/Window.h"
-
-#include "global.h"
 
 int main()
 {

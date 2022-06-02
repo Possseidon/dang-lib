@@ -1,8 +1,7 @@
-#include "Window.h"
+#include "dang-glfw/Window.h"
 
 #include "dang-gl/Objects/FBO.h"
-
-#include "GLFW.h"
+#include "dang-glfw/GLFW.h"
 
 namespace dang::glfw {
 
