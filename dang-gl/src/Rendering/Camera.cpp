@@ -1,4 +1,4 @@
-#include "Rendering/Camera.h"
+#include "dang-gl/Rendering/Camera.h"
 
 namespace dang::gl {
 

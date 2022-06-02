@@ -1,12 +1,12 @@
-#include "Context/Context.h"
+#include "dang-gl/Context/Context.h"
 
 // Context specializations:
-#include "Objects/BufferContext.h"
-#include "Objects/FramebufferContext.h"
-#include "Objects/ProgramContext.h"
-#include "Objects/RenderbufferContext.h"
-#include "Objects/TextureContext.h"
-#include "Objects/VertexArrayContext.h"
+#include "dang-gl/Objects/BufferContext.h"
+#include "dang-gl/Objects/FramebufferContext.h"
+#include "dang-gl/Objects/ProgramContext.h"
+#include "dang-gl/Objects/RenderbufferContext.h"
+#include "dang-gl/Objects/TextureContext.h"
+#include "dang-gl/Objects/VertexArrayContext.h"
 
 namespace dang::gl {
 

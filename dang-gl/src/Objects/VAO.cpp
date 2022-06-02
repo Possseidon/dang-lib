@@ -1,4 +1,4 @@
-#include "Objects/VAO.h"
+#include "dang-gl/Objects/VAO.h"
 
 namespace dang::gl {
 
