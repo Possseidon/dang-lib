@@ -67,7 +67,7 @@ public:
     {}
 
     template <typename TRet, typename... TArgs>
-    bool match(const dang::utils::Stub<TRet(TArgs...)>& stub) const
+    bool match(const Stub<TRet(TArgs...)>& stub) const
     {
         return count_ ? stub.invocations().size() == *count_ : !stub.invocations().empty();
     }
@@ -107,7 +107,7 @@ public:
     {}
 
     template <typename TRet, typename... TStubArgs>
-    bool match(const dang::utils::Stub<TRet(TStubArgs...)>& stub) const
+    bool match(const Stub<TRet(TStubArgs...)>& stub) const
     {
         static_assert(sizeof...(TStubArgs) == sizeof...(TArgs), "Number of parameters must match the stub.");
 
@@ -178,11 +178,11 @@ private:
                         return result;
                     }
                     else {
-                        static_assert(dutils::invalid_type<ArgType, TStubArg>,
+                        static_assert(invalid_type<ArgType, TStubArg>,
                                       "Parameter passed by value, do not use pointer equality.");
                     }
                 }
-                else if constexpr (dang::utils::is_equal_to_comparable_v<ArgType, TStubArg>) {
+                else if constexpr (is_equal_to_comparable_v<ArgType, TStubArg>) {
                     bool result = invocation_arg == arg;
                     if (!result)
                         info(Catch::StringMaker<TStubArg>().convert(invocation_arg) + " != "s +
@@ -190,11 +190,11 @@ private:
                     return result;
                 }
                 else if constexpr (std::is_reference_v<TStubArg>) {
-                    static_assert(dutils::invalid_type<ArgType, TStubArg>,
+                    static_assert(invalid_type<ArgType, TStubArg>,
                                   "Type not comparable, ignore it or use pointer equality.");
                 }
                 else {
-                    static_assert(dutils::invalid_type<ArgType, TStubArg>, "Type not comparable, ignore it.");
+                    static_assert(invalid_type<ArgType, TStubArg>, "Type not comparable, ignore it.");
                 }
             }
         }
@@ -202,7 +202,7 @@ private:
 
     template <typename TRet, typename... TStubArgs, std::size_t... v_indices>
     bool calledWith(std::size_t invocation_index,
-                    const dang::utils::Stub<TRet(TStubArgs...)>& stub,
+                    const Stub<TRet(TStubArgs...)>& stub,
                     std::index_sequence<v_indices...>) const
     {
         // Checker keeps track if invocation has already been printed by clearing this.
@@ -218,7 +218,7 @@ private:
     }
 
     template <typename TRet, typename... TStubArgs>
-    bool calledWith(const dang::utils::Stub<TRet(TStubArgs...)>& stub) const
+    bool calledWith(const Stub<TRet(TStubArgs...)>& stub) const
     {
         for (std::size_t i = 0; i < stub.invocations().size(); i++) {
             if (calledWith(i, stub, std::index_sequence_for<TArgs...>()))
