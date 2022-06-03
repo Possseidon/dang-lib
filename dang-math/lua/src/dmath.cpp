@@ -1,3 +1,5 @@
+#include "dang-math/dmath.h"
+
 #include "dang-math/lua-geometry.h"
 #include "dang-math/lua-vector-matrix.h"
 
@@ -9,7 +11,7 @@ static void add(dang::lua::State& lua, dang::lua::Arg table)
     table.rawSetTable(std::move(name), std::move(lib));
 }
 
-extern "C" DANG_DLLEXPORT int luaopen_dmath(lua_State* L)
+extern "C" int luaopen_dmath(lua_State* L)
 {
     dang::lua::State lua(L);
     lua.checkVersion();

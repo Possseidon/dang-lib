@@ -32,11 +32,23 @@ project(
   VERSION 0.1.0
   LANGUAGES CXX)
 
+include(CTest)
+include(GenerateExportHeader)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+include(FindVLD)
+
+include(dang_add_feature_subdirectory)
+include(dang_check_dependencies)
+include(dang_find_package)
+include(dang_include_finder)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 option(DANG_WERROR "Whether to treat warnings as errors.")
 
@@ -45,20 +57,15 @@ if(MSVC)
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     add_compile_options("SHELL:-Xclang -Wno-missing-braces" "SHELL:-Xclang -Wno-logical-op-parentheses")
   endif()
-  add_compile_definitions("DANG_DLLEXPORT=__declspec(dllexport)")
+
+  # On Windows, .exe and .dll need to be in the same directory.
+  if(BUILD_SHARED_LIBS)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/runtime)
+  endif()
 else()
   add_compile_options(-Wall -Wextra -pedantic $<$<BOOL:${DANG_WERROR}>:-Werror>)
   add_compile_options(-Wno-missing-braces -Wno-logical-op-parentheses)
-  add_compile_definitions("DANG_DLLEXPORT=__attribute__((visibility(\"default\")))")
 endif()
-
-include(CTest)
-include(FindVLD)
-
-include(dang_add_feature_subdirectory)
-include(dang_check_dependencies)
-include(dang_find_package)
-include(dang_include_finder)
 
 dang_add_feature_subdirectory(BOX2D dang-box2d)
 dang_add_feature_subdirectory(DOC doc)
