@@ -5,7 +5,7 @@ dang_check_dependencies(GL MATH UTILS)
 
 dang_find_package(glfw3 CONFIG REQUIRED)
 
-add_library(${PROJECT_NAME} src/GLFW.cpp src/Input.cpp src/Monitor.cpp src/Window.cpp)
+add_library(${PROJECT_NAME} STATIC src/GLFW.cpp src/Input.cpp src/Monitor.cpp src/Window.cpp)
 
 target_precompile_headers(
   ${PROJECT_NAME}

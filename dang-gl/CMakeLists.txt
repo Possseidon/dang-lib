@@ -7,7 +7,7 @@ dang_find_package(glad CONFIG REQUIRED)
 dang_find_package(libpng CONFIG REQUIRED)
 
 add_library(
-  ${PROJECT_NAME}
+  ${PROJECT_NAME} STATIC
   src/Context/Context.cpp
   src/Context/State.cpp
   src/Context/StateTypes.cpp
