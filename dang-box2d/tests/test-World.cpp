@@ -57,7 +57,7 @@ TEST_CASE("Box2D worlds can have a contact filter.")
 
     stepWorld(world);
 
-    CHECK_THAT(filter_stub, CalledWith(filter_stub, &fixture1, &fixture2));
+    CHECK_THAT(filter_stub, CalledWith(&fixture1, &fixture2));
 }
 
 TEST_CASE("Box2D worlds can have a debug draw callback.")
@@ -160,8 +160,8 @@ TEST_CASE("Box2D worlds can query fixtures.")
         query_callback.setInfo({"query_callback", {"fixture"}});
         world.queryAABB(query_callback, aabb);
 
-        CHECK_THAT(query_callback, CalledWith(query_callback, &fixture1));
-        CHECK_THAT(query_callback, CalledWith(query_callback, &fixture2));
+        CHECK_THAT(query_callback, CalledWith(&fixture1));
+        CHECK_THAT(query_callback, CalledWith(&fixture2));
     }
     SECTION("Using a ray cast.")
     {
@@ -169,10 +169,8 @@ TEST_CASE("Box2D worlds can query fixtures.")
         ray_cast_callback.setInfo({"ray_cast_callback", {"ray_cast_data"}});
         world.rayCast(ray_cast_callback, b2::vec2{-2.0f, 0.0f}, b2::vec2{0.0f, 0.0f});
 
-        CHECK_THAT(ray_cast_callback,
-                   CalledWith(ray_cast_callback, World::RayCastData{&fixture1, {-1.0f, 0.0f}, {-1.0f, 0.0f}, 0.5f}));
-        CHECK_THAT(ray_cast_callback,
-                   CalledWith(ray_cast_callback, World::RayCastData{&fixture2, {-1.0f, 0.0f}, {-1.0f, 0.0f}, 0.5f}));
+        CHECK_THAT(ray_cast_callback, CalledWith(World::RayCastData{&fixture1, {-1.0f, 0.0f}, {-1.0f, 0.0f}, 0.5f}));
+        CHECK_THAT(ray_cast_callback, CalledWith(World::RayCastData{&fixture2, {-1.0f, 0.0f}, {-1.0f, 0.0f}, 0.5f}));
     }
 }
 

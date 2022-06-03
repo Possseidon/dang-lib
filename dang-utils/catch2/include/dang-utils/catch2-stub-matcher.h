@@ -7,7 +7,6 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <variant>
 
 #include "dang-utils/global.h"
 #include "dang-utils/stub.h"
@@ -17,6 +16,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/catch_tostring.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
+#include "catch2/matchers/catch_matchers_templated.hpp"
 
 namespace dang::utils::Matchers {
 
@@ -52,42 +52,22 @@ std::string formatTuple(std::tuple<TArgs...> args)
     return std::apply(formatArgs<TArgs...>, args);
 }
 
-template <typename T, typename = void>
-struct CalledWithArg {
-    std::variant<std::monostate, T*> value;
-
-    template <typename TValue>
-    CalledWithArg(TValue&& value)
-        : value(std::forward<TValue>(value))
-    {}
-};
-
-template <typename T>
-struct CalledWithArg<T, std::enable_if_t<std::is_copy_constructible_v<T>>> {
-    std::variant<std::monostate, T, T*> value;
-
-    template <typename TValue>
-    CalledWithArg(TValue&& value)
-        : value(std::forward<TValue>(value))
-    {}
-};
-
 struct Invocation {
     std::optional<std::size_t> index;
 };
 
 } // namespace detail
 
-template <typename TRet, typename... TArgs>
-class Called : public Catch::Matchers::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
+class Called : public Catch::Matchers::MatcherGenericBase {
 public:
-    Called(const dang::utils::Stub<TRet(TArgs...)>&) {}
+    Called() = default;
 
-    Called(const dang::utils::Stub<TRet(TArgs...)>&, std::size_t count)
+    Called(std::size_t count)
         : count_(count)
     {}
 
-    bool match(const dang::utils::Stub<TRet(TArgs...)>& stub) const override
+    template <typename TRet, typename... TArgs>
+    bool match(const dang::utils::Stub<TRet(TArgs...)>& stub) const
     {
         return count_ ? stub.invocations().size() == *count_ : !stub.invocations().empty();
     }
@@ -107,30 +87,32 @@ private:
     std::optional<std::size_t> count_;
 };
 
-constexpr std::monostate ignored;
+struct Ignored {};
+constexpr Ignored ignored;
 detail::Invocation invocation(std::size_t index) { return {index}; }
 
-template <typename TRet, typename... TArgs>
-class CalledWith : public Catch::Matchers::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
+template <typename... TArgs>
+class CalledWith : public Catch::Matchers::MatcherGenericBase {
 public:
     template <typename T>
     using RemoveCVRef = std::remove_cv_t<std::remove_reference_t<T>>;
 
-    CalledWith(const dang::utils::Stub<TRet(TArgs...)>&, const detail::CalledWithArg<RemoveCVRef<TArgs>>&... args)
+    CalledWith(const TArgs&... args)
         : args_(args...)
     {}
 
-    CalledWith(const dang::utils::Stub<TRet(TArgs...)>&,
-               detail::Invocation invocation,
-               const detail::CalledWithArg<RemoveCVRef<TArgs>>&... args)
+    CalledWith(detail::Invocation invocation, const TArgs&... args)
         : invocation_(invocation)
         , args_(args...)
     {}
 
-    bool match(const dang::utils::Stub<TRet(TArgs...)>& stub) const override
+    template <typename TRet, typename... TStubArgs>
+    bool match(const dang::utils::Stub<TRet(TStubArgs...)>& stub) const
     {
+        static_assert(sizeof...(TStubArgs) == sizeof...(TArgs), "Number of parameters must match the stub.");
+
         if (invocation_.index)
-            return calledWith(*invocation_.index, stub, std::index_sequence_for<TArgs...>());
+            return calledWith(*invocation_.index, stub, std::index_sequence_for<TStubArgs...>());
         return calledWith(stub);
     }
 
@@ -146,14 +128,13 @@ public:
     }
 
 private:
-    template <std::size_t v_index>
+    template <std::size_t v_index, typename TStubArg>
     struct Checker {
         using ArgType = std::tuple_element_t<v_index, std::tuple<TArgs...>>;
-        using CleanArgType = RemoveCVRef<ArgType>;
 
         detail::Invocation& maybe_invocation;
         const std::string& name;
-        const CleanArgType& invocation_arg;
+        const TStubArg& invocation_arg;
 
         void info(const std::string& msg) const
         {
@@ -167,74 +148,77 @@ private:
                 UNSCOPED_INFO("  " << name << ":\t" << msg);
         }
 
-        template <typename T>
-        bool compare(const T& lhs, const T& rhs) const
+        bool operator()([[maybe_unused]] const ArgType& arg) const
         {
             using namespace std::literals;
 
-            bool result = lhs == rhs;
-            if (!result) {
-                Catch::StringMaker<T> string_maker;
-                info(string_maker.convert(lhs) + " != "s + string_maker.convert(rhs));
-            }
-            return result;
-        }
-
-        bool operator()(std::monostate) const { return true; }
-
-        bool operator()([[maybe_unused]] const CleanArgType& arg) const
-        {
-            using namespace std::literals;
-
-            if constexpr (dang::utils::is_equal_to_comparable_v<CleanArgType>) {
-                return compare(invocation_arg, arg);
+            if constexpr (std::is_same_v<ArgType, Ignored>) {
+                return true;
             }
             else {
-                // Fail the check by returning false here, but add a warning.
-                if constexpr (std::is_reference_v<ArgType>)
-                    info("/!\\ Type not comparable, ignore it or use pointer equality!"s);
-                else
-                    info("/!\\ Type not comparable, ignore it!"s);
-                FAIL_CHECK();
-                return false;
-            }
-        }
-
-        bool operator()([[maybe_unused]] const CleanArgType* ptr) const
-        {
-            using namespace std::literals;
-
-            if constexpr (std::is_reference_v<ArgType>)
-                return compare(&invocation_arg, ptr);
-            else {
-                // Fail the check by returning false here, but add a warning.
-                info("/!\\ Parameter passed by value, do not use pointer equality!"s);
-                FAIL_CHECK();
-                return false;
+                if constexpr (std::is_pointer_v<std::remove_reference_t<ArgType>> ||
+                              std::is_null_pointer_v<std::remove_reference_t<ArgType>>) {
+                    if constexpr (std::is_reference_v<TStubArg>) {
+                        bool result = &invocation_arg == arg;
+                        if (!result) {
+                            auto format_arg = [&] {
+                                if constexpr (!std::is_null_pointer_v<std::remove_reference_t<ArgType>>) {
+                                    return Catch::StringMaker<std::remove_pointer_t<std::remove_reference_t<ArgType>>>()
+                                        .convert(*arg);
+                                }
+                                else {
+                                    return ""s; // technically unreachable as nullptr is false
+                                }
+                            };
+                            info(Catch::StringMaker<TStubArg>().convert(invocation_arg) + "["s +
+                                 Catch::StringMaker<decltype(&invocation_arg)>().convert(&invocation_arg) + "] != "s +
+                                 (arg ? format_arg() + "["s + Catch::StringMaker<ArgType>().convert(arg) + "]"s
+                                      : "null"));
+                        }
+                        return result;
+                    }
+                    else {
+                        static_assert(dutils::invalid_type<ArgType, TStubArg>,
+                                      "Parameter passed by value, do not use pointer equality.");
+                    }
+                }
+                else if constexpr (dang::utils::is_equal_to_comparable_v<ArgType, TStubArg>) {
+                    bool result = invocation_arg == arg;
+                    if (!result)
+                        info(Catch::StringMaker<TStubArg>().convert(invocation_arg) + " != "s +
+                             Catch::StringMaker<ArgType>().convert(arg));
+                    return result;
+                }
+                else if constexpr (std::is_reference_v<TStubArg>) {
+                    static_assert(dutils::invalid_type<ArgType, TStubArg>,
+                                  "Type not comparable, ignore it or use pointer equality.");
+                }
+                else {
+                    static_assert(dutils::invalid_type<ArgType, TStubArg>, "Type not comparable, ignore it.");
+                }
             }
         }
     };
 
-    template <std::size_t... v_indices>
+    template <typename TRet, typename... TStubArgs, std::size_t... v_indices>
     bool calledWith(std::size_t invocation_index,
-                    const dang::utils::Stub<TRet(TArgs...)>& stub,
+                    const dang::utils::Stub<TRet(TStubArgs...)>& stub,
                     std::index_sequence<v_indices...>) const
     {
         // Checker keeps track if invocation has already been printed by clearing this.
         auto checker_invocation = detail::Invocation{invocation_index};
         // Use & to avoid short circuiting and show all mismatches.
         return invocation_index < stub.invocations().size() &&
-               (std::visit(
-                    Checker<v_indices>{
-                        checker_invocation,
-                        stub.info().parameters[v_indices],
-                        std::get<v_indices>(stub.invocations()[invocation_index]),
-                    },
-                    std::get<v_indices>(args_).value) &
+               (Checker<v_indices, std::tuple_element_t<v_indices, std::tuple<TStubArgs...>>>{
+                    checker_invocation,
+                    stub.info().parameters[v_indices],
+                    std::get<v_indices>(stub.invocations()[invocation_index]),
+                }(std::get<v_indices>(args_)) &
                 ...);
     }
 
-    bool calledWith(const dang::utils::Stub<TRet(TArgs...)>& stub) const
+    template <typename TRet, typename... TStubArgs>
+    bool calledWith(const dang::utils::Stub<TRet(TStubArgs...)>& stub) const
     {
         for (std::size_t i = 0; i < stub.invocations().size(); i++) {
             if (calledWith(i, stub, std::index_sequence_for<TArgs...>()))
@@ -244,16 +228,8 @@ private:
     }
 
     detail::Invocation invocation_;
-    std::tuple<detail::CalledWithArg<RemoveCVRef<TArgs>>...> args_;
+    std::tuple<TArgs...> args_;
 };
-
-// TODO: Catch3 new matchers aren't virtual anymore and don't need these deduction guides. (I think)
-
-template <typename TRet, typename... TArgs>
-Called(const dang::utils::Stub<TRet(TArgs...)>&, ...) -> Called<TRet, TArgs...>;
-
-template <typename TRet, typename... TArgs>
-CalledWith(const dang::utils::Stub<TRet(TArgs...)>&, ...) -> CalledWith<TRet, TArgs...>;
 
 } // namespace dang::utils::Matchers
 
@@ -301,18 +277,12 @@ struct StringMaker<dang::utils::Stub<TRet(TArgs...)>> {
     }
 };
 
-template <typename T>
-struct StringMaker<dang::utils::Matchers::detail::CalledWithArg<T>> {
-    static std::string convert(const dang::utils::Matchers::detail::CalledWithArg<T>& arg)
+template <>
+struct StringMaker<dang::utils::Matchers::Ignored> {
+    static std::string convert(dang::utils::Matchers::Ignored)
     {
         using namespace std::literals;
-
-        return std::visit(dang::utils::Overloaded{
-                              [](std::monostate) { return "_"s; },
-                              [](const T& value) { return StringMaker<T>::convert(value); },
-                              [](const T* ptr) { return "&"s + StringMaker<T>::convert(*ptr); },
-                          },
-                          arg.value);
+        return "_"s;
     }
 };
 

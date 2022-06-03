@@ -361,8 +361,8 @@ TEST_CASE("TextureAtlasTiles can be used to update a texture.", "[texturing]")
         auto frozen_atlas = std::move(atlas_tiles).freeze(resize, modify);
     }
 
-    CHECK_THAT(resize, CalledWith(resize, size, layers, 1));
-    CHECK_THAT(modify, Called(modify, tile_count));
+    CHECK_THAT(resize, CalledWith(size, layers, 1));
+    CHECK_THAT(modify, Called(tile_count));
 
     std::set<std::pair<dgl::ivec3, GLint>> positions_and_mipmap_levels;
     for (const auto& [tile_data, offset, mipmap_level] : modify.invocations()) {

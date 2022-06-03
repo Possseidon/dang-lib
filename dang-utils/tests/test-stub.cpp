@@ -90,16 +90,16 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
     {
         auto stub = dutils::Stub<void()>();
 
-        CHECK_THAT(stub, !Called(stub));
-        CHECK_THAT(stub, Called(stub, 0));
-        CHECK_THAT(stub, !Called(stub, 1));
+        CHECK_THAT(stub, !Called());
+        CHECK_THAT(stub, Called(0));
+        CHECK_THAT(stub, !Called(1));
 
         stub();
 
-        CHECK_THAT(stub, Called(stub));
-        CHECK_THAT(stub, !Called(stub, 0));
-        CHECK_THAT(stub, Called(stub, 1));
-        CHECK_THAT(stub, !Called(stub, 2));
+        CHECK_THAT(stub, Called());
+        CHECK_THAT(stub, !Called(0));
+        CHECK_THAT(stub, Called(1));
+        CHECK_THAT(stub, !Called(2));
     }
     SECTION("The \"CalledWith\" matcher can be used to check the arguments.")
     {
@@ -107,36 +107,36 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
         {
             auto stub = dutils::Stub<void(int)>();
 
-            CHECK_THAT(stub, !CalledWith(stub, 42));
+            CHECK_THAT(stub, !CalledWith(42));
 
             stub(42);
 
-            CHECK_THAT(stub, CalledWith(stub, 42));
+            CHECK_THAT(stub, CalledWith(42));
 
             stub(256);
 
-            CHECK_THAT(stub, CalledWith(stub, 42));
-            CHECK_THAT(stub, CalledWith(stub, 256));
+            CHECK_THAT(stub, CalledWith(42));
+            CHECK_THAT(stub, CalledWith(256));
         }
         SECTION("Specific invocations can be checked by index.")
         {
             auto stub = dutils::Stub<void(int)>();
 
-            CHECK_THAT(stub, !CalledWith(stub, invocation(0), 1));
-            CHECK_THAT(stub, !CalledWith(stub, invocation(1), 2));
+            CHECK_THAT(stub, !CalledWith(invocation(0), 1));
+            CHECK_THAT(stub, !CalledWith(invocation(1), 2));
 
             stub(1);
 
-            CHECK_THAT(stub, CalledWith(stub, invocation(0), 1));
-            CHECK_THAT(stub, !CalledWith(stub, invocation(0), 2));
-            CHECK_THAT(stub, !CalledWith(stub, invocation(1), 2));
+            CHECK_THAT(stub, CalledWith(invocation(0), 1));
+            CHECK_THAT(stub, !CalledWith(invocation(0), 2));
+            CHECK_THAT(stub, !CalledWith(invocation(1), 2));
 
             stub(2);
 
-            CHECK_THAT(stub, CalledWith(stub, invocation(0), 1));
-            CHECK_THAT(stub, !CalledWith(stub, invocation(0), 3));
-            CHECK_THAT(stub, CalledWith(stub, invocation(1), 2));
-            CHECK_THAT(stub, !CalledWith(stub, invocation(1), 4));
+            CHECK_THAT(stub, CalledWith(invocation(0), 1));
+            CHECK_THAT(stub, !CalledWith(invocation(0), 3));
+            CHECK_THAT(stub, CalledWith(invocation(1), 2));
+            CHECK_THAT(stub, !CalledWith(invocation(1), 4));
         }
         SECTION("Single parameters can be ignored.")
         {
@@ -144,12 +144,12 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 
             stub(1, 2);
 
-            CHECK_THAT(stub, CalledWith(stub, ignored, ignored));
-            CHECK_THAT(stub, CalledWith(stub, 1, ignored));
-            CHECK_THAT(stub, CalledWith(stub, ignored, 2));
-            CHECK_THAT(stub, CalledWith(stub, ignored, ignored));
-            CHECK_THAT(stub, !CalledWith(stub, 3, ignored));
-            CHECK_THAT(stub, !CalledWith(stub, ignored, 4));
+            CHECK_THAT(stub, CalledWith(ignored, ignored));
+            CHECK_THAT(stub, CalledWith(1, ignored));
+            CHECK_THAT(stub, CalledWith(ignored, 2));
+            CHECK_THAT(stub, CalledWith(ignored, ignored));
+            CHECK_THAT(stub, !CalledWith(3, ignored));
+            CHECK_THAT(stub, !CalledWith(ignored, 4));
         }
         SECTION("Parameters can be checked for reference identity by passing it as a pointer.")
         {
@@ -160,13 +160,13 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 
             stub(param);
 
-            CHECK_THAT(stub, CalledWith(stub, &param));
-            CHECK_THAT(stub, !CalledWith(stub, &other_param));
+            CHECK_THAT(stub, CalledWith(&param));
+            CHECK_THAT(stub, !CalledWith(&other_param));
 
             SECTION("Even though the parameter is a reference, it can still be compared by value.")
             {
-                CHECK_THAT(stub, CalledWith(stub, param));
-                CHECK_THAT(stub, CalledWith(stub, other_param));
+                CHECK_THAT(stub, CalledWith(param));
+                CHECK_THAT(stub, CalledWith(other_param));
             }
         }
         SECTION("When checking for reference identity, a subclass can be provided.")
@@ -181,8 +181,8 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 
             stub(derived);
 
-            CHECK_THAT(stub, CalledWith(stub, &base));
-            CHECK_THAT(stub, CalledWith(stub, &derived));
+            CHECK_THAT(stub, CalledWith(&base));
+            CHECK_THAT(stub, CalledWith(&derived));
         }
         SECTION("A type does not have to be copyable (or movable) when checking for reference identity.")
         {
@@ -200,7 +200,7 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
 
             stub(no_copy);
 
-            CHECK_THAT(stub, CalledWith(stub, &no_copy));
+            CHECK_THAT(stub, CalledWith(&no_copy));
         }
     }
 }
