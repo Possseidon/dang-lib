@@ -12,6 +12,6 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-install(DIRECTORY "include/" TYPE INCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ TYPE INCLUDE)
 
 install(TARGETS ${PROJECT_NAME} EXPORT dang-lib-targets)
