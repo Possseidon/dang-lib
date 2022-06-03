@@ -1,6 +1,9 @@
 #include "dang-gl/Image/PNGLoader.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_message.hpp"
+#include "catch2/catch_template_test_macros.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/generators/catch_generators.hpp"
 
 namespace dgl = dang::gl;
 namespace fs = std::filesystem;
@@ -21,7 +24,7 @@ void loadImages()
         const auto& filename = path.filename().string();
         auto should_fail = filename.find("x") == 0;
 
-        INFO("Loading " << filename << (should_fail ? " (should fail)" : ""))
+        INFO("Loading " << filename << (should_fail ? " (should fail)" : ""));
         CAPTURE(flip, format, row_alignment);
 
         dgl::PNGLoader png_loader;

@@ -4,7 +4,11 @@
 #include "dang-utils/stub.h"
 #include "dang-utils/utils.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/generators/catch_generators.hpp"
+#include "catch2/generators/catch_generators_range.hpp"
+#include "catch2/matchers/catch_matchers.hpp"
+#include "catch2/matchers/catch_matchers_exception.hpp"
 
 namespace dgl = dang::gl;
 namespace dmath = dang::math;
