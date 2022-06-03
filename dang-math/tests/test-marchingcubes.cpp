@@ -7,7 +7,10 @@
 #include "dang-math/vector.h"
 #include "dang-utils/enum.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_template_test_macros.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/generators/catch_generators.hpp"
+#include "catch2/generators/catch_generators_range.hpp"
 
 namespace dmath = dang::math;
 namespace dutils = dang::utils;

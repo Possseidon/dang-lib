@@ -13,7 +13,10 @@
 #include "dang-utils/stub.h"
 #include "dang-utils/utils.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_message.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/catch_tostring.hpp"
+#include "catch2/matchers/catch_matchers.hpp"
 
 namespace dang::utils::Matchers {
 
@@ -76,7 +79,7 @@ struct Invocation {
 } // namespace detail
 
 template <typename TRet, typename... TArgs>
-class Called : public Catch::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
+class Called : public Catch::Matchers::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
 public:
     Called(const dang::utils::Stub<TRet(TArgs...)>&) {}
 
@@ -108,7 +111,7 @@ constexpr std::monostate ignored;
 detail::Invocation invocation(std::size_t index) { return {index}; }
 
 template <typename TRet, typename... TArgs>
-class CalledWith : public Catch::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
+class CalledWith : public Catch::Matchers::MatcherBase<dang::utils::Stub<TRet(TArgs...)>> {
 public:
     template <typename T>
     using RemoveCVRef = std::remove_cv_t<std::remove_reference_t<T>>;

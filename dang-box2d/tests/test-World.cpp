@@ -7,6 +7,9 @@
 #include "dang-box2d/box2d.h"
 #include "dang-utils/catch2-stub-matcher.h"
 
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/matchers/catch_matchers.hpp"
+#include "catch2/matchers/catch_matchers_vector.hpp"
 #include "shared/World.h"
 
 namespace b2 = dang::box2d;
@@ -14,7 +17,7 @@ namespace dutils = dang::utils;
 
 namespace fs = std::filesystem;
 
-using Catch::UnorderedEquals;
+using Catch::Matchers::UnorderedEquals;
 using dutils::Matchers::CalledWith;
 
 TEST_CASE("Box2D worlds can be created.")

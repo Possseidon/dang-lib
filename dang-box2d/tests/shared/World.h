@@ -4,7 +4,7 @@
 
 #include "dang-box2d/box2d.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_tostring.hpp"
 
 struct Data {
     using Fixture = std::string;

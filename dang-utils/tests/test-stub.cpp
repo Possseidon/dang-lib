@@ -4,7 +4,7 @@
 #include "dang-utils/catch2-stub-matcher.h"
 #include "dang-utils/stub.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_test_macros.hpp"
 
 namespace dutils = dang::utils;
 

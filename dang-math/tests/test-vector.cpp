@@ -2,11 +2,15 @@
 #include "dang-math/utils.h"
 #include "dang-math/vector.h"
 
-#include "catch2/catch.hpp"
+#include "catch2/catch_approx.hpp"
+#include "catch2/catch_message.hpp"
+#include "catch2/catch_test_macros.hpp"
+#include "catch2/catch_tostring.hpp"
+
+using Catch::Approx;
+using namespace Catch::literals;
 
 namespace dmath = dang::math;
-
-using namespace Catch::literals;
 
 TEST_CASE("Vectors default to being zero initialized.", "[vector][initialization]")
 {
@@ -485,7 +489,7 @@ TEST_CASE("Vectors support 3-dimensional operations.", "[vector][operations]")
 TEST_CASE("Vectors can be formatted as a string and printed to a stream.", "[vector][formatting]")
 {
     dmath::vec3 a(1, 3.5, 10);
-    std::string_view a_as_string = "[1, 3.5, 10]";
+    auto a_as_string = "[1, 3.5, 10]";
 
     CAPTURE(a, a_as_string);
 
