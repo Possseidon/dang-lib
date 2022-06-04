@@ -90,7 +90,9 @@
       "vendor": {
         "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
           "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}",
-          "rsyncCommandArgs": [ "--exclude=vcpkg/{buildtrees,downloads,packages}" ]
+          "rsyncCommandArgs": [
+            "--exclude=vcpkg/{buildtrees,downloads,packages}"
+          ]
         }
       }
     },

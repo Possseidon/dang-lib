@@ -27,7 +27,9 @@
       "dependencies": [
         {
           "name": "lua",
-          "features": [ "cpp" ]
+          "features": [
+            "cpp"
+          ]
         }
       ]
     },

@@ -226,10 +226,10 @@ template <typename TRet, typename... TArgs>
 struct SignatureInfo<TRet (&)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&&)(TArgs...)> : SignatureInfo<TRet (*)(TArgs...)> {};
+struct SignatureInfo<TRet (&&)(TArgs...)> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
-struct SignatureInfo<TRet(&&)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
+struct SignatureInfo<TRet (&&)(TArgs...) noexcept> : SignatureInfo<TRet (*)(TArgs...)> {};
 
 template <typename TRet, typename... TArgs>
 struct SignatureInfo<std::function<TRet(TArgs...)>> : SignatureInfo<TRet (*)(TArgs...)> {};
