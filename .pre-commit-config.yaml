@@ -16,10 +16,14 @@ repos:
       - id: pretty-format-json
         args: [--autofix, --no-sort-keys]
       - id: trailing-whitespace
-  - repo: https://github.com/doublify/pre-commit-clang-format
-    rev: 62302476d0da01515660132d76902359bed0f782
+  - repo: https://gitlab.com/daverona/pre-commit/cpp
+    rev: 0.8.0
     hooks:
       - id: clang-format
+        args: []
+      - id: docker-clang-format
+        args: []
+        stages: [manual]
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:
@@ -30,3 +34,6 @@ repos:
     rev: 0.15.1
     hooks:
       - id: check-github-workflows
+
+ci:
+  skip: [clang-format]
