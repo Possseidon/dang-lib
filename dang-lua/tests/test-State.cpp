@@ -13,6 +13,9 @@
 #include "dang-lua/Convert.h"
 #include "dang-lua/State.h"
 
+#include "dang-utils/catch2-stub-matcher.h"
+#include "dang-utils/stub.h"
+
 #include "catch2/catch.hpp"
 #include "lua.hpp"
 #include "shared/CheckedAllocator.h"
@@ -21,8 +24,11 @@
 #include "shared/utils.h"
 
 namespace dlua = dang::lua;
+namespace dutils = dang::utils;
 
 using Catch::StartsWith;
+using Catch::Generators::range;
+using dutils::Matchers::CalledWith;
 
 // --- Indices
 
@@ -1649,7 +1655,76 @@ TEST_CASE("Lua StateBase can compile and dump Lua code.", "[lua][state]")
     }
 }
 
-TEST_CASE("Lua StateBase can call functions.", "[lua][state]") {}
+TEST_CASE("Lua StateBase can call functions.", "[lua][state]")
+{
+    auto lua = dlua::State();
+
+    SECTION("Calling a function properly forwards parameters.")
+    {
+        auto stub = dutils::Stub<void(int, int, int)>();
+        lua.call(std::function(stub), 1, 2, 3);
+        CHECK_THAT(stub, CalledWith(stub, 1, 2, 3));
+    }
+    SECTION("Calling a function defaults to returning nothing.")
+    {
+        constexpr int dummy_function = 0;
+        STATIC_REQUIRE(std::is_same_v<decltype(lua.call(dummy_function)), void>);
+        STATIC_REQUIRE(std::is_same_v<decltype(lua.call<0>(dummy_function)), void>);
+    }
+    SECTION("Calling a function properly forwards the return value.")
+    {
+        auto function = std::function([] { return 42; });
+        CHECK(lua.call<1>(std::move(function)) == 42);
+    }
+    SECTION("Calling a function can return a fixed number of values, filling with nil.")
+    {
+        auto function = std::function([] { return std::tuple{1, 2}; });
+        auto result = lua.call<3>(std::move(function));
+        STATIC_REQUIRE(result.size() == 3);
+        CHECK(result[0] == 1);
+        CHECK(result[1] == 2);
+        CHECK(result[2] == dlua::nil);
+    }
+    SECTION("Calling a function can return exactly as many values as were actually returned.")
+    {
+        auto function = std::function([] { return std::tuple{1, 2, 3}; });
+        auto result = lua.callMultRet(function);
+        CHECK(result.size() == 3);
+        CHECK(result[0] == 1);
+        CHECK(result[1] == 2);
+        CHECK(result[2] == 3);
+    }
+    SECTION("Calling a function can return a runtime chosen number of values.")
+    {
+        auto function = std::function([] { return std::tuple{1, 2, 3}; });
+        auto results = GENERATE(range(0, 5));
+        auto result = lua.callReturning(results, function);
+        CHECK(result.size() == results);
+        if (results >= 1)
+            CHECK(result[0] == 1);
+        if (results >= 2)
+            CHECK(result[1] == 2);
+        if (results >= 3)
+            CHECK(result[2] == 3);
+        if (results >= 4)
+            CHECK(result[3] == dlua::nil);
+    }
+    SECTION("Calling a function with a runtime chosen number of values supports LUA_MULTRET.")
+    {
+        auto function = std::function([] { return std::tuple{1, 2, 3}; });
+        auto result = lua.callReturning(LUA_MULTRET, function);
+        CHECK(result.size() == 3);
+        CHECK(result[0] == 1);
+        CHECK(result[1] == 2);
+        CHECK(result[2] == 3);
+    }
+    SECTION("Functions can be called with parameters.")
+    {
+        auto function = std::function([](int a, int b) { return a * b; });
+        auto result = lua.call<1>(function, 6, 7);
+        CHECK(result == 42);
+    }
+}
 
 TEST_CASE("Lua StateBase can call a string of Lua code directly, compiling it on the fly.", "[lua][state]") {}
 

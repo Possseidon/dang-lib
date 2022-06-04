@@ -2607,6 +2607,8 @@ public:
 
         int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
 
+        assert(v_results >= 0 || v_results == LUA_MULTRET);
+
         if constexpr (v_results == LUA_MULTRET) {
             auto first_result_index = size() - 1 - arg_count;
             lua_call(state_, arg_count, v_results);
@@ -2646,14 +2648,23 @@ public:
 
         static_assert(ConvertFunc::push_count == 1, "Supplied function must take up a single stack position.");
 
-        assert(results != LUA_MULTRET); // TODO: Support LUA_MULTRET
+        assert(results >= 0 || results == LUA_MULTRET);
 
-        int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
-
-        assertPushable(results - 1 - arg_count);
-        lua_call(state_, arg_count, results);
-        notifyPush(results - 1 - arg_count);
-        return top(results).asResult();
+        if (results == LUA_MULTRET) {
+            int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
+            auto first_result_index = size() - 1 - arg_count;
+            lua_call(state_, arg_count, LUA_MULTRET);
+            auto actual_results = lua_gettop(state_) - first_result_index;
+            notifyPush(actual_results - 1 - arg_count);
+            return top(actual_results).asResult();
+        }
+        else {
+            int arg_count = push(std::forward<TFunc>(func), std::forward<TArgs>(args)...).size() - 1;
+            assertPushable(results - 1 - arg_count);
+            lua_call(state_, arg_count, results);
+            notifyPush(results - 1 - arg_count);
+            return top(results).asResult();
+        }
     }
 
     /// @brief Calls the given function with the supplied arguments in protected mode and returns the status and a

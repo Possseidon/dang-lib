@@ -1,0 +1,17 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "dll",
+      "exe": "D:\\bin\\lua.exe",
+      "args": [
+        "-e \"dmath = require 'dmath'\"",
+        "-i"
+      ],
+      "project": "CMakeLists.txt",
+      "projectTarget": "dmath.dll (dang-math\\lua\\dmath.dll)",
+      "name": "dmath.dll (dang-math\\lua\\dmath.dll)"
+    }
+  ]
+}

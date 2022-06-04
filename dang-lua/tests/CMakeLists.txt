@@ -26,7 +26,7 @@ add_executable(
   test-Reference.cpp
   test-State.cpp)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE dang-lua dang-utils)
+target_link_libraries(${PROJECT_NAME} PRIVATE dang-lua dang-utils dang-utils-catch2)
 
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
