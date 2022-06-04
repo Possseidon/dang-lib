@@ -169,8 +169,9 @@ private:
                         if (!result)
                             info(Catch::StringMaker<TStubArg>().convert(invocation_arg) + "["s +
                                  Catch::StringMaker<decltype(&invocation_arg)>().convert(&invocation_arg) + "] != "s +
-                                 (arg ? Catch::StringMaker<decltype(*arg)>().convert(*arg) + "["s +
-                                            Catch::StringMaker<ArgType>().convert(arg) + "]"s
+                                 (arg ? Catch::StringMaker<std::remove_pointer_t<std::remove_reference_t<ArgType>>>()
+                                                .convert(*arg) +
+                                            "["s + Catch::StringMaker<ArgType>().convert(arg) + "]"s
                                       : "null /!\\ references cannot be null"s));
                         return result;
                     }
