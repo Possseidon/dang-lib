@@ -11,3 +11,5 @@ namespace dglfw = dang::glfw;
 namespace dlua = dang::lua;
 namespace dmath = dang::math;
 namespace dutils = dang::utils;
+
+namespace fs = std::filesystem;

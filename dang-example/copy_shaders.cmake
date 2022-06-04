@@ -1,0 +1,7 @@
+configure_file(${SRC}/model.frag ${BIN}/model.frag)
+configure_file(${SRC}/model.vert ${BIN}/model.vert)
+configure_file(${SRC}/cube.frag ${BIN}/cube.frag)
+configure_file(${SRC}/cube.vert ${BIN}/cube.vert)
+configure_file(${SRC}/billboard.frag ${BIN}/billboard.frag)
+configure_file(${SRC}/billboard.vert ${BIN}/billboard.vert)
+configure_file(${SRC}/quaternion.glsl ${BIN}/quaternion.glsl)

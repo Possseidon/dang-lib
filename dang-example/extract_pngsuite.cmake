@@ -1,0 +1,1 @@
+file(ARCHIVE_EXTRACT INPUT ${SRC}/PngSuite.zip DESTINATION ${BIN}/PngSuite)

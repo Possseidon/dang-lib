@@ -55,7 +55,10 @@ option(DANG_WERROR "Whether to treat warnings as errors.")
 if(MSVC)
   add_compile_options(/W4 /utf-8 /bigobj $<$<BOOL:${DANG_WERROR}>:/WX>)
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    add_compile_options("SHELL:-Xclang -Wno-missing-braces" "SHELL:-Xclang -Wno-logical-op-parentheses")
+    add_compile_options("SHELL:-Xclang -Wno-missing-braces" "SHELL:-Xclang -Wno-logical-op-parentheses"
+                        "SHELL:-Xclang -fconstexpr-steps -Xclang 2500000")
+  else()
+    add_compile_options(/constexpr:steps2000000)
   endif()
 
   # On Windows, .exe and .dll need to be in the same directory.

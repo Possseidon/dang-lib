@@ -1,0 +1,7 @@
+configure_file(${SRC}/dirt.png ${BIN}/dirt.png COPYONLY)
+configure_file(${SRC}/grass.png ${BIN}/grass.png COPYONLY)
+configure_file(${SRC}/pebbles.png ${BIN}/pebbles.png COPYONLY)
+configure_file(${SRC}/realstone.png ${BIN}/realstone.png COPYONLY)
+configure_file(${SRC}/rectangles.png ${BIN}/rectangles.png COPYONLY)
+configure_file(${SRC}/test.png ${BIN}/test.png COPYONLY)
+configure_file(${SRC}/stone_bricks_shadowed.png ${BIN}/stone_bricks_shadowed.png COPYONLY)
