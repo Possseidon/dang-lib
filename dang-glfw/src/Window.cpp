@@ -507,7 +507,7 @@ void Window::dropCallback(GLFWwindow* window_handle, int path_count, const char*
     if (!window.on_drop_paths)
         return;
     std::vector<fs::path> paths(path_count);
-    std::transform(path_array, path_array + path_count, paths.begin(), [](auto path) { return fs::u8path(path); });
+    std::transform(path_array, path_array + path_count, paths.begin(), [](auto path) { return fs::path(path); });
     window.on_drop_paths({window, paths});
 }
 

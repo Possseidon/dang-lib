@@ -13,7 +13,7 @@ TEST_CASE("TextureAtlasUtils can be used to query limits for texture atlases.",
     dglfw::GLFW glfw;
     dglfw::WindowInfo window_info;
     window_info.visible = false;
-    window_info.title = u8"dang-test: TextureAtlasUtils";
+    window_info.title = "dang-test: TextureAtlasUtils";
     dglfw::Window window(window_info);
 
     SECTION("For maximum texture size, if no value is given, GL_MAX_3D_TEXTURE_SIZE is returned.")
