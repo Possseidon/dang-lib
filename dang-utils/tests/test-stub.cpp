@@ -169,6 +169,40 @@ TEST_CASE("Stubs can be assessed thoroughly using Catch2 matchers.", "[stub]")
                 CHECK_THAT(stub, CalledWith(other_param));
             }
         }
+        SECTION("Pointer parameters can be checked by value.")
+        {
+            auto stub = dutils::Stub<void(const int*)>();
+
+            int param = 1;
+            int other_param = 1;
+
+            stub(&param);
+
+            CHECK_THAT(stub, CalledWith(&param));
+            CHECK_THAT(stub, !CalledWith(&other_param));
+            CHECK_THAT(stub, !CalledWith(nullptr));
+        }
+        SECTION("Reference to pointer parameters can be checked for reference identity.")
+        {
+            auto stub = dutils::Stub<void(const int*&)>();
+
+            int value = 1;
+
+            const int* param = &value;
+            const int* other_param = &value;
+
+            stub(param);
+
+            CHECK_THAT(stub, CalledWith(&param));
+            CHECK_THAT(stub, !CalledWith(&other_param));
+
+            SECTION("Even though the parameter is a reference, it can still be compared by value.")
+            {
+                CHECK_THAT(stub, CalledWith(param));
+                CHECK_THAT(stub, CalledWith(other_param));
+                CHECK_THAT(stub, !CalledWith(nullptr));
+            }
+        }
         SECTION("When checking for reference identity, a subclass can be provided.")
         {
             struct Base {};
