@@ -2,6 +2,7 @@
 
 #include "dang-gl/Context/Context.h"
 #include "dang-glfw/Window.h"
+#include "dang-utils/encoding.h"
 
 namespace dang::glfw {
 
@@ -47,17 +48,17 @@ uint64_t GLFW::timerValue() const { return glfwGetTimerValue(); }
 
 uint64_t GLFW::timerFrequency() const { return glfwGetTimerFrequency(); }
 
-std::string GLFW::clipboardOrThrow() const
+std::u8string GLFW::clipboardOrThrow() const
 {
     const char* content = glfwGetClipboardString(nullptr);
     // technically throws when null is returned
     // check for null just in case
-    return content ? content : std::string();
+    return content ? dutils::u8stringFrom(content) : std::u8string();
 }
 
-std::string GLFW::clipboardOrEmpty() const { return clipboard().value_or(std::string()); }
+std::u8string GLFW::clipboardOrEmpty() const { return clipboard().value_or(std::u8string()); }
 
-std::optional<std::string> GLFW::clipboard() const
+std::optional<std::u8string> GLFW::clipboard() const
 {
     try {
         return clipboardOrThrow();
@@ -67,7 +68,7 @@ std::optional<std::string> GLFW::clipboard() const
     }
 }
 
-void GLFW::setClipboard(const std::string& content) { glfwSetClipboardString(nullptr, content.c_str()); }
+void GLFW::setClipboard(const std::u8string& content) { glfwSetClipboardString(nullptr, dutils::charPtrFrom(content)); }
 
 Monitor GLFW::primaryMonitor() const { return primary_monitor_; }
 

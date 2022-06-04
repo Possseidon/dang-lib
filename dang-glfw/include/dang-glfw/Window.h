@@ -58,7 +58,7 @@ struct WindowInfo {
     GLFWwindow* createWindow() const;
 
     dmath::ivec2 size = {1280, 720};
-    std::string title;
+    std::u8string title;
 
     Window* share = nullptr;
 
@@ -113,12 +113,12 @@ struct WindowInfo {
 
     struct Cocoa {
         bool retina_framebuffer = true;
-        std::string frame_name;
+        std::u8string frame_name;
         bool graphics_switching = false;
     } cocoa;
 
     struct X11 {
-        // Unlike most of GLFW, these are indeed ASCII encoded
+        // Unlike most of GLFW, these are indeed ASCII encoded.
         std::string class_name;
         std::string instance_name;
     } x11;
@@ -183,11 +183,10 @@ public:
     /// @brief Returns the OpenGL context of this window.
     dgl::Context& context();
 
-    // TODO: C++20 use std::u8string
     /// @brief Returns the title of the window.
-    const std::string& title() const;
+    const std::u8string& title() const;
     /// @brief Sets the title of the window to the given string.
-    void setTitle(const std::string& title);
+    void setTitle(const std::u8string& title);
 
     /// @brief Returns the current position of the window on the virtual screen.
     dmath::ivec2 pos() const;
@@ -348,9 +347,8 @@ public:
     /// @brief Sets, whether the OpenGL viewport should be automatically adjusted, as the window is resized.
     void setAutoAdjustViewport(bool auto_adjust_viewport);
 
-    // TODO: C++20 use std::u8string
     /// @brief Returns a string of all typed characters since the last update.
-    const std::string& textInput() const;
+    const std::u8string& textInput() const;
 
     /// @brief Whether the given key is currently pressed down.
     /// @remark If sticky keys is active, keys will stay pressed until this function is called on it.
@@ -514,7 +512,7 @@ private:
     dgl::Context context_{(activate(), size())};
 
     // Window-Properties
-    std::string title_;
+    std::u8string title_;
     dmath::ibounds2 size_limits_;
     dmath::ivec2 fullscreen_restore_pos_;
     dmath::ivec2 fullscreen_restore_size_;
@@ -531,7 +529,7 @@ private:
     float fps_ = 0;
 
     // Input
-    std::string text_input_;
+    std::u8string text_input_;
 };
 
 } // namespace dang::glfw

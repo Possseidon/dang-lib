@@ -48,13 +48,13 @@ public:
     uint64_t timerFrequency() const;
 
     /// @brief Returns the content of the clipboard and throws if it could not be queried.
-    std::string clipboardOrThrow() const;
+    std::u8string clipboardOrThrow() const;
     /// @brief Returns the content of the clipboard or an empty string if it could not be queried.
-    std::string clipboardOrEmpty() const;
+    std::u8string clipboardOrEmpty() const;
     /// @brief Returns the content of the clipboard or std::nullopt if it could not be queried
-    std::optional<std::string> clipboard() const;
+    std::optional<std::u8string> clipboard() const;
     /// @brief Sets the clipboard to the given value.
-    void setClipboard(const std::string& content);
+    void setClipboard(const std::u8string& content);
 
     /// @brief Returns a wrapper to the current primary monitor.
     Monitor primaryMonitor() const;

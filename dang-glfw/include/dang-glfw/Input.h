@@ -210,7 +210,7 @@ public:
     /// @brief Returns the scancode of the key attempting to query it, if it has not been supplied in the constructor.
     int scancode();
     /// @brief Returns a displayable name for the key or an empty string.
-    std::string name() const;
+    std::u8string name() const;
 
     /// @brief Allows for implicit conversion to the key enum.
     operator Key() const;
