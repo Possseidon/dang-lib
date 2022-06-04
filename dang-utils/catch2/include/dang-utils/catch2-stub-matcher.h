@@ -156,25 +156,23 @@ private:
                 return true;
             }
             else {
-                if constexpr (std::is_pointer_v<std::remove_reference_t<ArgType>> ||
-                              std::is_null_pointer_v<std::remove_reference_t<ArgType>>) {
+                // Since references cannot be null, "nullptr" always means value comparison.
+                if constexpr (!std::is_null_pointer_v<std::remove_reference_t<ArgType>> &&
+                              (std::is_convertible_v<std::remove_reference_t<ArgType>,
+                                                     std::remove_reference_t<TStubArg>*> ||
+                               std::is_convertible_v<std::remove_reference_t<ArgType>,
+                                                     const std::remove_reference_t<TStubArg>*> ||
+                               std::is_convertible_v<std::remove_reference_t<ArgType>,
+                                                     std::remove_const_t<std::remove_reference_t<TStubArg>>*>)) {
                     if constexpr (std::is_reference_v<TStubArg>) {
                         bool result = &invocation_arg == arg;
-                        if (!result) {
-                            auto format_arg = [&] {
-                                if constexpr (!std::is_null_pointer_v<std::remove_reference_t<ArgType>>) {
-                                    return Catch::StringMaker<std::remove_pointer_t<std::remove_reference_t<ArgType>>>()
-                                        .convert(*arg);
-                                }
-                                else {
-                                    return ""s; // technically unreachable as nullptr is false
-                                }
-                            };
+                        if (!result)
                             info(Catch::StringMaker<TStubArg>().convert(invocation_arg) + "["s +
                                  Catch::StringMaker<decltype(&invocation_arg)>().convert(&invocation_arg) + "] != "s +
-                                 (arg ? format_arg() + "["s + Catch::StringMaker<ArgType>().convert(arg) + "]"s
-                                      : "null"));
-                        }
+                                 (arg ? Catch::StringMaker<std::remove_pointer_t<std::remove_reference_t<ArgType>>>()
+                                                .convert(*arg) +
+                                            "["s + Catch::StringMaker<ArgType>().convert(arg) + "]"s
+                                      : "null /!\\ references cannot be null"s));
                         return result;
                     }
                     else {
