@@ -47,7 +47,6 @@ jobs:
             run-cmake-lint.bat
             VSWorkspaceSettings.json
             **.natvis
-            dummy.txt
 
       - name: TEMP Show changed files
         run: |
