@@ -33,6 +33,8 @@ jobs:
         uses: tj-actions/changed-files@v22.2
         with:
           files_ignore: |
+            .*
+            !.github/workflows/run-build-and-tests.yml
             naming-conventions.md
             README.md
             run-clang-format.bat
