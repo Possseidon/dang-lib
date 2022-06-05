@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Must fetch all commits for changed-files to work
+          fetch-depth: ${{github.event_name != 'push' && 1 || 0}} # Fetch all commits on push
           submodules: recursive
 
       - name: Check for changes of build related files
@@ -38,9 +38,15 @@ jobs:
             VSWorkspaceSettings.json
             **.natvis
 
+      - name: TEMP Show changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
   skip-build-and-tests:
     needs: check-for-changes
-    if: "needs.check-for-changes.outputs.build-files-changed != 'true'"
+    if: needs.check-for-changes.outputs.build-files-changed != 'true'
     name: ${{matrix.name}}
     runs-on: ubuntu-latest
     strategy:
@@ -57,7 +63,7 @@ jobs:
 
   build-and-test:
     needs: check-for-changes
-    if: "needs.check-for-changes.outputs.build-files-changed == 'true'"
+    if: needs.check-for-changes.outputs.build-files-changed == 'true'
     name: ${{matrix.name}}
     runs-on: ${{matrix.os}}
     strategy:
