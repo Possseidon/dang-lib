@@ -7,30 +7,73 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - .*
-      - naming-conventions.md
-      - README.md
-      - run-clang-format.bat
-      - run-cmake-format.bat
-      - run-cmake-lint.bat
-      - VSWorkspaceSettings.json
-      - "**.natvis"
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - .*
-      - naming-conventions.md
-      - README.md
-      - run-clang-format.bat
-      - run-cmake-format.bat
-      - run-cmake-lint.bat
-      - VSWorkspaceSettings.json
-      - "**.natvis"
 
 jobs:
-  job:
+  check-for-changes:
+    name: Check for changes
+    runs-on: ubuntu-latest
+    outputs:
+      build-files-changed: ${{steps.build-files.outputs.any_modified}}
+    steps:
+      - name: Checkout entire repository
+        if: github.event_name == 'push'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout repository
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v3
+
+      - name: Check for changes of build related files
+        id: build-files
+        uses: tj-actions/changed-files@v22.2
+        with:
+          files_ignore: |
+            .clang-format
+            .cmake-format.py
+            .editorconfig
+            .gitattributes
+            .gitignore
+            .gitmodules
+            .pre-commit-config.yaml
+            naming-conventions.md
+            README.md
+            run-clang-format.bat
+            run-cmake-format.bat
+            run-cmake-lint.bat
+            VSWorkspaceSettings.json
+            **.natvis
+
+      - name: Build related files that changed
+        run: |
+          for file in ${{steps.build-files.outputs.all_changed_and_modified_files}}; do
+            echo "$file"
+          done
+
+  skip-build-and-tests:
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.build-files-changed != 'true'
+    name: ${{matrix.name}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu - GCC
+          - name: Ubuntu - Clang
+          - name: Windows - MSVC
+          - name: Windows - Clang
+    steps:
+      - name: Skip build and tests
+        run: ""
+
+  build-and-test:
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.build-files-changed == 'true'
     name: ${{matrix.name}}
     runs-on: ${{matrix.os}}
     strategy:
@@ -57,7 +100,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
