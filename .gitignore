@@ -7,7 +7,7 @@
 !.editorconfig
 !.gitattributes
 !.gitignore
-!.pre-commit-config.yaml
+!/.pre-commit-config.yaml
 !/.gitmodules
 
-out/
+/out/
