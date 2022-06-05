@@ -79,56 +79,8 @@ jobs:
       - name: Skip build and tests
         run: ""
 
-  setup-environment:
-    needs: check-for-changes
-    if: needs.check-for-changes.outputs.build-files-changed == 'true'
-    name: "[${{matrix.os}}] Setup environment"
-    runs-on: ${{matrix.runs-on}}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: Ubuntu
-            runs-on: ubuntu-latest
-          - os: Windows
-            runs-on: windows-latest
-
-    env:
-      VCPKG_ROOT: ${{github.workspace}}/vcpkg
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Install CMake and Ninja
-        uses: lukka/get-cmake@latest
-
-      - name: Restore vcpkg and its artifacts
-        uses: actions/cache@v2
-        env:
-          vcpkg-cache-base: vcpkg-${{secrets.VCPKG_CACHE_ID}}-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.preset}}
-        with:
-          path: |
-            ${{github.workspace}}/.vcpkg-archives
-            ${{env.VCPKG_ROOT}}/downloads
-          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
-          restore-keys: |
-            ${{env.vcpkg-cache-base}}-
-
-      - name: (Linux) Install required tools for glfw
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
-
-      - name: (Windows) Ensure the Developer Command Prompt is setup correctly
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
   configure-build:
-    needs: setup-environment
+    needs: check-for-changes
     if: needs.check-for-changes.outputs.build-files-changed == 'true'
     name: "[${{matrix.os-compiler}}] Configure build"
     runs-on: ${{matrix.runs-on}}
@@ -150,11 +102,53 @@ jobs:
             preset: windows-clang-x64
 
     env:
+      VCPKG_ROOT: ${{github.workspace}}/vcpkg
       VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
 
     steps:
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: (Linux) Install required tools for glfw
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+
+      - name: (Windows) Ensure the Developer Command Prompt is setup correctly
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Restore vcpkg and its artifacts
+        uses: actions/cache@v2
+        env:
+          vcpkg-cache-base: vcpkg-${{secrets.VCPKG_CACHE_ID}}-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.preset}}
+        with:
+          path: |
+            ${{github.workspace}}/.vcpkg-archives
+            ${{env.VCPKG_ROOT}}/downloads
+          key: ${{env.vcpkg-cache-base}}-${{hashFiles('vcpkg.json')}}
+          restore-keys: |
+            ${{env.vcpkg-cache-base}}-
+
+      - name: Download environment
+        uses: actions/download-artifact@v3
+        with:
+          name: environment-${{matrix.runs-on}}
+
       - name: Install dependencies and generate project files
         run: cmake --preset=${{matrix.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
+
+      - name: Upload configured build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: configured-${{matrix.preset}}
+          path: "${{env.CMAKE_BUILD_DIR}}"
 
   build-all:
     needs: configure-build
@@ -166,16 +160,46 @@ jobs:
         include:
           - os-compiler: Ubuntu - GCC
             runs-on: ubuntu-latest
+            preset: linux-gcc-x64
           - os-compiler: Ubuntu - Clang
             runs-on: ubuntu-latest
+            preset: linux-clang-x64
           - os-compiler: Windows - MSVC
             runs-on: windows-latest
+            preset: windows-msvc-x64
           - os-compiler: Windows - Clang
             runs-on: windows-latest
+            preset: windows-clang-x64
 
     steps:
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: (Linux) Install required tools for glfw
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+
+      - name: (Windows) Ensure the Developer Command Prompt is setup correctly
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Download configured build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: configured-${{matrix.preset}}
+          path: "${{env.CMAKE_BUILD_DIR}}"
+
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-all-${{matrix.preset}}
+          path: "${{env.CMAKE_BUILD_DIR}}"
+          retention-days: 1
 
   build-dmath:
     needs: configure-build
@@ -187,16 +211,46 @@ jobs:
         include:
           - os-compiler: Ubuntu - GCC
             runs-on: ubuntu-latest
+            preset: linux-gcc-x64
           - os-compiler: Ubuntu - Clang
             runs-on: ubuntu-latest
+            preset: linux-clang-x64
           - os-compiler: Windows - MSVC
             runs-on: windows-latest
+            preset: windows-msvc-x64
           - os-compiler: Windows - Clang
             runs-on: windows-latest
+            preset: windows-clang-x64
 
     steps:
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: (Linux) Install required tools for glfw
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+
+      - name: (Windows) Ensure the Developer Command Prompt is setup correctly
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Download configured build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{matrix.preset}}
+          path: "${{env.CMAKE_BUILD_DIR}}"
+
       - name: Build dmath
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --target dmath
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-dmath-${{matrix.preset}}
+          path: "${{env.CMAKE_BUILD_DIR}}"
+          retention-days: 1
 
   run-tests:
     needs: build-all # dmath doesn't have tests yet
@@ -208,15 +262,39 @@ jobs:
         include:
           - os-compiler: Ubuntu - GCC
             runs-on: ubuntu-latest
+            preset: linux-gcc-x64
           - os-compiler: Ubuntu - Clang
             runs-on: ubuntu-latest
+            preset: linux-clang-x64
           - os-compiler: Windows - MSVC
             runs-on: windows-latest
+            preset: windows-msvc-x64
           - os-compiler: Windows - Clang
             runs-on: windows-latest
+            preset: windows-clang-x64
 
     steps:
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: (Linux) Install required tools for glfw
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+
+      - name: (Windows) Ensure the Developer Command Prompt is setup correctly
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-all-${{matrix.preset}}
+
       - name: Run tests
         run: |
           cd "${{env.CMAKE_BUILD_DIR}}"
           ctest --parallel 2 --label-exclude "^opengl$"
+
+      # TODO: Upload test results
