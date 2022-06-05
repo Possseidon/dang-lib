@@ -47,9 +47,7 @@ jobs:
 
       - name: TEMP Show changed files
         run: |
-          for file in ${{ steps.build-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
+          echo "status: ${{steps.build-files.outputs.any_changed}}"
 
   skip-build-and-tests:
     needs: check-for-changes
