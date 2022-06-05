@@ -34,6 +34,8 @@ jobs:
       - name: Check for changes of build related files
         id: build-files
         uses: tj-actions/changed-files@v22.2
+        with:
+          files: "**"
         # with:
         #   files_ignore: |
         #     .*
@@ -47,6 +49,7 @@ jobs:
 
       - name: TEMP Show changed files
         run: |
+          echo "status: ${{steps.build-files.outputs.all_changed_and_modified_files}}"
           echo "status: ${{steps.build-files.outputs.any_modified}}"
 
   skip-build-and-tests:
