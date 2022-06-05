@@ -136,11 +136,6 @@ jobs:
           restore-keys: |
             ${{env.vcpkg-cache-base}}-
 
-      - name: Download environment
-        uses: actions/download-artifact@v3
-        with:
-          name: environment-${{matrix.runs-on}}
-
       - name: Install dependencies and generate project files
         run: cmake --preset=${{matrix.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
 
