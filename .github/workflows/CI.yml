@@ -81,39 +81,19 @@ jobs:
       - name: Skip build and tests
         run: ""
 
-  build-matrix:
-    name: Build matrix
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{toJson(matrix)}}
-    strategy:
-      matrix:
-        include:
-          - os-compiler: Ubuntu - GCC
-            runs-on: ubuntu-latest
-            preset: linux-gcc-x64
-          - os-compiler: Ubuntu - Clang
-            runs-on: ubuntu-latest
-            preset: linux-clang-x64
-          - os-compiler: Windows - MSVC
-            runs-on: windows-latest
-            preset: windows-msvc-x64
-          - os-compiler: Windows - Clang
-            runs-on: windows-latest
-            preset: windows-clang-x64
-
-    steps:
-      - name: Dummy job for build matrix
-        run: ""
-
   setup-environment:
-    needs: [build-matrix, check-for-changes]
+    needs: check-for-changes
     if: needs.check-for-changes.outputs.build-files-changed == 'true'
-    name: "[${{matrix.os-compiler}}] Setup environment"
+    name: "[${{matrix.os}}] Setup environment"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+      matrix:
+        include:
+          - os: Ubuntu
+            runs-on: ubuntu-latest
+          - os: Windows
+            runs-on: windows-latest
 
     env:
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
@@ -150,13 +130,26 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
   configure-build:
-    needs: [build-matrix, setup-environment]
+    needs: setup-environment
     if: needs.check-for-changes.outputs.build-files-changed == 'true'
     name: "[${{matrix.os-compiler}}] Configure build"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+      matrix:
+        include:
+          - os-compiler: Ubuntu - GCC
+            runs-on: ubuntu-latest
+            preset: linux-gcc-x64
+          - os-compiler: Ubuntu - Clang
+            runs-on: ubuntu-latest
+            preset: linux-clang-x64
+          - os-compiler: Windows - MSVC
+            runs-on: windows-latest
+            preset: windows-msvc-x64
+          - os-compiler: Windows - Clang
+            runs-on: windows-latest
+            preset: windows-clang-x64
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
@@ -166,36 +159,63 @@ jobs:
         run: cmake --preset=${{matrix.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
 
   build-all:
-    needs: [build-matrix, configure-build]
+    needs: configure-build
     name: "[${{matrix.os-compiler}}] Build all"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+      matrix:
+        include:
+          - os-compiler: Ubuntu - GCC
+            runs-on: ubuntu-latest
+          - os-compiler: Ubuntu - Clang
+            runs-on: ubuntu-latest
+          - os-compiler: Windows - MSVC
+            runs-on: windows-latest
+          - os-compiler: Windows - Clang
+            runs-on: windows-latest
 
     steps:
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"
 
   build-dmath:
-    needs: [build-matrix, configure-build]
+    needs: configure-build
     name: "[${{matrix.os-compiler}}] Build dmath"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+      matrix:
+        include:
+          - os-compiler: Ubuntu - GCC
+            runs-on: ubuntu-latest
+          - os-compiler: Ubuntu - Clang
+            runs-on: ubuntu-latest
+          - os-compiler: Windows - MSVC
+            runs-on: windows-latest
+          - os-compiler: Windows - Clang
+            runs-on: windows-latest
 
     steps:
       - name: Build dmath
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --target dmath
 
   run-tests:
-    needs: [build-matrix, build-all] # dmath doesn't have tests yet
+    needs: build-all # dmath doesn't have tests yet
     name: "[${{matrix.os-compiler}}] Run tests"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+      matrix:
+        include:
+          - os-compiler: Ubuntu - GCC
+            runs-on: ubuntu-latest
+          - os-compiler: Ubuntu - Clang
+            runs-on: ubuntu-latest
+          - os-compiler: Windows - MSVC
+            runs-on: windows-latest
+          - os-compiler: Windows - Clang
+            runs-on: windows-latest
 
     steps:
       - name: Run tests
