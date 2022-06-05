@@ -7,9 +7,19 @@ on:
   push:
     branches:
       - master
+    paths-ignore: &paths
+      - .*
+      - naming-conventions.md
+      - README.md
+      - run-clang-format.bat
+      - run-cmake-format.bat
+      - run-cmake-lint.bat
+      - VSWorkspaceSettings.json
+      - "**.natvis"
   pull_request:
     branches:
       - master
+    paths-ignore: *paths
 
 jobs:
   job:
