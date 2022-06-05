@@ -71,8 +71,6 @@ jobs:
           - Windows - MSVC
           - Windows - Clang
         step:
-          - Setup environment
-          - Configure build
           - Build all
           - Build dmath
           - Run tests
