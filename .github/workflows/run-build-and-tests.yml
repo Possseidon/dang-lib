@@ -9,6 +9,7 @@ on:
       - master
     paths-ignore:
       - .*
+      - .github/workflows/skip-build-and-tests.yml
       - naming-conventions.md
       - README.md
       - run-clang-format.bat
@@ -21,6 +22,7 @@ on:
       - master
     paths-ignore:
       - .*
+      - .github/workflows/skip-build-and-tests.yml
       - naming-conventions.md
       - README.md
       - run-clang-format.bat
