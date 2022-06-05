@@ -1,7 +1,7 @@
 # Taken and modified from here:
 # https://github.com/lukka/CppBuildTasks-Validation/blob/master/.github/workflows/hosted-pure-workflow.yml
 
-name: Run build and tests
+name: CI
 
 on:
   push:
