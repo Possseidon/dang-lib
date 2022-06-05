@@ -16,7 +16,7 @@ jobs:
     name: Check for changes
     runs-on: ubuntu-latest
     outputs:
-      only-non-build-files-changed: ${{ steps.non-build-files.outputs.only_changed }}
+      build-files-changed: ${{ steps.build-files.outputs.any_changed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,13 +24,12 @@ jobs:
           fetch-depth: 0 # Must fetch all commits for changed-files to work
           submodules: recursive
 
-      - name: Check for changes of non-build related files
-        id: non-build-files
+      - name: Check for changes of build related files
+        id: build-files
         uses: tj-actions/changed-files@v22.2
         with:
-          files: |
+          files_ignore: |
             .*
-            .github/workflows/skip-build-and-tests.yml
             naming-conventions.md
             README.md
             run-clang-format.bat
@@ -41,7 +40,7 @@ jobs:
 
   skip-build-and-tests:
     needs: check-for-changes
-    if: 'needs.check-for-changes.outputs.only-non-build-files-changed'
+    if: "needs.check-for-changes.outputs.build-files-changed != 'true'"
     name: ${{matrix.name}}
     runs-on: ubuntu-latest
     strategy:
@@ -58,7 +57,7 @@ jobs:
 
   build-and-test:
     needs: check-for-changes
-    if: '!needs.check-for-changes.outputs.only-non-build-files-changed'
+    if: "needs.check-for-changes.outputs.build-files-changed == 'true'"
     name: ${{matrix.name}}
     runs-on: ${{matrix.os}}
     strategy:
