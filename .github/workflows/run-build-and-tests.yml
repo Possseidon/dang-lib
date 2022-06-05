@@ -16,7 +16,7 @@ jobs:
     name: Check for changes
     runs-on: ubuntu-latest
     outputs:
-      build-files-changed: ${{ steps.non-build-files.outputs.only_changed == "false" }}
+      only-non-build-files-changed: ${{ steps.non-build-files.outputs.only_changed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,20 +28,36 @@ jobs:
         id: non-build-files
         uses: tj-actions/changed-files@v22.2
         with:
-         files: |
-           .*
-           .github/workflows/skip-build-and-tests.yml
-           naming-conventions.md
-           README.md
-           run-clang-format.bat
-           run-cmake-format.bat
-           run-cmake-lint.bat
-           VSWorkspaceSettings.json
-           **.natvis
+          files: |
+            .*
+            .github/workflows/skip-build-and-tests.yml
+            naming-conventions.md
+            README.md
+            run-clang-format.bat
+            run-cmake-format.bat
+            run-cmake-lint.bat
+            VSWorkspaceSettings.json
+            **.natvis
 
-  job:
+  skip-build-and-tests:
     needs: check-for-changes
-    if: "!needs.check-for-changes.outputs.build-files-changed"
+    if: 'needs.check-for-changes.outputs.only-non-build-files-changed == "true"'
+    name: ${{matrix.name}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu - GCC
+          - name: Ubuntu - Clang
+          - name: Windows - MSVC
+          - name: Windows - Clang
+    steps:
+      - name: Skip build and tests
+
+  build-and-test:
+    needs: check-for-changes
+    if: 'needs.check-for-changes.outputs.only-non-build-files-changed != "true"'
     name: ${{matrix.name}}
     runs-on: ${{matrix.os}}
     strategy:
