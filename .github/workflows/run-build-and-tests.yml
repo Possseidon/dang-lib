@@ -41,7 +41,7 @@ jobs:
 
   skip-build-and-tests:
     needs: check-for-changes
-    if: 'needs.check-for-changes.outputs.only-non-build-files-changed == "true"'
+    if: 'needs.check-for-changes.outputs.only-non-build-files-changed'
     name: ${{matrix.name}}
     runs-on: ubuntu-latest
     strategy:
@@ -58,7 +58,7 @@ jobs:
 
   build-and-test:
     needs: check-for-changes
-    if: 'needs.check-for-changes.outputs.only-non-build-files-changed != "true"'
+    if: '!needs.check-for-changes.outputs.only-non-build-files-changed'
     name: ${{matrix.name}}
     runs-on: ${{matrix.os}}
     strategy:
