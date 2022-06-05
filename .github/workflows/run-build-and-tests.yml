@@ -18,10 +18,17 @@ jobs:
     outputs:
       build-files-changed: ${{ steps.build-files.outputs.any_changed }}
     steps:
-      - name: Checkout repository
+      - name: Checkout entire repository
+        if: github.event_name == 'push'
         uses: actions/checkout@v3
         with:
-          fetch-depth: ${{github.event_name != 'push' && 1 || 0}} # Fetch all commits on push
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Checkout repository
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v3
+        with:
           submodules: recursive
 
       - name: Check for changes of build related files
