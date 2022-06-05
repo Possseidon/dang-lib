@@ -31,8 +31,8 @@ on:
 
 jobs:
   job:
-    name: ${{matrix.runs.name}}
-    runs-on: ${{matrix.runs.os}}
+    name: ${{matrix.name}}
+    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +67,7 @@ jobs:
       - name: Restore vcpkg and its artifacts
         uses: actions/cache@v2
         env:
-          vcpkg-cache-base: vcpkg-${{secrets.VCPKG_CACHE_ID}}-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.runs.preset}}
+          vcpkg-cache-base: vcpkg-${{secrets.VCPKG_CACHE_ID}}-${{hashFiles('.git/modules/vcpkg/HEAD')}}-${{matrix.preset}}
         with:
           path: |
             ${{github.workspace}}/.vcpkg-archives
@@ -87,7 +87,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies and generate project files
-        run: cmake --preset=${{matrix.runs.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
+        run: cmake --preset=${{matrix.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
 
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"

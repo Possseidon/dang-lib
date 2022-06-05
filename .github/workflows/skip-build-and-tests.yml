@@ -30,24 +30,20 @@ on:
 
 jobs:
   job:
-    name: ${{matrix.runs.name}}
-    runs-on: ${{matrix.runs.os}}
+    name: ${{matrix.name}}
+    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Ubuntu - GCC
             os: ubuntu-latest
-            preset: linux-gcc-x64
           - name: Ubuntu - Clang
             os: ubuntu-latest
-            preset: linux-clang-x64
           - name: Windows - MSVC
             os: windows-latest
-            preset: windows-msvc-x64
           - name: Windows - Clang
             os: windows-latest
-            preset: windows-clang-x64
 
     steps:
       - run: "echo No build related files changed; skipping build and tests."
