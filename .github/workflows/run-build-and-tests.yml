@@ -36,16 +36,16 @@ jobs:
         uses: tj-actions/changed-files@v22.2
         with:
           files: "**"
-        # with:
-        #   files_ignore: |
-        #     .*
-        #     naming-conventions.md
-        #     README.md
-        #     run-clang-format.bat
-        #     run-cmake-format.bat
-        #     run-cmake-lint.bat
-        #     VSWorkspaceSettings.json
-        #     **.natvis
+          files_ignore: |
+            .*
+            naming-conventions.md
+            README.md
+            run-clang-format.bat
+            run-cmake-format.bat
+            run-cmake-lint.bat
+            VSWorkspaceSettings.json
+            **.natvis
+            dummy.txt
 
       - name: TEMP Show changed files
         run: |
@@ -97,6 +97,11 @@ jobs:
       VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
       - name: Install CMake and Ninja
         uses: lukka/get-cmake@latest
 
