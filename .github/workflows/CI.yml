@@ -85,7 +85,7 @@ jobs:
     name: Build matrix
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{matrix}}
+      matrix: ${{toJson(matrix)}}
     strategy:
       matrix:
         include:
@@ -113,7 +113,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{needs.build-matrix.outputs.matrix}}
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
     env:
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
@@ -150,13 +150,13 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
   configure-build:
-    needs: [build-matrix, check-for-changes]
+    needs: [build-matrix, setup-environment]
     if: needs.check-for-changes.outputs.build-files-changed == 'true'
     name: "[${{matrix.os-compiler}}] Configure build"
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{needs.build-matrix.outputs.matrix}}
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
@@ -171,7 +171,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{needs.build-matrix.outputs.matrix}}
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
     steps:
       - name: Build all
@@ -183,7 +183,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{needs.build-matrix.outputs.matrix}}
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
     steps:
       - name: Build dmath
@@ -195,7 +195,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{needs.build-matrix.outputs.matrix}}
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
     steps:
       - name: Run tests
