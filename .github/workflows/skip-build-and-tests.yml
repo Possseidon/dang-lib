@@ -46,4 +46,4 @@ jobs:
             os: windows-latest
 
     steps:
-      - run: "echo No build related files changed; skipping build and tests."
+      - run: 'echo "No build related files changed; skipping build and tests."'
