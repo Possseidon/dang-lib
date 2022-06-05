@@ -1,9 +1,7 @@
 #pragma once
 
 #include "dang-gl/global.h"
-
 #include "dang-math/vector.h"
-
 #include "dang-utils/utils.h"
 
 namespace dang::gl {

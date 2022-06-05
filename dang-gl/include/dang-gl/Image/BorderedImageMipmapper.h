@@ -4,7 +4,6 @@
 #include "dang-gl/Image/ImageMipmapper.h"
 #include "dang-gl/Image/PixelFormat.h"
 #include "dang-gl/Image/PixelType.h"
-
 #include "dang-math/vector.h"
 
 namespace dang::gl {
