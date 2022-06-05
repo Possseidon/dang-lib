@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dang-math/vector.h"
-
 #include "dang-utils/utils.h"
 
 namespace dang::math::noise {
