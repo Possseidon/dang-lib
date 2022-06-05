@@ -48,10 +48,11 @@ jobs:
             VSWorkspaceSettings.json
             **.natvis
 
-      - name: TEMP Show changed files
+      - name: Build related files that changed
         run: |
-          echo "status: ${{steps.build-files.outputs.all_changed_and_modified_files}}"
-          echo "status: ${{steps.build-files.outputs.any_modified}}"
+          for file in ${{steps.build-files.outputs.all_changed_and_modified_files}}; do
+            echo "$file"
+          done
 
   skip-build-and-tests:
     needs: check-for-changes
