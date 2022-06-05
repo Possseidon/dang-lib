@@ -54,6 +54,7 @@ jobs:
           - name: Windows - Clang
     steps:
       - name: Skip build and tests
+        run: ""
 
   build-and-test:
     needs: check-for-changes
