@@ -8,27 +8,27 @@ on:
     branches:
       - master
     paths-ignore:
-      - .*
-      - .github/workflows/skip-build-and-tests.yml
-      - naming-conventions.md
-      - README.md
-      - run-clang-format.bat
-      - run-cmake-format.bat
-      - run-cmake-lint.bat
-      - VSWorkspaceSettings.json
+      - ".*"
+      - ".github/workflows/skip-build-and-tests.yml"
+      - "naming-conventions.md"
+      - "README.md"
+      - "run-clang-format.bat"
+      - "run-cmake-format.bat"
+      - "run-cmake-lint.bat"
+      - "VSWorkspaceSettings.json"
       - "**.natvis"
   pull_request:
     branches:
       - master
     paths-ignore:
-      - .*
-      - .github/workflows/skip-build-and-tests.yml
-      - naming-conventions.md
-      - README.md
-      - run-clang-format.bat
-      - run-cmake-format.bat
-      - run-cmake-lint.bat
-      - VSWorkspaceSettings.json
+      - ".*"
+      - ".github/workflows/skip-build-and-tests.yml"
+      - "naming-conventions.md"
+      - "README.md"
+      - "run-clang-format.bat"
+      - "run-cmake-format.bat"
+      - "run-cmake-lint.bat"
+      - "VSWorkspaceSettings.json"
       - "**.natvis"
 
 jobs:
