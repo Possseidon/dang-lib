@@ -16,7 +16,7 @@ jobs:
     name: Check for changes
     runs-on: ubuntu-latest
     outputs:
-      build-files-changed: ${{ steps.build-files.outputs.any_changed }}
+      build-files-changed: ${{steps.build-files.outputs.any_modified}}
     steps:
       - name: Checkout entire repository
         if: github.event_name == 'push'
@@ -47,7 +47,7 @@ jobs:
 
       - name: TEMP Show changed files
         run: |
-          echo "status: ${{steps.build-files.outputs.any_changed}}"
+          echo "status: ${{steps.build-files.outputs.any_modified}}"
 
   skip-build-and-tests:
     needs: check-for-changes
