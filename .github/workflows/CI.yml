@@ -102,6 +102,10 @@ jobs:
             runs-on: windows-latest
             preset: windows-clang-x64
 
+    steps:
+      - name: Dummy job for build matrix
+        run: ""
+
   setup-environment:
     needs: [build-matrix, check-for-changes]
     if: needs.check-for-changes.outputs.build-files-changed == 'true'
