@@ -1,7 +1,7 @@
 # Taken and modified from here:
 # https://github.com/lukka/CppBuildTasks-Validation/blob/master/.github/workflows/hosted-pure-workflow.yml
 
-name: Run build and tests
+name: CI
 
 on:
   push:
@@ -11,12 +11,16 @@ on:
     branches:
       - master
 
+env:
+  CMAKE_BUILD_DIR: ${{github.workspace}}/build
+
 jobs:
   check-for-changes:
     name: Check for changes
     runs-on: ubuntu-latest
     outputs:
       build-files-changed: ${{steps.build-files.outputs.any_modified}}
+
     steps:
       - name: Checkout entire repository
         if: github.event_name == 'push'
@@ -57,46 +61,58 @@ jobs:
   skip-build-and-tests:
     needs: check-for-changes
     if: needs.check-for-changes.outputs.build-files-changed != 'true'
-    name: ${{matrix.name}}
+    name: "[${{matrix.os-compiler}}] ${{matrix.step}}"
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          - name: Ubuntu - GCC
-          - name: Ubuntu - Clang
-          - name: Windows - MSVC
-          - name: Windows - Clang
+        os-compiler:
+          - Ubuntu - GCC
+          - Ubuntu - Clang
+          - Windows - MSVC
+          - Windows - Clang
+        step:
+          - Setup environment
+          - Configure build
+          - Build all
+          - Build dmath
+          - Run tests
+
     steps:
       - name: Skip build and tests
         run: ""
 
-  build-and-test:
-    needs: check-for-changes
-    if: needs.check-for-changes.outputs.build-files-changed == 'true'
-    name: ${{matrix.name}}
-    runs-on: ${{matrix.os}}
+  build-matrix:
+    name: Build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{matrix}}
     strategy:
-      fail-fast: false
       matrix:
         include:
-          - name: Ubuntu - GCC
-            os: ubuntu-latest
+          - os-compiler: Ubuntu - GCC
+            runs-on: ubuntu-latest
             preset: linux-gcc-x64
-          - name: Ubuntu - Clang
-            os: ubuntu-latest
+          - os-compiler: Ubuntu - Clang
+            runs-on: ubuntu-latest
             preset: linux-clang-x64
-          - name: Windows - MSVC
-            os: windows-latest
+          - os-compiler: Windows - MSVC
+            runs-on: windows-latest
             preset: windows-msvc-x64
-          - name: Windows - Clang
-            os: windows-latest
+          - os-compiler: Windows - Clang
+            runs-on: windows-latest
             preset: windows-clang-x64
 
+  setup-environment:
+    needs: [build-matrix, check-for-changes]
+    if: needs.check-for-changes.outputs.build-files-changed == 'true'
+    name: "[${{matrix.os-compiler}}] Setup environment"
+    runs-on: ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix: ${{build-matrix.outputs.matrix}}
+
     env:
-      CMAKE_BUILD_DIR: ${{github.workspace}}/build
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
-      VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
 
     steps:
       - name: Checkout repository
@@ -129,15 +145,55 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
+  configure-build:
+    needs: [build-matrix, check-for-changes]
+    if: needs.check-for-changes.outputs.build-files-changed == 'true'
+    name: "[${{matrix.os-compiler}}] Configure build"
+    runs-on: ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix: ${{build-matrix.outputs.matrix}}
+
+    env:
+      VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
+
+    steps:
       - name: Install dependencies and generate project files
         run: cmake --preset=${{matrix.preset}} -B "${{env.CMAKE_BUILD_DIR}}" -DDANG_WERROR:BOOL=ON
 
+  build-all:
+    needs: [build-matrix, configure-build]
+    name: "[${{matrix.os-compiler}}] Build all"
+    runs-on: ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix: ${{build-matrix.outputs.matrix}}
+
+    steps:
       - name: Build all
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}"
 
+  build-dmath:
+    needs: [build-matrix, configure-build]
+    name: "[${{matrix.os-compiler}}] Build dmath"
+    runs-on: ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix: ${{build-matrix.outputs.matrix}}
+
+    steps:
       - name: Build dmath
         run: cmake --build "${{env.CMAKE_BUILD_DIR}}" --target dmath
 
+  run-tests:
+    needs: [build-matrix, build-all] # dmath doesn't have tests yet
+    name: "[${{matrix.os-compiler}}] Run tests"
+    runs-on: ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix: ${{build-matrix.outputs.matrix}}
+
+    steps:
       - name: Run tests
         run: |
           cd "${{env.CMAKE_BUILD_DIR}}"
