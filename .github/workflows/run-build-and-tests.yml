@@ -27,16 +27,16 @@ jobs:
       - name: Check for changes of build related files
         id: build-files
         uses: tj-actions/changed-files@v22.2
-        with:
-          files_ignore: |
-            .*
-            naming-conventions.md
-            README.md
-            run-clang-format.bat
-            run-cmake-format.bat
-            run-cmake-lint.bat
-            VSWorkspaceSettings.json
-            **.natvis
+        # with:
+        #   files_ignore: |
+        #     .*
+        #     naming-conventions.md
+        #     README.md
+        #     run-clang-format.bat
+        #     run-cmake-format.bat
+        #     run-cmake-lint.bat
+        #     VSWorkspaceSettings.json
+        #     **.natvis
 
       - name: TEMP Show changed files
         run: |
