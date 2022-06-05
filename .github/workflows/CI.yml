@@ -113,7 +113,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{build-matrix.outputs.matrix}}
+      matrix: ${{needs.build-matrix.outputs.matrix}}
 
     env:
       VCPKG_ROOT: ${{github.workspace}}/vcpkg
@@ -156,7 +156,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{build-matrix.outputs.matrix}}
+      matrix: ${{needs.build-matrix.outputs.matrix}}
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{github.workspace}}/.vcpkg-archives,readwrite
@@ -171,7 +171,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{build-matrix.outputs.matrix}}
+      matrix: ${{needs.build-matrix.outputs.matrix}}
 
     steps:
       - name: Build all
@@ -183,7 +183,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{build-matrix.outputs.matrix}}
+      matrix: ${{needs.build-matrix.outputs.matrix}}
 
     steps:
       - name: Build dmath
@@ -195,7 +195,7 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     strategy:
       fail-fast: false
-      matrix: ${{build-matrix.outputs.matrix}}
+      matrix: ${{needs.build-matrix.outputs.matrix}}
 
     steps:
       - name: Run tests
