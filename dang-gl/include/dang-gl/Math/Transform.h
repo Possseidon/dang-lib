@@ -23,8 +23,11 @@ class Transform {
 public:
     using Event = dutils::Event<Transform>;
 
-    /// @brief Creates a new pointer-based transform.
-    static UniqueTransform create();
+    /// @brief Allows for implicit construction from a dual quaternion.
+    Transform(const dquat& own_transform = {});
+
+    // TODO: Copy is currently disabled because of event subscription
+    //       Implement copy to properly update the subscription
 
     /// @brief The own transformation, without any parent transform.
     const dquat& ownTransform() const;
@@ -32,22 +35,22 @@ public:
     void setOwnTransform(const dquat& transform);
 
     /// @brief The full transformation, including all parent transformations.
-    const dquat& fullTransform();
+    const dquat& fullTransform() const;
 
     /// @brief The optional parent of this transformation.
-    SharedTransform parent() const;
+    const SharedTransform& parent() const;
     /// @brief Checks, if the chain of parents contains the given transform.
     bool parentChainContains(const Transform& transform) const;
     /// @brief UNSAFE! Forces the parent of this transform to the given transform, without checking for potential
     /// cycles.
     /// @remark A cycle will cause an immediate stack overflow, from recursively calling parent change events.
-    void forceParent(const SharedTransform& parent);
+    void forceParent(SharedTransform parent);
     /// @brief Tries to set the parent of this transform to the given transform and returns false if it would introduce
     /// a cycle.
-    bool trySetParent(const SharedTransform& parent);
+    bool trySetParent(SharedTransform parent);
     /// @brief Tries to set the parent of this transform to the given transform and throws a TransformCycleError if it
     /// would introduce a cycle.
-    void setParent(const SharedTransform& parent);
+    void setParent(SharedTransform parent);
     /// @brief Removes the current parent, which is the same as setting the parent to nullptr.
     void resetParent();
 
@@ -59,7 +62,7 @@ public:
 
 private:
     dquat own_transform_;
-    std::optional<dquat> full_transform_;
+    mutable std::optional<dquat> full_transform_;
     SharedTransform parent_;
     Event::Subscription parent_change_;
 };
