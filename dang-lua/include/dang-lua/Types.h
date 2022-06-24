@@ -166,4 +166,7 @@ inline constexpr dutils::EnumArray<StandardLibrary, const char*> library_names =
 
 inline constexpr dutils::EnumArray<LoadMode, const char*> load_mode_names = {nullptr, "b", "t", "bt"};
 
+// TODO: EnumArray<Type, const char*> type_names
+//       Use this everywhere to avoid literals
+
 } // namespace dang::lua
