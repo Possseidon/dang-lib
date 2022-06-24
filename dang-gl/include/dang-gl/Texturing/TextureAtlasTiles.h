@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dang-gl/Image/MipmapLevels.h"
 #include "dang-gl/Math/MathTypes.h"
 #include "dang-gl/global.h"
 #include "dang-utils/utils.h"
@@ -27,8 +28,8 @@ The BorderedImageData concept:
 
 /// @brief Holds maximum size restrictions of the texture atlas.
 struct TextureAtlasLimits {
-    GLsizei max_texture_size;
-    GLsizei max_layer_count;
+    std::size_t max_texture_size;
+    std::size_t max_layer_count;
 };
 
 /// @brief Can store a large number of texture tiles in multiple layers of grids.
@@ -36,19 +37,22 @@ struct TextureAtlasLimits {
 template <typename TBorderedImageData>
 class TextureAtlasTiles {
 public:
+    using BorderedImageData = TBorderedImageData;
+    using MipmapLevels = dang::gl::MipmapLevels<BorderedImageData>;
+
     /// @brief A function that is called with required size (width and height), layers and mipmap levels.
-    /// @remarks Returns whether actual resizing occurred.
-    using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
+    /// @remark Returns whether actual resizing occurred.
+    using TextureResizeFunction = std::function<bool(std::size_t, std::size_t, std::size_t)>;
 
     /// @brief A function that uploads the image to a specific position and mipmap level of a texture.
-    using TextureModifyFunction = std::function<void(const TBorderedImageData&, ivec3, GLint)>;
+    using TextureModifyFunction = std::function<void(const BorderedImageData&, dmath::svec3, std::size_t)>;
 
     class TileHandle;
 
 private:
     /// @brief Atlas information which is stored in a unique_ptr, so that it can be shared with all TileData instances.
     struct AtlasInfo {
-        GLsizei atlas_size;
+        std::size_t atlas_size;
     };
 
     /// @brief Information about the placement of a tile, including whether it has been written to the texture yet.
@@ -56,7 +60,7 @@ private:
         /// @brief The index of this tile in the layer.
         std::size_t index = 0;
         /// @brief The position where the write this tile in the array texture.
-        svec3 position;
+        dmath::svec3 position;
         /// @brief Whether this tile has been written to the array texture yet.
         bool written = false;
 
@@ -65,20 +69,30 @@ private:
         /// @param index The index of this tile in the layer.
         /// @param layer The index of the layer itself, determining the z position.
         /// @param position The x and y coordinates of the position.
-        TilePlacement(std::size_t index, svec2 position, GLsizei layer)
+        TilePlacement(std::size_t index, dmath::svec2 position, std::size_t layer)
             : index(index)
             , position(position.x(), position.y(), layer)
         {}
+
+        /// @brief The position on the given mipmap layer.
+        auto pixelPos(std::size_t mipmap_layer = 0) const { return position.xy() >> mipmap_layer; }
+
+        /// @brief The position and atlas layer on the given mipmap layer.
+        auto pixelPosAndLayer(std::size_t mipmap_layer = 0) const
+        {
+            auto [x, y] = pixelPos(mipmap_layer);
+            return dmath::svec3(x, y, position.z());
+        }
     };
 
     /// @brief Contains data about a single texture tile on a layer.
     struct TileData {
-        TBorderedImageData bordered_image_data;
+        MipmapLevels mipmap_levels;
         TilePlacement placement;
         std::shared_ptr<const AtlasInfo> atlas_info;
 
-        TileData(TBorderedImageData&& bordered_image_data, std::shared_ptr<const AtlasInfo> atlas_info)
-            : bordered_image_data(std::move(bordered_image_data))
+        TileData(MipmapLevels&& mipmap_levels, std::shared_ptr<const AtlasInfo> atlas_info)
+            : mipmap_levels(std::move(mipmap_levels))
             , atlas_info(std::move(atlas_info))
         {}
 
@@ -93,7 +107,7 @@ private:
     class Layer {
     public:
         /// @brief Creates a new layer with the given tile size, specified as log2.
-        explicit Layer(const svec2& tile_size_log2, std::size_t max_texture_size)
+        explicit Layer(const dmath::svec2& tile_size_log2, std::size_t max_texture_size)
             : tile_size_log2_(tile_size_log2)
             , max_tiles_(calculateMaxTiles(max_texture_size))
         {}
@@ -104,22 +118,25 @@ private:
         Layer& operator=(Layer&&) = default;
 
         /// @brief Returns the log2 of the pixel size of a tile.
-        svec2 tileSizeLog2() const { return tile_size_log2_; }
+        dmath::svec2 tileSizeLog2() const { return tile_size_log2_; }
         /// @brief Returns the pixel size of a single tile.
-        svec2 tileSize() const { return {GLsizei{1} << tile_size_log2_.x(), GLsizei{1} << tile_size_log2_.y()}; }
+        dmath::svec2 tileSize() const
+        {
+            return {std::size_t{1} << tile_size_log2_.x(), std::size_t{1} << tile_size_log2_.y()};
+        }
 
         /// @brief Calculates the required grid size (for the longer side) to fit all tiles.
-        GLsizei requiredGridSizeLog2() const
+        std::size_t requiredGridSizeLog2() const
         {
             if (tiles_.empty())
                 return 0;
-            auto diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
+            auto diff_log2 = dutils::absoluteDifference(tile_size_log2_.x(), tile_size_log2_.y());
             auto square_tiles = ((tiles_.size() - 1) >> diff_log2) + 1;
             return (dutils::ilog2ceil(square_tiles) + 1) >> 1;
         }
 
         /// @brief Calculates the required texture size to fit all tiles.
-        GLsizei requiredTextureSize() const { return tileSize().maxValue() << requiredGridSizeLog2(); }
+        std::size_t requiredTextureSize() const { return tileSize().maxValue() << requiredGridSizeLog2(); }
 
         /// @brief Whether the grid is empty.
         bool empty() const { return tiles_.empty(); }
@@ -128,7 +145,7 @@ private:
         bool full() const { return first_free_tile_ == max_tiles_; }
 
         /// @brief Places a single tile in the grid, filling potential gaps that appeared after removing tiles.
-        void addTile(TileData& tile, GLsizei layer)
+        void addTile(TileData& tile, std::size_t layer)
         {
             assert(!full());
             tile.placement = TilePlacement(first_free_tile_, tileSize() * indexToPosition(first_free_tile_), layer);
@@ -165,8 +182,10 @@ private:
                     drawTile(*tile, modify);
                     assert(tile->placement.written);
                 }
-                if (freeze)
-                    tile->bordered_image_data.free();
+                if (freeze) {
+                    for (auto& mipmap_level : tile->mipmap_levels)
+                        mipmap_level.free();
+                }
             }
         }
 
@@ -182,46 +201,49 @@ private:
         /// @brief Draws a single tile onto the texture.
         void drawTile(TileData& tile, const TextureModifyFunction& modify) const
         {
-            assert(tile.bordered_image_data);
-            modify(tile.bordered_image_data, tile.placement.position, 0); // TODO: Mipmapping
+            for (std::size_t mipmap_level = 0; mipmap_level < tile.mipmap_levels.count(); mipmap_level++) {
+                const auto& bordered_image = tile.mipmap_levels[mipmap_level];
+                assert(bordered_image);
+                modify(bordered_image, tile.placement.pixelPosAndLayer(mipmap_level), mipmap_level);
+            }
             tile.placement.written = true;
         }
 
         /// @brief Returns the maximum number of tiles, that can fit in a square texture of the given size.
         std::size_t calculateMaxTiles(std::size_t max_texture_size) const
         {
-            assert(static_cast<std::size_t>(tileSize().maxValue()) <= max_texture_size);
+            assert(tileSize().maxValue() <= max_texture_size);
             auto x_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.x());
             auto y_tiles = std::size_t{1} << dutils::ilog2(max_texture_size >> tile_size_log2_.y());
             return x_tiles * y_tiles;
         }
 
         /// @brief Inverse pairing function, returning only even/odd bits as x/y.
-        svec2 indexToPosition(std::size_t index)
+        dmath::svec2 indexToPosition(std::size_t index)
         {
-            auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
+            auto size_diff_log2 = dutils::absoluteDifference(tile_size_log2_.x(), tile_size_log2_.y());
             auto flip = tile_size_log2_.x() < tile_size_log2_.y();
-            auto x = static_cast<GLsizei>(dutils::removeOddBits(index >> size_diff_log2));
-            auto y = static_cast<GLsizei>(dutils::removeOddBits(index >> (size_diff_log2 + 1)));
+            auto x = dutils::removeOddBits(index >> size_diff_log2);
+            auto y = dutils::removeOddBits(index >> (size_diff_log2 + 1));
             y <<= size_diff_log2;
             y |= index & ~(~std::size_t{0} << size_diff_log2);
-            return flip ? svec2(y, x) : svec2(x, y);
+            return flip ? dmath::svec2(y, x) : dmath::svec2(x, y);
         }
 
         /// @brief Pairing function, interleaving x/y as odd/even bits of the resulting integer.
-        std::size_t positionToIndex(svec2 position)
+        std::size_t positionToIndex(dmath::svec2 position)
         {
             auto size_diff_log2 = std::abs(tile_size_log2_.x() - tile_size_log2_.y());
             auto flip = tile_size_log2_.x() < tile_size_log2_.y();
             position = flip ? position.yx() : position;
             auto result = position.y() & ~(~std::size_t{0} << size_diff_log2);
             position.y() >>= size_diff_log2;
-            result |= dutils::interleaveZeros(static_cast<std::size_t>(position.x())) << size_diff_log2;
-            result |= dutils::interleaveZeros(static_cast<std::size_t>(position.y())) << (size_diff_log2 + 1);
+            result |= dutils::interleaveZeros(position.x()) << size_diff_log2;
+            result |= dutils::interleaveZeros(position.y()) << (size_diff_log2 + 1);
             return result;
         }
 
-        svec2 tile_size_log2_;
+        dmath::svec2 tile_size_log2_;
         std::vector<TileData*> tiles_;
         std::size_t first_free_tile_ = 0;
         std::size_t max_tiles_;
@@ -244,26 +266,41 @@ public:
         {
             return lhs.data_ == rhs.data_;
         }
+
         [[nodiscard]] friend bool operator!=(const TileHandle& lhs, const TileHandle& rhs) noexcept
         {
             return !(lhs == rhs);
         }
 
-        auto atlasPixelSize() const { return dataOrThrow().atlas_info->atlas_size; }
-        auto pixelPos() const { return dataOrThrow().placement.position.xy(); }
-        auto pixelSize() const { return dataOrThrow().bordered_image_data.size(); }
+        auto atlasPixelSize(std::size_t mipmap_layer = 0) const
+        {
+            return dataOrThrow().atlas_info->atlas_size >> mipmap_layer;
+        }
 
-        auto pos() const { return static_cast<vec2>(pixelPos()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
-        auto size() const { return static_cast<vec2>(pixelSize()) / vec2(static_cast<GLfloat>(atlasPixelSize())); }
+        auto pixelPos(std::size_t mipmap_layer = 0) const { return dataOrThrow().placement.pixelPos(mipmap_layer); }
+
+        auto pixelSize(std::size_t mipmap_layer = 0) const { return dataOrThrow().mipmap_levels[mipmap_layer].size(); }
+
+        auto pixelPosAndLayer(std::size_t mipmap_layer = 0) const
+        {
+            return dataOrThrow().placement.pixelPosAndLayer(mipmap_layer);
+        }
+
+        auto pos() const { return static_cast<dmath::vec2>(pixelPos()) / static_cast<float>(atlasPixelSize()); }
+        auto size() const { return static_cast<dmath::vec2>(pixelSize()) / static_cast<float>(atlasPixelSize()); }
 
         bounds2 bounds() const
         {
-            auto padding = dataOrThrow().bordered_image_data.padding();
-            auto inset = static_cast<vec2>(padding) / (2.0f * atlasPixelSize());
-            return {pos() + inset, pos() + size() - inset};
+            auto padding = dataOrThrow().mipmap_levels[0].padding();
+            auto inset = static_cast<dmath::vec2>(padding) / (2.0f * atlasPixelSize());
+            auto top_left = pos();
+            auto bottom_right = top_left + size();
+            return bounds2(top_left, bottom_right).inset(inset);
         }
 
         auto layer() const { return dataOrThrow().placement.position.z(); }
+
+        auto mipmapLevels() const { return data_->mipmap_levels.size(); }
 
     private:
         TileHandle(const std::shared_ptr<const TileData>& data)
@@ -284,12 +321,7 @@ public:
     /// @exception std::invalid_argument if either maximum is less than zero.
     TextureAtlasTiles(const TextureAtlasLimits& limits)
         : limits_(limits)
-    {
-        if (limits.max_texture_size < 0)
-            throw std::invalid_argument("Maximum texture size cannot be negative.");
-        if (limits.max_layer_count < 0)
-            throw std::invalid_argument("Maximum layer count cannot be negative.");
-    }
+    {}
 
     TextureAtlasTiles(const TextureAtlasTiles&) = delete;
     TextureAtlasTiles(TextureAtlasTiles&&) = default;
@@ -300,9 +332,9 @@ public:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    [[nodiscard]] TileHandle add(TBorderedImageData bordered_image_data)
+    [[nodiscard]] TileHandle add(MipmapLevels mipmap_levels)
     {
-        return TileHandle(emplaceTile(std::move(bordered_image_data)));
+        return TileHandle(emplaceTile(std::move(mipmap_levels)));
     }
 
     /// @brief Checks if a tile with the given name exists.
@@ -341,13 +373,13 @@ public:
     }
 
     /// @brief Similar to updateTexture, but also frees image data and returns a frozen atlas.
-    [[nodiscard]] FrozenTextureAtlasTiles<TBorderedImageData> freeze(const TextureResizeFunction& resize,
-                                                                     const TextureModifyFunction& modify) &&
+    [[nodiscard]] FrozenTextureAtlasTiles<BorderedImageData> freeze(const TextureResizeFunction& resize,
+                                                                    const TextureModifyFunction& modify) &&
     {
         ensureTextureSize(resize);
         for (auto& layer : layers_)
             layer.drawTiles(modify, true);
-        return FrozenTextureAtlasTiles<TBorderedImageData>(std::move(*this));
+        return FrozenTextureAtlasTiles<BorderedImageData>(std::move(*this));
     }
 
     // Not really useful outside of debugging and unit-test:
@@ -363,36 +395,37 @@ private:
     void ensureTextureSize(const TextureResizeFunction& resize)
     {
         auto required_size = maxLayerSize();
-        auto layers = static_cast<GLsizei>(layers_.size());
-        if (!resize(required_size, layers, 1))
+        if (required_size == 0)
+            return;
+        auto layers = layers_.size();
+        auto mipmap_levels = maxMipmapLevels(required_size);
+        if (!resize(required_size, layers, mipmap_levels))
             return;
         for (const auto& tile : tiles_)
             tile->placement.written = false;
     }
 
     /// @brief Finds the maximum layer size.
-    GLsizei maxLayerSize() const
+    std::size_t maxLayerSize() const
     {
-        GLsizei result = 0;
+        std::size_t result = 0;
         for (auto& layer : layers_)
             result = std::max(result, layer.requiredTextureSize());
         return result;
     }
 
-    using LayerResult = std::pair<TextureAtlasTiles<TBorderedImageData>::Layer*, std::size_t>;
+    using LayerResult = std::pair<TextureAtlasTiles<BorderedImageData>::Layer*, std::size_t>;
 
     /// @brief Returns a pointer to a (possibly newly created) layer for the given tile size and its index.
     /// @remark The pointer can be null, in which case a new layer would have exceeded the maximum layer count.
-    LayerResult layerForTile(const svec2& size)
+    LayerResult layerForTile(const dmath::svec2& size)
     {
-        auto unsigned_width = static_cast<std::make_unsigned_t<GLsizei>>(size.x());
-        auto unsigned_height = static_cast<std::make_unsigned_t<GLsizei>>(size.y());
-        auto tile_size_log2 = svec2(static_cast<GLsizei>(dutils::ilog2ceil(unsigned_width)),
-                                    static_cast<GLsizei>(dutils::ilog2ceil(unsigned_height)));
+        auto tile_size_log2 = dmath::svec2(static_cast<std::size_t>(dutils::ilog2ceil(size.x())),
+                                           static_cast<std::size_t>(dutils::ilog2ceil(size.y())));
         auto layer_iter = std::find_if(begin(layers_), end(layers_), [&](const Layer& layer) {
             return !layer.full() && layer.tileSizeLog2() == tile_size_log2;
         });
-        auto layer_index = std::distance(begin(layers_), layer_iter);
+        auto layer_index = static_cast<std::size_t>(std::distance(begin(layers_), layer_iter));
         if (layer_iter != end(layers_))
             return {&*layer_iter, layer_index};
         if (layer_index >= limits_.max_layer_count)
@@ -404,24 +437,24 @@ private:
     /// @exception std::invalid_argument if the image does not contain any data.
     /// @exception std::invalid_argument if the image is too big.
     /// @exception std::length_error if a new layer would exceed the maximum layer count.
-    const std::shared_ptr<TileData>& emplaceTile(TBorderedImageData&& bordered_image_data)
+    const std::shared_ptr<TileData>& emplaceTile(MipmapLevels&& mipmap_levels)
     {
-        if (!bordered_image_data)
+        if (!mipmap_levels.fullImage())
             throw std::invalid_argument("Image does not contain data.");
 
-        auto size = bordered_image_data.size();
+        auto size = mipmap_levels.fullImage().size();
 
         if (size.greaterThan(limits_.max_texture_size).any())
             throw std::invalid_argument("Image is too big for texture atlas. (" + size.format() + " > " +
                                         std::to_string(limits_.max_texture_size) + ")");
 
-        auto [layer, index] = layerForTile(static_cast<svec2>(size));
+        auto [layer, index] = layerForTile(size);
         if (!layer)
             throw std::length_error("Too many texture atlas layers. (max " + std::to_string(limits_.max_layer_count) +
                                     ")");
 
-        const auto& tile = tiles_.emplace_back(std::make_shared<TileData>(std::move(bordered_image_data), atlas_info_));
-        layer->addTile(*tile, static_cast<GLsizei>(index));
+        const auto& tile = tiles_.emplace_back(std::make_shared<TileData>(std::move(mipmap_levels), atlas_info_));
+        layer->addTile(*tile, index);
         atlas_info_->atlas_size = maxLayerSize();
         return tile;
     }
@@ -456,23 +489,24 @@ private:
 template <typename TBorderedImageData>
 class FrozenTextureAtlasTiles {
 public:
-    using TileHandle = typename TextureAtlasTiles<TBorderedImageData>::TileHandle;
+    using BorderedImageData = TBorderedImageData;
+    using TileHandle = typename TextureAtlasTiles<BorderedImageData>::TileHandle;
 
     FrozenTextureAtlasTiles(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles(FrozenTextureAtlasTiles&&) = default;
     FrozenTextureAtlasTiles& operator=(const FrozenTextureAtlasTiles&) = delete;
     FrozenTextureAtlasTiles& operator=(FrozenTextureAtlasTiles&&) = default;
 
-    friend class TextureAtlasTiles<TBorderedImageData>;
+    friend class TextureAtlasTiles<BorderedImageData>;
 
     [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
 private:
-    FrozenTextureAtlasTiles(TextureAtlasTiles<TBorderedImageData>&& tiles)
+    FrozenTextureAtlasTiles(TextureAtlasTiles<BorderedImageData>&& tiles)
         : tiles_(std::move(tiles))
     {}
 
-    TextureAtlasTiles<TBorderedImageData> tiles_;
+    TextureAtlasTiles<BorderedImageData> tiles_;
 };
 
 } // namespace dang::gl

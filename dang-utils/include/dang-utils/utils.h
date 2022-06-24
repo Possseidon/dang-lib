@@ -398,4 +398,10 @@ template <typename T>
     return value * value;
 }
 
+template <typename T>
+[[nodiscard]] constexpr auto absoluteDifference(const T& a, const T& b)
+{
+    return a < b ? b - a : a - b;
+}
+
 } // namespace dang::utils

@@ -11,9 +11,9 @@ The TextureBase concept:
 
 - Move-constructible
 - using BorderedImageData = ...;
-- bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
+- bool resize(std::size_t required_size, std::size_t layers, std::size_t mipmap_levels)
     -> protected, resizes the texture
-- void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
+- void modify(const BorderedImageData& bordered_image_data, dmath::svec3 offset, std::size_t mipmap_level)
     -> protected, modifies the texture at a given spot
 
 */
@@ -24,19 +24,18 @@ class BasicFrozenTextureAtlas;
 template <typename TTextureBase>
 class TextureAtlasBase : public TTextureBase {
 public:
-    using BorderedImageData = typename TTextureBase::BorderedImageData;
+    using TextureBase = TTextureBase;
+    using BorderedImageData = typename TextureBase::BorderedImageData;
     using Tiles = TextureAtlasTiles<BorderedImageData>;
     using TileHandle = typename Tiles::TileHandle;
-    using Frozen = BasicFrozenTextureAtlas<TTextureBase>;
+    using MipmapLevels = typename Tiles::MipmapLevels;
+    using Frozen = BasicFrozenTextureAtlas<TextureBase>;
 
     TextureAtlasBase(const TextureAtlasLimits& limits)
         : tiles_(limits)
     {}
 
-    [[nodiscard]] TileHandle add(BorderedImageData bordered_image_data)
-    {
-        return tiles_.add(std::move(bordered_image_data));
-    }
+    [[nodiscard]] TileHandle add(MipmapLevels mipmap_levels) { return tiles_.add(std::move(mipmap_levels)); }
 
     [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
@@ -68,17 +67,18 @@ private:
 template <typename TTextureBase>
 class BasicFrozenTextureAtlas : public TTextureBase {
 public:
-    using BorderedImageData = typename TTextureBase::BorderedImageData;
+    using TextureBase = TTextureBase;
+    using BorderedImageData = typename TextureBase::BorderedImageData;
     using Tiles = FrozenTextureAtlasTiles<BorderedImageData>;
     using TileHandle = typename Tiles::TileHandle;
 
-    friend class TextureAtlasBase<TTextureBase>;
+    friend class TextureAtlasBase<TextureBase>;
 
     [[nodiscard]] bool contains(const TileHandle& tile_handle) const { return tiles_.contains(tile_handle); }
 
 private:
-    BasicFrozenTextureAtlas(Tiles&& tiles, TTextureBase&& texture)
-        : TTextureBase(std::move(texture))
+    BasicFrozenTextureAtlas(Tiles&& tiles, TextureBase&& texture)
+        : TextureBase(std::move(texture))
         , tiles_(std::move(tiles))
     {}
 

@@ -26,20 +26,23 @@ public:
     Texture2DArray& texture() { return texture_; }
 
 protected:
-    bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
+    bool resize(std::size_t required_size, std::size_t layers, std::size_t mipmap_levels)
     {
         assert(texture_.size().x() == texture_.size().y());
         if (required_size == texture_.size().x() && layers == texture_.size().z())
             return false;
         // /!\ Resets all texture parameters!
-        texture_ = Texture2DArray(
-            {required_size, required_size, layers}, mipmap_levels, pixel_format_internal_v<v_pixel_format>);
+        texture_ = Texture2DArray(svec3(static_cast<GLsizei>(required_size),
+                                        static_cast<GLsizei>(required_size),
+                                        static_cast<GLsizei>(layers)),
+                                  static_cast<GLsizei>(mipmap_levels),
+                                  pixel_format_internal_v<v_pixel_format>);
         return true;
     };
 
-    void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
+    void modify(const BorderedImageData& bordered_image_data, dmath::svec3 offset, std::size_t mipmap_level)
     {
-        texture_.modify(bordered_image_data.image(), offset, mipmap_level);
+        texture_.modify(bordered_image_data.image(), static_cast<ivec3>(offset), static_cast<GLint>(mipmap_level));
     };
 
 private:
@@ -56,8 +59,8 @@ class TextureAtlas
 public:
     using Base = TextureAtlasBase<detail::TextureAtlasSingleTexture<v_pixel_format, v_pixel_type, v_row_alignment>>;
 
-    explicit TextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
-                          std::optional<GLsizei> max_layer_count = std::nullopt)
+    explicit TextureAtlas(std::optional<std::size_t> max_texture_size = std::nullopt,
+                          std::optional<std::size_t> max_layer_count = std::nullopt)
         : Base(TextureAtlasUtils::checkLimits(max_texture_size, max_layer_count))
     {}
 };

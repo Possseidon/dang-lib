@@ -24,9 +24,9 @@ public:
             : bordered_images_((ensureCompatible(bordered_images), std::move(bordered_images)))
         {}
 
-        BorderedImage& operator[](TSubTextureEnum sub_texture) { return bordered_images_[sub_texture]; }
+        auto& operator[](TSubTextureEnum sub_texture) { return bordered_images_[sub_texture]; }
 
-        const BorderedImage& operator[](TSubTextureEnum sub_texture) const { return bordered_images_[sub_texture]; }
+        const auto& operator[](TSubTextureEnum sub_texture) const { return bordered_images_[sub_texture]; }
 
         // --- BorderedImageData concept:
 
@@ -72,22 +72,27 @@ public:
     Texture2DArray& texture(TSubTextureEnum sub_texture) { return textures_[sub_texture]; }
 
 protected:
-    bool resize(GLsizei required_size, GLsizei layers, GLsizei mipmap_levels)
+    bool resize(std::size_t required_size, std::size_t layers, std::size_t mipmap_levels)
     {
         assert(textures_.front().size().x() == textures_.front().size().y());
         if (required_size == textures_.front().size().x() && layers == textures_.front().size().z())
             return false;
         // /!\ Resets all texture parameters!
-        for (auto& texture : textures_)
-            texture = Texture2DArray(
-                {required_size, required_size, layers}, mipmap_levels, pixel_format_internal_v<v_pixel_format>);
+        for (auto& texture : textures_) {
+            texture = Texture2DArray(svec3(static_cast<GLsizei>(required_size),
+                                           static_cast<GLsizei>(required_size),
+                                           static_cast<GLsizei>(layers)),
+                                     static_cast<GLsizei>(mipmap_levels),
+                                     pixel_format_internal_v<v_pixel_format>);
+        }
         return true;
     };
 
-    void modify(const BorderedImageData& bordered_image_data, ivec3 offset, GLint mipmap_level)
+    void modify(const BorderedImageData& bordered_image_data, dmath::svec3 offset, std::size_t mipmap_level)
     {
         for (auto sub_texture : dutils::enumerate<TSubTextureEnum>)
-            textures_[sub_texture].modify(bordered_image_data[sub_texture], offset, mipmap_level);
+            textures_[sub_texture].modify(
+                bordered_image_data[sub_texture], static_cast<GLint>(offset), static_cast<GLint>(mipmap_level));
     };
 
 private:
@@ -115,8 +120,8 @@ public:
     using Base = TextureAtlasBase<
         detail::TextureAtlasMultiTexture<TSubTextureEnum, v_pixel_format, v_pixel_type, v_row_alignment>>;
 
-    explicit MultiTextureAtlas(std::optional<GLsizei> max_texture_size = std::nullopt,
-                               std::optional<GLsizei> max_layer_count = std::nullopt)
+    explicit MultiTextureAtlas(std::optional<std::size_t> max_texture_size = std::nullopt,
+                               std::optional<std::size_t> max_layer_count = std::nullopt)
         : Base(TextureAtlasUtils::checkLimits(max_texture_size, max_layer_count))
     {}
 };

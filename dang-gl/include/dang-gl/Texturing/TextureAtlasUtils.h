@@ -5,9 +5,9 @@
 
 namespace dang::gl::TextureAtlasUtils {
 
-GLsizei checkMaxTextureSize(std::optional<GLsizei> max_texture_size);
-GLsizei checkMaxLayerCount(std::optional<GLsizei> max_layer_count);
+std::size_t checkMaxTextureSize(std::optional<std::size_t> max_texture_size);
+std::size_t checkMaxLayerCount(std::optional<std::size_t> max_layer_count);
 
-TextureAtlasLimits checkLimits(std::optional<GLsizei> max_texture_size, std::optional<GLsizei> max_layer_count);
+TextureAtlasLimits checkLimits(std::optional<std::size_t> max_texture_size, std::optional<std::size_t> max_layer_count);
 
 } // namespace dang::gl::TextureAtlasUtils
