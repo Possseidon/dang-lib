@@ -9,6 +9,12 @@
         "box2d"
       ]
     },
+    "ecs": {
+      "description": "Include entity component system library.",
+      "dependencies": [
+        "boost-dynamic-bitset"
+      ]
+    },
     "gl": {
       "description": "Include OpenGL library.",
       "dependencies": [
