@@ -327,7 +327,7 @@ struct Bounds {
     }
 
     /// @brief Remaps a point from the bounds to the target bounds.
-    /// @remarks For the inverse operation, simply swap the bounds.
+    /// @remark For the inverse operation, simply swap the bounds.
     constexpr Point map(const Point& point, const Bounds& target) const
     {
         return target.low + (point - low) * target.size() / size();
