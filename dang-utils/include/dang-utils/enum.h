@@ -477,6 +477,10 @@ public:
     friend constexpr bool operator<(const EnumSet& lhs, const EnumSet& rhs)
     {
         // TODO: C++20 replace with std::array comparison, which is finally constexpr.
+
+        // TODO: Even though I think I tested this excessively, this >= is probably broken.
+        //       What I want to do is compare the least significant bit first, which is not possible.
+        //       I have to completely flip each word...
         for (std::size_t i = 0; i < word_count; i++)
             if (lhs.words_[i] >= rhs.words_[i])
                 return false;
