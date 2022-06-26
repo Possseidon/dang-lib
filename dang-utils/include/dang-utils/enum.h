@@ -85,7 +85,7 @@ public:
             std::uint16_t,
             std::conditional_t<enum_count <= 32, std::uint32_t, std::uint64_t>>>;
 
-    static constexpr std::size_t word_bits = sizeof(Word) * CHAR_BIT;
+    static constexpr std::size_t word_bits = sizeof(Word) * char_bit;
     static constexpr std::size_t word_count = (enum_count + word_bits - 1) / word_bits;
     static constexpr std::size_t padding_bits = word_count * word_bits - enum_count;
 
@@ -413,7 +413,7 @@ public:
 
     constexpr EnumSet& operator-=(T value) { return reset(value); }
 
-    constexpr EnumSet operator~() { return EnumSet(*this).flip(); }
+    constexpr EnumSet operator~() const { return EnumSet(*this).flip(); }
 
     // --- container operations
 
