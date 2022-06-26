@@ -398,4 +398,10 @@ template <typename T>
     return value * value;
 }
 
+template <typename T>
+[[nodiscard]] constexpr auto ceilDiv(T numerator, T denominator)
+{
+    return (numerator + denominator - 1) / denominator;
+}
+
 } // namespace dang::utils
