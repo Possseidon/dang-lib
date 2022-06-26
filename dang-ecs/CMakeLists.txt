@@ -12,6 +12,10 @@ target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${CMAKE_C
 
 target_link_libraries(${PROJECT_NAME} INTERFACE dang-utils)
 
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ TYPE INCLUDE)
 
 install(TARGETS ${PROJECT_NAME} EXPORT dang-lib-targets)

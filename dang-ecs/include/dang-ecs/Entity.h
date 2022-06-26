@@ -15,7 +15,7 @@ struct Entity {
 
     constexpr explicit operator bool() { return id != invalid_id; }
 
-    constexpr friend auto operator<=>(const Entity&, const Entity&) = default;
+    friend constexpr auto operator<=>(const Entity&, const Entity&) = default;
 };
 
 static constexpr Entity invalid_entity;

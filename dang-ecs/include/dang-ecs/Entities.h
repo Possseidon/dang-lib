@@ -23,6 +23,23 @@ static_assert(EntitiesBitStorage::npos == Entity::invalid_id);
 template <typename CRTP>
 class EntitiesHelper {
 public:
+    EntitiesHelper() = default;
+
+    /// @brief Mainly meant for testing.
+    EntitiesHelper(std::initializer_list<Entity> entities)
+    {
+        for (auto entity : entities)
+            crtp().insert(entity);
+    }
+
+    EntitiesHelper(auto&& entities) { crtp() |= std::forward<decltype(entities)>(entities); }
+
+    CRTP& operator=(auto&& entities)
+    {
+        crtp().clear();
+        return crtp() |= std::forward<decltype(entities)>(entities);
+    }
+
     // --- Element Access
 
     // Vector
@@ -133,7 +150,8 @@ private:
 
 class EntitiesBitset : public detail::EntitiesHelper<EntitiesBitset> {
 public:
-    EntitiesBitset() = default;
+    using EntitiesHelper::EntitiesHelper;
+    using EntitiesHelper::operator=;
 
     // --- Element Access
 
@@ -168,7 +186,7 @@ public:
     constexpr std::size_t capacity() const { return ids_.capacity(); }
     constexpr void shrink_to_fit() { return ids_.shrink_to_fit(); }
 
-    constexpr std::size_t currentHeapBytes() { return capacity() / dutils::char_bit; }
+    constexpr std::size_t currentHeapBytes() const { return capacity() / dutils::char_bit; }
 
     // Bitset
 
@@ -217,6 +235,14 @@ public:
     EntitiesBitset& operator&=(auto&& other)
     {
         if constexpr (std::is_same_v<std::remove_cvref_t<decltype(other)>, EntitiesBitset>) {
+            if (empty())
+                return *this;
+
+            if (other.empty()) {
+                clear();
+                return *this;
+            }
+
             if (other.ids_.size() > ids_.size()) {
                 if constexpr (std::is_lvalue_reference_v<decltype(other)>) {
                     auto other_ids = other.ids_;
@@ -247,6 +273,14 @@ public:
     EntitiesBitset& operator|=(auto&& other)
     {
         if constexpr (std::is_same_v<std::remove_cvref_t<decltype(other)>, EntitiesBitset>) {
+            if (other.empty())
+                return *this;
+
+            if (empty()) {
+                ids_ = std::forward<decltype(other)>(other).ids_;
+                return *this;
+            }
+
             if (other.ids_.size() < ids_.size()) {
                 if constexpr (std::is_lvalue_reference_v<decltype(other)>) {
                     auto other_ids = other.ids_;
@@ -275,6 +309,14 @@ public:
     EntitiesBitset& operator^=(auto&& other)
     {
         if constexpr (std::is_same_v<std::remove_cvref_t<decltype(other)>, EntitiesBitset>) {
+            if (other.empty())
+                return *this;
+
+            if (empty()) {
+                ids_ = std::forward<decltype(other)>(other).ids_;
+                return *this;
+            }
+
             if (other.ids_.size() < ids_.size()) {
                 if constexpr (std::is_lvalue_reference_v<decltype(other)>) {
                     auto other_ids = other.ids_;
@@ -303,6 +345,9 @@ public:
     EntitiesBitset& operator-=(auto&& other)
     {
         if constexpr (std::is_same_v<std::remove_cvref_t<decltype(other)>, EntitiesBitset>) {
+            if (empty() || other.empty())
+                return *this;
+
             if (other.ids_.size() != ids_.size()) {
                 if constexpr (std::is_lvalue_reference_v<decltype(other)>) {
                     auto other_ids = other.ids_;
@@ -335,7 +380,7 @@ public:
     {
         if (lhs.ids_ == rhs.ids_)
             return std::strong_ordering::equal;
-        return lhs.ids_ < rhs.ids_ ? std::strong_ordering::less : std::strong_ordering::greater;
+        return oplessthan(lhs.ids_, rhs.ids_) ? std::strong_ordering::less : std::strong_ordering::greater;
     }
 
     constexpr std::optional<Entity::ID> maxID() const
@@ -351,7 +396,7 @@ public:
         return max_entity_id ? (*max_entity_id + bits_per_block - 1) / bits_per_block * block_size : 0;
     }
 
-    static constexpr bool constant_lookup = true;
+    static constexpr bool hasConstantLookup() { return true; }
 
     // operator&() from helper
     // operator|() from helper
@@ -370,7 +415,8 @@ private:
 
 class EntitiesSortedVector : public detail::EntitiesHelper<EntitiesSortedVector> {
 public:
-    EntitiesSortedVector() = default;
+    using EntitiesHelper::EntitiesHelper;
+    using EntitiesHelper::operator=;
 
     // --- Element Access
 
@@ -412,7 +458,7 @@ public:
     constexpr std::size_t capacity() const { return entities_.capacity(); }
     constexpr void shrink_to_fit() { return entities_.shrink_to_fit(); }
 
-    constexpr std::size_t currentHeapBytes() { return capacity() * sizeof(Entity); }
+    constexpr std::size_t currentHeapBytes() const { return capacity() * sizeof(Entity); }
 
     // Bitset
 
@@ -448,7 +494,7 @@ public:
 
     EntitiesSortedVector& operator&=(const auto& other)
     {
-        if constexpr (other.constant_lookup) {
+        if (other.hasConstantLookup()) {
             std::erase_if(entities_, [&](Entity entity) { return !other.test(entity); });
         }
         else {
@@ -493,7 +539,7 @@ public:
 
     constexpr EntitiesSortedVector& operator-=(const auto& other)
     {
-        if constexpr (other.constant_lookup) {
+        if constexpr (other.hasConstantLookup()) {
             std::erase_if(entities_, [&](Entity entity) { return other.test(entity); });
         }
         else {
@@ -528,7 +574,7 @@ public:
         return entity_count * sizeof(Entity);
     }
 
-    static constexpr bool constant_lookup = false;
+    static constexpr bool hasConstantLookup() { return false; }
 
     // operator&() from helper
     // operator|() from helper
@@ -543,26 +589,222 @@ private:
     std::vector<Entity> entities_;
 };
 
-class Entities : public detail::EntitiesHelper<Entities> {
+template <typename... TImplementations>
+class EntitiesVariant : public detail::EntitiesHelper<EntitiesVariant<TImplementations...>> {
 public:
-    constexpr decltype(auto) visit(auto visitor) { return std::visit(visitor, entity_storage_); }
-    constexpr decltype(auto) visit(auto visitor) const { return std::visit(visitor, entity_storage_); }
+    using detail::EntitiesHelper<EntitiesVariant>::EntitiesHelper;
+    using detail::EntitiesHelper<EntitiesVariant>::operator=;
 
-    constexpr std::size_t size() const
+    constexpr decltype(auto) visit(auto visitor) & { return std::visit(visitor, implementation_); }
+    constexpr decltype(auto) visit(auto visitor) const& { return std::visit(visitor, implementation_); }
+    constexpr decltype(auto) visit(auto visitor) && { return std::visit(visitor, std::move(implementation_)); }
+
+    // --- Element Access
+
+    // Vector
+
+    constexpr Entity front() const
     {
-        return visit([](const auto& storage) { return storage.size(); });
+        return visit([](const auto& implementation) { return implementation.front(); });
+    }
+    // back() from helper
+
+    constexpr bool contains(Entity entity) const
+    {
+        return visit([&](const auto& implementation) { return implementation.contains(entity); });
     }
 
-    constexpr std::optional<Entity::ID> maxID() const
-    {
-        return visit([](const auto& storage) { return storage.maxID(); });
-    }
+    // Bitset
+
+    // test() from helper
+    // all()/any()/none() don't really make a lot of sense
+    // count() from helper
+
+    // --- Iterators
 
     // Use visit to iterate over begin()/end().
     // Otherwise they would need to return variants which probably makes iteration quite slow.
 
+    // --- Capacity
+
+    // Vector
+
+    // empty() from helper
+
+    constexpr std::size_t size() const
+    {
+        return visit([](const auto& implementation) { return implementation.size(); });
+    }
+
+    constexpr std::size_t max_size() const
+    {
+        return visit([](const auto& implementation) { return implementation.max_size(); });
+    }
+
+    constexpr void reserve(std::size_t new_capacity)
+    {
+        visit([&](auto& implementation) { implementation.reserve(new_capacity); });
+    }
+
+    constexpr std::size_t capacity() const
+    {
+        return visit([](const auto& implementation) { return implementation.capacity(); });
+    }
+
+    constexpr void shrink_to_fit()
+    {
+        visit([](auto& implementation) { implementation.shrink_to_fit(); });
+    }
+
+    constexpr std::size_t currentHeapBytes() const
+    {
+        return visit([](const auto& implementation) { return implementation.curentHeapBytes(); });
+    }
+
+    // Bitset
+
+    // size() already means the same as count()
+
+    // --- Modifiers
+
+    // Vector
+
+    constexpr void clear()
+    {
+        visit([](auto& implementation) { implementation.clear(); });
+    }
+
+    constexpr bool insert(Entity entity)
+    {
+        return visit([&](auto& implementation) { return implementation.insert(entity); });
+    }
+
+    constexpr bool erase(Entity entity)
+    {
+        return visit([&](auto& implementation) { return implementation.erase(entity); });
+    }
+
+    constexpr void swap(EntitiesVariant& other) { implementation_.swap(other.implementation_); }
+
+    // Bitset
+
+    // TODO: does forward work here?
+
+    constexpr EntitiesVariant& operator&=(auto&& other)
+    {
+        visit([&](auto& implementation) { implementation &= std::forward<decltype(other)>(other); });
+        return *this;
+    }
+
+    constexpr EntitiesVariant& operator|=(auto&& other)
+    {
+        visit([&](auto& implementation) { implementation |= std::forward<decltype(other)>(other); });
+        return *this;
+    }
+
+    constexpr EntitiesVariant& operator^=(auto&& other)
+    {
+        visit([&](auto& implementation) { implementation ^= std::forward<decltype(other)>(other); });
+        return *this;
+    }
+
+    constexpr EntitiesVariant& operator-=(auto&& other)
+    {
+        visit([&](auto& implementation) { implementation -= std::forward<decltype(other)>(other); });
+        return *this;
+    }
+
+    // set() from helper
+    // reset() from helper
+    // flip() from helper
+
+    // --- Other
+
+    friend constexpr std::strong_ordering operator<=>(const EntitiesVariant& lhs, const EntitiesVariant& rhs)
+    {
+        return std::visit(dutils::Overloaded{
+                              []<typename TImplementation>(const TImplementation& lhs_implementation,
+                                                           const TImplementation& rhs_implementation) {
+                                  return lhs_implementation <=> rhs_implementation;
+                              },
+                              [](const auto& lhs_implementation, const auto& rhs_implementation) {
+                                  return std::lexicographical_compare_three_way(lhs_implementation.begin(),
+                                                                                lhs_implementation.end(),
+                                                                                rhs_implementation.begin(),
+                                                                                rhs_implementation.end());
+                              },
+                          },
+                          lhs.implementation_,
+                          rhs.implementation_);
+    }
+
+    friend constexpr std::strong_ordering operator<=>(const EntitiesVariant& lhs, const auto& rhs_implementation)
+    {
+        return lhs.visit(dutils::Overloaded{
+            [&](decltype(rhs_implementation) lhs_implementation) { return lhs_implementation <=> rhs_implementation; },
+            [&](const auto& lhs_implementation) {
+                return std::lexicographical_compare_three_way(lhs_implementation.begin(),
+                                                              lhs_implementation.end(),
+                                                              rhs_implementation.begin(),
+                                                              rhs_implementation.end());
+            },
+        });
+    }
+
+    friend constexpr std::strong_ordering operator<=>(const auto& lhs_implementation, const EntitiesVariant& rhs)
+    {
+        return rhs.visit(dutils::Overloaded{
+            [&](decltype(lhs_implementation) rhs_implementation) { return lhs_implementation <=> rhs_implementation; },
+            [&](const auto& rhs_implementation) {
+                return std::lexicographical_compare_three_way(lhs_implementation.begin(),
+                                                              lhs_implementation.end(),
+                                                              rhs_implementation.begin(),
+                                                              rhs_implementation.end());
+            },
+        });
+    }
+
+    constexpr std::optional<Entity::ID> maxID() const
+    {
+        return visit([](const auto& implementation) { return implementation.maxID(); });
+    }
+
+    constexpr std::size_t requiredHeapBytesFor([[maybe_unused]] std::size_t entity_count,
+                                               std::optional<Entity::ID> max_entity_id) const
+    {
+        return visit([&](const auto& implementation) {
+            return implementation.requiredHeapBytesFor(entity_count, max_entity_id);
+        });
+    }
+
+    constexpr bool hasConstantLookup() const
+    {
+        return visit([](const auto& implementation) { return implementation.hasConstantLookup(); });
+    }
+
+    // operator&() from helper
+    // operator|() from helper
+    // operator^() from helper
+    // operator-() from helper
+
+    // --- Implementation Switching
+
+    template <typename TImplementation>
+    TImplementation usingImplementation() const&
+    {
+        return visit([](const auto& implementation) { return TImplementation(implementation); });
+    }
+
+    template <typename TImplementation>
+    TImplementation usingImplementation() &&
+    {
+        return std::move(*this).visit([](auto&& implementation) { return TImplementation(std::move(implementation)); });
+    }
+
 private:
-    std::variant<EntitiesBitset, EntitiesSortedVector> entity_storage_;
+    std::variant<TImplementations...> implementation_;
 };
+
+using Entities = EntitiesVariant<EntitiesBitset, EntitiesSortedVector>;
 
 } // namespace dang::ecs
