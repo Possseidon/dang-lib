@@ -104,12 +104,12 @@ public:
             return result;
         }
 
-        constexpr friend bool operator==(const PlanePoint& lhs, const PlanePoint& rhs)
+        friend constexpr bool operator==(const PlanePoint& lhs, const PlanePoint& rhs)
         {
             return std::tie(lhs.position, lhs.direction) == std::tie(rhs.position, rhs.direction);
         }
 
-        constexpr friend bool operator!=(const PlanePoint& lhs, const PlanePoint& rhs) { return !(lhs == rhs); }
+        friend constexpr bool operator!=(const PlanePoint& lhs, const PlanePoint& rhs) { return !(lhs == rhs); }
 
         vec3 position;
         vec3 direction;

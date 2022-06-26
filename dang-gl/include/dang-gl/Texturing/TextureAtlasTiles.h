@@ -37,7 +37,7 @@ template <typename TBorderedImageData>
 class TextureAtlasTiles {
 public:
     /// @brief A function that is called with required size (width and height), layers and mipmap levels.
-    /// @remarks Returns whether actual resizing occurred.
+    /// @remark Returns whether actual resizing occurred.
     using TextureResizeFunction = std::function<bool(GLsizei, GLsizei, GLsizei)>;
 
     /// @brief A function that uploads the image to a specific position and mipmap level of a texture.
