@@ -19,9 +19,6 @@ struct is_null_type : std::is_same<T, NullType> {};
 template <typename T>
 inline constexpr auto is_null_type_v = is_null_type<T>::value;
 
-template <typename T>
-concept NullTyped = is_null_type_v<T>;
-
 // --- TypeListExhaustion
 
 /// @brief The type list got exhausted from a drop, take or slice.
@@ -34,9 +31,6 @@ struct is_type_list_exhaustion : std::is_same<T, TypeListExhaustion> {};
 
 template <typename T>
 inline constexpr auto is_type_list_exhaustion_v = is_type_list_exhaustion<T>::value;
-
-template <typename T>
-concept ExhaustedTypeList = is_type_list_exhaustion_v<T>;
 
 // --- TypeList
 
@@ -62,9 +56,6 @@ inline constexpr auto is_type_list_v = is_type_list<T>::value;
 template <typename... TTypes>
 struct is_type_list<TypeList<TTypes...>> : std::true_type {};
 
-template <typename T>
-concept AnyTypeList = is_type_list_v<T>;
-
 // --- is_empty_type_list
 
 template <typename T>
@@ -73,15 +64,12 @@ struct is_empty_type_list : std::is_same<T, TypeList<>> {};
 template <typename T>
 inline constexpr auto is_empty_type_list_v = is_empty_type_list<T>::value;
 
-template <typename T>
-concept EmptyTypeList = is_empty_type_list_v<T>;
-
 // --- type_list_size
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 struct type_list_size;
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 inline constexpr auto type_list_size_v = type_list_size<TTypeList>::value;
 
 template <typename... TTypes>
@@ -89,10 +77,10 @@ struct type_list_size<TypeList<TTypes...>> : constant<sizeof...(TTypes)> {};
 
 // --- type_list_contains
 
-template <AnyTypeList TTypeList, typename TCheckedType>
+template <typename TTypeList, typename TCheckedType>
 struct type_list_contains;
 
-template <AnyTypeList TTypeList, typename TCheckedType>
+template <typename TTypeList, typename TCheckedType>
 inline constexpr auto type_list_contains_v = type_list_contains<TTypeList, TCheckedType>::value;
 
 template <typename... TTypes, typename TCheckedType>
@@ -101,10 +89,10 @@ struct type_list_contains<TypeList<TTypes...>, TCheckedType>
 
 // --- type_list_at
 
-template <AnyTypeList TTypeList, std::size_t v_index>
+template <typename TTypeList, std::size_t v_index>
 struct type_list_at;
 
-template <AnyTypeList TTypeList, std::size_t v_index>
+template <typename TTypeList, std::size_t v_index>
 using type_list_at_t = typename type_list_at<TTypeList, v_index>::type;
 
 template <std::size_t v_index>
@@ -118,26 +106,26 @@ struct type_list_at<TypeList<TType, TOtherTypes...>, v_index> : type_list_at<Typ
 
 // --- type_list_first
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 using type_list_first = type_list_at<TTypeList, 0>;
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 using type_list_first_t = typename type_list_first<TTypeList>::type;
 
 // --- type_list_last
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 using type_list_last = type_list_at<TTypeList, TTypeList::size - 1>;
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 using type_list_last_t = typename type_list_last<TTypeList>::type;
 
 // --- type_list_append
 
-template <AnyTypeList TTypeList, typename... TTypes>
+template <typename TTypeList, typename... TTypes>
 struct type_list_append;
 
-template <AnyTypeList TTypeList, typename... TTypes>
+template <typename TTypeList, typename... TTypes>
 using type_list_append_t = typename type_list_append<TTypeList, TTypes...>::type;
 
 template <typename... TFirstTypes, typename... TSecondTypes>
@@ -146,10 +134,10 @@ struct type_list_append<TypeList<TFirstTypes...>, TSecondTypes...>
 
 // --- type_list_prepend
 
-template <AnyTypeList TTypeList, typename... TTypes>
+template <typename TTypeList, typename... TTypes>
 struct type_list_prepend;
 
-template <AnyTypeList TTypeList, typename... TTypes>
+template <typename TTypeList, typename... TTypes>
 using type_list_prepend_t = typename type_list_prepend<TTypeList, TTypes...>::type;
 
 template <typename... TFirstTypes, typename... TSecondTypes>
@@ -158,28 +146,28 @@ struct type_list_prepend<TypeList<TFirstTypes...>, TSecondTypes...>
 
 // --- type_list_join
 
-template <AnyTypeList... TTypeLists>
+template <typename... TTypeLists>
 struct type_list_join;
 
-template <AnyTypeList... TTypeLists>
+template <typename... TTypeLists>
 using type_list_join_t = typename type_list_join<TTypeLists...>::type;
 
 template <>
 struct type_list_join<> : std::type_identity<TypeList<>> {};
 
-template <AnyTypeList TTypeList>
+template <typename TTypeList>
 struct type_list_join<TTypeList> : std::type_identity<TTypeList> {};
 
-template <AnyTypeList TFirstTypeList, typename... TSecondTypes, AnyTypeList... TOtherTypeLists>
+template <typename TFirstTypeList, typename... TSecondTypes, typename... TOtherTypeLists>
 struct type_list_join<TFirstTypeList, TypeList<TSecondTypes...>, TOtherTypeLists...>
     : type_list_join<type_list_append_t<TFirstTypeList, TSecondTypes...>, TOtherTypeLists...> {};
 
 // --- type_list_drop
 
-template <AnyTypeList TTypeList, std::size_t v_count>
+template <typename TTypeList, std::size_t v_count>
 struct type_list_drop;
 
-template <AnyTypeList TTypeList, std::size_t v_count>
+template <typename TTypeList, std::size_t v_count>
 using type_list_drop_t = typename type_list_drop<TTypeList, v_count>::type;
 
 template <typename... TTypes>
@@ -200,7 +188,7 @@ struct type_list_drop<TypeList<TFirstType, TOtherTypes...>, v_count>
 
 namespace detail {
 
-template <AnyTypeList TTypeList, std::size_t v_count, typename... TTakenTypes>
+template <typename TTypeList, std::size_t v_count, typename... TTakenTypes>
 struct type_list_take_helper;
 
 template <typename... TTypes, typename... TTakenTypes>
@@ -219,26 +207,26 @@ struct type_list_take_helper<TypeList<TFirstType, TOtherTypes...>, v_count, TTak
 
 } // namespace detail
 
-template <AnyTypeList TTypeList, std::size_t v_count>
+template <typename TTypeList, std::size_t v_count>
 struct type_list_take : detail::type_list_take_helper<TTypeList, v_count> {};
 
-template <AnyTypeList TTypeList, std::size_t v_count>
+template <typename TTypeList, std::size_t v_count>
 using type_list_take_t = typename type_list_take<TTypeList, v_count>::type;
 
 // --- type_list_slice
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 struct type_list_slice;
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 using type_list_slice_t = typename type_list_slice<TTypeList, v_begin, v_end>::type;
 
 // clang-format off
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 requires(v_begin <= v_end && v_end > TTypeList::size)
 struct type_list_slice<TTypeList, v_begin, v_end> : std::type_identity<TypeListExhaustion> {};
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 requires(v_begin <= v_end && v_end <= TTypeList::size)
 struct type_list_slice<TTypeList, v_begin, v_end>
     : type_list_take<type_list_drop_t<TTypeList, v_begin>, v_end - v_begin> {};
@@ -246,50 +234,50 @@ struct type_list_slice<TTypeList, v_begin, v_end>
 
 // --- type_list_erase
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 struct type_list_erase;
 
 // clang-format off
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 requires(v_begin <= v_end && v_end > TTypeList::size)
 struct type_list_erase<TTypeList, v_begin, v_end> : std::type_identity<TypeListExhaustion> {};
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 requires(v_begin <= v_end && v_end <= TTypeList::size)
 struct type_list_erase<TTypeList, v_begin, v_end>
     : type_list_join<type_list_take_t<TTypeList, v_begin>, type_list_drop_t<TTypeList, v_end>> {};
 // clang-format on
 
-template <AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 using type_list_erase_t = typename type_list_erase<TTypeList, v_begin, v_end>::type;
 
 // --- type_list_insert
 
-template <AnyTypeList TTypeList, std::size_t v_index, typename... TInsertedTypes>
+template <typename TTypeList, std::size_t v_index, typename... TInsertedTypes>
 struct type_list_insert
     : type_list_join<type_list_take_t<TTypeList, v_index>,
                      TypeList<TInsertedTypes...>,
                      type_list_drop_t<TTypeList, v_index>> {};
 
-template <AnyTypeList TTypeList, std::size_t v_index, typename... TInsertedTypes>
+template <typename TTypeList, std::size_t v_index, typename... TInsertedTypes>
 using type_list_insert_t = typename type_list_insert<TTypeList, v_index, TInsertedTypes...>::type;
 
 // --- type_list_filter
 
 namespace detail {
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter,
+          typename TParameterListBefore,
+          typename TParameterListAfter,
           bool v_invert,
           typename... TFilteredTypes>
 struct type_list_filter_helper;
 
 template <template <typename...> typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter,
+          typename TParameterListBefore,
+          typename TParameterListAfter,
           bool v_invert,
           typename... TFilteredTypes>
 struct type_list_filter_helper<TypeList<>,
@@ -330,84 +318,84 @@ struct type_list_filter_helper<TypeList<TFirstType, TOtherTypes...>,
 
 } // namespace detail
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct type_list_filter
     : detail::type_list_filter_helper<TTypeList, TFilter, TypeList<>, TypeList<TParameters...>, false> {};
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 using type_list_filter_t = typename type_list_filter<TTypeList, TFilter, TParameters...>::type;
 
 // ---
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct type_list_filter_parameters_first
     : detail::type_list_filter_helper<TTypeList, TFilter, TypeList<TParameters...>, TypeList<>, false> {};
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 using type_list_filter_parameters_first_t =
     typename type_list_filter_parameters_first<TTypeList, TFilter, TParameters...>::type;
 
 // ---
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter>
+          typename TParameterListBefore,
+          typename TParameterListAfter>
 struct type_list_filter_unpack_parameters
     : detail::type_list_filter_helper<TTypeList, TFilter, TParameterListBefore, TParameterListAfter, false> {};
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter>
+          typename TParameterListBefore,
+          typename TParameterListAfter>
 using type_list_filter_unpack_parameters_t =
     typename type_list_filter_unpack_parameters<TTypeList, TFilter, TParameterListBefore, TParameterListAfter>::type;
 
 // --- type_list_erase_if
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct type_list_erase_if
     : detail::type_list_filter_helper<TTypeList, TFilter, TypeList<>, TypeList<TParameters...>, true> {};
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 using type_list_erase_if_t = typename type_list_erase_if<TTypeList, TFilter, TParameters...>::type;
 
 // ---
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct type_list_erase_if_parameters_first
     : detail::type_list_filter_helper<TTypeList, TFilter, TypeList<TParameters...>, TypeList<>, true> {};
 
-template <AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
 using type_list_erase_if_parameters_first_t =
     typename type_list_erase_if_parameters_first<TTypeList, TFilter, TParameters...>::type;
 
 // ---
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter>
+          typename TParameterListBefore,
+          typename TParameterListAfter>
 struct type_list_erase_if_unpack_parameters
     : detail::type_list_filter_helper<TTypeList, TFilter, TParameterListBefore, TParameterListAfter, true> {};
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TFilter,
-          AnyTypeList TParameterListBefore,
-          AnyTypeList TParameterListAfter>
+          typename TParameterListBefore,
+          typename TParameterListAfter>
 using type_list_erase_if_unpack_parameters_t =
     typename type_list_erase_if_unpack_parameters<TTypeList, TFilter, TParameterListBefore, TParameterListAfter>::type;
 
 // --- type_list_apply
 
-template <AnyTypeList TTypeList, template <typename...> typename TApplyTarget>
+template <typename TTypeList, template <typename...> typename TApplyTarget>
 struct type_list_apply;
 
-template <AnyTypeList TTypeList, template <typename...> typename TApplyTarget>
+template <typename TTypeList, template <typename...> typename TApplyTarget>
 using type_list_apply_t = typename type_list_apply<TTypeList, TApplyTarget>::type;
 
 template <typename... TTypes, template <typename...> typename TApplyTarget>
@@ -415,10 +403,10 @@ struct type_list_apply<TypeList<TTypes...>, TApplyTarget> : std::type_identity<T
 
 // --- type_list_transform
 
-template <AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
 struct type_list_transform;
 
-template <AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
 using type_list_transform_t = typename type_list_transform<TTypeList, TTransform, TParameters...>::type;
 
 template <typename... TTypes, template <typename...> typename TTransform, typename... TParameters>
@@ -427,10 +415,10 @@ struct type_list_transform<TypeList<TTypes...>, TTransform, TParameters...>
 
 // ---
 
-template <AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
 struct type_list_transform_parameters_first;
 
-template <AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
 using type_list_transform_parameters_first_t =
     typename type_list_transform_parameters_first<TTypeList, TTransform, TParameters...>::type;
 
@@ -440,14 +428,14 @@ struct type_list_transform_parameters_first<TypeList<TTypes...>, TTransform, TPa
 
 // ---
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TTransform,
           typename TParameterListBefore,
           typename TParameterListAfter>
 struct type_list_transform_unpack_parameters;
 
-template <AnyTypeList TTypeList,
+template <typename TTypeList,
           template <typename...>
           typename TTransform,
           typename TParameterListBefore,
