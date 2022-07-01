@@ -446,11 +446,11 @@ struct type_list_transform_unpack_parameters<TypeList<TTypes...>,
 
 template <typename... TTypes>
 struct TypeList {
-    static constexpr auto empty = is_empty_type_list_v<TypeList>;
-    static constexpr auto size = type_list_size_v<TypeList>;
+    static constexpr bool empty = is_empty_type_list_v<TypeList>;
+    static constexpr std::size_t size = type_list_size_v<TypeList>;
 
     template <typename TCheckedValue>
-    static constexpr auto contains = type_list_contains_v<TypeList, TCheckedValue>;
+    static constexpr bool contains = type_list_contains_v<TypeList, TCheckedValue>;
 
     template <std::size_t v_index>
     using at = type_list_at_t<TypeList, v_index>;
