@@ -164,7 +164,7 @@ struct type_list_join<TFirstTypeList, TypeList<TSecondTypes...>, TOtherTypeLists
 
 // --- type_list_drop
 
-template <typename TTypeList, std::size_t v_count>
+template <typename TTypeList, std::size_t v_count, typename = void>
 struct type_list_drop;
 
 template <typename TTypeList, std::size_t v_count>
@@ -173,37 +173,30 @@ using type_list_drop_t = typename type_list_drop<TTypeList, v_count>::type;
 template <typename... TTypes>
 struct type_list_drop<TypeList<TTypes...>, 0> : std::type_identity<TypeList<TTypes...>> {};
 
-// clang-format off
 template <std::size_t v_count>
-requires(v_count > 0)
-struct type_list_drop<TypeList<>, v_count> : std::type_identity<TypeListExhaustion> {};
+struct type_list_drop<TypeList<>, v_count, std::enable_if_t<(v_count > 0)>> : std::type_identity<TypeListExhaustion> {};
 
 template <typename TFirstType, typename... TOtherTypes, std::size_t v_count>
-requires(v_count > 0)
-struct type_list_drop<TypeList<TFirstType, TOtherTypes...>, v_count>
+struct type_list_drop<TypeList<TFirstType, TOtherTypes...>, v_count, std::enable_if_t<(v_count > 0)>>
     : type_list_drop<TypeList<TOtherTypes...>, v_count - 1> {};
-// clang-format on
 
 // --- type_list_take
 
 namespace detail {
 
-template <typename TTypeList, std::size_t v_count, typename... TTakenTypes>
+template <typename TTypeList, std::size_t v_count, bool v_empty = v_count == 0, typename... TTakenTypes>
 struct type_list_take_helper;
 
 template <typename... TTypes, typename... TTakenTypes>
-struct type_list_take_helper<TypeList<TTypes...>, 0, TTakenTypes...> : std::type_identity<TypeList<TTakenTypes...>> {};
+struct type_list_take_helper<TypeList<TTypes...>, 0, true, TTakenTypes...>
+    : std::type_identity<TypeList<TTakenTypes...>> {};
 
-// clang-format off
 template <std::size_t v_count, typename... TTakenTypes>
-requires(v_count > 0)
-struct type_list_take_helper<TypeList<>, v_count, TTakenTypes...> : std::type_identity<TypeListExhaustion> {};
+struct type_list_take_helper<TypeList<>, v_count, false, TTakenTypes...> : std::type_identity<TypeListExhaustion> {};
 
 template <typename TFirstType, typename... TOtherTypes, std::size_t v_count, typename... TTakenTypes>
-requires(v_count > 0)
-struct type_list_take_helper<TypeList<TFirstType, TOtherTypes...>, v_count, TTakenTypes...>
-    : type_list_take_helper<TypeList<TOtherTypes...>, v_count - 1, TTakenTypes..., TFirstType> {};
-// clang-format on
+struct type_list_take_helper<TypeList<TFirstType, TOtherTypes...>, v_count, false, TTakenTypes...>
+    : type_list_take_helper<TypeList<TOtherTypes...>, v_count - 1, (v_count == 1), TTakenTypes..., TFirstType> {};
 
 } // namespace detail
 
@@ -215,38 +208,32 @@ using type_list_take_t = typename type_list_take<TTypeList, v_count>::type;
 
 // --- type_list_slice
 
-template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end, typename = void>
 struct type_list_slice;
 
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 using type_list_slice_t = typename type_list_slice<TTypeList, v_begin, v_end>::type;
 
-// clang-format off
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
-requires(v_begin <= v_end && v_end > TTypeList::size)
-struct type_list_slice<TTypeList, v_begin, v_end> : std::type_identity<TypeListExhaustion> {};
+struct type_list_slice<TTypeList, v_begin, v_end, std::enable_if_t<(v_begin <= v_end && v_end > TTypeList::size)>>
+    : std::type_identity<TypeListExhaustion> {};
 
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
-requires(v_begin <= v_end && v_end <= TTypeList::size)
-struct type_list_slice<TTypeList, v_begin, v_end>
+struct type_list_slice<TTypeList, v_begin, v_end, std::enable_if_t<(v_begin <= v_end && v_end <= TTypeList::size)>>
     : type_list_take<type_list_drop_t<TTypeList, v_begin>, v_end - v_begin> {};
-// clang-format on
 
 // --- type_list_erase
 
-template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
+template <typename TTypeList, std::size_t v_begin, std::size_t v_end, typename = void>
 struct type_list_erase;
 
-// clang-format off
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
-requires(v_begin <= v_end && v_end > TTypeList::size)
-struct type_list_erase<TTypeList, v_begin, v_end> : std::type_identity<TypeListExhaustion> {};
+struct type_list_erase<TTypeList, v_begin, v_end, std::enable_if_t<(v_begin <= v_end && v_end > TTypeList::size)>>
+    : std::type_identity<TypeListExhaustion> {};
 
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
-requires(v_begin <= v_end && v_end <= TTypeList::size)
-struct type_list_erase<TTypeList, v_begin, v_end>
+struct type_list_erase<TTypeList, v_begin, v_end, std::enable_if_t<(v_begin <= v_end && v_end <= TTypeList::size)>>
     : type_list_join<type_list_take_t<TTypeList, v_begin>, type_list_drop_t<TTypeList, v_end>> {};
-// clang-format on
 
 template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
 using type_list_erase_t = typename type_list_erase<TTypeList, v_begin, v_end>::type;
