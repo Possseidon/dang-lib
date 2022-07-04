@@ -442,6 +442,62 @@ struct type_list_transform_unpack_parameters<TypeList<TTypes...>,
                                              TypeList<TParametersAfter...>>
     : std::type_identity<TypeList<typename TTransform<TParametersBefore..., TTypes, TParametersAfter...>::type...>> {};
 
+// --- type_list_instantiate
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+struct type_list_instantiate;
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+using type_list_instantiate_t = typename type_list_instantiate<TTypeList, TInstantiated, TParameters...>::type;
+
+template <typename... TTypes, template <typename...> typename TInstantiated, typename... TParameters>
+struct type_list_instantiate<TypeList<TTypes...>, TInstantiated, TParameters...>
+    : std::type_identity<TypeList<TInstantiated<TTypes, TParameters...>...>> {};
+
+// ---
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+struct type_list_instantiate_parameters_first;
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+using type_list_instantiate_parameters_first_t =
+    typename type_list_instantiate_parameters_first<TTypeList, TInstantiated, TParameters...>::type;
+
+template <typename... TTypes, template <typename...> typename TInstantiated, typename... TParameters>
+struct type_list_instantiate_parameters_first<TypeList<TTypes...>, TInstantiated, TParameters...>
+    : std::type_identity<TypeList<TInstantiated<TParameters..., TTypes>...>> {};
+
+// ---
+
+template <typename TTypeList,
+          template <typename...>
+          typename TInstantiated,
+          typename TParameterListBefore,
+          typename TParameterListAfter>
+struct type_list_instantiate_unpack_parameters;
+
+template <typename TTypeList,
+          template <typename...>
+          typename TInstantiated,
+          typename TParameterListBefore,
+          typename TParameterListAfter>
+using type_list_instantiate_unpack_parameters_t =
+    typename type_list_instantiate_unpack_parameters<TTypeList,
+                                                     TInstantiated,
+                                                     TParameterListBefore,
+                                                     TParameterListAfter>::type;
+
+template <typename... TTypes,
+          template <typename...>
+          typename TInstantiated,
+          typename... TParametersBefore,
+          typename... TParametersAfter>
+struct type_list_instantiate_unpack_parameters<TypeList<TTypes...>,
+                                               TInstantiated,
+                                               TypeList<TParametersBefore...>,
+                                               TypeList<TParametersAfter...>>
+    : std::type_identity<TypeList<TInstantiated<TParametersBefore..., TTypes, TParametersAfter...>...>> {};
+
 // --- TypeList Implementation
 
 template <typename... TTypes>
@@ -514,6 +570,19 @@ struct TypeList {
     template <template <typename...> typename TTransform, typename TParameterListBefore, typename TParameterListAfter>
     using transform_unpack_parameters =
         type_list_transform_unpack_parameters_t<TypeList, TTransform, TParameterListBefore, TParameterListAfter>;
+
+    template <template <typename...> typename TInstantiated, typename... TParameters>
+    using instantiate = type_list_instantiate_t<TypeList, TInstantiated, TParameters...>;
+
+    template <template <typename...> typename TInstantiated, typename... TParameters>
+    using instantiate_parameters_first =
+        type_list_instantiate_parameters_first_t<TypeList, TInstantiated, TParameters...>;
+
+    template <template <typename...> typename TInstantiated,
+              typename TParameterListBefore,
+              typename TParameterListAfter>
+    using instantiate_unpack_parameters =
+        type_list_instantiate_unpack_parameters_t<TypeList, TInstantiated, TParameterListBefore, TParameterListAfter>;
 };
 
 } // namespace dang::utils

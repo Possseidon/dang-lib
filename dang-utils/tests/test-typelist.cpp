@@ -830,3 +830,105 @@ TEST_CASE("TypeLists can apply a transformation on each type.", "[typelist]")
                  dutils::TypeList<C, D, A, E, F>,
                  dutils::TypeList<C, D, B, E, F>>());
 }
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+struct TestTypeListInstantiate {
+    template <typename... TExpectedResultTypes>
+    static constexpr bool isTypeList()
+    {
+        return std::is_same_v< //
+                   typename dutils::type_list_instantiate<TTypeList, TInstantiated, TParameters...>::type,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   dutils::type_list_instantiate_t<TTypeList, TInstantiated, TParameters...>,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   typename TTypeList::template instantiate<TInstantiated, TParameters...>,
+                   dutils::TypeList<TExpectedResultTypes...>>;
+    }
+};
+
+template <typename TTypeList, template <typename...> typename TInstantiated, typename... TParameters>
+struct TestTypeListInstantiateParametersFirst {
+    template <typename... TExpectedResultTypes>
+    static constexpr bool isTypeList()
+    {
+        return std::is_same_v< //
+                   typename dutils::type_list_instantiate_parameters_first<TTypeList, TInstantiated, TParameters...>::
+                       type,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   dutils::type_list_instantiate_parameters_first_t<TTypeList, TInstantiated, TParameters...>,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   typename TTypeList::template instantiate_parameters_first<TInstantiated, TParameters...>,
+                   dutils::TypeList<TExpectedResultTypes...>>;
+    }
+};
+
+template <typename TTypeList,
+          template <typename...>
+          typename TInstantiated,
+          typename TParameterListBefore,
+          typename TParameterListAfter>
+struct TestTypeListInstantiateUnpackParameters {
+    template <typename... TExpectedResultTypes>
+    static constexpr bool isTypeList()
+    {
+        return std::is_same_v< //
+                   typename dutils::type_list_instantiate_unpack_parameters<TTypeList,
+                                                                            TInstantiated,
+                                                                            TParameterListBefore,
+                                                                            TParameterListAfter>::type,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   dutils::type_list_instantiate_unpack_parameters_t<TTypeList,
+                                                                     TInstantiated,
+                                                                     TParameterListBefore,
+                                                                     TParameterListAfter>,
+                   dutils::TypeList<TExpectedResultTypes...>> &&
+               std::is_same_v< //
+                   typename TTypeList::
+                       template instantiate_unpack_parameters<TInstantiated, TParameterListBefore, TParameterListAfter>,
+                   dutils::TypeList<TExpectedResultTypes...>>;
+    }
+};
+
+template <typename...>
+struct InstantiateTarget;
+
+TEST_CASE("TypeLists can instantiate a template with each type.", "[typelist]")
+{
+    STATIC_CHECK(TestTypeListInstantiate< //
+                 dutils::TypeList<>,
+                 InstantiateTarget>::isTypeList<>());
+    STATIC_CHECK(TestTypeListInstantiate< //
+                 dutils::TypeList<A>,
+                 InstantiateTarget>::isTypeList<InstantiateTarget<A>>());
+    STATIC_CHECK(TestTypeListInstantiate< //
+                 dutils::TypeList<A, B>,
+                 InstantiateTarget>::isTypeList<InstantiateTarget<A>, InstantiateTarget<B>>());
+    STATIC_CHECK(TestTypeListInstantiate< //
+                 dutils::TypeList<A, B, C>,
+                 InstantiateTarget>::isTypeList<InstantiateTarget<A>, InstantiateTarget<B>, InstantiateTarget<C>>());
+
+    STATIC_CHECK(TestTypeListInstantiate< //
+                 dutils::TypeList<A, B>,
+                 InstantiateTarget,
+                 C,
+                 D>::isTypeList<InstantiateTarget<A, C, D>, InstantiateTarget<B, C, D>>());
+
+    STATIC_CHECK(TestTypeListInstantiateParametersFirst< //
+                 dutils::TypeList<A, B>,
+                 InstantiateTarget,
+                 C,
+                 D>::isTypeList<InstantiateTarget<C, D, A>, InstantiateTarget<C, D, B>>());
+
+    STATIC_CHECK(TestTypeListInstantiateUnpackParameters< //
+                 dutils::TypeList<A, B>,
+                 InstantiateTarget,
+                 dutils::TypeList<C, D>,
+                 dutils::TypeList<E, F>>::isTypeList< //
+                 InstantiateTarget<C, D, A, E, F>,
+                 InstantiateTarget<C, D, B, E, F>>());
+}
