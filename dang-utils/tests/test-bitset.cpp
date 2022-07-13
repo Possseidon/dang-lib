@@ -1,3 +1,4 @@
+#include <array>
 // TODO: #include <concepts>
 #include <limits>
 #include <type_traits>
@@ -10,17 +11,50 @@
 
 namespace dutils = dang::utils;
 
-using WordSizes = dutils::TypeList<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
-using ConstWordSizes = WordSizes::transform<std::add_const>;
+using MutableWordSizes = dutils::TypeList<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
+using ConstWordSizes = MutableWordSizes::transform<std::add_const>;
+using AllWordSizes = MutableWordSizes::join<ConstWordSizes>;
 
-using AllBitSetMetas = WordSizes::instantiate<dutils::BitSetMeta>;
+using AllBitSetMetas = MutableWordSizes::instantiate<dutils::BitSetMeta>;
 
-using AllRegularBitSets = WordSizes::instantiate<dutils::BitSet>;
-using AllInfiniteBitSets = WordSizes::instantiate<dutils::InfiniteBitSet>;
+using MutableUnsizedBitSetRefs = MutableWordSizes::instantiate<dutils::BitSetRefUnsized>;
+using AllUnsizedBitSetRefs = AllWordSizes::instantiate<dutils::BitSetRefUnsized>;
+
+using MutableSizedBitSetRefs = MutableWordSizes::instantiate<dutils::BitSetRefSized>;
+using AllSizedBitSetRefs = AllWordSizes::instantiate<dutils::BitSetRefSized>;
+
+using AllRegularBitSets = MutableWordSizes::instantiate<dutils::BitSet>;
+using AllInfiniteBitSets = MutableWordSizes::instantiate<dutils::InfiniteBitSet>;
 
 using AllBitSets = AllRegularBitSets::join<AllInfiniteBitSets>;
 
-TEST_CASE("BitSetMeta provides an alias type for the given word size.", "[bitset]")
+// --- is_bit_set_word
+
+TEST_CASE("is_bit_set_word checks if a type can be used as a bit set word.", "[bitset]")
+{
+    STATIC_CHECK(dutils::is_bit_set_word<std::uint8_t>::value);
+    STATIC_CHECK(dutils::is_bit_set_word_v<std::uint8_t>);
+    STATIC_CHECK(dutils::is_bit_set_word<std::uint16_t>::value);
+    STATIC_CHECK(dutils::is_bit_set_word_v<std::uint16_t>);
+    STATIC_CHECK(dutils::is_bit_set_word<std::uint32_t>::value);
+    STATIC_CHECK(dutils::is_bit_set_word_v<std::uint32_t>);
+    STATIC_CHECK(dutils::is_bit_set_word<std::uint64_t>::value);
+    STATIC_CHECK(dutils::is_bit_set_word_v<std::uint64_t>);
+
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word<const std::uint8_t>::value);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word_v<const std::uint8_t>);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word<volatile std::uint8_t>::value);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word_v<volatile std::uint8_t>);
+
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word<int>::value);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word_v<int>);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word<bool>::value);
+    STATIC_CHECK_FALSE(dutils::is_bit_set_word_v<bool>);
+}
+
+// --- BitSetMeta
+
+TEST_CASE("BitSetMeta provides a type alias for the given word size.", "[bitset]")
 {
     STATIC_CHECK(std::is_same_v<dutils::BitSetMeta<std::uint8_t>::Word, std::uint8_t>);
     STATIC_CHECK(std::is_same_v<dutils::BitSetMeta<std::uint16_t>::Word, std::uint16_t>);
@@ -170,9 +204,189 @@ TEMPLATE_LIST_TEST_CASE("BitSetMeta provides bit set operation utilities.", "[bi
     }
 }
 
-TEST_CASE("(Infinite)BitSet word size defaults to std::size_t, but any unsigned integer type can be used.", "[bitset]")
+// --- BitSetRefUnsized
+
+TEST_CASE("BitSetRefUnsized provides a type alias for the given word size.", "[bitset]")
 {
-    STATIC_CHECK(std::is_same_v<dutils::BitSet<>::Word, std::size_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefUnsized<std::uint8_t>::Word, std::uint8_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefUnsized<std::uint16_t>::Word, std::uint16_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefUnsized<std::uint32_t>::Word, std::uint32_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefUnsized<std::uint64_t>::Word, std::uint64_t>);
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefUnsized forwards various type aliases from BitSetMeta.",
+                        "[bitset]",
+                        AllUnsizedBitSetRefs)
+{
+    using Meta = dutils::BitSetMeta<std::remove_const_t<typename TestType::Word>>;
+
+    STATIC_CHECK(std::is_same_v<typename TestType::Meta, Meta>);
+    STATIC_CHECK(std::is_same_v<typename TestType::size_type, typename Meta::size_type>);
+    STATIC_CHECK(std::is_same_v<typename TestType::value_type, typename Meta::value_type>);
+
+    STATIC_CHECK(TestType::word_bits == Meta::word_bits);
+    STATIC_CHECK(TestType::empty_word == Meta::empty_word);
+    STATIC_CHECK(TestType::filled_word == Meta::filled_word);
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefUnsized can be constructed.", "[bitset]", AllUnsizedBitSetRefs)
+{
+    auto word = typename TestType::Word{0};
+
+    SECTION("Using the default constructor.") { [[maybe_unused]] auto ref = TestType(); }
+    SECTION("Using a word pointer.") { [[maybe_unused]] auto ref = TestType(&word); }
+
+    SUCCEED();
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefUnsized provides mutating bit set operation utilities.",
+                        "[bitset]",
+                        MutableUnsizedBitSetRefs)
+{
+    constexpr auto bit = TestType::word_bits * 2 - 1;
+
+    SECTION("Setting a single bit.")
+    {
+        auto bit_set = std::array{
+            TestType::empty_word,
+            TestType::empty_word,
+            TestType::empty_word,
+        };
+        auto ref = TestType(bit_set.data());
+
+        SECTION("By setting it.") { ref.applyBit(bit, dutils::BitOperation::Set); }
+        SECTION("By flipping it.") { ref.applyBit(bit, dutils::BitOperation::Flip); }
+
+        CHECK(bit_set[0] == TestType::empty_word);
+        CHECK(bit_set[1] == 1);
+        CHECK(bit_set[2] == TestType::empty_word);
+    }
+    SECTION("Clearing a single bit.")
+    {
+        auto bit_set = std::array{
+            TestType::filled_word,
+            TestType::filled_word,
+            TestType::filled_word,
+        };
+        auto ref = TestType(bit_set.data());
+
+        SECTION("By clearing it.") { ref.applyBit(bit, dutils::BitOperation::Clear); }
+        SECTION("By flipping it.") { ref.applyBit(bit, dutils::BitOperation::Flip); }
+
+        CHECK(bit_set[0] == TestType::filled_word);
+        CHECK(bit_set[1] == TestType::filled_word - 1);
+        CHECK(bit_set[2] == TestType::filled_word);
+    }
+    SECTION("Masking an entire word.")
+    {
+        auto bit_set = std::array{
+            TestType::filled_word,
+            TestType::filled_word,
+            TestType::filled_word,
+        };
+        auto ref = TestType(bit_set.data());
+
+        ref.applyBit(bit, dutils::BitOperation::Mask);
+
+        CHECK(bit_set[0] == TestType::filled_word);
+        CHECK(bit_set[1] == 1);
+        CHECK(bit_set[2] == TestType::filled_word);
+    }
+    SECTION("Modifying the front word.")
+    {
+        auto bit_set = std::array{
+            TestType::empty_word,
+            TestType::empty_word,
+        };
+        auto ref = TestType(bit_set.data());
+
+        ref.frontWord() = 69;
+
+        CHECK(bit_set[0] == 69);
+        CHECK(bit_set[1] == TestType::empty_word);
+    }
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefUnsized provides const bit set operation utilities.",
+                        "[bitset]",
+                        AllUnsizedBitSetRefs)
+{
+    SECTION("Testing if single bits are set.")
+    {
+        auto make_bit_set = [] { return std::array<typename TestType::Word, 2>{1}; };
+
+        STATIC_CHECK_FALSE(TestType(make_bit_set().data()).testBit(TestType::word_bits - 2));
+        STATIC_CHECK(TestType(make_bit_set().data()).testBit(TestType::word_bits - 1));
+        STATIC_CHECK_FALSE(TestType(make_bit_set().data()).testBit(TestType::word_bits));
+    }
+    SECTION("Reading the first word.")
+    {
+        auto make_bit_set = [] { return std::array<typename TestType::Word, 2>{69}; };
+
+        STATIC_CHECK(TestType(make_bit_set().data()).frontWord() == 69);
+    }
+}
+
+// --- BitSetRefSized
+
+TEST_CASE("BitSetRefSized provides a type alias for the given word size.", "[bitset]")
+{
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefSized<std::uint8_t>::Word, std::uint8_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefSized<std::uint16_t>::Word, std::uint16_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefSized<std::uint32_t>::Word, std::uint32_t>);
+    STATIC_CHECK(std::is_same_v<dutils::BitSetRefSized<std::uint64_t>::Word, std::uint64_t>);
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefSized extends the functionality of BitSetRefUnsized by deriving from it.",
+                        "[bitset]",
+                        AllSizedBitSetRefs)
+{
+    using BitSetRefUnsized = dutils::BitSetRefUnsized<typename TestType::Word>;
+    STATIC_CHECK(std::is_base_of_v<BitSetRefUnsized, TestType>);
+    STATIC_CHECK(std::is_convertible_v<TestType*, BitSetRefUnsized*>);
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefSized forwards various type aliases from BitSetMeta.", "[bitset]", AllSizedBitSetRefs)
+{
+    using Meta = dutils::BitSetMeta<std::remove_const_t<typename TestType::Word>>;
+
+    STATIC_CHECK(std::is_same_v<typename TestType::Meta, Meta>);
+    STATIC_CHECK(std::is_same_v<typename TestType::size_type, typename Meta::size_type>);
+    STATIC_CHECK(std::is_same_v<typename TestType::word_size_type, typename Meta::word_size_type>);
+    STATIC_CHECK(std::is_same_v<typename TestType::offset_size_type, typename Meta::offset_size_type>);
+    STATIC_CHECK(std::is_same_v<typename TestType::value_type, typename Meta::value_type>);
+
+    STATIC_CHECK(TestType::word_bits == Meta::word_bits);
+    STATIC_CHECK(TestType::empty_word == Meta::empty_word);
+    STATIC_CHECK(TestType::filled_word == Meta::filled_word);
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefSized can be constructed.", "[bitset]", AllSizedBitSetRefs)
+{
+    auto word = typename TestType::Word{0};
+
+    SECTION("Using the default constructor.") { [[maybe_unused]] auto ref = TestType(); }
+    SECTION("Using a word pointer and size.") { [[maybe_unused]] auto ref = TestType(&word, 1); }
+
+    SUCCEED();
+}
+
+TEMPLATE_LIST_TEST_CASE("BitSetRefSized provides mutating bit set operation utilities.",
+                        "[bitset]",
+                        MutableSizedBitSetRefs)
+{}
+
+// ----------------------------------------------
+// -------- TODO: Below here needs work. --------
+// ----------------------------------------------
+
+// --- (Infinite)BitSet
+
+TEST_CASE("(Infinite)BitSet word size defaults to BitSetDefaultWord (std::size_t), but any unsigned integer type can "
+          "be used.",
+          "[bitset]")
+{
+    STATIC_CHECK(std::is_same_v<dutils::BitSet<>::Word, dutils::BitSetDefaultWord>);
     STATIC_CHECK(std::is_same_v<dutils::BitSet<std::uint8_t>::Word, std::uint8_t>);
     STATIC_CHECK(std::is_same_v<dutils::BitSet<std::uint16_t>::Word, std::uint16_t>);
     STATIC_CHECK(std::is_same_v<dutils::BitSet<std::uint32_t>::Word, std::uint32_t>);
