@@ -20,7 +20,7 @@ namespace dang::utils {
 
 template <typename T>
 struct is_bit_set_word
-    : std::conjunction<std::is_integral<T>,
+    : std::conjunction<std::is_unsigned<T>,
                        std::negation<std::is_const<T>>,
                        std::negation<std::is_volatile<T>>,
                        std::negation<std::is_same<T, bool>>> {};
@@ -37,9 +37,6 @@ using BitSetDefaultWord = std::size_t;
 
 template <typename TWord>
 class BitSetMeta;
-
-template <typename TWord>
-class BitSetIterator;
 
 template <typename TWord>
 class BitSetRefUnsized;
@@ -184,6 +181,7 @@ public:
     {}
 
     /// @brief Applies a bit operation on the given bit.
+    /// @remark Careful when using BitOperation::Mask, which clears the entire word (apart from the given bit).
     constexpr void applyBit(size_type bit, BitOperation operation)
     {
         auto& word = words_[Meta::wordIndex(bit)];
