@@ -17,7 +17,9 @@ struct F {};
 template <typename T>
 static constexpr bool testIsNullType()
 {
-    return dutils::is_null_type<T>::value && dutils::is_null_type_v<T>;
+    return dutils::is_null_type<T>::value && //
+           dutils::is_null_type_v<T> &&      //
+           dutils::NullTyped<T>;
 }
 
 TEST_CASE("NullTypes can be checked for.", "[typelist]")
@@ -32,7 +34,9 @@ TEST_CASE("NullTypes can be checked for.", "[typelist]")
 template <typename T>
 static constexpr bool testIsTypeListExhaustion()
 {
-    return dutils::is_type_list_exhaustion<T>::value && dutils::is_type_list_exhaustion_v<T>;
+    return dutils::is_type_list_exhaustion<T>::value && //
+           dutils::is_type_list_exhaustion_v<T> &&      //
+           dutils::ExhaustedTypeList<T>;
 }
 
 TEST_CASE("TypeListExhaustions can be checked for.", "[typelist]")
@@ -62,7 +66,9 @@ TEST_CASE("TypeLists can be created using a type trait.", "[typelist]")
 template <typename T>
 static constexpr bool testIsTypeList()
 {
-    return dutils::is_type_list<T>::value && dutils::is_type_list_v<T>;
+    return dutils::is_type_list<T>::value && //
+           dutils::is_type_list_v<T> &&      //
+           dutils::AnyTypeList<T>;
 }
 
 TEST_CASE("TypeLists can be checked for.", "[typelist]")
@@ -81,10 +87,12 @@ TEST_CASE("TypeLists can be checked for.", "[typelist]")
 template <typename T>
 static constexpr bool testIsEmptyTypeList()
 {
-    return dutils::is_empty_type_list<T>::value && dutils::is_empty_type_list_v<T>;
+    return dutils::is_empty_type_list<T>::value && //
+           dutils::is_empty_type_list_v<T> &&      //
+           dutils::EmptyTypeList<T>;
 }
 
-template <typename TTypeList>
+template <dutils::AnyTypeList TTypeList>
 static constexpr bool testIsTypeListEmpty()
 {
     return testIsEmptyTypeList<TTypeList>() && TTypeList::empty;
@@ -121,7 +129,7 @@ TEST_CASE("TypeLists can have their size queried.", "[typelist]")
     STATIC_CHECK(TestTypeListSize<A, B, C>::is(3));
 }
 
-template <typename TTypeList, typename TContainedType>
+template <dutils::AnyTypeList TTypeList, typename TContainedType>
 static constexpr bool testTypeListContains()
 {
     return dutils::type_list_contains<TTypeList, TContainedType>::value && //
@@ -141,7 +149,7 @@ TEST_CASE("TypeLists can be checked for specific contained types.", "[typelist]"
     STATIC_CHECK_FALSE(testTypeListContains<dutils::TypeList<A, B>, C>());
 }
 
-template <typename TTypeList, std::size_t v_index>
+template <dutils::AnyTypeList TTypeList, std::size_t v_index>
 struct TestTypeListAt {
     template <typename TExpectedResult>
     static constexpr bool is()
@@ -202,7 +210,7 @@ TEST_CASE("TypeLists can query their last contained type.", "[typelist]")
     STATIC_CHECK(TestTypeListLast<A, B, C>::is<C>());
 }
 
-template <typename TTypeList, typename... TAppendedTypes>
+template <dutils::AnyTypeList TTypeList, typename... TAppendedTypes>
 struct TestTypeListAppend {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -234,7 +242,7 @@ TEST_CASE("TypeLists can be appended with additional types.", "[typelist]")
     STATIC_CHECK(TestTypeListAppend<dutils::TypeList<A, B>, C, D>::isTypeList<A, B, C, D>());
 }
 
-template <typename TTypeList, typename... TPrependedTypes>
+template <dutils::AnyTypeList TTypeList, typename... TPrependedTypes>
 struct TestTypeListPrepend {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -266,7 +274,7 @@ TEST_CASE("TypeLists can be prepended with additional types.", "[typelist]")
     STATIC_CHECK(TestTypeListPrepend<dutils::TypeList<A, B>, C, D>::isTypeList<C, D, A, B>());
 }
 
-template <typename TFirstTypeList, typename... TOtherTypeLists>
+template <dutils::AnyTypeList TFirstTypeList, dutils::AnyTypeList... TOtherTypeLists>
 struct TestTypeListJoin {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -303,7 +311,7 @@ TEST_CASE("TypeLists can be joined.", "[typelist]")
                                   dutils::TypeList<C>>::isTypeList<A, B, C>());
 }
 
-template <typename TTypeList, std::size_t v_count>
+template <dutils::AnyTypeList TTypeList, std::size_t v_count>
 struct TestTypeListDrop {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -321,9 +329,9 @@ struct TestTypeListDrop {
 
     static constexpr bool exhausts()
     {
-        return dutils::is_type_list_exhaustion_v<typename dutils::type_list_drop<TTypeList, v_count>::type> &&
-               dutils::is_type_list_exhaustion_v<dutils::type_list_drop_t<TTypeList, v_count>> &&
-               dutils::is_type_list_exhaustion_v<typename TTypeList::template drop<v_count>>;
+        return dutils::ExhaustedTypeList<typename dutils::type_list_drop<TTypeList, v_count>::type> &&
+               dutils::ExhaustedTypeList<dutils::type_list_drop_t<TTypeList, v_count>> &&
+               dutils::ExhaustedTypeList<typename TTypeList::template drop<v_count>>;
     }
 };
 
@@ -342,7 +350,7 @@ TEST_CASE("TypeLists can have a given number of types dropped.", "[typelist]")
     STATIC_CHECK(TestTypeListDrop<dutils::TypeList<A, B>, 3>::exhausts());
 }
 
-template <typename TTypeList, std::size_t v_count>
+template <dutils::AnyTypeList TTypeList, std::size_t v_count>
 struct TestTypeListTake {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -360,9 +368,9 @@ struct TestTypeListTake {
 
     static constexpr bool exhausts()
     {
-        return dutils::is_type_list_exhaustion_v<typename dutils::type_list_take<TTypeList, v_count>::type> &&
-               dutils::is_type_list_exhaustion_v<dutils::type_list_take_t<TTypeList, v_count>> &&
-               dutils::is_type_list_exhaustion_v<typename TTypeList::template take<v_count>>;
+        return dutils::ExhaustedTypeList<typename dutils::type_list_take<TTypeList, v_count>::type> &&
+               dutils::ExhaustedTypeList<dutils::type_list_take_t<TTypeList, v_count>> &&
+               dutils::ExhaustedTypeList<typename TTypeList::template take<v_count>>;
     }
 };
 
@@ -381,7 +389,7 @@ TEST_CASE("TypeLists can have a given number of types taken.", "[typelist]")
     STATIC_CHECK(TestTypeListTake<dutils::TypeList<A, B>, 3>::exhausts());
 }
 
-template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
+template <dutils::AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
 struct TestTypeListSlice {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -396,9 +404,9 @@ struct TestTypeListSlice {
 
     static constexpr bool exhausts()
     {
-        return dutils::is_type_list_exhaustion_v<typename dutils::type_list_slice<TTypeList, v_begin, v_end>::type> &&
-               dutils::is_type_list_exhaustion_v<dutils::type_list_slice_t<TTypeList, v_begin, v_end>> &&
-               dutils::is_type_list_exhaustion_v<typename TTypeList::template slice<v_begin, v_end>>;
+        return dutils::ExhaustedTypeList<typename dutils::type_list_slice<TTypeList, v_begin, v_end>::type> &&
+               dutils::ExhaustedTypeList<dutils::type_list_slice_t<TTypeList, v_begin, v_end>> &&
+               dutils::ExhaustedTypeList<typename TTypeList::template slice<v_begin, v_end>>;
     }
 };
 
@@ -427,7 +435,7 @@ TEST_CASE("TypeLists can be sliced arbitrarily.", "[typelist]")
     STATIC_CHECK(TestTypeListSlice<dutils::TypeList<A, B>, 3, 3>::exhausts());
 }
 
-template <typename TTypeList, std::size_t v_begin, std::size_t v_end>
+template <dutils::AnyTypeList TTypeList, std::size_t v_begin, std::size_t v_end>
 struct TestTypeListErase {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -442,9 +450,9 @@ struct TestTypeListErase {
 
     static constexpr bool exhausts()
     {
-        return dutils::is_type_list_exhaustion_v<typename dutils::type_list_erase<TTypeList, v_begin, v_end>::type> &&
-               dutils::is_type_list_exhaustion_v<dutils::type_list_erase_t<TTypeList, v_begin, v_end>> &&
-               dutils::is_type_list_exhaustion_v<typename TTypeList::template erase<v_begin, v_end>>;
+        return dutils::ExhaustedTypeList<typename dutils::type_list_erase<TTypeList, v_begin, v_end>::type> &&
+               dutils::ExhaustedTypeList<dutils::type_list_erase_t<TTypeList, v_begin, v_end>> &&
+               dutils::ExhaustedTypeList<typename TTypeList::template erase<v_begin, v_end>>;
     }
 };
 
@@ -473,7 +481,7 @@ TEST_CASE("TypeLists can have slices erased.", "[typelist]")
     STATIC_CHECK(TestTypeListErase<dutils::TypeList<A, B>, 3, 3>::exhausts());
 }
 
-template <typename TTypeList, std::size_t v_index, typename... TInsertedTypes>
+template <dutils::AnyTypeList TTypeList, std::size_t v_index, typename... TInsertedTypes>
 struct TestTypeListInsert {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -517,7 +525,7 @@ TEST_CASE("TypeLists can have new types inserted at an arbitrary position.", "[t
 struct Base {};
 struct Derived : Base {};
 
-template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct TestTypeListFilter {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -534,7 +542,7 @@ struct TestTypeListFilter {
     }
 };
 
-template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct TestTypeListFilterParametersFirst {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -551,7 +559,7 @@ struct TestTypeListFilterParametersFirst {
     }
 };
 
-template <typename TTypeList,
+template <dutils::AnyTypeList TTypeList,
           template <typename...>
           typename TFilter,
           typename TParameterListBefore,
@@ -602,7 +610,7 @@ TEST_CASE("TypeLists can be filtered on an optionally type-parametrized predicat
                  dutils::TypeList<>>::isTypeList<Derived>());
 }
 
-template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct TestTypeListEraseIf {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -619,7 +627,7 @@ struct TestTypeListEraseIf {
     }
 };
 
-template <typename TTypeList, template <typename...> typename TFilter, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TFilter, typename... TParameters>
 struct TestTypeListEraseIfParametersFirst {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -636,7 +644,7 @@ struct TestTypeListEraseIfParametersFirst {
     }
 };
 
-template <typename TTypeList,
+template <dutils::AnyTypeList TTypeList,
           template <typename...>
           typename TFilter,
           typename TParameterListBefore,
@@ -733,7 +741,7 @@ TEST_CASE("TypeLists can apply their types on other templated types.", "[typelis
                  ApplyTarget<A, B, C>>);
 }
 
-template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
 struct TestTypeListTransform {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -750,7 +758,7 @@ struct TestTypeListTransform {
     }
 };
 
-template <typename TTypeList, template <typename...> typename TTransform, typename... TParameters>
+template <dutils::AnyTypeList TTypeList, template <typename...> typename TTransform, typename... TParameters>
 struct TestTypeListTransformParametersFirst {
     template <typename... TExpectedResultTypes>
     static constexpr bool isTypeList()
@@ -767,7 +775,7 @@ struct TestTypeListTransformParametersFirst {
     }
 };
 
-template <typename TTypeList,
+template <dutils::AnyTypeList TTypeList,
           template <typename...>
           typename TTransform,
           typename TParameterListBefore,
