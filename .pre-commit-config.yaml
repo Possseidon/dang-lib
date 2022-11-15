@@ -28,6 +28,6 @@ repos:
       - id: cmake-lint
         args: [--suppress-decorations]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.18.3
+    rev: 0.19.1
     hooks:
       - id: check-github-workflows
