@@ -1,5 +1,7 @@
 #include "dang-math/lua-geometry.h"
 
+#include "dang-lua/Convert.h"
+#include "dang-lua/State.h"
 #include "dang-math/lua-vector-matrix.h"
 #include "dang-utils/utils.h"
 
@@ -7,7 +9,7 @@ namespace dang::lua {
 
 namespace detail {
 
-void checkIndex(State& lua, int arg, std::size_t index, std::size_t size)
+void checkIndex(StateRef& lua, int arg, std::size_t index, std::size_t size)
 {
     if (index < 1 || index > size)
         lua.argError(arg,
@@ -17,28 +19,21 @@ void checkIndex(State& lua, int arg, std::size_t index, std::size_t size)
 } // namespace detail
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Line<T, v_dim>>::base_class_name = [] {
-    using namespace std::literals;
-    if constexpr (std::is_same_v<T, float>)
-        return "Line"s;
-    else if constexpr (std::is_same_v<T, double>)
-        return "DLine"s;
-    else
-        static_assert(dutils::invalid_type<T>, "unsupported Line type");
-}();
-
-template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Line<T, v_dim>>::class_name =
-    ClassInfo<dang::math::Line<T, v_dim>>::base_class_name + std::to_string(v_dim);
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Line<T, v_dim>>::className()
+std::string ClassInfo<dang::math::Line<T, v_dim>>::getCheckTypename()
 {
-    return class_name.c_str();
+    return [] {
+        using namespace std::literals;
+        if constexpr (std::is_same_v<T, float>)
+            return "Line"s;
+        else if constexpr (std::is_same_v<T, double>)
+            return "DLine"s;
+        else
+            static_assert(dutils::invalid_type<T>, "unsupported Line type");
+    }() + std::to_string(v_dim);
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
+std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::methods()
 {
     constexpr auto direction = +[](const Line& line) { return line.direction(); };
     constexpr auto setDirection = +[](Line& line, const Direction& direction) { line.direction() = direction; };
@@ -82,7 +77,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::table()
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metatable()
+std::vector<luaL_Reg> ClassInfo<dang::math::Line<T, v_dim>>::metamethods()
 {
     constexpr auto index = +[](const Line& line, std::variant<T, const char*> factor) {
         return std::visit(dutils::Overloaded{
@@ -109,7 +104,7 @@ std::vector<Property> ClassInfo<dang::math::Line<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Line<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
@@ -119,8 +114,8 @@ Arg ClassInfo<dang::math::Line<T, v_dim>>::require(State& lua)
         return Line(support, direction);
     };
 
-    auto result = lua.pushMap(class_table<Line>);
-    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
+    auto result = lua.pushMapTable(ClassInfo::methods());
+    auto result_mt = lua.pushMapTable(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
@@ -132,60 +127,53 @@ template struct ClassInfo<dang::math::Line<double, 2>>;
 template struct ClassInfo<dang::math::Line<double, 3>>;
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Plane<T, v_dim>>::base_class_name = [] {
-    using namespace std::literals;
-    if constexpr (std::is_same_v<T, float>)
-        return "Plane"s;
-    else if constexpr (std::is_same_v<T, double>)
-        return "DPlane"s;
-    else
-        static_assert(dutils::invalid_type<T>, "unsupported Plane type");
-}();
-
-template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Plane<T, v_dim>>::class_name =
-    ClassInfo<dang::math::Plane<T, v_dim>>::base_class_name + std::to_string(v_dim);
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Plane<T, v_dim>>::className()
+std::string ClassInfo<dang::math::Plane<T, v_dim>>::getCheckTypename()
 {
-    return class_name.c_str();
+    return [] {
+        using namespace std::literals;
+        if constexpr (std::is_same_v<T, float>)
+            return "Plane"s;
+        else if constexpr (std::is_same_v<T, double>)
+            return "DPlane"s;
+        else
+            static_assert(dutils::invalid_type<T>, "unsupported Plane type");
+    }() + std::to_string(v_dim);
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
+std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::methods()
 {
     constexpr auto at = +[](const Plane& plane, Factor x, Factor y) { return plane[{x, y}]; };
-    constexpr auto line = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto line = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 2);
         return plane.line(index - 1);
     };
-    constexpr auto plane = +[](State& lua, const Plane& plane, std::size_t index1, std::size_t index2) {
+    constexpr auto plane = +[](StateRef& lua, const Plane& plane, std::size_t index1, std::size_t index2) {
         detail::checkIndex(lua, 2, index1, 2);
         detail::checkIndex(lua, 3, index2, 2);
         return plane.plane(index1 - 1, index2 - 1);
     };
-    constexpr auto direction = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto direction = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 2);
         return plane.directions[index - 1];
     };
-    constexpr auto setDirection = +[](State& lua, Plane& plane, std::size_t index, const Direction& direction) {
+    constexpr auto setDirection = +[](StateRef& lua, Plane& plane, std::size_t index, const Direction& direction) {
         detail::checkIndex(lua, 2, index, 2);
         plane.directions[index - 1] = direction;
     };
-    constexpr auto quadPoint = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto quadPoint = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 4);
         return plane.quadPoint(index - 1);
     };
-    constexpr auto trianglePoint = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto trianglePoint = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.trianglePoint(index - 1);
     };
-    constexpr auto innerRadians = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto innerRadians = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.innerRadians(index - 1);
     };
-    constexpr auto innerDegrees = +[](State& lua, const Plane& plane, std::size_t index) {
+    constexpr auto innerDegrees = +[](StateRef& lua, const Plane& plane, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return plane.innerDegrees(index - 1);
     };
@@ -244,7 +232,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::table()
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metatable()
+std::vector<luaL_Reg> ClassInfo<dang::math::Plane<T, v_dim>>::metamethods()
 {
     constexpr auto index = +[](const Plane& plane, std::variant<Factors, const char*> factor) {
         return std::visit(dutils::Overloaded{
@@ -276,7 +264,7 @@ std::vector<Property> ClassInfo<dang::math::Plane<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
@@ -287,8 +275,8 @@ Arg ClassInfo<dang::math::Plane<T, v_dim>>::require(State& lua)
         return Plane(support, Directions({direction1, direction2}));
     };
 
-    auto result = lua.pushMap(class_table<Plane>);
-    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
+    auto result = lua.pushMapTable(ClassInfo::methods());
+    auto result_mt = lua.pushMapTable(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
@@ -300,51 +288,44 @@ template struct ClassInfo<dang::math::Plane<double, 2>>;
 template struct ClassInfo<dang::math::Plane<double, 3>>;
 
 template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Spat<T, v_dim>>::base_class_name = [] {
-    using namespace std::literals;
-    if constexpr (std::is_same_v<T, float>)
-        return "Spat"s;
-    else if constexpr (std::is_same_v<T, double>)
-        return "DSpat"s;
-    else
-        static_assert(dutils::invalid_type<T>, "unsupported Spat type");
-}();
-
-template <typename T, std::size_t v_dim>
-const std::string ClassInfo<dang::math::Spat<T, v_dim>>::class_name =
-    ClassInfo<dang::math::Spat<T, v_dim>>::base_class_name + std::to_string(v_dim);
-
-template <typename T, std::size_t v_dim>
-const char* ClassInfo<dang::math::Spat<T, v_dim>>::className()
+std::string ClassInfo<dang::math::Spat<T, v_dim>>::getCheckTypename()
 {
-    return class_name.c_str();
+    return [] {
+        using namespace std::literals;
+        if constexpr (std::is_same_v<T, float>)
+            return "Spat"s;
+        else if constexpr (std::is_same_v<T, double>)
+            return "DSpat"s;
+        else
+            static_assert(dutils::invalid_type<T>, "unsupported Spat type");
+    }() + std::to_string(v_dim);
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
+std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::methods()
 {
     constexpr auto at = +[](const Spat& spat, Factor x, Factor y, Factor z) { return spat[{x, y, z}]; };
-    constexpr auto line = +[](State& lua, const Spat& spat, std::size_t index) {
+    constexpr auto line = +[](StateRef& lua, const Spat& spat, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return spat.line(index - 1);
     };
-    constexpr auto plane = +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2) {
+    constexpr auto plane = +[](StateRef& lua, const Spat& spat, std::size_t index1, std::size_t index2) {
         detail::checkIndex(lua, 2, index1, 3);
         detail::checkIndex(lua, 3, index2, 3);
         return spat.plane(index1 - 1, index2 - 1);
     };
     constexpr auto spat =
-        +[](State& lua, const Spat& spat, std::size_t index1, std::size_t index2, std::size_t index3) {
+        +[](StateRef& lua, const Spat& spat, std::size_t index1, std::size_t index2, std::size_t index3) {
             detail::checkIndex(lua, 2, index1, 3);
             detail::checkIndex(lua, 3, index2, 3);
             detail::checkIndex(lua, 4, index3, 3);
             return spat.spat(index1 - 1, index2 - 1, index3 - 1);
         };
-    constexpr auto direction = +[](State& lua, const Spat& spat, std::size_t index) {
+    constexpr auto direction = +[](StateRef& lua, const Spat& spat, std::size_t index) {
         detail::checkIndex(lua, 2, index, 3);
         return spat.directions[index - 1];
     };
-    constexpr auto setDirection = +[](State& lua, Spat& spat, std::size_t index, const Direction& direction) {
+    constexpr auto setDirection = +[](StateRef& lua, Spat& spat, std::size_t index, const Direction& direction) {
         detail::checkIndex(lua, 2, index, 3);
         spat.directions[index - 1] = direction;
     };
@@ -369,7 +350,7 @@ std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::table()
 }
 
 template <typename T, std::size_t v_dim>
-std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metatable()
+std::vector<luaL_Reg> ClassInfo<dang::math::Spat<T, v_dim>>::metamethods()
 {
     constexpr auto index = +[](const Spat& spat, std::variant<dang::math::Vector<T, 3>, const char*> factor) {
         return std::visit(dutils::Overloaded{
@@ -396,7 +377,7 @@ std::vector<Property> ClassInfo<dang::math::Spat<T, v_dim>>::properties()
 }
 
 template <typename T, std::size_t v_dim>
-Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
+Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(StateRef& lua)
 {
     constexpr auto create = +[](Arg, VarArgs args) {
         if (args.empty())
@@ -408,8 +389,8 @@ Arg ClassInfo<dang::math::Spat<T, v_dim>>::require(State& lua)
         return Spat(support, Directions({direction1, direction2, direction3}));
     };
 
-    auto result = lua.pushMap(class_table<Spat>);
-    auto result_mt = lua.pushMap(std::array{reg<create>("__call")});
+    auto result = lua.pushMapTable(ClassInfo::methods());
+    auto result_mt = lua.pushMapTable(std::array{reg<create>("__call")});
     result.setMetatable(std::move(result_mt));
     return result;
 }
