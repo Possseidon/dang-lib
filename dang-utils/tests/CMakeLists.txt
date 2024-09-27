@@ -5,7 +5,7 @@ find_package(Catch2 CONFIG REQUIRED)
 
 include(Catch)
 
-add_executable(${PROJECT_NAME} test-event.cpp test-stub.cpp test-typelist.cpp)
+add_executable(${PROJECT_NAME} test-bitset.cpp test-event.cpp test-stub.cpp test-typelist.cpp)
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE <vector>)
 
