@@ -3,7 +3,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files # default > 500kB, lfs excluded
       - id: check-ast # for python
@@ -28,6 +28,6 @@ repos:
       - id: cmake-lint
         args: [--suppress-decorations]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.19.1
+    rev: 0.29.4
     hooks:
       - id: check-github-workflows
