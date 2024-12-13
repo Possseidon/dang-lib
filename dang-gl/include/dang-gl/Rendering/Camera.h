@@ -191,7 +191,7 @@ public:
 
 private:
     SharedProjectionProvider projection_provider_;
-    SharedTransform transform_ = Transform::create();
+    SharedTransform transform_ = std::make_shared<Transform>();
     mutable std::vector<CameraUniforms> uniforms_;
 };
 
